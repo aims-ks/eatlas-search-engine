@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package au.gov.aims.eatlas.searchengine;
+package au.gov.aims.eatlas.searchengine.client;
 
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -24,30 +24,31 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 
 import java.io.IOException;
 
-public class ESTestClient implements ESClient {
-    private Client client;
+public class ESRestHighLevelClient implements ESClient {
+    private RestHighLevelClient client;
 
-    public ESTestClient(Client client) {
+    public ESRestHighLevelClient(RestHighLevelClient client) {
         this.client = client;
     }
 
     @Override
     public IndexResponse index(IndexRequest indexRequest) throws IOException {
-        return this.client.index(indexRequest).actionGet();
+        return this.client.index(indexRequest, RequestOptions.DEFAULT);
     }
 
     @Override
     public GetResponse get(GetRequest getRequest) throws IOException {
-        return this.client.get(getRequest).actionGet();
+        return this.client.get(getRequest, RequestOptions.DEFAULT);
     }
 
     @Override
     public SearchResponse search(SearchRequest searchRequest) throws IOException {
-        return this.client.search(searchRequest).actionGet();
+        return this.client.search(searchRequest, RequestOptions.DEFAULT);
     }
 
     @Override

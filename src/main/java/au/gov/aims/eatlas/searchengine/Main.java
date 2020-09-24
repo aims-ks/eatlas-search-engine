@@ -18,6 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine;
 
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;

@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package au.gov.aims.eatlas.searchengine;
+package au.gov.aims.eatlas.searchengine.client;
 
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -24,20 +24,34 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Client;
 
 import java.io.IOException;
 
-/**
- * Simple interface to unify RestHighLevelClient with ESSingleNodeTestCase.
- *     They both use different client which are incompatible.
- *     The only way to write testable code is to have a
- *     common client interface so the code can work in test
- *     environment and with a real ElasticSearch engine.
- */
-public interface ESClient extends AutoCloseable {
-    IndexResponse index(IndexRequest indexRequest) throws IOException;
-    GetResponse get(GetRequest getRequest) throws IOException;
-    SearchResponse search(SearchRequest searchRequest) throws IOException;
+public class ESTestClient implements ESClient {
+    private Client client;
 
-    void close() throws IOException;
+    public ESTestClient(Client client) {
+        this.client = client;
+    }
+
+    @Override
+    public IndexResponse index(IndexRequest indexRequest) throws IOException {
+        return this.client.index(indexRequest).actionGet();
+    }
+
+    @Override
+    public GetResponse get(GetRequest getRequest) throws IOException {
+        return this.client.get(getRequest).actionGet();
+    }
+
+    @Override
+    public SearchResponse search(SearchRequest searchRequest) throws IOException {
+        return this.client.search(searchRequest).actionGet();
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.client.close();
+    }
 }
