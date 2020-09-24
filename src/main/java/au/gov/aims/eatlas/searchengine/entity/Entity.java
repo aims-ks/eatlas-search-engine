@@ -21,8 +21,12 @@ package au.gov.aims.eatlas.searchengine.entity;
 import org.json.JSONObject;
 
 public abstract class Entity {
-    public Entity(JSONObject json) {}
-
     public abstract String getId();
     public abstract JSONObject toJSON();
+
+    @Override
+    public String toString() {
+        JSONObject json = this.toJSON();
+        return json == null ? null : json.toString(4);
+    }
 }

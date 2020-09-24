@@ -24,7 +24,7 @@ import org.json.JSONObject;
 public class ExternalLinks extends AbstractIndex<ExternalLink> {
     @Override
     public String getIndex() {
-        return "EXT_LINK";
+        return "ext_link";
     }
 
     @Override

@@ -23,7 +23,7 @@ import org.json.JSONObject;
 public class GeoNetworkRecord extends Entity {
 
     public GeoNetworkRecord(JSONObject json) {
-        super(json);
+        // TODO
     }
 
     @Override

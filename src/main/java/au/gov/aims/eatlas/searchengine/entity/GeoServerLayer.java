@@ -23,7 +23,7 @@ import org.json.JSONObject;
 public class GeoServerLayer extends Entity {
 
     public GeoServerLayer(JSONObject json) {
-        super(json);
+        // TODO
     }
 
     @Override

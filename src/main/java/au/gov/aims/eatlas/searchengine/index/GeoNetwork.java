@@ -24,7 +24,7 @@ import org.json.JSONObject;
 public class GeoNetwork extends AbstractIndex<GeoNetworkRecord> {
     @Override
     public String getIndex() {
-        return "GEONETWORK";
+        return "geonetwork";
     }
 
     @Override

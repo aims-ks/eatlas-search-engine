@@ -24,7 +24,7 @@ import org.json.JSONObject;
 public class Drupal extends AbstractIndex<DrupalNode> {
     @Override
     public String getIndex() {
-        return "DRUPAL";
+        return "drupal";
     }
 
     @Override

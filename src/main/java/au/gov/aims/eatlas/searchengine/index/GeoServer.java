@@ -24,7 +24,7 @@ import org.json.JSONObject;
 public class GeoServer extends AbstractIndex<GeoServerLayer> {
     @Override
     public String getIndex() {
-        return "GEOSERVER";
+        return "geoserver";
     }
 
     @Override

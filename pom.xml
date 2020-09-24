@@ -40,27 +40,16 @@
             <version>2.8.0</version>
         </dependency>
 
+        <!-- JSoup HTML parser -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.13.1</version>
+        </dependency>
+
         <!-- ############## -->
         <!-- # Unit tests # -->
         <!-- ############## -->
-
-        <!-- From 4.9, JUnit had dependencies to org.hamcrest.hamcrest-core -->
-        <!-- ElasticSearch test case require 4.12+ for org.junit.AssumptionViolatedException -->
-<!--
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13</version>
-            <scope>test</scope>
-
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
--->
         <dependency>
             <groupId>org.elasticsearch.test</groupId>
             <artifactId>framework</artifactId>
@@ -68,14 +57,6 @@
             <scope>test</scope>
         </dependency>
 
-<!--
-        <dependency>
-            <groupId>org.elasticsearch.plugin</groupId>
-            <artifactId>transport-netty4-client</artifactId>
-            <version>7.9.1</version>
-            <scope>test</scope>
-        </dependency>
--->
     </dependencies>
 
 </project>

@@ -23,7 +23,7 @@ import org.json.JSONObject;
 public class DrupalNode extends Entity {
 
     public DrupalNode(JSONObject json) {
-        super(json);
+        // TODO
     }
 
     @Override
