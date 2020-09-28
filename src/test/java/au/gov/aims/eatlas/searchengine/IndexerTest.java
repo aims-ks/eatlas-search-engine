@@ -22,6 +22,7 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESTestClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinks;
+import au.gov.aims.eatlas.searchengine.index.SearchResult;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
@@ -129,15 +130,20 @@ public class IndexerTest extends ESSingleNodeTestCase {
             for (ExternalLink link : links) {
                 externalLinks.index(client, link);
             }
+            // Wait for ElasticSearch to finish its indexation
+            client.refresh(externalLinks.getIndex());
 
             ExternalLink link = externalLinks.get(client, "http://www.coralsoftheworld.org/");
 
             System.out.println(link.toString());
 
-            List<ExternalLink> foundLinks = externalLinks.search(client, "textContent", "World");
+            List<SearchResult> searchResults = externalLinks.search(client, "textContent", "of", 0, 10);
+
             System.out.println("foundLinks:");
-            for (ExternalLink foundLink : foundLinks) {
-                foundLink.toString();
+            for (SearchResult searchResult : searchResults) {
+                link = externalLinks.get(client, searchResult.getId());
+                System.out.println(searchResult.getHighlight());
+                System.out.println(link.toString());
             }
         }
     }

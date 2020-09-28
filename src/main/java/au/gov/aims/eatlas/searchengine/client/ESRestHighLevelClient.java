@@ -18,6 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine.client;
 
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -49,6 +51,11 @@ public class ESRestHighLevelClient implements ESClient {
     @Override
     public SearchResponse search(SearchRequest searchRequest) throws IOException {
         return this.client.search(searchRequest, RequestOptions.DEFAULT);
+    }
+
+    @Override
+    public RefreshResponse refresh(String ... indices) throws IOException {
+        return this.client.indices().refresh(new RefreshRequest(indices), RequestOptions.DEFAULT);
     }
 
     @Override

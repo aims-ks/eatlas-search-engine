@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.client;
 
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -38,6 +39,8 @@ public interface ESClient extends AutoCloseable {
     IndexResponse index(IndexRequest indexRequest) throws IOException;
     GetResponse get(GetRequest getRequest) throws IOException;
     SearchResponse search(SearchRequest searchRequest) throws IOException;
+
+    RefreshResponse refresh(String ... indices) throws IOException;
 
     void close() throws IOException;
 }

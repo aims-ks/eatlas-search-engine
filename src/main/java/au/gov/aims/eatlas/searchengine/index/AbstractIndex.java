@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
+import org.apache.log4j.Logger;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -31,14 +32,18 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 // TODO Move search outside. Search should be allowed to be run against any number of indexes at once
 public abstract class AbstractIndex<E extends Entity> {
+    private static final Logger LOGGER = Logger.getLogger(AbstractIndex.class.getName());
+
     public abstract String getIndex();
     public abstract E load(JSONObject json);
 
@@ -51,17 +56,22 @@ public abstract class AbstractIndex<E extends Entity> {
         return this.load(new JSONObject(response.getSource()));
     }
 
-    public List<E> search(ESClient client, String attribute, String needle) throws IOException {
-System.out.println("SEARCH FOR: " + needle + " IN " + attribute);
-        SearchResponse response = client.search(this.getSearchRequest(attribute, needle));
+    public List<SearchResult> search(ESClient client, String attribute, String needle, int from, int size)
+            throws IOException {
 
+        SearchResponse response = client.search(this.getSearchRequest(attribute, needle, from, size));
+        LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", index %s:%n%s",
+            needle, attribute, this.getIndex(), response.toString()));
+
+        List<SearchResult> results = new ArrayList<>();
         SearchHits hits = response.getHits();
-System.out.println("NB FOUND: " + hits.getTotalHits().value);
         for (SearchHit hit : hits.getHits()) {
-            System.out.println("FOUND: " + hit.getId());
+            SearchResult searchResult = new SearchResult(hit.getIndex(), hit.getId(), hit.getScore());
+            searchResult.addHighlights(hit.getHighlightFields());
+            results.add(searchResult);
         }
-        // TODO Create a list of entities from the response
-        return null;
+
+        return results;
     }
 
     // Low level
@@ -77,17 +87,20 @@ System.out.println("NB FOUND: " + hits.getTotalHits().value);
             .id(id);
     }
 
-    public SearchRequest getSearchRequest(String attribute, String needle) {
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(QueryBuilders.matchQuery(attribute, needle));
-        sourceBuilder.from(0);
-        sourceBuilder.size(5);
-        sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+    public SearchRequest getSearchRequest(String attribute, String needle, int from, int size) {
+        // Used to highlight search results in the field that was used with the search
+        HighlightBuilder highlightBuilder = new HighlightBuilder()
+            .field(attribute);
 
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.indices(this.getIndex());
-        searchRequest.source(sourceBuilder);
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+            .query(QueryBuilders.matchQuery(attribute, needle))
+            .from(from) // Used to continue the search (get next page)
+            .size(size) // Number of results to return. Default = 10
+            .timeout(new TimeValue(60, TimeUnit.SECONDS))
+            .highlighter(highlightBuilder);
 
-        return searchRequest;
+        return new SearchRequest()
+            .indices(this.getIndex())
+            .source(sourceBuilder);
     }
 }
