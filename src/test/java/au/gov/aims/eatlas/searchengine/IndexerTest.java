@@ -23,6 +23,7 @@ import au.gov.aims.eatlas.searchengine.client.ESTestClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinks;
 import au.gov.aims.eatlas.searchengine.index.SearchResult;
+import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
@@ -31,13 +32,17 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.test.ESSingleNodeTestCase;
 import org.elasticsearch.test.hamcrest.ElasticsearchAssertions;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 // https://mincong.io/2019/11/24/essinglenodetestcase/
@@ -46,7 +51,6 @@ import java.util.Map;
 @ESIntegTestCase.ClusterScope(numDataNodes = 3)
 public class IndexerTest extends ESSingleNodeTestCase {
 
-/*
     @BeforeClass
     public static void blah() {
         // ESIntegTestCase (or com.carrotsearch.randomizedtesting.RandomizedRunner)
@@ -55,21 +59,11 @@ public class IndexerTest extends ESSingleNodeTestCase {
     }
 
     @Before
-    public void setUpCatalog() throws IOException {
-        CreateIndexResponse createIndexResponse = this.admin()
-            .indices()
-            .prepareCreate("catalog")
-            .get();
+    public void setUpCatalog() {
+        this.createIndex("catalog");
 
-        ElasticsearchAssertions.assertAcked(createIndexResponse);
         this.ensureGreen("catalog");
     }
-
-    @After
-    public void tearDownCatalog() throws IOException, InterruptedException {
-        ESIntegTestCase.cluster().wipeIndices("catalog");
-    }
-*/
 
     @Test
     public void testEmptyCatalogHasNoBooks() {
@@ -109,20 +103,25 @@ public class IndexerTest extends ESSingleNodeTestCase {
     public void testIndexExternalLinks() throws IOException {
         List<ExternalLink> links = new ArrayList<>();
 
-        links.add(new ExternalLink(
+        ClassLoader classLoader = IndexerTest.class.getClassLoader();
+
+        ExternalLink seagrassWatchLink = new ExternalLink(
             "Tropical Seagrass Identification (Seagrass-Watch)",
             "https://www.seagrasswatch.org/idseagrass/"
-        ));
-        links.add(new ExternalLink(
+        );
+        seagrassWatchLink.setHtmlContent(IOUtils.resourceToString(
+                "externalLinks/seagrasswatch.html", StandardCharsets.UTF_8, classLoader));
+        seagrassWatchLink.extractTextContent();
+        links.add(seagrassWatchLink);
+
+        ExternalLink coralsOfTheWorldLink = new ExternalLink(
             "Corals of the World (AIMS)",
             "http://www.coralsoftheworld.org/"
-        ));
-
-        // Harvest
-        for (ExternalLink link : links) {
-            link.harvestHtmlContent();
-            link.extractTextContent();
-        }
+        );
+        coralsOfTheWorldLink.setHtmlContent(IOUtils.resourceToString(
+                "externalLinks/coralsoftheworld.html", StandardCharsets.UTF_8, classLoader));
+        coralsOfTheWorldLink.extractTextContent();
+        links.add(coralsOfTheWorldLink);
 
         try (ESClient client = new ESTestClient(super.node().client())) {
             ExternalLinks externalLinks = new ExternalLinks();
