@@ -47,6 +47,8 @@ public class Search extends HttpServlet {
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
 
+        // TODO Implement paging
+        // TODO Do a real search!
         JSONObject jsonResponse = this.getFakeSearchResults();
 
         String responseTxt = jsonResponse.toString();
