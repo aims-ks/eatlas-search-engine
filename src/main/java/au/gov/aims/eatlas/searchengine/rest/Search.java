@@ -18,19 +18,24 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.search.IndexSummary;
+import au.gov.aims.eatlas.searchengine.search.Result;
+import au.gov.aims.eatlas.searchengine.search.Results;
+import au.gov.aims.eatlas.searchengine.search.Summary;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Path("/v1")
@@ -40,13 +45,24 @@ public class Search {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response search(
-            @Context HttpServletRequest servletRequest) {
+            @Context HttpServletRequest servletRequest,
+            @QueryParam("q") String q,
+            @QueryParam("start") Long start,
+            @QueryParam("hits") Long hits,
+            @QueryParam("idx") List<String> idx) {
+
+        LOGGER.log(Level.WARN, "q: " + q);
+        LOGGER.log(Level.WARN, "start: " + start);
+        LOGGER.log(Level.WARN, "hits: " + hits);
+        for (int i=0; i<idx.size(); i++) {
+            LOGGER.log(Level.WARN, "idx["+i+"]: " + idx.get(i));
+        }
 
         // TODO Implement paging
         // TODO Do a real search!
-        JSONObject jsonResponse = this.getFakeSearchResults();
+        Results results = this.getFakeSearchResults(start, hits);
 
-        String responseTxt = jsonResponse.toString();
+        String responseTxt = results.toString();
         LOGGER.log(Level.DEBUG, responseTxt);
 
         // Disable cache DURING DEVELOPMENT!
@@ -62,13 +78,13 @@ public class Search {
      * @deprecated Used to test, do not forget to delete!
      */
     @Deprecated
-    private JSONObject getFakeSearchResults() {
-        JSONObject resultNode4 = new JSONObject()
-            .put("link", "http://localhost:9090/node/4")
-            .put("index", "eatlas_drupal")
-            .put("title", "A guide to Indigenous science, management and governance of Australian coastal waters")
-            .put("score", 23)
-            .put("document",
+    private Results getFakeSearchResults(Long start, Long hits) {
+        Result resultNode4 = new Result()
+            .setLink("http://localhost:9090/node/4")
+            .setIndex("eatlas_drupal")
+            .setTitle("A guide to Indigenous science, management and governance of Australian coastal waters")
+            .setScore(23)
+            .setDocument(
                 "<p>Understanding the <a href=\"http://www.ozcoasts.gov.au/pdf/CRC/Coastal_Management_in_Australia.pdf\" target=\"_blank\">management and governance of Australia’s vast coastline</a> can be complex. International, Commonwealth, State and Indigenous entities all have various roles and powers to promote the health and integrity of Australia’s marine environments.</p>" +
                 "<p style=\"text-align: center;\"><em>[<strong>Quick links:</strong> <a href=\"#Promoting partnerships\">Promoting</a> Partnerships - <a href=\"#maps\">Maps</a> to help you get started - <a href=\"#links\">Links</a> to Indigenous Sea country Management Plans]</em></p>" +
                 "<div style=\"float : left;\">[IMAGE]</div>" +
@@ -622,59 +638,75 @@ public class Search {
                 "<p>&nbsp;</p>" +
                 "<h3>Important...</h3>" +
                 "<p>Please read, cite and use these documents responsibly by referring to any special requirements outlined. Note that this is a rapidly evolving area with many new plans to be finalised and published shortly (<a href=\"https://www.abc.net.au/news/2016-11-23/kimberley-marine-park-created-around-horizontal-falls/8050330\" target=\"_blank\">here is an example</a>). It is your responsibility to ensure that you are aware of the most up to date information.</p>")
-            .put("thumbnail", "https://cdn131.picsart.com/339459399004201.jpg?to=crop&r=256")
-            .put("langcode", "en");
+            .setThumbnail("https://cdn131.picsart.com/339459399004201.jpg?to=crop&r=256")
+            .setLangcode("en");
 
-        JSONObject resultGoogle = new JSONObject()
-            .put("link", "https://google.com")
-            .put("index", "eatlas_extlinks")
-            .put("title", "Google search engine")
-            .put("score", 12)
-            .put("document",
-                "<p>Google Search, I'm Feeling Lucky.</p>")
-            .put("thumbnail", "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif")
-            .put("langcode", "en");
+        Result resultGoogle = new Result()
+            .setLink("https://google.com")
+            .setIndex("eatlas_extlinks")
+            .setTitle("Google search engine")
+            .setScore(12)
+            .setDocument("<p>Google Search, I'm Feeling Lucky.</p>")
+            .setThumbnail("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif")
+            .setLangcode("en");
 
-        JSONArray results = new JSONArray();
-        results.put(resultNode4);
-        results.put(resultGoogle);
+        Results results = new Results();
+        results.addResult(resultNode4);
+        results.addResult(resultGoogle);
 
         Random random = new Random();
-        for (int i=0; i<20; i++) {
-            results.put(this.getRandomGoogleSearchResult(i+1, random));
+        for (int i=0; i<200; i++) {
+            results.addResult(this.getRandomGoogleSearchResult(i+1, random));
         }
 
-        return new JSONObject()
-            .put("summary", new JSONObject()
-                .put("hits", results.length()) // Number of search result found
-                .put("indexes", new JSONObject()
-                    .put("eatlas_drupal", new JSONObject()
-                        .put("hits", 1)
-                    )
-                    .put("eatlas_extlinks", new JSONObject()
-                        .put("hits", results.length() - 1)
-                    )
-                )
-                .put("page", 1) // Current page
-                .put("pages", 1) // Number of pages
-            )
-            .put("results", results);
+        List<Result> resultList = results.getResults();
+        results.setSummary(new Summary()
+            .setHits((long)resultList.size())
+            .setStart(start)
+            .putIndexSummary(new IndexSummary()
+                .setIndex("eatlas_drupal")
+                .setHits(1L))
+            .putIndexSummary(new IndexSummary()
+                .setIndex("eatlas_extlinks")
+                .setHits(201L))
+            );
+
+        // Trim the results, by doing a sequential search.
+        // That's pretty bad, but that method is a mockup...
+        List<Result> newResultList = new ArrayList<Result>();
+        int intStart = 0;
+        int intHits = 10;
+
+        if (start != null) {
+            intStart = start.intValue();
+        }
+        if (hits != null) {
+            intHits = hits.intValue();
+        }
+
+        for (int i = intStart; i < Math.min(intStart + intHits, resultList.size()); i++) {
+            newResultList.add(resultList.get(i));
+        }
+
+        results.setResults(newResultList);
+
+        return results;
     }
 
-    private JSONObject getRandomGoogleSearchResult(int index, Random random) {
+    private Result getRandomGoogleSearchResult(int index, Random random) {
         String randomSearchTerm = this.getRandomWord(random);
 
-        return new JSONObject()
-            .put("link", String.format("https://www.google.com/search?q=%s", randomSearchTerm))
-            .put("index", "eatlas_extlinks")
-            .put("title", String.format("Google search %d for %s", index, randomSearchTerm))
-            .put("score", 12)
-            .put("document",
+        return new Result()
+            .setLink(String.format("https://www.google.com/search?q=%s", randomSearchTerm))
+            .setIndex("eatlas_extlinks")
+            .setTitle(String.format("Google search %d for %s", index, randomSearchTerm))
+            .setScore(12)
+            .setDocument(
                 "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
                 String.format("<p>Google search result for random word %s.</p>", randomSearchTerm) +
                 "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>")
-            .put("thumbnail", "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif")
-            .put("langcode", "en");
+            .setThumbnail("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif")
+            .setLangcode("en");
     }
 
     private String getRandomWord(Random random) {
