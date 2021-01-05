@@ -19,7 +19,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package au.gov.aims.eatlas.searchengine.servlet;
+package au.gov.aims.eatlas.searchengine.rest;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -41,78 +41,78 @@ import java.io.OutputStream;
  * @author glafond
  */
 public class ServletUtils {
-	private static final Logger LOGGER = Logger.getLogger(ServletUtils.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ServletUtils.class.getName());
 
-	public static void sendResponse(
-			HttpServletResponse response,
-			File file) throws IOException {
+    public static void sendResponse(
+            HttpServletResponse response,
+            File file) throws IOException {
 
-		if (response == null || file == null) {
-			return;
-		}
+        if (response == null || file == null) {
+            return;
+        }
 
-		InputStream responseStream = null;
-		try {
-			responseStream = new FileInputStream(file);
-			ServletUtils.sendResponse(response, responseStream);
-		} finally {
-			if (responseStream != null) {
-				try {
-					responseStream.close();
-				} catch (Exception ex) {
-					LOGGER.log(Level.WARN, String.format("Cant close the FileInputStream: %s", ServletUtils.getExceptionMessage(ex)), ex);
-				}
-			}
-		}
-	}
+        InputStream responseStream = null;
+        try {
+            responseStream = new FileInputStream(file);
+            ServletUtils.sendResponse(response, responseStream);
+        } finally {
+            if (responseStream != null) {
+                try {
+                    responseStream.close();
+                } catch (Exception ex) {
+                    LOGGER.log(Level.WARN, String.format("Cant close the FileInputStream: %s", ServletUtils.getExceptionMessage(ex)), ex);
+                }
+            }
+        }
+    }
 
-	public static void sendResponse(
-			HttpServletResponse response,
-			String responseTxt) throws IOException {
+    public static void sendResponse(
+            HttpServletResponse response,
+            String responseTxt) throws IOException {
 
-		if (response == null || responseTxt == null) {
-			return;
-		}
+        if (response == null || responseTxt == null) {
+            return;
+        }
 
-		InputStream responseStream = null;
-		try {
-			responseStream = new ByteArrayInputStream(responseTxt.getBytes());
-			ServletUtils.sendResponse(response, responseStream);
-		} finally {
-			if (responseStream != null) {
-				try {
-					responseStream.close();
-				} catch (Exception ex) {
-					LOGGER.log(Level.WARN, String.format("Cant close the ByteArrayInputStream: %s", ServletUtils.getExceptionMessage(ex)), ex);
-				}
-			}
-		}
-	}
+        InputStream responseStream = null;
+        try {
+            responseStream = new ByteArrayInputStream(responseTxt.getBytes());
+            ServletUtils.sendResponse(response, responseStream);
+        } finally {
+            if (responseStream != null) {
+                try {
+                    responseStream.close();
+                } catch (Exception ex) {
+                    LOGGER.log(Level.WARN, String.format("Cant close the ByteArrayInputStream: %s", ServletUtils.getExceptionMessage(ex)), ex);
+                }
+            }
+        }
+    }
 
-	public static void sendResponse(
-			HttpServletResponse response,
-			InputStream responseStream) throws IOException {
+    public static void sendResponse(
+            HttpServletResponse response,
+            InputStream responseStream) throws IOException {
 
-		if (response == null || responseStream == null) {
-			return;
-		}
+        if (response == null || responseStream == null) {
+            return;
+        }
 
-		OutputStream out = null;
+        OutputStream out = null;
 
-		try {
-			out = response.getOutputStream();
+        try {
+            out = response.getOutputStream();
 
-			ServletUtils.binaryCopy(responseStream, out);
-		} finally {
-			if (out != null) {
-				try {
-					out.close();
-				} catch(Exception e) {
-					LOGGER.log(Level.ERROR, String.format("Cant close the output: %s", ServletUtils.getExceptionMessage(e)), e);
-				}
-			}
-		}
-	}
+            ServletUtils.binaryCopy(responseStream, out);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch(Exception e) {
+                    LOGGER.log(Level.ERROR, String.format("Cant close the output: %s", ServletUtils.getExceptionMessage(e)), e);
+                }
+            }
+        }
+    }
 
     public static String getExceptionMessage(Throwable ex) {
         String defaultMsg = ex == null ? "No message available" : ex.getClass().getName();

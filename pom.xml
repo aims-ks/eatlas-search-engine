@@ -18,12 +18,40 @@
 
     <dependencies>
         <!-- Jar containing classes provided by tomcat - Not included in the war -->
+        <!-- NOTE: javaee-web-api conflict with Glassfish framework (Jar Hell) -->
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-web-api</artifactId>
-            <version>6.0</version>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Missing from Java 9+ -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+        <!-- REST API framework -->
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <version>2.33</version>
+        </dependency>
+        <!-- Missing from jersey-container-servlet 2.33 -->
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>2.33</version>
+        </dependency>
+
+
 
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
@@ -72,7 +100,6 @@
             <version>7.9.1</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>

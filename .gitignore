@@ -1,8 +1,6 @@
 # IntelliJ files
 .idea/
 *.iml
-# OpenJDK bug: https://bugs.openjdk.java.net/browse/JDK-8214300
-.attach_pid*
 
 # Maven files
 target/
