@@ -60,7 +60,10 @@ public class Search {
 
         // TODO Implement paging
         // TODO Do a real search!
-        Results results = this.getFakeSearchResults(start, hits);
+        Results results = this.getNoSearchResults(start, hits);
+        if (q != null && (q.toLowerCase().contains("lorem") || q.toLowerCase().contains("ipsum"))) {
+            results = this.getFakeSearchResults(start, hits);
+        }
 
         String responseTxt = results.toString();
         LOGGER.log(Level.DEBUG, responseTxt);
@@ -77,6 +80,18 @@ public class Search {
     /**
      * @deprecated Used to test, do not forget to delete!
      */
+    @Deprecated
+    private Results getNoSearchResults(Long start, Long hits) {
+        Results results = new Results();
+
+        results.setSummary(new Summary()
+            .setHits(0L)
+            .setStart(0L)
+        );
+
+        return results;
+    }
+
     @Deprecated
     private Results getFakeSearchResults(Long start, Long hits) {
         Result resultNode4 = new Result()
@@ -669,7 +684,7 @@ public class Search {
             .putIndexSummary(new IndexSummary()
                 .setIndex("eatlas_extlinks")
                 .setHits(201L))
-            );
+        );
 
         // Trim the results, by doing a sequential search.
         // That's pretty bad, but that method is a mockup...
