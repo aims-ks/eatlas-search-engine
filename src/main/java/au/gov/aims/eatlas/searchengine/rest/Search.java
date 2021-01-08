@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.search.ErrorMessage;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.Result;
 import au.gov.aims.eatlas.searchengine.search.Results;
@@ -37,6 +38,8 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Path("/v1")
 public class Search {
@@ -58,11 +61,25 @@ public class Search {
             LOGGER.log(Level.WARN, "idx["+i+"]: " + idx.get(i));
         }
 
-        // TODO Implement paging
         // TODO Do a real search!
         Results results = this.getNoSearchResults(start, hits);
-        if (q != null && (q.toLowerCase().contains("lorem") || q.toLowerCase().contains("ipsum"))) {
-            results = this.getFakeSearchResults(start, hits);
+
+        // Fake search to test search client (Drupal)
+        // - "lorem" or "ipsum": Returns 200+ fake search results.
+        // - "crash": Returns a 500 server error (or other error code if a 3 digit number >=100 is found in the request).
+        // - Everything else: Returns zero search results.
+        if (q != null) {
+            String lcq = q.toLowerCase();
+            if (lcq.contains("lorem") || lcq.contains("ipsum")) {
+                results = this.getFakeSearchResults(start, hits);
+            } else if (lcq.contains("crash")) {
+                int statusCode = this.findStatusCode(lcq, 500);
+
+                ErrorMessage errorMessage = new ErrorMessage()
+                    .setErrorMessage("Requested search engine crash.")
+                    .setStatusCode(statusCode);
+                return Response.status(statusCode).entity(errorMessage.toString()).build();
+            }
         }
 
         String responseTxt = results.toString();
@@ -76,6 +93,25 @@ public class Search {
         return Response.ok(responseTxt).cacheControl(noCache).build();
     }
 
+    /**
+     * @deprecated Used to test, do not forget to delete!
+     */
+    @Deprecated
+    private int findStatusCode(String query, int defaultValue) {
+        Pattern p = Pattern.compile("\\d+");
+        Matcher m = p.matcher(query);
+        while (m.find()) {
+            String strNumber = m.group();
+            if (strNumber.length() == 3) {
+                int statusCode = Integer.parseInt(strNumber);
+                if (statusCode >= 100) {
+                    return statusCode;
+                }
+            }
+        }
+
+        return defaultValue;
+    }
 
     /**
      * @deprecated Used to test, do not forget to delete!
