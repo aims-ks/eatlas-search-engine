@@ -132,7 +132,7 @@ public class Search {
     private Results getFakeSearchResults(Long start, Long hits, List<String> idx) {
         Result resultNode4 = new Result()
             .setLink("http://localhost:9090/node/4")
-            .setIndex("eatlas_drupal")
+            .setIndex("eatlas_node")
             .setTitle("A guide to Indigenous science, management and governance of Australian coastal waters")
             .setScore(23)
             .setDocument(
@@ -719,13 +719,13 @@ public class Search {
             .setHits((long)resultList.size())
             .setStart(start)
             .putIndexSummary(new IndexSummary()
-                .setIndex("eatlas_drupal")
+                .setIndex("eatlas_node")
                 .setHits(1L))
             .putIndexSummary(new IndexSummary()
                 .setIndex("eatlas_extlinks")
                 .setHits(201L))
             .putIndexSummary(new IndexSummary()
-                .setIndex("eatlas_geoserver")
+                .setIndex("eatlas_layer")
                 .setHits(50L))
         );
 
@@ -788,7 +788,7 @@ public class Search {
 
         return new Result()
             .setLink(String.format("https://maps.eatlas.org.au/index.html?intro=false&z=7&ll=148.00000,-18.00000&l0=%s,ea_ea-be%%3AWorld_Bright-Earth-e-Atlas-basemap", randomLayerName))
-            .setIndex("eatlas_geoserver")
+            .setIndex("eatlas_layer")
             .setTitle(String.format("GeoServer random layer %d is %s", index, randomLayerName))
             .setScore(12)
             .setDocument(
