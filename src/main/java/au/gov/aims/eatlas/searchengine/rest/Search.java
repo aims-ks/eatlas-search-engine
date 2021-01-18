@@ -52,13 +52,18 @@ public class Search {
             @QueryParam("q") String q,
             @QueryParam("start") Long start,
             @QueryParam("hits") Long hits,
-            @QueryParam("idx") List<String> idx) {
+            @QueryParam("idx") List<String> idx, // List of indexes used for the summary
+            @QueryParam("fidx") List<String> fidx // List of indexes to filter the search results (optional)
+            ) {
 
         LOGGER.log(Level.WARN, "q: " + q);
         LOGGER.log(Level.WARN, "start: " + start);
         LOGGER.log(Level.WARN, "hits: " + hits);
         for (int i=0; i<idx.size(); i++) {
             LOGGER.log(Level.WARN, "idx["+i+"]: " + idx.get(i));
+        }
+        for (int i=0; i<fidx.size(); i++) {
+            LOGGER.log(Level.WARN, "fidx["+i+"]: " + fidx.get(i));
         }
 
         // TODO Do a real search!
@@ -71,7 +76,7 @@ public class Search {
         if (q != null) {
             String lcq = q.toLowerCase();
             if (lcq.contains("lorem") || lcq.contains("ipsum")) {
-                results = this.getFakeSearchResults(start, hits, idx);
+                results = this.getFakeSearchResults(start, hits, idx, fidx);
             } else if (lcq.contains("crash")) {
                 int statusCode = this.findStatusCode(lcq, 500);
 
@@ -129,8 +134,110 @@ public class Search {
     }
 
     @Deprecated
-    private Results getFakeSearchResults(Long start, Long hits, List<String> idx) {
-        Result resultNode4 = new Result()
+    private Results getFakeSearchResults(Long start, Long hits, List<String> idx, List<String> fidx) {
+        // Get every single fake search results, even the one for indexes the website do not care about
+        List<Result> resultList = this.getAllFakeSearchResults();
+
+        // Filter search results
+
+        // Filter indexes (all searchable indexes)
+        if (idx != null && !idx.isEmpty()) {
+            List<Result> newResultList = new ArrayList<Result>();
+            for (Result result : resultList) {
+                if (idx.contains(result.getIndex())) {
+                    newResultList.add(result);
+                }
+            }
+            resultList = newResultList;
+        }
+
+        // Filter indexes (for current search)
+        List<Result> filteredResultList = resultList;
+        if (fidx != null && !fidx.isEmpty()) {
+            filteredResultList = new ArrayList<Result>();
+            for (Result result : resultList) {
+                if (fidx.contains(result.getIndex())) {
+                    filteredResultList.add(result);
+                }
+            }
+        }
+
+        // Filter page
+
+        // Trim the results, by doing a sequential search.
+        // That's pretty bad, but that method is a mockup...
+        List<Result> newResultList = new ArrayList<Result>();
+        int intStart = 0;
+        int intHits = 10;
+
+        if (start != null) {
+            intStart = start.intValue();
+        }
+        if (hits != null) {
+            intHits = hits.intValue();
+        }
+
+        for (int i = intStart; i < Math.min(intStart + intHits, filteredResultList.size()); i++) {
+            newResultList.add(filteredResultList.get(i));
+        }
+
+
+        Results results = new Results();
+        results.setResults(newResultList);
+
+        results.setSummary(new Summary()
+            .setHits((long)resultList.size())
+            .setStart(start)
+
+            .putIndexSummary(new IndexSummary()
+                .setIndex("eatlas_node")
+                .setHits(this.countIndexResults(resultList, "eatlas_node")))
+            .putIndexSummary(new IndexSummary()
+                .setIndex("eatlas_extlinks")
+                .setHits(this.countIndexResults(resultList, "eatlas_extlinks")))
+            .putIndexSummary(new IndexSummary()
+                .setIndex("eatlas_layer")
+                .setHits(this.countIndexResults(resultList, "eatlas_layer")))
+            .putIndexSummary(new IndexSummary()
+                .setIndex("eatlas_broken")
+                .setHits(this.countIndexResults(resultList, "eatlas_broken")))
+        );
+
+        return results;
+    }
+
+    private long countIndexResults(List<Result> resultList, String index) {
+        long count = 0;
+        if (index != null) {
+            index = index.trim();
+            if (!index.isEmpty()) {
+                for (Result result : resultList) {
+                    if (index.equals(result.getIndex())) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Return a list of results
+     */
+    private List<Result> getAllFakeSearchResults() {
+        List<Result> results = new ArrayList<Result>();
+
+        results.add(new Result()
+            .setLink("https://broken.bad/should/not/appear/in/search/results/")
+            .setIndex("eatlas_broken")
+            .setTitle("This should not appear in search results")
+            .setScore(23)
+            .setDocument("BROKEN DOCUMENT")
+            .setThumbnail("https://lh3.googleusercontent.com/proxy/f9semJrOD1mcB78d_iD90HJvjKhmrYv5c5n3HGYq8nxFkHs_5gd_8P5IomW3JfkNOw8XUvUBUBc4VSaDd52MYnhvzQ")
+            .setLangcode("en")
+        );
+
+        results.add(new Result()
             .setLink("http://localhost:9090/node/4")
             .setIndex("eatlas_node")
             .setTitle("A guide to Indigenous science, management and governance of Australian coastal waters")
@@ -690,79 +797,27 @@ public class Search {
                 "<h3>Important...</h3>" +
                 "<p>Please read, cite and use these documents responsibly by referring to any special requirements outlined. Note that this is a rapidly evolving area with many new plans to be finalised and published shortly (<a href=\"https://www.abc.net.au/news/2016-11-23/kimberley-marine-park-created-around-horizontal-falls/8050330\" target=\"_blank\">here is an example</a>). It is your responsibility to ensure that you are aware of the most up to date information.</p>")
             .setThumbnail("https://cdn131.picsart.com/339459399004201.jpg?to=crop&r=256")
-            .setLangcode("en");
+            .setLangcode("en")
+        );
 
-        Result resultGoogle = new Result()
+        results.add(new Result()
             .setLink("https://google.com")
             .setIndex("eatlas_extlinks")
             .setTitle("Google search engine")
             .setScore(12)
             .setDocument("<p>Google Search, I'm Feeling Lucky.</p>")
             .setThumbnail("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif")
-            .setLangcode("en");
-
-        Results results = new Results();
-        results.addResult(resultNode4);
-        results.addResult(resultGoogle);
+            .setLangcode("en")
+        );
 
         Random random = new Random();
         for (int i=0; i<200; i++) {
-            results.addResult(this.getRandomGoogleSearchResult(i+1, random));
+            results.add(this.getRandomGoogleSearchResult(i+1, random));
         }
 
         for (int i=0; i<50; i++) {
-            results.addResult(this.getRandomLayerSearchResult(i+1, random));
+            results.add(this.getRandomLayerSearchResult(i+1, random));
         }
-
-        List<Result> resultList = results.getResults();
-        results.setSummary(new Summary()
-            .setHits((long)resultList.size())
-            .setStart(start)
-            .putIndexSummary(new IndexSummary()
-                .setIndex("eatlas_node")
-                .setHits(1L))
-            .putIndexSummary(new IndexSummary()
-                .setIndex("eatlas_extlinks")
-                .setHits(201L))
-            .putIndexSummary(new IndexSummary()
-                .setIndex("eatlas_layer")
-                .setHits(50L))
-        );
-
-
-        // Filter search results
-
-        // Filter indexes
-        if (idx != null && !idx.isEmpty()) {
-            List<Result> newResultList = new ArrayList<Result>();
-            for (Result result : resultList) {
-                if (idx.contains(result.getIndex())) {
-                    newResultList.add(result);
-                }
-            }
-            resultList = newResultList;
-        }
-
-        // Filter page
-
-        // Trim the results, by doing a sequential search.
-        // That's pretty bad, but that method is a mockup...
-        List<Result> newResultList = new ArrayList<Result>();
-        int intStart = 0;
-        int intHits = 10;
-
-        if (start != null) {
-            intStart = start.intValue();
-        }
-        if (hits != null) {
-            intHits = hits.intValue();
-        }
-
-        for (int i = intStart; i < Math.min(intStart + intHits, resultList.size()); i++) {
-            newResultList.add(resultList.get(i));
-        }
-
-        results.setResults(newResultList);
 
         return results;
     }
