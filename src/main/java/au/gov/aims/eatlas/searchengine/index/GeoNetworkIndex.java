@@ -21,9 +21,15 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import org.json.JSONObject;
 
+import java.util.List;
+
 public class GeoNetworkIndex extends AbstractIndex<GeoNetworkRecord> {
     private String geoNetworkUrl;
     private String geoNetworkVersion;
+
+    public GeoNetworkIndex(String index) {
+        super(index);
+    }
 
     /**
      * index: eatlas_metadata
@@ -42,7 +48,24 @@ public class GeoNetworkIndex extends AbstractIndex<GeoNetworkRecord> {
     }
 
     @Override
-    public void harvest() {
+    public List<GeoNetworkRecord> harvest(int limit, int offset) {
         // TODO Implement
+        return null;
+    }
+
+    public String getGeoNetworkUrl() {
+        return this.geoNetworkUrl;
+    }
+
+    public void setGeoNetworkUrl(String geoNetworkUrl) {
+        this.geoNetworkUrl = geoNetworkUrl;
+    }
+
+    public String getGeoNetworkVersion() {
+        return this.geoNetworkVersion;
+    }
+
+    public void setGeoNetworkVersion(String geoNetworkVersion) {
+        this.geoNetworkVersion = geoNetworkVersion;
     }
 }

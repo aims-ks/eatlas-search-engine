@@ -20,8 +20,6 @@ package au.gov.aims.eatlas.searchengine.entity;
 
 import org.json.JSONObject;
 
-import java.io.IOException;
-
 public class ExternalLink extends Entity {
     private String title;
     private String url;
@@ -39,15 +37,6 @@ public class ExternalLink extends Entity {
         this.title = title;
         this.url = url;
     }
-
-    public void harvestHtmlContent() throws IOException {
-        this.htmlContent = EntityUtils.harvestURL(this.url);
-    }
-
-    public void extractTextContent() {
-        this.textContent = EntityUtils.extractTextContent(this.htmlContent);
-    }
-
 
     public String getTitle() {
         return this.title;

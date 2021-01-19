@@ -42,8 +42,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>Jersey REST Service</servlet-name>
-        <url-pattern>/search/*</url-pattern>
-        <url-pattern>/index/*</url-pattern>
+        <url-pattern>/public/*</url-pattern>
         <!-- TODO Add "index" to manage indexation (require authentication) -->
         <!-- TODO Add "test" to help develop search clients -->
     </servlet-mapping>

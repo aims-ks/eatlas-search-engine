@@ -20,26 +20,15 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
-import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 // TODO Move search outside. Search should be allowed to be run against any number of indexes at once
 public abstract class AbstractIndex<E extends Entity> {
@@ -52,7 +41,7 @@ public abstract class AbstractIndex<E extends Entity> {
     }
 
     public abstract E load(JSONObject json);
-    public abstract void harvest();
+    public abstract List<E> harvest(int limit, int offset) throws IOException;
 
     public String getIndex() {
         return this.index;
@@ -67,27 +56,6 @@ public abstract class AbstractIndex<E extends Entity> {
         return this.load(new JSONObject(response.getSource()));
     }
 
-    public List<SearchResult> search(ESClient client, String attribute, String needle, int from, int size)
-            throws IOException {
-
-        SearchResponse response = client.search(this.getSearchRequest(attribute, needle, from, size));
-        LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", index %s:%n%s",
-            needle, attribute, this.getIndex(), response.toString()));
-
-        List<SearchResult> results = new ArrayList<>();
-        SearchHits hits = response.getHits();
-        for (SearchHit hit : hits.getHits()) {
-            results.add(new SearchResult()
-                .setId(hit.getId())
-                .setIndex(hit.getIndex())
-                .setScore(hit.getScore())
-                .addHighlights(hit.getHighlightFields())
-            );
-        }
-
-        return results;
-    }
-
     // Low level
 
     public IndexRequest getIndexRequest(E entity) {
@@ -99,22 +67,5 @@ public abstract class AbstractIndex<E extends Entity> {
     public GetRequest getGetRequest(String id) {
         return new GetRequest(this.getIndex())
             .id(id);
-    }
-
-    public SearchRequest getSearchRequest(String attribute, String needle, int from, int size) {
-        // Used to highlight search results in the field that was used with the search
-        HighlightBuilder highlightBuilder = new HighlightBuilder()
-            .field(attribute);
-
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
-            .query(QueryBuilders.matchQuery(attribute, needle))
-            .from(from) // Used to continue the search (get next page)
-            .size(size) // Number of results to return. Default = 10
-            .timeout(new TimeValue(60, TimeUnit.SECONDS))
-            .highlighter(highlightBuilder);
-
-        return new SearchRequest()
-            .indices(this.getIndex())
-            .source(sourceBuilder);
     }
 }

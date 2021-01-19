@@ -22,6 +22,7 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESTestClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndex;
+import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.index.IndexRequest;
@@ -32,13 +33,13 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.test.ESSingleNodeTestCase;
 import org.elasticsearch.test.hamcrest.ElasticsearchAssertions;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -101,48 +102,65 @@ public class IndexerTest extends ESSingleNodeTestCase {
 
     @Test
     public void testIndexExternalLinks() throws IOException {
-        List<ExternalLink> links = new ArrayList<>();
-
         ClassLoader classLoader = IndexerTest.class.getClassLoader();
+        String index = "eatlas_extlink";
 
-        ExternalLink seagrassWatchLink = new ExternalLink(
+        ExternalLinkIndex seagrassWatchLinkIndex = new ExternalLinkIndex(
+            index,
             "Tropical Seagrass Identification (Seagrass-Watch)",
             "https://www.seagrasswatch.org/idseagrass/"
         );
-        seagrassWatchLink.setHtmlContent(IOUtils.resourceToString(
+        ExternalLink seagrassWatchLink = seagrassWatchLinkIndex.internalHarvest(IOUtils.resourceToString(
                 "externalLinks/seagrasswatch.html", StandardCharsets.UTF_8, classLoader));
-        seagrassWatchLink.extractTextContent();
-        links.add(seagrassWatchLink);
 
-        ExternalLink coralsOfTheWorldLink = new ExternalLink(
+        ExternalLinkIndex coralsOfTheWorldLinkIndex = new ExternalLinkIndex(
+            index,
             "Corals of the World (AIMS)",
             "http://www.coralsoftheworld.org/"
         );
-        coralsOfTheWorldLink.setHtmlContent(IOUtils.resourceToString(
+        ExternalLink coralsOfTheWorldLink = coralsOfTheWorldLinkIndex.internalHarvest(IOUtils.resourceToString(
                 "externalLinks/coralsoftheworld.html", StandardCharsets.UTF_8, classLoader));
-        coralsOfTheWorldLink.extractTextContent();
-        links.add(coralsOfTheWorldLink);
 
         try (ESClient client = new ESTestClient(super.node().client())) {
-            ExternalLinkIndex externalLinkIndex = new ExternalLinkIndex("eatlas_extlink");
+            seagrassWatchLinkIndex.index(client, seagrassWatchLink);
+            coralsOfTheWorldLinkIndex.index(client, coralsOfTheWorldLink);
 
-            for (ExternalLink link : links) {
-                externalLinkIndex.index(client, link);
-            }
             // Wait for ElasticSearch to finish its indexation
-            client.refresh(externalLinkIndex.getIndex());
+            client.refresh(index);
 
-            ExternalLink link = externalLinkIndex.get(client, "http://www.coralsoftheworld.org/");
+            ExternalLinkIndex searchIndex = new ExternalLinkIndex(index);
+            ExternalLink link = searchIndex.get(client, "http://www.coralsoftheworld.org/");
 
-            System.out.println(link.toString());
+            // Verify the link retrieved from the index
+            Assert.assertNotNull("Link retrieved from the search index is null", link);
+            Assert.assertEquals("Link retrieved from the search index has wrong title",
+                    "Corals of the World (AIMS)", link.getTitle());
 
-            List<SearchResult> searchResults = externalLinkIndex.search(client, "textContent", "of", 0, 10);
+            List<SearchResult> searchResults = Search.search(client, "textContent", "of", 0, 10, index);
 
-            System.out.println("foundLinks:");
             for (SearchResult searchResult : searchResults) {
-                link = externalLinkIndex.get(client, searchResult.getId());
-                System.out.println(searchResult.getHighlight());
-                System.out.println(link.toString());
+                link = new ExternalLinkIndex(index).get(client, searchResult.getId());
+                Assert.assertNotNull("Link found with index search is null", link);
+                switch (link.getId()) {
+                    case "http://www.coralsoftheworld.org/":
+                        Assert.assertEquals(String.format("Link %s found with index search has wrong title", link.getId()),
+                            "Corals of the World (AIMS)", link.getTitle());
+
+                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", link.getId(), searchResult.getHighlight()),
+                            searchResult.getHighlight().contains("Donate Go Toggle navigation Corals <em>of</em> the World"));
+                        break;
+
+                    case "https://www.seagrasswatch.org/idseagrass/":
+                        Assert.assertEquals(String.format("Link %s found with index search has wrong title", link.getId()),
+                            "Tropical Seagrass Identification (Seagrass-Watch)", link.getTitle());
+
+                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", link.getId(), searchResult.getHighlight()),
+                            searchResult.getHighlight().contains("From the advice <em>of</em> Dr Don Les"));
+                        break;
+
+                    default:
+                        Assert.fail(String.format("Unexpected ID found: %s", link.getId()));
+                }
             }
         }
     }

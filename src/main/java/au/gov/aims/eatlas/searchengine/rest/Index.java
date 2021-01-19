@@ -33,7 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-@Path("/v1")
+@Path("/index/v1")
 public class Index {
     private static final Logger LOGGER = Logger.getLogger(Index.class.getName());
 

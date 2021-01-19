@@ -18,17 +18,30 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
+    private String title;
+    private String url;
+
+    public ExternalLinkIndex(String index) {
+        super(index);
+    }
 
     /**
      * index: eatlas_extlink
      * url: http://www.csiro.au/connie2/
      */
-    public ExternalLinkIndex(String index) {
+    public ExternalLinkIndex(String index, String title, String url) {
         super(index);
+        this.title = title;
+        this.url = url;
     }
 
     @Override
@@ -36,8 +49,48 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
         return new ExternalLink(json);
     }
 
+    /**
+     * NOTE: Harvest for external links is a bit special
+     *   since there is always only one entity to harvest.
+     */
     @Override
-    public void harvest() {
-        // TODO Implement
+    public List<ExternalLink> harvest(int limit, int offset) throws IOException {
+        List<ExternalLink> entityList = new ArrayList<>();
+
+        ExternalLink entity = this.internalHarvest(this.harvestHtmlContent());
+        entityList.add(entity);
+
+        return entityList;
+    }
+
+    public ExternalLink internalHarvest(String htmlContent) throws IOException {
+        ExternalLink entity = new ExternalLink(this.title, this.url);
+        entity.setHtmlContent(htmlContent);
+        entity.setTextContent(this.extractTextContent(htmlContent));
+        return entity;
+    }
+
+    public String harvestHtmlContent() throws IOException {
+        return EntityUtils.harvestURL(this.url);
+    }
+
+    public String extractTextContent(String htmlContent) {
+        return EntityUtils.extractTextContent(htmlContent);
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getUrl() {
+        return this.url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

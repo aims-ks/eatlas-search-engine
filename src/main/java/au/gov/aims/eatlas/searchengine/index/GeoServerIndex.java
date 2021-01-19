@@ -21,9 +21,15 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.entity.GeoServerLayer;
 import org.json.JSONObject;
 
+import java.util.List;
+
 public class GeoServerIndex extends AbstractIndex<GeoServerLayer> {
     private String geoServerUrl;
     private String geoServerVersion;
+
+    public GeoServerIndex(String index) {
+        super(index);
+    }
 
     /**
      * index: eatlas_layer
@@ -42,7 +48,24 @@ public class GeoServerIndex extends AbstractIndex<GeoServerLayer> {
     }
 
     @Override
-    public void harvest() {
+    public List<GeoServerLayer> harvest(int limit, int offset) {
         // TODO Implement
+        return null;
+    }
+
+    public String getGeoServerUrl() {
+        return this.geoServerUrl;
+    }
+
+    public void setGeoServerUrl(String geoServerUrl) {
+        this.geoServerUrl = geoServerUrl;
+    }
+
+    public String getGeoServerVersion() {
+        return this.geoServerVersion;
+    }
+
+    public void setGeoServerVersion(String geoServerVersion) {
+        this.geoServerVersion = geoServerVersion;
     }
 }

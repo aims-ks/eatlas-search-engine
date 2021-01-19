@@ -18,12 +18,19 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import org.json.JSONObject;
 
-public class DrupalNodeIndex extends AbstractIndex<au.gov.aims.eatlas.searchengine.entity.DrupalNode> {
+import java.util.List;
+
+public class DrupalNodeIndex extends AbstractIndex<DrupalNode> {
     private String drupalUrl;
     private String drupalVersion;
     private String drupalNodeType;
+
+    public DrupalNodeIndex(String index) {
+        super(index);
+    }
 
     /**
      * index: eatlas-article
@@ -44,9 +51,33 @@ public class DrupalNodeIndex extends AbstractIndex<au.gov.aims.eatlas.searchengi
     }
 
     @Override
-    public void harvest() {
+    public List<DrupalNode> harvest(int limit, int offset) {
         // TODO Implement
         // http://localhost:9090/jsonapi/node/article?sort=-changed&page[limit]=10&page[offset]=10
+        return null;
     }
 
+    public String getDrupalUrl() {
+        return this.drupalUrl;
+    }
+
+    public void setDrupalUrl(String drupalUrl) {
+        this.drupalUrl = drupalUrl;
+    }
+
+    public String getDrupalVersion() {
+        return this.drupalVersion;
+    }
+
+    public void setDrupalVersion(String drupalVersion) {
+        this.drupalVersion = drupalVersion;
+    }
+
+    public String getDrupalNodeType() {
+        return this.drupalNodeType;
+    }
+
+    public void setDrupalNodeType(String drupalNodeType) {
+        this.drupalNodeType = drupalNodeType;
+    }
 }

@@ -25,17 +25,17 @@ import java.util.Map;
 
 public class Summary {
     // Total number of search results returned by the search query
-    private Long hits;
+    private Integer hits;
 
     private Map<String, IndexSummary> indexSummaries;
 
-    private Long start;
+    private Integer start;
 
-    public Long getHits() {
+    public Integer getHits() {
         return this.hits;
     }
 
-    public Summary setHits(Long hits) {
+    public Summary setHits(Integer hits) {
         this.hits = hits;
         return this;
     }
@@ -58,11 +58,11 @@ public class Summary {
         return this;
     }
 
-    public Long getStart() {
+    public Integer getStart() {
         return this.start;
     }
 
-    public Summary setStart(Long start) {
+    public Summary setStart(Integer start) {
         this.start = start;
         return this;
     }
