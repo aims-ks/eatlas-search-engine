@@ -21,14 +21,23 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import org.json.JSONObject;
 
-public class ExternalLinks extends AbstractIndex<ExternalLink> {
-    @Override
-    public String getIndex() {
-        return "ext_link";
+public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
+
+    /**
+     * index: eatlas_extlink
+     * url: http://www.csiro.au/connie2/
+     */
+    public ExternalLinkIndex(String index) {
+        super(index);
     }
 
     @Override
     public ExternalLink load(JSONObject json) {
         return new ExternalLink(json);
+    }
+
+    @Override
+    public void harvest() {
+        // TODO Implement
     }
 }

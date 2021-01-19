@@ -21,14 +21,28 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.entity.GeoServerLayer;
 import org.json.JSONObject;
 
-public class GeoServer extends AbstractIndex<GeoServerLayer> {
-    @Override
-    public String getIndex() {
-        return "geoserver";
+public class GeoServerIndex extends AbstractIndex<GeoServerLayer> {
+    private String geoServerUrl;
+    private String geoServerVersion;
+
+    /**
+     * index: eatlas_layer
+     * geoServerUrl: https://maps.eatlas.org.au/maps
+     * geoServerVersion: 2.13.2
+     */
+    public GeoServerIndex(String index, String geoServerUrl, String geoServerVersion) {
+        super(index);
+        this.geoServerUrl = geoServerUrl;
+        this.geoServerVersion = geoServerVersion;
     }
 
     @Override
     public GeoServerLayer load(JSONObject json) {
         return new GeoServerLayer(json);
+    }
+
+    @Override
+    public void harvest() {
+        // TODO Implement
     }
 }

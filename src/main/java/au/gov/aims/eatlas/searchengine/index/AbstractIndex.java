@@ -45,8 +45,18 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractIndex<E extends Entity> {
     private static final Logger LOGGER = Logger.getLogger(AbstractIndex.class.getName());
 
-    public abstract String getIndex();
+    private String index;
+
+    public AbstractIndex(String index) {
+        this.index = index;
+    }
+
     public abstract E load(JSONObject json);
+    public abstract void harvest();
+
+    public String getIndex() {
+        return this.index;
+    }
 
     public IndexResponse index(ESClient client, E entity) throws IOException {
          return client.index(this.getIndexRequest(entity));

@@ -190,11 +190,11 @@ public class Search {
             .setStart(start)
 
             .putIndexSummary(new IndexSummary()
-                .setIndex("eatlas_node")
-                .setHits(this.countIndexResults(resultList, "eatlas_node")))
+                .setIndex("eatlas_article")
+                .setHits(this.countIndexResults(resultList, "eatlas_article")))
             .putIndexSummary(new IndexSummary()
-                .setIndex("eatlas_extlinks")
-                .setHits(this.countIndexResults(resultList, "eatlas_extlinks")))
+                .setIndex("eatlas_extlink")
+                .setHits(this.countIndexResults(resultList, "eatlas_extlink")))
             .putIndexSummary(new IndexSummary()
                 .setIndex("eatlas_layer")
                 .setHits(this.countIndexResults(resultList, "eatlas_layer")))
@@ -239,7 +239,7 @@ public class Search {
 
         results.add(new SearchResult()
             .setLink("http://localhost:9090/node/4")
-            .setIndex("eatlas_node")
+            .setIndex("eatlas_article")
             .setTitle("A guide to Indigenous science, management and governance of Australian coastal waters")
             .setScore(23)
             .setDocument(
@@ -802,7 +802,7 @@ public class Search {
 
         results.add(new SearchResult()
             .setLink("https://google.com")
-            .setIndex("eatlas_extlinks")
+            .setIndex("eatlas_extlink")
             .setTitle("Google search engine")
             .setScore(12)
             .setDocument("<p>Google Search, I'm Feeling Lucky.</p>")
@@ -827,7 +827,7 @@ public class Search {
 
         return new SearchResult()
             .setLink(String.format("https://www.google.com/search?q=%s", randomSearchTerm))
-            .setIndex("eatlas_extlinks")
+            .setIndex("eatlas_extlink")
             .setTitle(String.format("Google search %d for %s", index, randomSearchTerm))
             .setScore(12)
             .setDocument(

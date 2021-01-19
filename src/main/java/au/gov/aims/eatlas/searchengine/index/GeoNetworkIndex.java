@@ -21,14 +21,28 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import org.json.JSONObject;
 
-public class GeoNetwork extends AbstractIndex<GeoNetworkRecord> {
-    @Override
-    public String getIndex() {
-        return "geonetwork";
+public class GeoNetworkIndex extends AbstractIndex<GeoNetworkRecord> {
+    private String geoNetworkUrl;
+    private String geoNetworkVersion;
+
+    /**
+     * index: eatlas_metadata
+     * geoNetworkUrl: https://eatlas.org.au/geonetwork
+     * geoNetworkVersion: 3.6.0 ?
+     */
+    public GeoNetworkIndex(String index, String geoNetworkUrl, String geoNetworkVersion) {
+        super(index);
+        this.geoNetworkUrl = geoNetworkUrl;
+        this.geoNetworkVersion = geoNetworkVersion;
     }
 
     @Override
     public GeoNetworkRecord load(JSONObject json) {
         return new GeoNetworkRecord(json);
+    }
+
+    @Override
+    public void harvest() {
+        // TODO Implement
     }
 }

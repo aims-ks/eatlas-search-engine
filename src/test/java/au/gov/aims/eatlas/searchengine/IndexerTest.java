@@ -21,7 +21,7 @@ package au.gov.aims.eatlas.searchengine;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESTestClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
-import au.gov.aims.eatlas.searchengine.index.ExternalLinks;
+import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndex;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.index.IndexRequest;
@@ -124,23 +124,23 @@ public class IndexerTest extends ESSingleNodeTestCase {
         links.add(coralsOfTheWorldLink);
 
         try (ESClient client = new ESTestClient(super.node().client())) {
-            ExternalLinks externalLinks = new ExternalLinks();
+            ExternalLinkIndex externalLinkIndex = new ExternalLinkIndex("eatlas_extlink");
 
             for (ExternalLink link : links) {
-                externalLinks.index(client, link);
+                externalLinkIndex.index(client, link);
             }
             // Wait for ElasticSearch to finish its indexation
-            client.refresh(externalLinks.getIndex());
+            client.refresh(externalLinkIndex.getIndex());
 
-            ExternalLink link = externalLinks.get(client, "http://www.coralsoftheworld.org/");
+            ExternalLink link = externalLinkIndex.get(client, "http://www.coralsoftheworld.org/");
 
             System.out.println(link.toString());
 
-            List<SearchResult> searchResults = externalLinks.search(client, "textContent", "of", 0, 10);
+            List<SearchResult> searchResults = externalLinkIndex.search(client, "textContent", "of", 0, 10);
 
             System.out.println("foundLinks:");
             for (SearchResult searchResult : searchResults) {
-                link = externalLinks.get(client, searchResult.getId());
+                link = externalLinkIndex.get(client, searchResult.getId());
                 System.out.println(searchResult.getHighlight());
                 System.out.println(link.toString());
             }

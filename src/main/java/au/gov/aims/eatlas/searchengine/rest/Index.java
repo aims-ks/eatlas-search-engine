@@ -68,4 +68,15 @@ public class Index {
         // Return the JSON array with a OK status.
         return Response.ok(responseTxt).cacheControl(noCache).build();
     }
+
+
+    // NOTE: To index Drupal nodes, the following core modules needs to be enabled:
+    // - WEB SERVICES
+    //   - [X] JSON:API
+    //   - [X] Serialization
+    // URL: http://localhost:9090/jsonapi/node/article
+    //   http://localhost:9090/jsonapi/node/article?sort=-changed
+    //   http://localhost:9090/jsonapi/node/article?sort=-changed&page[limit]=10&page[offset]=10
+    // NOTE:
+    //   The search engine will need to do a complete re-harvest once in a while to remove deleted nodes
 }
