@@ -27,41 +27,41 @@ import java.util.List;
 /**
  * Bean used to hold the results of a search, and its summary
  */
-public class Results {
+public class SearchResults {
     private Summary summary;
-    private List<Result> results;
+    private List<SearchResult> searchResults;
 
     public Summary getSummary() {
         return this.summary;
     }
 
-    public Results setSummary(Summary summary) {
+    public SearchResults setSummary(Summary summary) {
         this.summary = summary;
         return this;
     }
 
-    public List<Result> getResults() {
-        return this.results;
+    public List<SearchResult> getSearchResults() {
+        return this.searchResults;
     }
 
-    public Results setResults(List<Result> results) {
-        this.results = results;
+    public SearchResults setSearchResults(List<SearchResult> searchResults) {
+        this.searchResults = searchResults;
         return this;
     }
 
-    public Results addResult(Result result) {
-        if (this.results == null) {
-            this.results = new ArrayList<Result>();
+    public SearchResults addSearchResult(SearchResult searchResult) {
+        if (this.searchResults == null) {
+            this.searchResults = new ArrayList<SearchResult>();
         }
 
-        this.results.add(result);
+        this.searchResults.add(searchResult);
         return this;
     }
 
     public JSONObject toJSON() {
         JSONArray jsonResults = new JSONArray();
-        if (this.results != null) {
-            for (Result result : this.results) {
+        if (this.searchResults != null) {
+            for (SearchResult result : this.searchResults) {
                 jsonResults.put(result.toJSON());
             }
         }

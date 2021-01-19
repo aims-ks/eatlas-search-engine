@@ -18,17 +18,25 @@
  */
 package au.gov.aims.eatlas.searchengine.search;
 
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Bean used to hold a search result
  */
-public class Result {
+public class SearchResult {
     // URL to follow to access the indexed document
+    private String id;
     private String link;
 
     private String title;
     private String document;
+    private List<String> highlights;
 
     // The index in which the result was found
     private String index;
@@ -43,11 +51,20 @@ public class Result {
     // "en"
     private String langcode;
 
+    public String getId() {
+        return this.id;
+    }
+
+    public SearchResult setId(String id) {
+        this.id = id;
+        return this;
+    }
+
     public String getLink() {
         return this.link;
     }
 
-    public Result setLink(String link) {
+    public SearchResult setLink(String link) {
         this.link = link;
         return this;
     }
@@ -56,7 +73,7 @@ public class Result {
         return this.title;
     }
 
-    public Result setTitle(String title) {
+    public SearchResult setTitle(String title) {
         this.title = title;
         return this;
     }
@@ -65,16 +82,54 @@ public class Result {
         return this.document;
     }
 
-    public Result setDocument(String document) {
+    public SearchResult setDocument(String document) {
         this.document = document;
         return this;
+    }
+
+    public List<String> getHighlights() {
+        return this.highlights;
+    }
+
+    public SearchResult addHighlight(String highlight) {
+        if (this.highlights == null) {
+            this.highlights = new ArrayList<String>();
+        }
+        this.highlights.add(highlight);
+        return this;
+    }
+
+    // Helper
+    public SearchResult addHighlights(Map<String, HighlightField> highlightsMap) {
+        if (highlightsMap != null) {
+            for (HighlightField highlightField : highlightsMap.values()) {
+                Text[] fragments = highlightField.fragments();
+                if (fragments != null) {
+                    for (Text fragment : fragments) {
+                        this.addHighlight(fragment.string());
+                    }
+                }
+            }
+        }
+        return this;
+    }
+
+    public String getHighlight() {
+        return this.getHighlight(" […] ");
+    }
+
+    public String getHighlight(String delimiter) {
+        if (this.highlights == null) {
+            return null;
+        }
+        return String.join(delimiter, this.highlights);
     }
 
     public String getIndex() {
         return this.index;
     }
 
-    public Result setIndex(String index) {
+    public SearchResult setIndex(String index) {
         this.index = index;
         return this;
     }
@@ -83,7 +138,7 @@ public class Result {
         return this.score;
     }
 
-    public Result setScore(float score) {
+    public SearchResult setScore(float score) {
         this.score = score;
         return this;
     }
@@ -92,7 +147,7 @@ public class Result {
         return this.thumbnail;
     }
 
-    public Result setThumbnail(String thumbnail) {
+    public SearchResult setThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
         return this;
     }
@@ -101,18 +156,20 @@ public class Result {
         return this.langcode;
     }
 
-    public Result setLangcode(String langcode) {
+    public SearchResult setLangcode(String langcode) {
         this.langcode = langcode;
         return this;
     }
 
     public JSONObject toJSON() {
         return new JSONObject()
+            .put("id", this.id)
             .put("link", this.link)
             .put("index", this.index)
             .put("title", this.title)
             .put("score", this.score)
             .put("document", this.document)
+            .put("highlights", this.highlights)
             .put("thumbnail", this.thumbnail)
             .put("langcode", this.langcode);
     }

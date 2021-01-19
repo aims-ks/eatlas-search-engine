@@ -22,7 +22,7 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESTestClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinks;
-import au.gov.aims.eatlas.searchengine.index.SearchResult;
+import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;

@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
+import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -66,9 +67,12 @@ public abstract class AbstractIndex<E extends Entity> {
         List<SearchResult> results = new ArrayList<>();
         SearchHits hits = response.getHits();
         for (SearchHit hit : hits.getHits()) {
-            SearchResult searchResult = new SearchResult(hit.getIndex(), hit.getId(), hit.getScore());
-            searchResult.addHighlights(hit.getHighlightFields());
-            results.add(searchResult);
+            results.add(new SearchResult()
+                .setId(hit.getId())
+                .setIndex(hit.getIndex())
+                .setScore(hit.getScore())
+                .addHighlights(hit.getHighlightFields())
+            );
         }
 
         return results;

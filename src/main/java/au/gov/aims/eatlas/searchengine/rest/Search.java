@@ -20,8 +20,8 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.search.ErrorMessage;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
-import au.gov.aims.eatlas.searchengine.search.Result;
-import au.gov.aims.eatlas.searchengine.search.Results;
+import au.gov.aims.eatlas.searchengine.search.SearchResult;
+import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -54,7 +54,7 @@ public class Search {
             @QueryParam("hits") Long hits,
             @QueryParam("idx") List<String> idx, // List of indexes used for the summary
             @QueryParam("fidx") List<String> fidx // List of indexes to filter the search results (optional)
-            ) {
+    ) {
 
         LOGGER.log(Level.WARN, "q: " + q);
         LOGGER.log(Level.WARN, "start: " + start);
@@ -67,7 +67,7 @@ public class Search {
         }
 
         // TODO Do a real search!
-        Results results = this.getNoSearchResults(start, hits);
+        SearchResults results = this.getNoSearchResults(start, hits);
 
         // Fake search to test search client (Drupal)
         // - "lorem" or "ipsum": Returns 200+ fake search results.
@@ -122,8 +122,8 @@ public class Search {
      * @deprecated Used to test, do not forget to delete!
      */
     @Deprecated
-    private Results getNoSearchResults(Long start, Long hits) {
-        Results results = new Results();
+    private SearchResults getNoSearchResults(Long start, Long hits) {
+        SearchResults results = new SearchResults();
 
         results.setSummary(new Summary()
             .setHits(0L)
@@ -134,16 +134,16 @@ public class Search {
     }
 
     @Deprecated
-    private Results getFakeSearchResults(Long start, Long hits, List<String> idx, List<String> fidx) {
+    private SearchResults getFakeSearchResults(Long start, Long hits, List<String> idx, List<String> fidx) {
         // Get every single fake search results, even the one for indexes the website do not care about
-        List<Result> resultList = this.getAllFakeSearchResults();
+        List<SearchResult> resultList = this.getAllFakeSearchResults();
 
         // Filter search results
 
         // Filter indexes (all searchable indexes)
         if (idx != null && !idx.isEmpty()) {
-            List<Result> newResultList = new ArrayList<Result>();
-            for (Result result : resultList) {
+            List<SearchResult> newResultList = new ArrayList<SearchResult>();
+            for (SearchResult result : resultList) {
                 if (idx.contains(result.getIndex())) {
                     newResultList.add(result);
                 }
@@ -152,10 +152,10 @@ public class Search {
         }
 
         // Filter indexes (for current search)
-        List<Result> filteredResultList = resultList;
+        List<SearchResult> filteredResultList = resultList;
         if (fidx != null && !fidx.isEmpty()) {
-            filteredResultList = new ArrayList<Result>();
-            for (Result result : resultList) {
+            filteredResultList = new ArrayList<SearchResult>();
+            for (SearchResult result : resultList) {
                 if (fidx.contains(result.getIndex())) {
                     filteredResultList.add(result);
                 }
@@ -166,7 +166,7 @@ public class Search {
 
         // Trim the results, by doing a sequential search.
         // That's pretty bad, but that method is a mockup...
-        List<Result> newResultList = new ArrayList<Result>();
+        List<SearchResult> newResultList = new ArrayList<SearchResult>();
         int intStart = 0;
         int intHits = 10;
 
@@ -182,8 +182,8 @@ public class Search {
         }
 
 
-        Results results = new Results();
-        results.setResults(newResultList);
+        SearchResults results = new SearchResults();
+        results.setSearchResults(newResultList);
 
         results.setSummary(new Summary()
             .setHits((long)resultList.size())
@@ -206,12 +206,12 @@ public class Search {
         return results;
     }
 
-    private long countIndexResults(List<Result> resultList, String index) {
+    private long countIndexResults(List<SearchResult> resultList, String index) {
         long count = 0;
         if (index != null) {
             index = index.trim();
             if (!index.isEmpty()) {
-                for (Result result : resultList) {
+                for (SearchResult result : resultList) {
                     if (index.equals(result.getIndex())) {
                         count++;
                     }
@@ -224,10 +224,10 @@ public class Search {
     /**
      * Return a list of results
      */
-    private List<Result> getAllFakeSearchResults() {
-        List<Result> results = new ArrayList<Result>();
+    private List<SearchResult> getAllFakeSearchResults() {
+        List<SearchResult> results = new ArrayList<SearchResult>();
 
-        results.add(new Result()
+        results.add(new SearchResult()
             .setLink("https://broken.bad/should/not/appear/in/search/results/")
             .setIndex("eatlas_broken")
             .setTitle("This should not appear in search results")
@@ -237,7 +237,7 @@ public class Search {
             .setLangcode("en")
         );
 
-        results.add(new Result()
+        results.add(new SearchResult()
             .setLink("http://localhost:9090/node/4")
             .setIndex("eatlas_node")
             .setTitle("A guide to Indigenous science, management and governance of Australian coastal waters")
@@ -800,7 +800,7 @@ public class Search {
             .setLangcode("en")
         );
 
-        results.add(new Result()
+        results.add(new SearchResult()
             .setLink("https://google.com")
             .setIndex("eatlas_extlinks")
             .setTitle("Google search engine")
@@ -822,10 +822,10 @@ public class Search {
         return results;
     }
 
-    private Result getRandomGoogleSearchResult(int index, Random random) {
+    private SearchResult getRandomGoogleSearchResult(int index, Random random) {
         String randomSearchTerm = this.getRandomWord(random);
 
-        return new Result()
+        return new SearchResult()
             .setLink(String.format("https://www.google.com/search?q=%s", randomSearchTerm))
             .setIndex("eatlas_extlinks")
             .setTitle(String.format("Google search %d for %s", index, randomSearchTerm))
@@ -838,10 +838,10 @@ public class Search {
             .setLangcode("en");
     }
 
-    private Result getRandomLayerSearchResult(int index, Random random) {
+    private SearchResult getRandomLayerSearchResult(int index, Random random) {
         String randomLayerName = "ea_" + this.getRandomWord(random);
 
-        return new Result()
+        return new SearchResult()
             .setLink(String.format("https://maps.eatlas.org.au/index.html?intro=false&z=7&ll=148.00000,-18.00000&l0=%s,ea_ea-be%%3AWorld_Bright-Earth-e-Atlas-basemap", randomLayerName))
             .setIndex("eatlas_layer")
             .setTitle(String.format("GeoServer random layer %d is %s", index, randomLayerName))
