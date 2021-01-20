@@ -117,7 +117,7 @@ public class EntityUtilsTest {
         };
 
         for (String[] expectedPair : expected) {
-            String textContent = EntityUtils.extractTextContent(expectedPair[0]);
+            String textContent = EntityUtils.extractHTMLTextContent(expectedPair[0]);
             Assert.assertEquals(expectedPair[1], textContent);
         }
     }

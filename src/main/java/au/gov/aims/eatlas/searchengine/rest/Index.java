@@ -37,7 +37,7 @@ import java.util.List;
 public class Index {
     private static final Logger LOGGER = Logger.getLogger(Index.class.getName());
 
-    // TODO Require login!
+    // TODO Require login?
     @GET
     @Path("status")
     @Produces(MediaType.APPLICATION_JSON)
@@ -51,8 +51,8 @@ public class Index {
         }
 
         // TODO Implement
-        long remaining = 5;
-        long total = 1024;
+        int remaining = 5;
+        int total = 1024;
 
         JSONObject jsonStatus = new JSONObject()
             .put("remaining", remaining)

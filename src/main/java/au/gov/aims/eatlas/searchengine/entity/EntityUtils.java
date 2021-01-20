@@ -18,45 +18,116 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import org.apache.log4j.Logger;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.Locale;
 
 public class EntityUtils {
+    private static final Logger LOGGER = Logger.getLogger(EntityUtils.class.getName());
 
     public static String harvestURL(URL url) throws IOException {
         return url == null ? null : EntityUtils.harvestURL(url.toString());
     }
 
     public static String harvestURL(String url) throws IOException {
-        // Get a HTML document.
-        // NOTE: JSoup takes care of following redirections.
-        //     IOUtils.toString(URL, Charset) does not.
-        // NOTE 2: Body in this case is the body of the response.
+        LOGGER.debug(String.format("Harvesting URL body: %s", url));
+
+        // Get a HTTP document.
+        // NOTE: Body in this case is the body of the response.
         //     It's the entire HTML document, not just the content
         //     of the HTML body element.
-        // NOTE 3: JSoup is quite picky with content types (aka mimetype).
-        //     It only allows text/*, application/xml, or application/*+xml
-        //     Some websites could be setup with wrong content type.
-        //     We use "ignoreContentType" to workaround this issue.
-        return Jsoup
-                .connect(url)
-                .ignoreContentType(true)
+        return EntityUtils.getJsoupConnection(url)
                 .execute()
                 .body();
     }
 
-    public static String extractTextContent(String htmlDocumentStr) {
+    public static String harvestURLText(String url) throws IOException {
+        LOGGER.debug(String.format("Harvesting URL text: %s", url));
+
+        Connection.Response response = EntityUtils.getJsoupConnection(url)
+                .execute();
+
+        String mimetype = response.contentType();
+        if (mimetype == null) {
+            return response.body();
+        }
+
+        mimetype = mimetype.trim().toLowerCase(Locale.ENGLISH);
+
+        if (mimetype.contains("text/html")) {
+            return EntityUtils.extractHTMLTextContent(response.body());
+        }
+
+        if (mimetype.contains("application/pdf")) {
+            return EntityUtils.extractPDFTextContent(response.bodyAsBytes());
+        }
+
+        LOGGER.warn(String.format("Unsupported mimetype: %s", mimetype));
+        return response.body();
+    }
+
+    private static Connection getJsoupConnection(String url) {
+        // NOTE: JSoup takes care of following redirections.
+        //     IOUtils.toString(URL, Charset) does not.
+        // NOTE 2: JSoup is quite picky with content types (aka mimetype).
+        //     It only allows text/*, application/xml, or application/*+xml
+        //     Some websites could be setup with wrong content type.
+        //     We use "ignoreContentType" to workaround this issue.
+        // NOTE 3: Use "ignoreHttpErrors" to make it more robust.
+        // NOTE 4: To deal with dodgy SSL certificates, add
+        //     custom sslSocketFactory
+        return Jsoup
+                .connect(url)
+                .ignoreHttpErrors(true)
+                .ignoreContentType(true)
+                .sslSocketFactory(EntityUtils.socketFactory());
+    }
+
+    private static SSLSocketFactory socketFactory() {
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+        }};
+
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new SecureRandom());
+            return sslContext.getSocketFactory();
+        } catch (Exception ex) {
+            LOGGER.error("Failed to create a SSL socket factory.", ex);
+            return null;
+        }
+    }
+
+    public static String extractHTMLTextContent(String htmlDocumentStr) {
         // JSoup is a HTML parsing library made to work with real life web documents.
         //     The parser handle broken HTML document the same way a browser would.
         Document document = Jsoup.parse(htmlDocumentStr);
 
         // Load the text content of the HTML body element.
         // NOTE: JSoup take care of converting HTML entities into UTF-8 characters.
-        String bodyText = document.body().text();
+        return document.body().text();
+    }
 
-        return bodyText;
+    public static String extractPDFTextContent(byte[] documentBytes) throws IOException {
+        try (PDDocument document = PDDocument.load(documentBytes)) {
+            return new PDFTextStripper().getText(document);
+        }
     }
 }

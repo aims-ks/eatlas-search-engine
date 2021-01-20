@@ -59,7 +59,7 @@ public class DrupalNode extends Entity {
 
         // Body
         JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
-        this.setDocument(jsonBody == null ? null : EntityUtils.extractTextContent(jsonBody.optString("processed", null)));
+        this.setDocument(jsonBody == null ? null : EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
 
         // Thumbnail (aka preview image)
         if (baseUrl != null) {

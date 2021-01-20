@@ -19,19 +19,15 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 import java.net.URL;
 
 public class ExternalLink extends Entity {
     private static final Logger LOGGER = Logger.getLogger(ExternalLink.class.getName());
 
-    private String htmlContent;
-
-    public ExternalLink(String urlStr, String title, String htmlContent, String textContent) {
+    public ExternalLink(String urlStr, String thumbnailUrlStr, String title, String textContent) {
         this.setId(urlStr);
         this.setTitle(title);
-        this.htmlContent = htmlContent;
         this.setDocument(textContent);
 
         if (urlStr != null) {
@@ -41,19 +37,13 @@ public class ExternalLink extends Entity {
                 LOGGER.error(String.format("Invalid external URL found: %s", urlStr), ex);
             }
         }
-    }
 
-    public String getHtmlContent() {
-        return this.htmlContent;
-    }
-
-    public void setHtmlContent(String htmlContent) {
-        this.htmlContent = htmlContent;
-    }
-
-    @Override
-    public JSONObject toJSON() {
-        return super.toJSON()
-            .put("htmlContent", this.htmlContent);
+        if (thumbnailUrlStr != null) {
+            try {
+                this.setThumbnail(new URL(thumbnailUrlStr));
+            } catch(Exception ex) {
+                LOGGER.error(String.format("Invalid external URL thumbnail found: %s", thumbnailUrlStr), ex);
+            }
+        }
     }
 }

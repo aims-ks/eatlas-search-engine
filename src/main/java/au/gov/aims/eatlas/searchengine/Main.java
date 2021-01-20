@@ -22,6 +22,8 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
+import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
+import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
@@ -31,15 +33,18 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Main {
 
     public static void main(String... args) throws IOException {
         //Main.testElasticSearch();
-        Main.loadDrupalArticles();
+        //Main.loadDrupalArticles();
+        Main.loadExternalLinks();
     }
 
     private static void testElasticSearch() throws IOException {
@@ -98,12 +103,77 @@ public class Main {
 
                     IndexRequest indexRequest = new IndexRequest(index)
                         .id(drupalNode.getId())
-                        .source(drupalNode.toJSON().toMap());
+                        .source(IndexUtils.JSONObjectToMap(drupalNode.toJSON()));
 
                     IndexResponse indexResponse = client.index(indexRequest);
 
                     System.out.println(String.format("Indexing node ID: %d, status: %d", drupalNode.getNid(), indexResponse.status().getStatus()));
                 }
+            }
+        }
+    }
+
+    private static void loadExternalLinks() throws IOException {
+        String index = "eatlas_extlink";
+
+        List<ExternalLink> externalLinks = new ArrayList<ExternalLink>();
+        externalLinks.add(new ExternalLink(
+            "http://www.csiro.au/connie2/",
+            "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/connie2-hydrodynamic-modelling.png?itok=gVbD37jD",
+            "Connie 2 Online interactive hydrodynamic modelling",
+            EntityUtils.harvestURLText("http://www.csiro.au/connie2/")
+        ));
+
+        externalLinks.add(new ExternalLink(
+            "https://doi.org/10.1002/aqc.3115",
+            "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/GBRMPA-GBRMP-zoning.jpg?itok=XNuZPHhB",
+            "Marine zoning revisited: How decades of zoning the Great Barrier Reef has evolved as an effective spatial planning approach for marine ecosystem based management",
+            EntityUtils.harvestURLText("https://doi.org/10.1002/aqc.3115")
+        ));
+
+        externalLinks.add(new ExternalLink(
+            "https://doi.org/10.1371/journal.pone.0221855",
+            "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/journal.pone_.0221855.g003.PNG?itok=TiczR9En",
+            "Preferences and perceptions of the recreational spearfishery of the Great Barrier Reef - Paper",
+            EntityUtils.harvestURLText("https://doi.org/10.1371/journal.pone.0221855")
+        ));
+
+        // PDF
+        externalLinks.add(new ExternalLink(
+            "https://research.csiro.au/seltmp/wp-content/uploads/sites/214/2019/06/SELTMP-ResidentsChangesReport-May2019.pdf",
+            "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/SELTMP-ResidentsChangesReport-May2019.jpg?itok=EANyhXRR",
+            "Changes among coastal residents of the Great Barrier Reef region from 2013 to 2017 - Social and Economic Long Term Monitoring Program (SELTMP)",
+            EntityUtils.harvestURLText("https://research.csiro.au/seltmp/wp-content/uploads/sites/214/2019/06/SELTMP-ResidentsChangesReport-May2019.pdf")
+        ));
+
+        externalLinks.add(new ExternalLink(
+            "http://marine.ga.gov.au",
+            "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/AusSeabed-marine-data-portal-preview.jpg?itok=4yFzhXHd",
+            "AusSeabed Marine Data Discovery portal",
+            EntityUtils.harvestURLText("http://marine.ga.gov.au")
+        ));
+
+        externalLinks.add(new ExternalLink(
+            "http://www.seagrasswatch.org/id_seagrass.html",
+            "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/shared/nerp-te/5-3/Seagrass%20Maggie%20Jan%20081.jpg?itok=cqHnl8-D",
+            "Tropical Seagrass Identification (Seagrass-Watch)",
+            EntityUtils.harvestURLText("http://www.seagrasswatch.org/id_seagrass.html")
+        ));
+
+        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9300, "http"))))) {
+
+            for (ExternalLink externalLink : externalLinks) {
+
+                IndexRequest indexRequest = new IndexRequest(index)
+                    .id(externalLink.getId())
+                    .source(IndexUtils.JSONObjectToMap(externalLink.toJSON()));
+
+                IndexResponse indexResponse = client.index(indexRequest);
+
+                System.out.println(String.format("Indexing URL: %s, status: %d", externalLink.getId(), indexResponse.status().getStatus()));
             }
         }
     }

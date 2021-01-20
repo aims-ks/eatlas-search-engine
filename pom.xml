@@ -84,6 +84,13 @@
             <version>1.13.1</version>
         </dependency>
 
+        <!-- Apache PDF parser -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.22</version>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>log4j</groupId>

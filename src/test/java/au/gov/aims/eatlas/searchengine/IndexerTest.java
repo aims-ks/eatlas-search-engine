@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESTestClient;
+import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndex;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndex;
@@ -34,7 +35,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.test.ESSingleNodeTestCase;
 import org.elasticsearch.test.hamcrest.ElasticsearchAssertions;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
@@ -110,19 +110,27 @@ public class IndexerTest extends ESSingleNodeTestCase {
 
         ExternalLinkIndex seagrassWatchLinkIndex = new ExternalLinkIndex(
             index,
-            "Tropical Seagrass Identification (Seagrass-Watch)",
-            "https://www.seagrasswatch.org/idseagrass/"
+            "https://www.seagrasswatch.org/idseagrass/",
+            null,
+            "Tropical Seagrass Identification (Seagrass-Watch)"
         );
-        ExternalLink seagrassWatchLink = seagrassWatchLinkIndex.internalHarvest(IOUtils.resourceToString(
+        String seagrassWatchLinkText = EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
                 "externalLinks/seagrasswatch.html", StandardCharsets.UTF_8, classLoader));
+        ExternalLink seagrassWatchLink = new ExternalLink(
+                seagrassWatchLinkIndex.getUrl(), seagrassWatchLinkIndex.getThumbnail(),
+                seagrassWatchLinkIndex.getTitle(), seagrassWatchLinkText);
 
         ExternalLinkIndex coralsOfTheWorldLinkIndex = new ExternalLinkIndex(
             index,
-            "Corals of the World (AIMS)",
-            "http://www.coralsoftheworld.org/"
+            "http://www.coralsoftheworld.org/",
+            null,
+            "Corals of the World (AIMS)"
         );
-        ExternalLink coralsOfTheWorldLink = coralsOfTheWorldLinkIndex.internalHarvest(IOUtils.resourceToString(
+        String coralsOfTheWorldLinkText = EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
                 "externalLinks/coralsoftheworld.html", StandardCharsets.UTF_8, classLoader));
+        ExternalLink coralsOfTheWorldLink = new ExternalLink(
+                coralsOfTheWorldLinkIndex.getUrl(), coralsOfTheWorldLinkIndex.getThumbnail(),
+                coralsOfTheWorldLinkIndex.getTitle(), coralsOfTheWorldLinkText);
 
         try (ESClient client = new ESTestClient(super.node().client())) {
             seagrassWatchLinkIndex.index(client, seagrassWatchLink);
@@ -131,7 +139,6 @@ public class IndexerTest extends ESSingleNodeTestCase {
             // Wait for ElasticSearch to finish its indexation
             client.refresh(index);
 
-            ExternalLinkIndex searchIndex = new ExternalLinkIndex(index);
             JSONObject jsonLink = AbstractIndex.get(client, index, "http://www.coralsoftheworld.org/");
 
             // Verify the link retrieved from the index
@@ -139,43 +146,45 @@ public class IndexerTest extends ESSingleNodeTestCase {
             Assert.assertEquals("Link retrieved from the search index has wrong title",
                     "Corals of the World (AIMS)", jsonLink.optString("title", null));
 
-            List<SearchResult> searchResults = Search.search(client, "textContent", "of", 0, 10, index);
+            // Check the search
+            List<SearchResult> searchResults = Search.search(client, "of", 0, 10, index);
+            Assert.assertEquals("Wrong number of search result", 2, searchResults.size());
 
+            int found = 0;
             for (SearchResult searchResult : searchResults) {
-                jsonLink = AbstractIndex.get(client, index, searchResult.getId());
-                Assert.assertNotNull("Link found with index search is null", jsonLink);
+                Assert.assertNotNull("Link found with index search is null", searchResult);
 
-                String id = jsonLink.optString("id", null);
-                String title = jsonLink.optString("title", null);
+                String id = searchResult.getId();
+                String title = searchResult.getTitle();
 
-                JSONArray jsonHighlights = jsonLink.optJSONArray("highlights");
-                String[] highlights = new String[jsonHighlights.length()];
-                for (int i=0; i<jsonHighlights.length(); i++) {
-                    highlights[i] = jsonHighlights.optString(i, null);
-                }
+                List<String> highlights = searchResult.getHighlights();
                 String highlight = String.join(" ", highlights);
 
                 switch (id) {
                     case "http://www.coralsoftheworld.org/":
+                        found++;
                         Assert.assertEquals(String.format("Link %s found with index search has wrong title", id),
                             "Corals of the World (AIMS)", title);
 
                         Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", id, highlight),
-                            highlight.contains("Donate Go Toggle navigation Corals <em>of</em> the World"));
+                            highlight.contains("Donate Go Toggle navigation Corals <strong>of</strong> the World"));
                         break;
 
                     case "https://www.seagrasswatch.org/idseagrass/":
+                        found++;
                         Assert.assertEquals(String.format("Link %s found with index search has wrong title", id),
                             "Tropical Seagrass Identification (Seagrass-Watch)", title);
 
                         Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", id, highlight),
-                            highlight.contains("From the advice <em>of</em> Dr Don Les"));
+                            highlight.contains("From the advice <strong>of</strong> Dr Don Les"));
                         break;
 
                     default:
                         Assert.fail(String.format("Unexpected ID found: %s", id));
                 }
             }
+
+            Assert.assertEquals("Some of the external links was not found.", 2, found);
         }
     }
 }

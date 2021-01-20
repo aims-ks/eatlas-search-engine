@@ -31,6 +31,7 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
 
     private String title;
     private String url;
+    private String thumbnail;
 
     public ExternalLinkIndex(String index) {
         super(index);
@@ -40,10 +41,11 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
      * index: eatlas_extlink
      * url: http://www.csiro.au/connie2/
      */
-    public ExternalLinkIndex(String index, String title, String url) {
+    public ExternalLinkIndex(String index, String url, String thumbnail, String title) {
         super(index);
         this.title = title;
         this.setUrl(url);
+        this.setThumbnail(thumbnail);
     }
 
     /**
@@ -54,14 +56,10 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
     public List<ExternalLink> harvest(int limit, int offset) throws IOException {
         List<ExternalLink> entityList = new ArrayList<>();
 
-        ExternalLink entity = this.internalHarvest(EntityUtils.harvestURL(this.url));
+        ExternalLink entity = new ExternalLink(this.url, this.thumbnail, this.title, EntityUtils.harvestURLText(this.url));
         entityList.add(entity);
 
         return entityList;
-    }
-
-    public ExternalLink internalHarvest(String htmlContent) {
-        return new ExternalLink(this.url, this.title, htmlContent, EntityUtils.extractTextContent(htmlContent));
     }
 
     public String getTitle() {
@@ -78,5 +76,13 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getThumbnail() {
+        return this.thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 }

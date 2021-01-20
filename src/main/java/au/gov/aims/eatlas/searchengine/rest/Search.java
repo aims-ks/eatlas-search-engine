@@ -110,8 +110,6 @@ public class Search {
 
         SearchResults results = new SearchResults();
 
-        // TODO Run elastic search first! Run main to test
-        //   https://hub.docker.com/_/elasticsearch
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("localhost", 9200, "http"),
@@ -125,9 +123,9 @@ public class Search {
 
             List<SearchResult> searchResults;
             if (fidx != null && !fidx.isEmpty()) {
-                searchResults = Search.search(client, "document", q, start, hits, fidx.toArray(new String[0]));
+                searchResults = Search.search(client, q, start, hits, fidx.toArray(new String[0]));
             } else {
-                searchResults = Search.search(client, "document", q, start, hits, idxArray);
+                searchResults = Search.search(client, q, start, hits, idxArray);
             }
 
             results.setSearchResults(searchResults);
@@ -192,10 +190,10 @@ public class Search {
     }
 
 
-    public static List<SearchResult> search(ESClient client, String attribute, String needle, int from, int size, String ... indexes)
+    public static List<SearchResult> search(ESClient client, String needle, int from, int size, String ... indexes)
             throws IOException {
 
-        SearchResponse response = client.search(Search.getSearchRequest(attribute, needle, from, size, indexes));
+        SearchResponse response = client.search(Search.getSearchRequest(needle, from, size, indexes));
 
         //LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", indexes %s:%n%s",
         //    needle, attribute, Arrays.toString(indexes), response.toString()));
@@ -223,15 +221,22 @@ public class Search {
         return results;
     }
 
-    public static SearchRequest getSearchRequest(String attribute, String needle, int from, int size, String ... indexes) {
+    /**
+     * Search in "document" and "title".
+     * The title have a 2x ranking boost.
+     */
+    public static SearchRequest getSearchRequest(String needle, int from, int size, String ... indexes) {
         // Used to highlight search results in the field that was used with the search
         HighlightBuilder highlightBuilder = new HighlightBuilder()
             .preTags("<strong>")
             .postTags("</strong>")
-            .field(attribute);
+            .field("document");
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
-            .query(QueryBuilders.matchQuery(attribute, needle))
+            // Search in document OR title
+            .query(QueryBuilders.boolQuery()
+                .should(QueryBuilders.matchQuery("title", needle).boost(2))
+                .should(QueryBuilders.matchQuery("document", needle)))
             .from(from) // Used to continue the search (get next page)
             .size(size) // Number of results to return. Default = 10
             .fetchSource(true)
