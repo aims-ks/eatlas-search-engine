@@ -19,7 +19,6 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -40,11 +39,6 @@ public class GeoNetworkIndex extends AbstractIndex<GeoNetworkRecord> {
         super(index);
         this.geoNetworkUrl = geoNetworkUrl;
         this.geoNetworkVersion = geoNetworkVersion;
-    }
-
-    @Override
-    public GeoNetworkRecord load(JSONObject json) {
-        return new GeoNetworkRecord(json);
     }
 
     @Override

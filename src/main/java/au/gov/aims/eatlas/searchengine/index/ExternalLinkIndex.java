@@ -20,13 +20,15 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
-import org.json.JSONObject;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
+    private static final Logger LOGGER = Logger.getLogger(ExternalLinkIndex.class.getName());
+
     private String title;
     private String url;
 
@@ -41,12 +43,7 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
     public ExternalLinkIndex(String index, String title, String url) {
         super(index);
         this.title = title;
-        this.url = url;
-    }
-
-    @Override
-    public ExternalLink load(JSONObject json) {
-        return new ExternalLink(json);
+        this.setUrl(url);
     }
 
     /**
@@ -57,25 +54,14 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
     public List<ExternalLink> harvest(int limit, int offset) throws IOException {
         List<ExternalLink> entityList = new ArrayList<>();
 
-        ExternalLink entity = this.internalHarvest(this.harvestHtmlContent());
+        ExternalLink entity = this.internalHarvest(EntityUtils.harvestURL(this.url));
         entityList.add(entity);
 
         return entityList;
     }
 
-    public ExternalLink internalHarvest(String htmlContent) throws IOException {
-        ExternalLink entity = new ExternalLink(this.title, this.url);
-        entity.setHtmlContent(htmlContent);
-        entity.setTextContent(this.extractTextContent(htmlContent));
-        return entity;
-    }
-
-    public String harvestHtmlContent() throws IOException {
-        return EntityUtils.harvestURL(this.url);
-    }
-
-    public String extractTextContent(String htmlContent) {
-        return EntityUtils.extractTextContent(htmlContent);
+    public ExternalLink internalHarvest(String htmlContent) {
+        return new ExternalLink(this.url, this.title, htmlContent, EntityUtils.extractTextContent(htmlContent));
     }
 
     public String getTitle() {

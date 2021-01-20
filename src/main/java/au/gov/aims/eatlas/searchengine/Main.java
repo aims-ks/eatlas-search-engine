@@ -20,11 +20,15 @@ package au.gov.aims.eatlas.searchengine;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
+import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
+import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;
@@ -34,11 +38,16 @@ import java.util.Map;
 public class Main {
 
     public static void main(String... args) throws IOException {
+        //Main.testElasticSearch();
+        Main.loadDrupalArticles();
+    }
+
+    private static void testElasticSearch() throws IOException {
         // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/java-rest-high-document-index.html
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9201, "http"))))) {
+                        new HttpHost("localhost", 9300, "http"))))) {
 
             Map<String, Object> jsonMap = new HashMap<>();
             jsonMap.put("user", "kimchy");
@@ -56,6 +65,46 @@ public class Main {
 
             System.out.println("index: " + index);
             System.out.println("id: " + id);
+        }
+    }
+
+    /**
+     * Load the first 10 Drupal article into elasticsearch index "eatlas-article"
+     * NOTE: The eAtlas website must be running:
+     *   $ cd Desktop/projects/eAtlas-redesign/2020-Drupal9/
+     *   $ docker-compose up
+     */
+    private static void loadDrupalArticles() throws IOException {
+        String index = "eatlas_article";
+
+        // URL to get first 10 last modified articles (using Drupal core module JSON:API)
+        String url = "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=10&page[offset]=0";
+
+
+        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9300, "http"))))) {
+
+            String responseStr = EntityUtils.harvestURL(url);
+            JSONObject jsonResponse = new JSONObject(responseStr);
+
+            JSONArray jsonArticles = jsonResponse.optJSONArray("data");
+            JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
+
+            if (jsonArticles != null) {
+                for (int i=0; i<jsonArticles.length(); i++) {
+                    DrupalNode drupalNode = new DrupalNode(jsonArticles.optJSONObject(i), jsonIncluded);
+
+                    IndexRequest indexRequest = new IndexRequest(index)
+                        .id(drupalNode.getId())
+                        .source(drupalNode.toJSON().toMap());
+
+                    IndexResponse indexResponse = client.index(indexRequest);
+
+                    System.out.println(String.format("Indexing node ID: %d, status: %d", drupalNode.getNid(), indexResponse.status().getStatus()));
+                }
+            }
         }
     }
 }

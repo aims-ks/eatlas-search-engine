@@ -22,17 +22,30 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.net.URL;
 
 public class EntityUtils {
+
+    public static String harvestURL(URL url) throws IOException {
+        return url == null ? null : EntityUtils.harvestURL(url.toString());
+    }
 
     public static String harvestURL(String url) throws IOException {
         // Get a HTML document.
         // NOTE: JSoup takes care of following redirections.
         //     IOUtils.toString(URL, Charset) does not.
-        // NOTE2: Body in this case is the body of the response.
+        // NOTE 2: Body in this case is the body of the response.
         //     It's the entire HTML document, not just the content
         //     of the HTML body element.
-        return Jsoup.connect(url).execute().body();
+        // NOTE 3: JSoup is quite picky with content types (aka mimetype).
+        //     It only allows text/*, application/xml, or application/*+xml
+        //     Some websites could be setup with wrong content type.
+        //     We use "ignoreContentType" to workaround this issue.
+        return Jsoup
+                .connect(url)
+                .ignoreContentType(true)
+                .execute()
+                .body();
     }
 
     public static String extractTextContent(String htmlDocumentStr) {

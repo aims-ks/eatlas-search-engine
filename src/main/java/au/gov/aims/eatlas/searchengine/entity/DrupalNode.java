@@ -18,21 +18,140 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class DrupalNode extends Entity {
+import java.net.URL;
 
-    public DrupalNode(JSONObject json) {
-        // TODO
+public class DrupalNode extends Entity {
+    private static final Logger LOGGER = Logger.getLogger(DrupalNode.class.getName());
+
+    private Integer nid;
+
+    // Load from Drupal JSON:API output
+    public DrupalNode(JSONObject jsonApiNode, JSONArray included) {
+        URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
+
+        // UUID
+        this.setId(jsonApiNode == null ? null : jsonApiNode.optString("id", null));
+
+        // Node ID
+        JSONObject jsonAttributes = jsonApiNode == null ? null : jsonApiNode.optJSONObject("attributes");
+        String nidStr = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__nid", null);
+        this.nid = nidStr == null ? null : Integer.parseInt(nidStr);
+
+        // Title
+        this.setTitle(jsonAttributes == null ? null : jsonAttributes.optString("title", null));
+
+        // Node URL
+        String nodeRelativePath = DrupalNode.getNodeRelativeUrl(jsonApiNode);
+        if (baseUrl != null && nodeRelativePath != null) {
+            try {
+                this.setLink(new URL(baseUrl, nodeRelativePath));
+            } catch(Exception ex) {
+                LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+            }
+        }
+
+        // Lang code
+        this.setLangcode(jsonAttributes == null ? null : jsonAttributes.optString("langcode", null));
+
+        // Body
+        JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
+        this.setDocument(jsonBody == null ? null : EntityUtils.extractTextContent(jsonBody.optString("processed", null)));
+
+        // Thumbnail (aka preview image)
+        if (baseUrl != null) {
+            String previewImageUUID = DrupalNode.getPreviewImageUUID(jsonApiNode);
+            if (previewImageUUID != null) {
+                String previewImageRelativePath = DrupalNode.findPreviewImageRelativePath(previewImageUUID, included);
+                if (previewImageRelativePath != null) {
+                    try {
+                        this.setThumbnail(new URL(baseUrl, previewImageRelativePath));
+                    } catch(Exception ex) {
+                        LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+                    }
+                }
+            }
+        }
     }
 
-    @Override
-    public String getId() {
+    private static URL getDrupalBaseUrl(JSONObject jsonApiNode) {
+        JSONObject jsonLinks = jsonApiNode == null ? null : jsonApiNode.optJSONObject("links");
+        JSONObject jsonLinksSelf = jsonLinks == null ? null : jsonLinks.optJSONObject("self");
+        String linksSelfHref = jsonLinksSelf == null ? null : jsonLinksSelf.optString("href", null);
+
+        URL linksSelfUrl = null;
+        if (linksSelfHref != null) {
+            try {
+                linksSelfUrl = new URL(linksSelfHref);
+            } catch(Exception ex) {
+                LOGGER.error(String.format("Invalid URL found in links.self.href: %s", linksSelfHref), ex);
+            }
+        }
+
+        if (linksSelfUrl != null) {
+            try {
+                return new URL(linksSelfUrl.getProtocol(), linksSelfUrl.getHost(), linksSelfUrl.getPort(), "/");
+            } catch(Exception ex) {
+                LOGGER.error(String.format("Can not get root URL from links.self.href: %s", linksSelfUrl), ex);
+            }
+        }
+
         return null;
+    }
+
+    private static String getNodeRelativeUrl(JSONObject jsonApiNode) {
+        // First, look if there is a path alias
+        JSONObject jsonAttributes = jsonApiNode == null ? null : jsonApiNode.optJSONObject("attributes");
+        JSONObject jsonAttributesPath = jsonAttributes == null ? null : jsonAttributes.optJSONObject("path");
+        String pathAlias = jsonAttributesPath == null ? null : jsonAttributesPath.optString("alias", null);
+        if (pathAlias != null) {
+            return pathAlias;
+        }
+
+        // Otherwise, return "/node/[NODE ID]"
+        String nid = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__nid", null);
+        if (nid != null) {
+            return "/node/" + nid;
+        }
+
+        return null;
+    }
+
+    private static String getPreviewImageUUID(JSONObject jsonApiNode) {
+        JSONObject jsonRelationships = jsonApiNode == null ? null : jsonApiNode.optJSONObject("relationships");
+        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject("field_image");
+        JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
+        return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
+    }
+
+    private static String findPreviewImageRelativePath(String imageUUID, JSONArray included) {
+        if (imageUUID == null || included == null) {
+            return null;
+        }
+
+        for (int i=0; i < included.length(); i++) {
+            JSONObject jsonInclude = included.optJSONObject(i);
+            String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
+            if (imageUUID.equals(includeId)) {
+                JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
+                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
+                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
+            }
+        }
+
+        return null;
+    }
+
+    public Integer getNid() {
+        return this.nid;
     }
 
     @Override
     public JSONObject toJSON() {
-        return null;
+        return super.toJSON()
+            .put("nid", this.nid);
     }
 }

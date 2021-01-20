@@ -40,7 +40,6 @@ public abstract class AbstractIndex<E extends Entity> {
         this.index = index;
     }
 
-    public abstract E load(JSONObject json);
     public abstract List<E> harvest(int limit, int offset) throws IOException;
 
     public String getIndex() {
@@ -51,9 +50,9 @@ public abstract class AbstractIndex<E extends Entity> {
          return client.index(this.getIndexRequest(entity));
     }
 
-    public E get(ESClient client, String id) throws IOException {
-        GetResponse response = client.get(this.getGetRequest(id));
-        return this.load(new JSONObject(response.getSource()));
+    public static JSONObject get(ESClient client, String index, String id) throws IOException {
+        GetResponse response = client.get(AbstractIndex.getGetRequest(index, id));
+        return new JSONObject(response.getSource());
     }
 
     // Low level
@@ -64,8 +63,8 @@ public abstract class AbstractIndex<E extends Entity> {
             .source(IndexUtils.JSONObjectToMap(entity.toJSON()));
     }
 
-    public GetRequest getGetRequest(String id) {
-        return new GetRequest(this.getIndex())
+    public static GetRequest getGetRequest(String index, String id) {
+        return new GetRequest(index)
             .id(id);
     }
 }

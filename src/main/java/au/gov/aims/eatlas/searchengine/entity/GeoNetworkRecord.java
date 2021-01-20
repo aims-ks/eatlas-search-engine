@@ -25,14 +25,4 @@ public class GeoNetworkRecord extends Entity {
     public GeoNetworkRecord(JSONObject json) {
         // TODO
     }
-
-    @Override
-    public String getId() {
-        return null;
-    }
-
-    @Override
-    public JSONObject toJSON() {
-        return null;
-    }
 }

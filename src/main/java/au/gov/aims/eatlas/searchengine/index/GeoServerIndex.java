@@ -19,7 +19,6 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.entity.GeoServerLayer;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -40,11 +39,6 @@ public class GeoServerIndex extends AbstractIndex<GeoServerLayer> {
         super(index);
         this.geoServerUrl = geoServerUrl;
         this.geoServerVersion = geoServerVersion;
-    }
-
-    @Override
-    public GeoServerLayer load(JSONObject json) {
-        return new GeoServerLayer(json);
     }
 
     @Override

@@ -25,14 +25,4 @@ public class GeoServerLayer extends Entity {
     public GeoServerLayer(JSONObject json) {
         // TODO
     }
-
-    @Override
-    public String getId() {
-        return null;
-    }
-
-    @Override
-    public JSONObject toJSON() {
-        return null;
-    }
 }

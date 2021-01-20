@@ -21,6 +21,7 @@ package au.gov.aims.eatlas.searchengine;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESTestClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndex;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndex;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
@@ -33,6 +34,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.test.ESSingleNodeTestCase;
 import org.elasticsearch.test.hamcrest.ElasticsearchAssertions;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,7 +55,7 @@ import java.util.Map;
 public class IndexerTest extends ESSingleNodeTestCase {
 
     @BeforeClass
-    public static void blah() {
+    public static void beforeClass() {
         // ESIntegTestCase (or com.carrotsearch.randomizedtesting.RandomizedRunner)
         // is changing the Locale to random stuff, making it really hard to read logs.
         Locale.setDefault(Locale.forLanguageTag("en_AU"));
@@ -129,37 +131,41 @@ public class IndexerTest extends ESSingleNodeTestCase {
             client.refresh(index);
 
             ExternalLinkIndex searchIndex = new ExternalLinkIndex(index);
-            ExternalLink link = searchIndex.get(client, "http://www.coralsoftheworld.org/");
+            JSONObject jsonLink = AbstractIndex.get(client, index, "http://www.coralsoftheworld.org/");
 
             // Verify the link retrieved from the index
-            Assert.assertNotNull("Link retrieved from the search index is null", link);
+            Assert.assertNotNull("Link retrieved from the search index is null", jsonLink);
             Assert.assertEquals("Link retrieved from the search index has wrong title",
-                    "Corals of the World (AIMS)", link.getTitle());
+                    "Corals of the World (AIMS)", jsonLink.optString("title", null));
 
             List<SearchResult> searchResults = Search.search(client, "textContent", "of", 0, 10, index);
 
             for (SearchResult searchResult : searchResults) {
-                link = new ExternalLinkIndex(index).get(client, searchResult.getId());
-                Assert.assertNotNull("Link found with index search is null", link);
-                switch (link.getId()) {
-                    case "http://www.coralsoftheworld.org/":
-                        Assert.assertEquals(String.format("Link %s found with index search has wrong title", link.getId()),
-                            "Corals of the World (AIMS)", link.getTitle());
+                jsonLink = AbstractIndex.get(client, index, searchResult.getId());
+                Assert.assertNotNull("Link found with index search is null", jsonLink);
 
-                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", link.getId(), searchResult.getHighlight()),
+                String id = jsonLink.optString("id", null);
+                String title = jsonLink.optString("title", null);
+
+                switch (id) {
+                    case "http://www.coralsoftheworld.org/":
+                        Assert.assertEquals(String.format("Link %s found with index search has wrong title", id),
+                            "Corals of the World (AIMS)", title);
+
+                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", id, searchResult.getHighlight()),
                             searchResult.getHighlight().contains("Donate Go Toggle navigation Corals <em>of</em> the World"));
                         break;
 
                     case "https://www.seagrasswatch.org/idseagrass/":
-                        Assert.assertEquals(String.format("Link %s found with index search has wrong title", link.getId()),
-                            "Tropical Seagrass Identification (Seagrass-Watch)", link.getTitle());
+                        Assert.assertEquals(String.format("Link %s found with index search has wrong title", id),
+                            "Tropical Seagrass Identification (Seagrass-Watch)", title);
 
-                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", link.getId(), searchResult.getHighlight()),
+                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", id, searchResult.getHighlight()),
                             searchResult.getHighlight().contains("From the advice <em>of</em> Dr Don Les"));
                         break;
 
                     default:
-                        Assert.fail(String.format("Unexpected ID found: %s", link.getId()));
+                        Assert.fail(String.format("Unexpected ID found: %s", id));
                 }
             }
         }

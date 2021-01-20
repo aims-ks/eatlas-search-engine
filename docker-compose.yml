@@ -1,0 +1,13 @@
+---
+version: '2.0'
+
+# Start elasticsearch in Docker, for use on development environment.
+#   https://hub.docker.com/_/elasticsearch
+services:
+  elasticsearch:
+    image: elasticsearch:7.10.1
+    container_name: eatlas-elasticsearch
+    # network_mode host: Elastic search can be access using localhost:9200 and localhost:9300
+    network_mode: host
+    env_file:
+      - "docker-compose.env"

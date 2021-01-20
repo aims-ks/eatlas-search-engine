@@ -19,7 +19,6 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -43,11 +42,6 @@ public class DrupalNodeIndex extends AbstractIndex<DrupalNode> {
         this.drupalUrl = drupalUrl;
         this.drupalVersion = drupalVersion;
         this.drupalNodeType = drupalNodeType;
-    }
-
-    @Override
-    public au.gov.aims.eatlas.searchengine.entity.DrupalNode load(JSONObject json) {
-        return new au.gov.aims.eatlas.searchengine.entity.DrupalNode(json);
     }
 
     @Override

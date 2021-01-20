@@ -2,6 +2,8 @@ package au.gov.aims.eatlas.searchengine.search;
 
 import org.json.JSONObject;
 
+import javax.ws.rs.core.Response;
+
 public class ErrorMessage {
     private String errorMessage;
     private int statusCode;
@@ -17,6 +19,13 @@ public class ErrorMessage {
 
     public int getStatusCode() {
         return this.statusCode;
+    }
+
+    public ErrorMessage setStatus(Response.Status status) {
+        if (status != null) {
+            this.statusCode = status.getStatusCode();
+        }
+        return this;
     }
 
     public ErrorMessage setStatusCode(int statusCode) {
