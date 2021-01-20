@@ -212,8 +212,8 @@ public class DummySearch {
         return results;
     }
 
-    private long countIndexResults(List<SearchResult> resultList, String index) {
-        long count = 0;
+    private int countIndexResults(List<SearchResult> resultList, String index) {
+        int count = 0;
         if (index != null) {
             index = index.trim();
             if (!index.isEmpty()) {

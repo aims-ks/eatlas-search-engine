@@ -118,7 +118,10 @@ public class Search {
                         new HttpHost("localhost", 9300, "http"))))) {
 
             String[] idxArray = idx.toArray(new String[0]);
-            List<SearchResult> searchSummary = Search.searchSummary(client, "document", q, idxArray);
+
+            Summary searchSummary = Search.searchSummary(client, "document", q, idxArray);
+            searchSummary.setStart(start);
+            results.setSummary(searchSummary);
 
             List<SearchResult> searchResults;
             if (fidx != null && !fidx.isEmpty()) {
@@ -127,27 +130,7 @@ public class Search {
                 searchResults = Search.search(client, "document", q, start, hits, idxArray);
             }
 
-
             results.setSearchResults(searchResults);
-
-            results.setSummary(new Summary()
-                .setHits(searchSummary.size())
-                .setStart(start)
-
-                // TODO Loop through "idx"
-                .putIndexSummary(new IndexSummary()
-                    .setIndex("eatlas_article")
-                    .setHits(this.countIndexResults(searchSummary, "eatlas_article")))
-                .putIndexSummary(new IndexSummary()
-                    .setIndex("eatlas_extlink")
-                    .setHits(this.countIndexResults(searchSummary, "eatlas_extlink")))
-                .putIndexSummary(new IndexSummary()
-                    .setIndex("eatlas_layer")
-                    .setHits(this.countIndexResults(searchSummary, "eatlas_layer")))
-                .putIndexSummary(new IndexSummary()
-                    .setIndex("eatlas_broken")
-                    .setHits(this.countIndexResults(searchSummary, "eatlas_broken")))
-            );
 
         } catch(Exception ex) {
             String errorMessageStr = String.format("An exception occurred during the search: %s", ex.getMessage());
@@ -166,24 +149,7 @@ public class Search {
         return Response.ok(responseTxt).cacheControl(noCache).build();
     }
 
-    // TODO Find a better way to do this
-    private long countIndexResults(List<SearchResult> resultList, String index) {
-        long count = 0;
-        if (index != null) {
-            index = index.trim();
-            if (!index.isEmpty()) {
-                for (SearchResult result : resultList) {
-                    if (index.equals(result.getIndex())) {
-                        count++;
-                    }
-                }
-            }
-        }
-        return count;
-    }
-
-
-    public static List<SearchResult> searchSummary(ESClient client, String attribute, String needle, String ... indexes)
+    public static Summary searchSummary(ESClient client, String attribute, String needle, String ... indexes)
             throws IOException {
 
         SearchResponse response = client.search(Search.getSearchSummaryRequest(attribute, needle, indexes));
@@ -191,25 +157,33 @@ public class Search {
         //LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", indexes %s:%n%s",
         //    needle, attribute, Arrays.toString(indexes), response.toString()));
 
-        List<SearchResult> results = new ArrayList<>();
+        Summary summary = new Summary();
+        int totalHits = 0;
+
         SearchHits hits = response.getHits();
-        // TODO Check if there is a way to get results per indexes. Otherwise, do a search per index
         for (SearchHit hit : hits.getHits()) {
-            results.add(new SearchResult()
-                .setId(hit.getId())
-                .setIndex(hit.getIndex())
-                .setScore(hit.getScore())
-                .addHighlights(hit.getHighlightFields())
-            );
+            totalHits++;
+            String index = hit.getIndex();
+
+            IndexSummary indexSummary = summary.getIndexSummary(index);
+            if (indexSummary == null) {
+                indexSummary = new IndexSummary()
+                    .setIndex(index)
+                    .setHits(0);
+                summary.putIndexSummary(indexSummary);
+            }
+            indexSummary.setHits(indexSummary.getHits() + 1);
         }
 
-        return results;
+        summary.setHits(totalHits);
+
+        return summary;
     }
 
     public static SearchRequest getSearchSummaryRequest(String attribute, String needle, String ... indexes) {
-        // TODO request only stats??
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
             .query(QueryBuilders.matchQuery(attribute, needle))
+            .fetchSource(false)
             .timeout(new TimeValue(60, TimeUnit.SECONDS));
 
         return new SearchRequest()

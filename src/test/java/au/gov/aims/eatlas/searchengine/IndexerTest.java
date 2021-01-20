@@ -34,6 +34,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.test.ESIntegTestCase;
 import org.elasticsearch.test.ESSingleNodeTestCase;
 import org.elasticsearch.test.hamcrest.ElasticsearchAssertions;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
@@ -147,21 +148,28 @@ public class IndexerTest extends ESSingleNodeTestCase {
                 String id = jsonLink.optString("id", null);
                 String title = jsonLink.optString("title", null);
 
+                JSONArray jsonHighlights = jsonLink.optJSONArray("highlights");
+                String[] highlights = new String[jsonHighlights.length()];
+                for (int i=0; i<jsonHighlights.length(); i++) {
+                    highlights[i] = jsonHighlights.optString(i, null);
+                }
+                String highlight = String.join(" ", highlights);
+
                 switch (id) {
                     case "http://www.coralsoftheworld.org/":
                         Assert.assertEquals(String.format("Link %s found with index search has wrong title", id),
                             "Corals of the World (AIMS)", title);
 
-                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", id, searchResult.getHighlight()),
-                            searchResult.getHighlight().contains("Donate Go Toggle navigation Corals <em>of</em> the World"));
+                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", id, highlight),
+                            highlight.contains("Donate Go Toggle navigation Corals <em>of</em> the World"));
                         break;
 
                     case "https://www.seagrasswatch.org/idseagrass/":
                         Assert.assertEquals(String.format("Link %s found with index search has wrong title", id),
                             "Tropical Seagrass Identification (Seagrass-Watch)", title);
 
-                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", id, searchResult.getHighlight()),
-                            searchResult.getHighlight().contains("From the advice <em>of</em> Dr Don Les"));
+                        Assert.assertTrue(String.format("Link %s found with index search has unexpected highlight: %s", id, highlight),
+                            highlight.contains("From the advice <em>of</em> Dr Don Les"));
                         break;
 
                     default:

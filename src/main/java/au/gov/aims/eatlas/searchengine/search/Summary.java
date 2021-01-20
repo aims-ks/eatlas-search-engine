@@ -57,6 +57,9 @@ public class Summary {
 
         return this;
     }
+    public IndexSummary getIndexSummary(String index) {
+        return this.indexSummaries == null ? null : this.indexSummaries.get(index);
+    }
 
     public Integer getStart() {
         return this.start;

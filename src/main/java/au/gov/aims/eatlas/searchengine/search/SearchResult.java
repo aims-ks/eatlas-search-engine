@@ -114,17 +114,6 @@ public class SearchResult {
         return this;
     }
 
-    public String getHighlight() {
-        return this.getHighlight(" […] ");
-    }
-
-    public String getHighlight(String delimiter) {
-        if (this.highlights == null) {
-            return null;
-        }
-        return String.join(delimiter, this.highlights);
-    }
-
     public String getIndex() {
         return this.index;
     }

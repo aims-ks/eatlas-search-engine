@@ -23,7 +23,7 @@ import org.json.JSONObject;
 public class IndexSummary {
     private String index;
 
-    private Long hits;
+    private Integer hits;
 
     public String getIndex() {
         return this.index;
@@ -34,11 +34,11 @@ public class IndexSummary {
         return this;
     }
 
-    public Long getHits() {
+    public Integer getHits() {
         return this.hits;
     }
 
-    public IndexSummary setHits(Long hits) {
+    public IndexSummary setHits(Integer hits) {
         this.hits = hits;
         return this;
     }
