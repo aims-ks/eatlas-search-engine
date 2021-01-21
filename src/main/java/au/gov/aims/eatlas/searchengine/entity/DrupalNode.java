@@ -31,46 +31,48 @@ public class DrupalNode extends Entity {
 
     // Load from Drupal JSON:API output
     public DrupalNode(JSONObject jsonApiNode, JSONArray included) {
-        URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
+        if (jsonApiNode != null) {
+            URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
 
-        // UUID
-        this.setId(jsonApiNode == null ? null : jsonApiNode.optString("id", null));
+            // UUID
+            this.setId(jsonApiNode == null ? null : jsonApiNode.optString("id", null));
 
-        // Node ID
-        JSONObject jsonAttributes = jsonApiNode == null ? null : jsonApiNode.optJSONObject("attributes");
-        String nidStr = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__nid", null);
-        this.nid = nidStr == null ? null : Integer.parseInt(nidStr);
+            // Node ID
+            JSONObject jsonAttributes = jsonApiNode == null ? null : jsonApiNode.optJSONObject("attributes");
+            String nidStr = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__nid", null);
+            this.nid = nidStr == null ? null : Integer.parseInt(nidStr);
 
-        // Title
-        this.setTitle(jsonAttributes == null ? null : jsonAttributes.optString("title", null));
+            // Title
+            this.setTitle(jsonAttributes == null ? null : jsonAttributes.optString("title", null));
 
-        // Node URL
-        String nodeRelativePath = DrupalNode.getNodeRelativeUrl(jsonApiNode);
-        if (baseUrl != null && nodeRelativePath != null) {
-            try {
-                this.setLink(new URL(baseUrl, nodeRelativePath));
-            } catch(Exception ex) {
-                LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+            // Node URL
+            String nodeRelativePath = DrupalNode.getNodeRelativeUrl(jsonApiNode);
+            if (baseUrl != null && nodeRelativePath != null) {
+                try {
+                    this.setLink(new URL(baseUrl, nodeRelativePath));
+                } catch(Exception ex) {
+                    LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+                }
             }
-        }
 
-        // Lang code
-        this.setLangcode(jsonAttributes == null ? null : jsonAttributes.optString("langcode", null));
+            // Lang code
+            this.setLangcode(jsonAttributes == null ? null : jsonAttributes.optString("langcode", null));
 
-        // Body
-        JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
-        this.setDocument(jsonBody == null ? null : EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
+            // Body
+            JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
+            this.setDocument(jsonBody == null ? null : EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
 
-        // Thumbnail (aka preview image)
-        if (baseUrl != null) {
-            String previewImageUUID = DrupalNode.getPreviewImageUUID(jsonApiNode);
-            if (previewImageUUID != null) {
-                String previewImageRelativePath = DrupalNode.findPreviewImageRelativePath(previewImageUUID, included);
-                if (previewImageRelativePath != null) {
-                    try {
-                        this.setThumbnail(new URL(baseUrl, previewImageRelativePath));
-                    } catch(Exception ex) {
-                        LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+            // Thumbnail (aka preview image)
+            if (baseUrl != null) {
+                String previewImageUUID = DrupalNode.getPreviewImageUUID(jsonApiNode);
+                if (previewImageUUID != null) {
+                    String previewImageRelativePath = DrupalNode.findPreviewImageRelativePath(previewImageUUID, included);
+                    if (previewImageRelativePath != null) {
+                        try {
+                            this.setThumbnail(new URL(baseUrl, previewImageRelativePath));
+                        } catch(Exception ex) {
+                            LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+                        }
                     }
                 }
             }

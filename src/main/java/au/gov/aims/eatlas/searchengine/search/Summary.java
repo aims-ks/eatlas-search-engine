@@ -25,17 +25,15 @@ import java.util.Map;
 
 public class Summary {
     // Total number of search results returned by the search query
-    private Integer hits;
+    private Long hits;
 
     private Map<String, IndexSummary> indexSummaries;
 
-    private Integer start;
-
-    public Integer getHits() {
+    public Long getHits() {
         return this.hits;
     }
 
-    public Summary setHits(Integer hits) {
+    public Summary setHits(Long hits) {
         this.hits = hits;
         return this;
     }
@@ -61,15 +59,6 @@ public class Summary {
         return this.indexSummaries == null ? null : this.indexSummaries.get(index);
     }
 
-    public Integer getStart() {
-        return this.start;
-    }
-
-    public Summary setStart(Integer start) {
-        this.start = start;
-        return this;
-    }
-
     public JSONObject toJSON() {
         JSONObject jsonIndexSummaries = new JSONObject();
         if (this.indexSummaries != null) {
@@ -80,7 +69,6 @@ public class Summary {
 
         return new JSONObject()
             .put("hits", this.hits)
-            .put("start", this.start)
             .put("indexes", jsonIndexSummaries);
     }
 

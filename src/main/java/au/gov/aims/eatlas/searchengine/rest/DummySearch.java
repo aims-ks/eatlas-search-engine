@@ -18,6 +18,10 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
+import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
+import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
+import au.gov.aims.eatlas.searchengine.entity.GeoServerLayer;
 import au.gov.aims.eatlas.searchengine.search.ErrorMessage;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
@@ -35,9 +39,13 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -107,7 +115,6 @@ public class DummySearch {
     /**
      * @deprecated Used to test, do not forget to delete!
      */
-    @Deprecated
     private int findStatusCode(String query, int defaultValue) {
         Pattern p = Pattern.compile("\\d+");
         Matcher m = p.matcher(query);
@@ -127,22 +134,25 @@ public class DummySearch {
     /**
      * @deprecated Used to test, do not forget to delete!
      */
-    @Deprecated
     private SearchResults getNoSearchResults(Integer start, Integer hits) {
         SearchResults results = new SearchResults();
 
         results.setSummary(new Summary()
-            .setHits(0)
-            .setStart(0)
+            .setHits(0L)
         );
 
         return results;
     }
 
-    @Deprecated
     private SearchResults getFakeSearchResults(Integer start, Integer hits, List<String> idx, List<String> fidx) {
         // Get every single fake search results, even the one for indexes the website do not care about
-        List<SearchResult> resultList = this.getAllFakeSearchResults();
+        List<SearchResult> resultList = null;
+        try {
+            resultList = this.getAllFakeSearchResults();
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
 
         // Filter search results
 
@@ -192,8 +202,7 @@ public class DummySearch {
         results.setSearchResults(newResultList);
 
         results.setSummary(new Summary()
-            .setHits(resultList.size())
-            .setStart(start)
+            .setHits((long)resultList.size())
 
             .putIndexSummary(new IndexSummary()
                 .setIndex("eatlas_article")
@@ -205,6 +214,9 @@ public class DummySearch {
                 .setIndex("eatlas_layer")
                 .setHits(this.countIndexResults(resultList, "eatlas_layer")))
             .putIndexSummary(new IndexSummary()
+                .setIndex("eatlas_metadata")
+                .setHits(this.countIndexResults(resultList, "eatlas_metadata")))
+            .putIndexSummary(new IndexSummary()
                 .setIndex("eatlas_broken")
                 .setHits(this.countIndexResults(resultList, "eatlas_broken")))
         );
@@ -212,8 +224,8 @@ public class DummySearch {
         return results;
     }
 
-    private int countIndexResults(List<SearchResult> resultList, String index) {
-        int count = 0;
+    private long countIndexResults(List<SearchResult> resultList, String index) {
+        long count = 0;
         if (index != null) {
             index = index.trim();
             if (!index.isEmpty()) {
@@ -230,25 +242,26 @@ public class DummySearch {
     /**
      * Return a list of results
      */
-    private List<SearchResult> getAllFakeSearchResults() {
+    private List<SearchResult> getAllFakeSearchResults() throws MalformedURLException {
         List<SearchResult> results = new ArrayList<SearchResult>();
 
+        ExternalLink brokenLink = new ExternalLink(
+            "https://broken.bad/should/not/appear/in/search/results/",
+            "https://lh3.googleusercontent.com/proxy/f9semJrOD1mcB78d_iD90HJvjKhmrYv5c5n3HGYq8nxFkHs_5gd_8P5IomW3JfkNOw8XUvUBUBc4VSaDd52MYnhvzQ",
+            "eatlas_broken"
+        );
+        brokenLink.setDocument("BROKEN DOCUMENT");
+        brokenLink.setLangcode("en");
         results.add(new SearchResult()
-            .setLink("https://broken.bad/should/not/appear/in/search/results/")
+            .setEntity(brokenLink.toJSON())
             .setIndex("eatlas_broken")
-            .setTitle("This should not appear in search results")
             .setScore(23)
-            .setDocument("BROKEN DOCUMENT")
-            .setThumbnail("https://lh3.googleusercontent.com/proxy/f9semJrOD1mcB78d_iD90HJvjKhmrYv5c5n3HGYq8nxFkHs_5gd_8P5IomW3JfkNOw8XUvUBUBc4VSaDd52MYnhvzQ")
-            .setLangcode("en")
         );
 
-        results.add(new SearchResult()
-            .setLink("http://localhost:9090/node/4")
-            .setIndex("eatlas_article")
-            .setTitle("A guide to Indigenous science, management and governance of Australian coastal waters")
-            .setScore(23)
-            .setDocument(
+        DrupalNode drupalNode = new DrupalNode(null, null);
+        drupalNode.setLink(new URL("http://localhost:9090/node/4"));
+        drupalNode.setTitle("A guide to Indigenous science, management and governance of Australian coastal waters");
+        drupalNode.setDocument(
                 "<p>Understanding the <a href=\"http://www.ozcoasts.gov.au/pdf/CRC/Coastal_Management_in_Australia.pdf\" target=\"_blank\">management and governance of Australia’s vast coastline</a> can be complex. International, Commonwealth, State and Indigenous entities all have various roles and powers to promote the health and integrity of Australia’s marine environments.</p>" +
                 "<p style=\"text-align: center;\"><em>[<strong>Quick links:</strong> <a href=\"#Promoting partnerships\">Promoting</a> Partnerships - <a href=\"#maps\">Maps</a> to help you get started - <a href=\"#links\">Links</a> to Indigenous Sea country Management Plans]</em></p>" +
                 "<div style=\"float : left;\">[IMAGE]</div>" +
@@ -801,63 +814,102 @@ public class DummySearch {
                 "</table>" +
                 "<p>&nbsp;</p>" +
                 "<h3>Important...</h3>" +
-                "<p>Please read, cite and use these documents responsibly by referring to any special requirements outlined. Note that this is a rapidly evolving area with many new plans to be finalised and published shortly (<a href=\"https://www.abc.net.au/news/2016-11-23/kimberley-marine-park-created-around-horizontal-falls/8050330\" target=\"_blank\">here is an example</a>). It is your responsibility to ensure that you are aware of the most up to date information.</p>")
-            .setThumbnail("https://cdn131.picsart.com/339459399004201.jpg?to=crop&r=256")
-            .setLangcode("en")
-        );
-
+                "<p>Please read, cite and use these documents responsibly by referring to any special requirements outlined. Note that this is a rapidly evolving area with many new plans to be finalised and published shortly (<a href=\"https://www.abc.net.au/news/2016-11-23/kimberley-marine-park-created-around-horizontal-falls/8050330\" target=\"_blank\">here is an example</a>). It is your responsibility to ensure that you are aware of the most up to date information.</p>");
+        drupalNode.setThumbnail(new URL("https://cdn131.picsart.com/339459399004201.jpg?to=crop&r=256"));
+        drupalNode.setLangcode("en");
         results.add(new SearchResult()
-            .setLink("https://google.com")
-            .setIndex("eatlas_extlink")
-            .setTitle("Google search engine")
-            .setScore(12)
-            .setDocument("<p>Google Search, I'm Feeling Lucky.</p>")
-            .setThumbnail("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif")
-            .setLangcode("en")
+            .setEntity(drupalNode.toJSON())
+            .setIndex("eatlas_article")
+            .setScore(23)
         );
 
-        Random random = new Random();
+        ExternalLink googleLink = new ExternalLink(
+            "https://google.com",
+            "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif",
+            "Google search engine"
+        );
+        googleLink.setDocument("<p>Google Search, I'm Feeling Lucky.</p>");
+        googleLink.setLangcode("en");
+        results.add(new SearchResult()
+            .setEntity(googleLink.toJSON())
+            .setIndex("eatlas_extlink")
+            .setScore(12)
+        );
+
         for (int i=0; i<200; i++) {
-            results.add(this.getRandomGoogleSearchResult(i+1, random));
+            results.add(this.getRandomGoogleSearchResult(i+1));
         }
 
         for (int i=0; i<50; i++) {
-            results.add(this.getRandomLayerSearchResult(i+1, random));
+            results.add(this.getRandomLayerSearchResult(i+1));
+        }
+
+        for (int i=0; i<25; i++) {
+            results.add(this.getRandomMetadataSearchResult(i+1));
         }
 
         return results;
     }
 
-    private SearchResult getRandomGoogleSearchResult(int index, Random random) {
+    private SearchResult getRandomGoogleSearchResult(int index) {
+        Random random = new Random(91 + index);
         String randomSearchTerm = this.getRandomWord(random);
 
-        return new SearchResult()
-            .setLink(String.format("https://www.google.com/search?q=%s", randomSearchTerm))
-            .setIndex("eatlas_extlink")
-            .setTitle(String.format("Google search %d for %s", index, randomSearchTerm))
-            .setScore(12)
-            .setDocument(
+        ExternalLink googleSearchLink = new ExternalLink(
+            String.format("https://www.google.com/search?q=%s", randomSearchTerm),
+            "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif",
+            String.format("Google search %d for %s", index, randomSearchTerm)
+        );
+        googleSearchLink.setDocument(
                 "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
                 String.format("<p>Google search result for random word %s.</p>", randomSearchTerm) +
-                "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>")
-            .setThumbnail("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif")
-            .setLangcode("en");
-    }
-
-    private SearchResult getRandomLayerSearchResult(int index, Random random) {
-        String randomLayerName = "ea_" + this.getRandomWord(random);
+                "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>");
+        googleSearchLink.setLangcode("en");
 
         return new SearchResult()
-            .setLink(String.format("https://maps.eatlas.org.au/index.html?intro=false&z=7&ll=148.00000,-18.00000&l0=%s,ea_ea-be%%3AWorld_Bright-Earth-e-Atlas-basemap", randomLayerName))
-            .setIndex("eatlas_layer")
-            .setTitle(String.format("GeoServer random layer %d is %s", index, randomLayerName))
-            .setScore(12)
-            .setDocument(
+            .setEntity(googleSearchLink.toJSON())
+            .setIndex("eatlas_extlink")
+            .setScore(12);
+    }
+
+    private SearchResult getRandomLayerSearchResult(int index) throws MalformedURLException {
+        Random random = new Random(137 + index);
+        String randomLayerName = "ea_" + this.getRandomWord(random);
+
+        GeoServerLayer layerEntity = new GeoServerLayer(null);
+        layerEntity.setLink(new URL(String.format("https://maps.eatlas.org.au/index.html?intro=false&z=7&ll=148.00000,-18.00000&l0=%s,ea_ea-be%%3AWorld_Bright-Earth-e-Atlas-basemap", randomLayerName)));
+        layerEntity.setTitle(String.format("GeoServer random layer %d is %s", index, randomLayerName));
+        layerEntity.setDocument(
                 "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
                 String.format("<p>GeoServer random layer name %s.</p>", randomLayerName) +
-                "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>")
-            .setThumbnail("https://github.com/aims-ks/atlasmapper/blob/master/logo/AtlasMapper_icon_256x242px.png?raw=true")
-            .setLangcode("en");
+                "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>");
+        layerEntity.setThumbnail(new URL("https://github.com/aims-ks/atlasmapper/blob/master/logo/AtlasMapper_icon_256x242px.png?raw=true"));
+        layerEntity.setLangcode("en");
+
+        return new SearchResult()
+            .setEntity(layerEntity.toJSON())
+            .setIndex("eatlas_layer")
+            .setScore(12);
+    }
+
+    private SearchResult getRandomMetadataSearchResult(int index) throws MalformedURLException {
+        Random random = new Random(11 + index);
+        String randomUUIDName = this.getRandomWord(random);
+        String uuid = UUID.nameUUIDFromBytes(randomUUIDName.getBytes(StandardCharsets.UTF_8)).toString();
+
+        GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(null);
+        geoNetworkRecord.setLink(new URL(String.format("https://eatlas.org.au/data/faces/view.xhtml?uuid=%s", uuid)));
+        geoNetworkRecord.setTitle(String.format("Random metadata record %s", randomUUIDName));
+        geoNetworkRecord.setDocument(
+                "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
+                "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>");
+        geoNetworkRecord.setThumbnail(new URL("https://eatlas.org.au/geonetwork/srv/en/resources.get?uuid=e8854605-d169-44ca-9364-aa5c2c87ff67&access=public&fname=preview-map_s.png"));
+        geoNetworkRecord.setLangcode("en");
+
+        return new SearchResult()
+            .setEntity(geoNetworkRecord.toJSON())
+            .setIndex("eatlas_metadata")
+            .setScore(12);
     }
 
     private String getRandomWord(Random random) {

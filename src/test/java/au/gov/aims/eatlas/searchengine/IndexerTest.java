@@ -114,11 +114,11 @@ public class IndexerTest extends ESSingleNodeTestCase {
             null,
             "Tropical Seagrass Identification (Seagrass-Watch)"
         );
-        String seagrassWatchLinkText = EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
-                "externalLinks/seagrasswatch.html", StandardCharsets.UTF_8, classLoader));
         ExternalLink seagrassWatchLink = new ExternalLink(
                 seagrassWatchLinkIndex.getUrl(), seagrassWatchLinkIndex.getThumbnail(),
-                seagrassWatchLinkIndex.getTitle(), seagrassWatchLinkText);
+                seagrassWatchLinkIndex.getTitle());
+        seagrassWatchLink.setDocument(EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
+                "externalLinks/seagrasswatch.html", StandardCharsets.UTF_8, classLoader)));
 
         ExternalLinkIndex coralsOfTheWorldLinkIndex = new ExternalLinkIndex(
             index,
@@ -126,11 +126,11 @@ public class IndexerTest extends ESSingleNodeTestCase {
             null,
             "Corals of the World (AIMS)"
         );
-        String coralsOfTheWorldLinkText = EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
-                "externalLinks/coralsoftheworld.html", StandardCharsets.UTF_8, classLoader));
         ExternalLink coralsOfTheWorldLink = new ExternalLink(
                 coralsOfTheWorldLinkIndex.getUrl(), coralsOfTheWorldLinkIndex.getThumbnail(),
-                coralsOfTheWorldLinkIndex.getTitle(), coralsOfTheWorldLinkText);
+                coralsOfTheWorldLinkIndex.getTitle());
+        coralsOfTheWorldLink.setDocument(EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
+                "externalLinks/coralsoftheworld.html", StandardCharsets.UTF_8, classLoader)));
 
         try (ESClient client = new ESTestClient(super.node().client())) {
             seagrassWatchLinkIndex.index(client, seagrassWatchLink);
@@ -155,7 +155,9 @@ public class IndexerTest extends ESSingleNodeTestCase {
                 Assert.assertNotNull("Link found with index search is null", searchResult);
 
                 String id = searchResult.getId();
-                String title = searchResult.getTitle();
+                JSONObject searchResultEntity = searchResult.getEntity();
+                Assert.assertNotNull(String.format("Search result id %s do not contain a JSON entity.", id), searchResultEntity);
+                String title = searchResultEntity.optString("title", null);
 
                 List<String> highlights = searchResult.getHighlights();
                 String highlight = String.join(" ", highlights);

@@ -25,6 +25,8 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 
 import java.io.IOException;
 
@@ -39,6 +41,7 @@ public interface ESClient extends AutoCloseable {
     IndexResponse index(IndexRequest indexRequest) throws IOException;
     GetResponse get(GetRequest getRequest) throws IOException;
     SearchResponse search(SearchRequest searchRequest) throws IOException;
+    CountResponse count(CountRequest countRequest) throws IOException;
 
     RefreshResponse refresh(String ... indices) throws IOException;
 

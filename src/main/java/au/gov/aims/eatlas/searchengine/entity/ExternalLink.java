@@ -25,10 +25,9 @@ import java.net.URL;
 public class ExternalLink extends Entity {
     private static final Logger LOGGER = Logger.getLogger(ExternalLink.class.getName());
 
-    public ExternalLink(String urlStr, String thumbnailUrlStr, String title, String textContent) {
+    public ExternalLink(String urlStr, String thumbnailUrlStr, String title) {
         this.setId(urlStr);
         this.setTitle(title);
-        this.setDocument(textContent);
 
         if (urlStr != null) {
             try {

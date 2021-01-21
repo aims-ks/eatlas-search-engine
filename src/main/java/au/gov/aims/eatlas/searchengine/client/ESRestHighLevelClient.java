@@ -28,6 +28,8 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 
 import java.io.IOException;
 
@@ -51,6 +53,11 @@ public class ESRestHighLevelClient implements ESClient {
     @Override
     public SearchResponse search(SearchRequest searchRequest) throws IOException {
         return this.client.search(searchRequest, RequestOptions.DEFAULT);
+    }
+
+    @Override
+    public CountResponse count(CountRequest countRequest) throws IOException {
+        return this.client.count(countRequest, RequestOptions.DEFAULT);
     }
 
     @Override

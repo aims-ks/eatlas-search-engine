@@ -32,10 +32,8 @@ import java.util.Map;
 public class SearchResult {
     // URL to follow to access the indexed document
     private String id;
-    private String link;
+    private JSONObject entity;
 
-    private String title;
-    private String document;
     private List<String> highlights;
 
     // The index in which the result was found
@@ -44,12 +42,6 @@ public class SearchResult {
     // Lucene document score
     //   https://lucene.apache.org/core/8_6_2/core/org/apache/lucene/search/ScoreDoc.html
     private float score;
-
-    // URL to the search result thumbnail image
-    private String thumbnail;
-
-    // "en"
-    private String langcode;
 
     public String getId() {
         return this.id;
@@ -60,30 +52,12 @@ public class SearchResult {
         return this;
     }
 
-    public String getLink() {
-        return this.link;
+    public JSONObject getEntity() {
+        return this.entity;
     }
 
-    public SearchResult setLink(String link) {
-        this.link = link;
-        return this;
-    }
-
-    public String getTitle() {
-        return this.title;
-    }
-
-    public SearchResult setTitle(String title) {
-        this.title = title;
-        return this;
-    }
-
-    public String getDocument() {
-        return this.document;
-    }
-
-    public SearchResult setDocument(String document) {
-        this.document = document;
+    public SearchResult setEntity(JSONObject entity) {
+        this.entity = entity;
         return this;
     }
 
@@ -132,35 +106,13 @@ public class SearchResult {
         return this;
     }
 
-    public String getThumbnail() {
-        return this.thumbnail;
-    }
-
-    public SearchResult setThumbnail(String thumbnail) {
-        this.thumbnail = thumbnail;
-        return this;
-    }
-
-    public String getLangcode() {
-        return this.langcode;
-    }
-
-    public SearchResult setLangcode(String langcode) {
-        this.langcode = langcode;
-        return this;
-    }
-
     public JSONObject toJSON() {
         return new JSONObject()
             .put("id", this.id)
-            .put("link", this.link)
             .put("index", this.index)
-            .put("title", this.title)
             .put("score", this.score)
-            .put("document", this.document)
-            .put("highlights", this.highlights)
-            .put("thumbnail", this.thumbnail)
-            .put("langcode", this.langcode);
+            .put("entity", this.entity)
+            .put("highlights", this.highlights);
     }
 
     @Override

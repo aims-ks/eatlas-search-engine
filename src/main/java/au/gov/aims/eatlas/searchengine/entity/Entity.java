@@ -102,6 +102,7 @@ public abstract class Entity {
         URL thumbnailUrl = this.getThumbnail();
         return new JSONObject()
             .put("id", this.getId())
+            .put("class", this.getClass().getSimpleName())
             .put("link", linkUrl == null ? null : linkUrl.toString())
             .put("title", this.getTitle())
             .put("document", this.getDocument())

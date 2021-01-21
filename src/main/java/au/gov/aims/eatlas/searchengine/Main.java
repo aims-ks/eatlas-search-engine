@@ -43,7 +43,7 @@ public class Main {
 
     public static void main(String... args) throws IOException {
         //Main.testElasticSearch();
-        //Main.loadDrupalArticles();
+        Main.loadDrupalArticles();
         Main.loadExternalLinks();
     }
 
@@ -83,7 +83,7 @@ public class Main {
         String index = "eatlas_article";
 
         // URL to get first 10 last modified articles (using Drupal core module JSON:API)
-        String url = "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=10&page[offset]=0";
+        String url = "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=100&page[offset]=0";
 
 
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
@@ -120,44 +120,38 @@ public class Main {
         externalLinks.add(new ExternalLink(
             "http://www.csiro.au/connie2/",
             "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/connie2-hydrodynamic-modelling.png?itok=gVbD37jD",
-            "Connie 2 Online interactive hydrodynamic modelling",
-            EntityUtils.harvestURLText("http://www.csiro.au/connie2/")
+            "Connie 2 Online interactive hydrodynamic modelling"
         ));
 
         externalLinks.add(new ExternalLink(
             "https://doi.org/10.1002/aqc.3115",
             "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/GBRMPA-GBRMP-zoning.jpg?itok=XNuZPHhB",
-            "Marine zoning revisited: How decades of zoning the Great Barrier Reef has evolved as an effective spatial planning approach for marine ecosystem based management",
-            EntityUtils.harvestURLText("https://doi.org/10.1002/aqc.3115")
+            "Marine zoning revisited: How decades of zoning the Great Barrier Reef has evolved as an effective spatial planning approach for marine ecosystem based management"
         ));
 
         externalLinks.add(new ExternalLink(
             "https://doi.org/10.1371/journal.pone.0221855",
             "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/journal.pone_.0221855.g003.PNG?itok=TiczR9En",
-            "Preferences and perceptions of the recreational spearfishery of the Great Barrier Reef - Paper",
-            EntityUtils.harvestURLText("https://doi.org/10.1371/journal.pone.0221855")
+            "Preferences and perceptions of the recreational spearfishery of the Great Barrier Reef - Paper"
         ));
 
         // PDF
         externalLinks.add(new ExternalLink(
             "https://research.csiro.au/seltmp/wp-content/uploads/sites/214/2019/06/SELTMP-ResidentsChangesReport-May2019.pdf",
             "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/SELTMP-ResidentsChangesReport-May2019.jpg?itok=EANyhXRR",
-            "Changes among coastal residents of the Great Barrier Reef region from 2013 to 2017 - Social and Economic Long Term Monitoring Program (SELTMP)",
-            EntityUtils.harvestURLText("https://research.csiro.au/seltmp/wp-content/uploads/sites/214/2019/06/SELTMP-ResidentsChangesReport-May2019.pdf")
+            "Changes among coastal residents of the Great Barrier Reef region from 2013 to 2017 - Social and Economic Long Term Monitoring Program (SELTMP)"
         ));
 
         externalLinks.add(new ExternalLink(
             "http://marine.ga.gov.au",
             "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/AusSeabed-marine-data-portal-preview.jpg?itok=4yFzhXHd",
-            "AusSeabed Marine Data Discovery portal",
-            EntityUtils.harvestURLText("http://marine.ga.gov.au")
+            "AusSeabed Marine Data Discovery portal"
         ));
 
         externalLinks.add(new ExternalLink(
             "http://www.seagrasswatch.org/id_seagrass.html",
             "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/shared/nerp-te/5-3/Seagrass%20Maggie%20Jan%20081.jpg?itok=cqHnl8-D",
-            "Tropical Seagrass Identification (Seagrass-Watch)",
-            EntityUtils.harvestURLText("http://www.seagrasswatch.org/id_seagrass.html")
+            "Tropical Seagrass Identification (Seagrass-Watch)"
         ));
 
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
@@ -166,6 +160,7 @@ public class Main {
                         new HttpHost("localhost", 9300, "http"))))) {
 
             for (ExternalLink externalLink : externalLinks) {
+                externalLink.setDocument(EntityUtils.harvestURLText(externalLink.getLink().toString()));
 
                 IndexRequest indexRequest = new IndexRequest(index)
                     .id(externalLink.getId())

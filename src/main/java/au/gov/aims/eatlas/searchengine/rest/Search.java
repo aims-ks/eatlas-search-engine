@@ -30,8 +30,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -117,8 +120,7 @@ public class Search {
 
             String[] idxArray = idx.toArray(new String[0]);
 
-            Summary searchSummary = Search.searchSummary(client, "document", q, idxArray);
-            searchSummary.setStart(start);
+            Summary searchSummary = Search.searchSummary(client, q, idxArray);
             results.setSummary(searchSummary);
 
             List<SearchResult> searchResults;
@@ -147,48 +149,49 @@ public class Search {
         return Response.ok(responseTxt).cacheControl(noCache).build();
     }
 
-    public static Summary searchSummary(ESClient client, String attribute, String needle, String ... indexes)
+    /**
+     * Summary is done using the count API to get
+     *   around the 10'000 limit of the search API.
+     * NOTE: It sends one query per index, but it's
+     *   much faster than doing a search, since
+     *   the search API requires a "size" parameter (default 10).
+     *   Getting a full count using the search will likely
+     *   result in many more search requests than one
+     *   count request per index.
+     */
+    public static Summary searchSummary(ESClient client, String needle, String ... indexes)
             throws IOException {
 
-        SearchResponse response = client.search(Search.getSearchSummaryRequest(attribute, needle, indexes));
-
-        //LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", indexes %s:%n%s",
-        //    needle, attribute, Arrays.toString(indexes), response.toString()));
-
         Summary summary = new Summary();
-        int totalHits = 0;
 
-        SearchHits hits = response.getHits();
-        for (SearchHit hit : hits.getHits()) {
-            totalHits++;
-            String index = hit.getIndex();
+        long totalCount = 0;
+        for (String index : indexes) {
+            CountResponse response = client.count(Search.getSearchSummaryRequest(needle, index));
+            long count = response.getCount();
+            if (count > 0) {
+                totalCount += count;
 
-            IndexSummary indexSummary = summary.getIndexSummary(index);
-            if (indexSummary == null) {
-                indexSummary = new IndexSummary()
+                IndexSummary indexSummary = new IndexSummary()
                     .setIndex(index)
-                    .setHits(0);
+                    .setHits(count);
                 summary.putIndexSummary(indexSummary);
             }
-            indexSummary.setHits(indexSummary.getHits() + 1);
         }
 
-        summary.setHits(totalHits);
+        summary.setHits(totalCount);
 
         return summary;
     }
 
-    public static SearchRequest getSearchSummaryRequest(String attribute, String needle, String ... indexes) {
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
-            .query(QueryBuilders.matchQuery(attribute, needle))
-            .fetchSource(false)
-            .timeout(new TimeValue(60, TimeUnit.SECONDS));
+    public static CountRequest getSearchSummaryRequest(String needle, String ... indexes) {
+        SearchSourceBuilder sourceBuilder = Search.getBaseSearchQuery(needle)
+            .fetchSource(false);
 
-        return new SearchRequest()
+        return new CountRequest()
             .indices(indexes)
-            .source(sourceBuilder);
+            .indicesOptions(Search.getSearchIndicesOptions())
+            .query(sourceBuilder.query());
     }
-
 
     public static List<SearchResult> search(ESClient client, String needle, int from, int size, String ... indexes)
             throws IOException {
@@ -209,12 +212,7 @@ public class Search {
                 .setIndex(hit.getIndex())
                 .setScore(hit.getScore())
                 .addHighlights(hit.getHighlightFields())
-
-                .setLangcode(jsonEntity.optString("langcode", null))
-                .setTitle(jsonEntity.optString("title", null))
-                .setDocument(jsonEntity.optString("document", null))
-                .setLink(jsonEntity.optString("link", null))
-                .setThumbnail(jsonEntity.optString("thumbnail", null))
+                .setEntity(jsonEntity)
             );
         }
 
@@ -232,19 +230,44 @@ public class Search {
             .postTags("</strong>")
             .field("document");
 
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
-            // Search in document OR title
-            .query(QueryBuilders.boolQuery()
-                .should(QueryBuilders.matchQuery("title", needle).boost(2))
-                .should(QueryBuilders.matchQuery("document", needle)))
+        SearchSourceBuilder sourceBuilder = Search.getBaseSearchQuery(needle)
             .from(from) // Used to continue the search (get next page)
             .size(size) // Number of results to return. Default = 10
             .fetchSource(true)
-            .timeout(new TimeValue(60, TimeUnit.SECONDS))
             .highlighter(highlightBuilder);
 
         return new SearchRequest()
             .indices(indexes)
+            .indicesOptions(Search.getSearchIndicesOptions())
             .source(sourceBuilder);
+    }
+
+    /**
+     * Build the search query.
+     * This is done here to ensure both the search and the summary
+     *   are based on the same query.
+     */
+    private static SearchSourceBuilder getBaseSearchQuery(String needle) {
+        return new SearchSourceBuilder()
+            // Search in document OR title
+            .query(QueryBuilders.boolQuery()
+                .should(QueryBuilders.matchQuery("title", needle).boost(2))
+                .should(QueryBuilders.matchQuery("document", needle)))
+            .timeout(new TimeValue(60, TimeUnit.SECONDS));
+    }
+
+    /**
+     * Return search indexes options.
+     * This is used to prevent the search from crashing
+     *   when the client refer to an empty (or non-existent)
+     *   index.
+     */
+    private static IndicesOptions getSearchIndicesOptions() {
+        return IndicesOptions.fromOptions(
+            true, // ignoreUnavailable
+            true,  // allowNoIndices
+            false, // expandToOpenIndices
+            false // expandToCloseIndices
+        );
     }
 }

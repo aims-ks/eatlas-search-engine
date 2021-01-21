@@ -56,7 +56,8 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
     public List<ExternalLink> harvest(int limit, int offset) throws IOException {
         List<ExternalLink> entityList = new ArrayList<>();
 
-        ExternalLink entity = new ExternalLink(this.url, this.thumbnail, this.title, EntityUtils.harvestURLText(this.url));
+        ExternalLink entity = new ExternalLink(this.url, this.thumbnail, this.title);
+        entity.setDocument(EntityUtils.harvestURLText(this.url));
         entityList.add(entity);
 
         return entityList;

@@ -28,6 +28,8 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 
 import java.io.IOException;
 
@@ -51,6 +53,12 @@ public class ESTestClient implements ESClient {
     @Override
     public SearchResponse search(SearchRequest searchRequest) throws IOException {
         return this.client.search(searchRequest).actionGet();
+    }
+
+    @Override
+    public CountResponse count(CountRequest countRequest) throws IOException {
+        // TODO Find a way to do this if needed in tests
+        return null;
     }
 
     @Override
