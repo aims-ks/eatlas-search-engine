@@ -897,8 +897,11 @@ public class DummySearch {
         String randomUUIDName = this.getRandomWord(random);
         String uuid = UUID.nameUUIDFromBytes(randomUUIDName.getBytes(StandardCharsets.UTF_8)).toString();
 
-        GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(null);
-        geoNetworkRecord.setLink(new URL(String.format("https://eatlas.org.au/data/faces/view.xhtml?uuid=%s", uuid)));
+        GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(
+                uuid,
+                String.format("https://eatlas.org.au/data/faces/view.xhtml?uuid=%s", uuid),
+                null);
+
         geoNetworkRecord.setTitle(String.format("Random metadata record %s", randomUUIDName));
         geoNetworkRecord.setDocument(
                 "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +

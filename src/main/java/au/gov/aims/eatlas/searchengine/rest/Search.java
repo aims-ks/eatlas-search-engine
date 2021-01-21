@@ -193,6 +193,29 @@ public class Search {
             .query(sourceBuilder.query());
     }
 
+    /**
+     * ElasticSearch have 3 search API:
+     * - Search API
+     * - Scroll API
+     * - Search after API
+     *
+     * They all have their ups and downs.
+     * - Search API: Limited to 10'000 results
+     * - Scroll API: Save results info on the server as a "scroll" object. The "scroll" needs to be
+     *     deleted once we are done with it. It can only save a certain number of scrolls.
+     *     Each page gives the "scroll ID" of the next page, making it not possible to arbitrary seek to a given page.
+     *     All those issues makes it not suitable for stateless search like Drupal.
+     * - Search after API: This one is stateless, but requires to sort the results using a field from
+     *     the index, therefore the results can't be order in "score" order. We might get the least
+     *     relevant result first. Also, we need to provide the value of the last record to get the
+     *     next page, making it impossible to seek pages.
+     *
+     * I'm using the Search API because that's the only one which is applicable to Drupal.
+     *     I'm pretty sure no user will try to go pass the 10'000th result
+     *     (page 1000, if we display 10 results per page).
+     *
+     * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
+     */
     public static List<SearchResult> search(ESClient client, String needle, int from, int size, String ... indexes)
             throws IOException {
 

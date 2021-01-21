@@ -79,7 +79,7 @@ public class EntityUtils {
         return response.body();
     }
 
-    private static Connection getJsoupConnection(String url) {
+    public static Connection getJsoupConnection(String url) {
         // NOTE: JSoup takes care of following redirections.
         //     IOUtils.toString(URL, Charset) does not.
         // NOTE 2: JSoup is quite picky with content types (aka mimetype).
