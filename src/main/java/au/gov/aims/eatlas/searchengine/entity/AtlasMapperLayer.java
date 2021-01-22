@@ -20,9 +20,9 @@ package au.gov.aims.eatlas.searchengine.entity;
 
 import org.json.JSONObject;
 
-public class GeoServerLayer extends Entity {
+public class AtlasMapperLayer extends Entity {
 
-    public GeoServerLayer(JSONObject json) {
+    public AtlasMapperLayer(JSONObject json) {
         // TODO
     }
 }

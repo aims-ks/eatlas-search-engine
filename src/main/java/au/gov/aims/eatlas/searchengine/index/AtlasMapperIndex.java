@@ -18,48 +18,48 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
-import au.gov.aims.eatlas.searchengine.entity.GeoServerLayer;
+import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 
 import java.util.List;
 
-public class GeoServerIndex extends AbstractIndex<GeoServerLayer> {
-    private String geoServerUrl;
-    private String geoServerVersion;
+public class AtlasMapperIndex extends AbstractIndex<AtlasMapperLayer> {
+    private String atlasMapperUrl;
+    private String atlasMapperVersion;
 
-    public GeoServerIndex(String index) {
+    public AtlasMapperIndex(String index) {
         super(index);
     }
 
     /**
      * index: eatlas_layer
-     * geoServerUrl: https://maps.eatlas.org.au/maps
-     * geoServerVersion: 2.13.2
+     * atlasMapperUrl: https://maps.eatlas.org.au/atlasmapper
+     * atlasMapperVersion: 2.2.0
      */
-    public GeoServerIndex(String index, String geoServerUrl, String geoServerVersion) {
+    public AtlasMapperIndex(String index, String atlasMapperUrl, String atlasMapperVersion) {
         super(index);
-        this.geoServerUrl = geoServerUrl;
-        this.geoServerVersion = geoServerVersion;
+        this.atlasMapperUrl = atlasMapperUrl;
+        this.atlasMapperVersion = atlasMapperVersion;
     }
 
     @Override
-    public List<GeoServerLayer> harvest(int limit, int offset) {
+    public List<AtlasMapperLayer> harvest(int limit, int offset) {
         // TODO Implement
         return null;
     }
 
-    public String getGeoServerUrl() {
-        return this.geoServerUrl;
+    public String getAtlasMapperUrl() {
+        return this.atlasMapperUrl;
     }
 
-    public void setGeoServerUrl(String geoServerUrl) {
-        this.geoServerUrl = geoServerUrl;
+    public void setAtlasMapperUrl(String atlasMapperUrl) {
+        this.atlasMapperUrl = atlasMapperUrl;
     }
 
-    public String getGeoServerVersion() {
-        return this.geoServerVersion;
+    public String getAtlasMapperVersion() {
+        return this.atlasMapperVersion;
     }
 
-    public void setGeoServerVersion(String geoServerVersion) {
-        this.geoServerVersion = geoServerVersion;
+    public void setAtlasMapperVersion(String atlasMapperVersion) {
+        this.atlasMapperVersion = atlasMapperVersion;
     }
 }
