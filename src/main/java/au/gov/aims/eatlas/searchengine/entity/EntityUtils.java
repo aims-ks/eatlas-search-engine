@@ -34,17 +34,19 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
+import java.util.Map;
 
 public class EntityUtils {
     private static final Logger LOGGER = Logger.getLogger(EntityUtils.class.getName());
 
-    public static String harvestURL(URL url) throws IOException {
-        return url == null ? null : EntityUtils.harvestURL(url.toString());
+    public static String harvestGetURL(URL url) throws IOException {
+        return url == null ? null : EntityUtils.harvestGetURL(url.toString());
     }
 
-    public static String harvestURL(String url) throws IOException {
-        LOGGER.debug(String.format("Harvesting URL body: %s", url));
+    public static String harvestGetURL(String url) throws IOException {
+        LOGGER.debug(String.format("Harvesting GET URL body: %s", url));
 
+// TODO Retry
         // Get a HTTP document.
         // NOTE: Body in this case is the body of the response.
         //     It's the entire HTML document, not just the content
@@ -54,9 +56,43 @@ public class EntityUtils {
                 .body();
     }
 
+    public static String harvestPostURL(String url, Map<String, String> dataMap) throws IOException {
+        LOGGER.debug(String.format("Harvesting POST URL body: %s%n%s", url, mapToString(dataMap)));
+
+// TODO Retry
+        return EntityUtils.getJsoupConnection(url)
+                .data(dataMap)
+                .method(Connection.Method.POST)
+                .execute()
+                .body();
+    }
+
+    // Used for debugging
+    public static String mapToString(Map<?, ?> map) {
+        if (map == null) {
+            return "NULL";
+        }
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("{%n"));
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            Object key = entry.getKey();
+            String keyStr = key == null ? "NULL" : String.format("\"%s\"", key.toString());
+
+            Object value = entry.getValue();
+            String valueStr = value == null ? "NULL" : String.format("\"%s\"", value.toString());
+
+            sb.append(String.format("    %s: %s%n", keyStr, valueStr));
+        }
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     public static String harvestURLText(String url) throws IOException {
         LOGGER.debug(String.format("Harvesting URL text: %s", url));
 
+// TODO Retry
         Connection.Response response = EntityUtils.getJsoupConnection(url)
                 .execute();
 
@@ -79,7 +115,7 @@ public class EntityUtils {
         return response.body();
     }
 
-    public static Connection getJsoupConnection(String url) {
+    private static Connection getJsoupConnection(String url) {
         // NOTE: JSoup takes care of following redirections.
         //     IOUtils.toString(URL, Charset) does not.
         // NOTE 2: JSoup is quite picky with content types (aka mimetype).

@@ -34,7 +34,7 @@ public class EntityUtilsTest {
         String url = "https://google.com";
         int minimumExpectedFileSize = 10000;
 
-        String htmlContent = EntityUtils.harvestURL(url);
+        String htmlContent = EntityUtils.harvestGetURL(url);
 
         Assert.assertNotNull("Google page returned null content.", htmlContent);
         Assert.assertTrue("The HTML document returned by Google.com is smaller than expected.",
@@ -42,12 +42,13 @@ public class EntityUtilsTest {
 
         Assert.assertTrue("The HTML document do not contain the word \"Google\"", htmlContent.contains("Google"));
     }
+
     @Test
     public void testHarvestURLRedirection() throws IOException {
         String url = "http://tiny.cc/f94ysz"; // Tiny URL which redirect to "https://google.com"
         int minimumExpectedFileSize = 10000;
 
-        String htmlContent = EntityUtils.harvestURL(url);
+        String htmlContent = EntityUtils.harvestGetURL(url);
 
         Assert.assertNotNull("Google page returned null content.", htmlContent);
         Assert.assertTrue("The HTML document returned by Google.com is smaller than expected.",
@@ -59,7 +60,7 @@ public class EntityUtilsTest {
     @Test (expected = java.net.UnknownHostException.class)
     public void testHarvestBrokenURL() throws IOException {
         String url = "https://bad_url_cef393a8cdff31563033e8b742dcadd5.com";
-        EntityUtils.harvestURL(url);
+        EntityUtils.harvestGetURL(url);
     }
 
     @Test

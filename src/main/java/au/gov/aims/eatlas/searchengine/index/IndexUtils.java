@@ -20,8 +20,14 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class IndexUtils {
@@ -69,5 +75,83 @@ public class IndexUtils {
         }
 
         return array;
+    }
+
+
+    // Helper methods to help parsing XML
+
+    // Get the first children that match one of the tag name provided
+    public static Element getXMLChild(Node parent, String ... tagNames) {
+        List<Element> children = getXMLChildren(parent, tagNames);
+        if (children != null && !children.isEmpty()) {
+            return children.get(0);
+        }
+
+        return null;
+    }
+
+    // Get all the children of the first matching tag name provided
+    // NOTE: The multiple tagNames is used to support "gmd" and "mcd" records at the same time.
+    //     Example: getXMLChildren(parent, "gmd:MD_DataIdentification", "mcp:MD_DataIdentification")
+    public static List<Element> getXMLChildren(Node parent, String ... tagNames) {
+        List<Element> children = new ArrayList<Element>();
+
+        if (tagNames == null || tagNames.length == 0 ||
+                !(parent instanceof Element)) {
+            return children;
+        }
+
+        Element parentElement = (Element) parent;
+        for (String tagName : tagNames) {
+            NodeList nameList = parentElement.getElementsByTagName(tagName);
+            if (nameList != null) {
+                for (int i=0; i<nameList.getLength(); i++) {
+                    Node child = nameList.item(i);
+                    if (child instanceof Element) {
+                        children.add((Element) child);
+                    }
+                }
+                if (!children.isEmpty()) {
+                    return children;
+                }
+            }
+        }
+
+        return children;
+    }
+
+    // Specific to GeoNetwork
+    public static String parseCharacterString(Node node) {
+        if (node == null) {
+            return null;
+        }
+
+        Element child = IndexUtils.getXMLChild(node, "gco:CharacterString");
+        return parseText(child);
+    }
+
+    public static String parseText(Node node) {
+        if (node == null) {
+            return null;
+        }
+        String str = node.getTextContent();
+        if (str == null) {
+            return null;
+        }
+        String trimmed = str.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    public static String parseAttribute(Node node, String attribute) {
+        if (node == null) {
+            return null;
+        }
+        NamedNodeMap attributeMap = node.getAttributes();
+        if (attributeMap != null) {
+            Node attributeNode = attributeMap.getNamedItem(attribute);
+            return parseText(attributeNode);
+        }
+
+        return null;
     }
 }

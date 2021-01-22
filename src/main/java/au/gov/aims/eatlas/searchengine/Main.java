@@ -32,11 +32,8 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Connection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -105,7 +102,7 @@ public class Main {
                         new HttpHost("localhost", 9200, "http"),
                         new HttpHost("localhost", 9300, "http"))))) {
 
-            String responseStr = EntityUtils.harvestURL(url);
+            String responseStr = EntityUtils.harvestGetURL(url);
             JSONObject jsonResponse = new JSONObject(responseStr);
 
             JSONArray jsonArticles = jsonResponse.optJSONArray("data");
@@ -193,7 +190,7 @@ public class Main {
         // https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
         String url = String.format("%s/srv/eng/xml.search", geoNetworkUrl);
 
-        String responseStr = EntityUtils.harvestURL(url);
+        String responseStr = EntityUtils.harvestGetURL(url);
 
         // JDOM tutorial:
         //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
@@ -209,30 +206,25 @@ public class Main {
 
             Element root = document.getDocumentElement();
 
-            NodeList metadataRecordList = root.getElementsByTagName("metadata");
 
+
+
+            List<Element> metadataRecordList = IndexUtils.getXMLChildren(root, "metadata");
             try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                     RestClient.builder(
                             new HttpHost("localhost", 9200, "http"),
                             new HttpHost("localhost", 9300, "http"))))) {
 
-                for (int i=0; i<metadataRecordList.getLength(); i++) {
-                    Node metadataRecordNode = metadataRecordList.item(i);
-
-                    if (metadataRecordNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element metadataRecordElement = (Element) metadataRecordNode;
-                        Node metadataRecordInfoNode = metadataRecordElement.getElementsByTagName("geonet:info").item(0);
-                        if (metadataRecordInfoNode.getNodeType() == Node.ELEMENT_NODE) {
-                            Element metadataRecordInfoElement = (Element) metadataRecordInfoNode;
-                            Node metadataRecordUUIDNode = metadataRecordInfoElement.getElementsByTagName("uuid").item(0);
-
-                            String metadataRecordUUID = metadataRecordUUIDNode.getTextContent();
-                            Main.loadGeoNetworkRecord(client, index, builder, geoNetworkUrl, metadataRecordUUID);
-                        }
+int i=0;
+                for (Element metadataRecordElement : metadataRecordList) {
+                    Element metadataRecordInfoElement = IndexUtils.getXMLChild(metadataRecordElement, "geonet:info");
+                    Element metadataRecordUUIDElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "uuid");
+                    if (metadataRecordUUIDElement != null) {
+                        String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
+                        Main.loadGeoNetworkRecord(client, index, builder, geoNetworkUrl, metadataRecordUUID);
                     }
-
 // TODO Delete when the parser is done
-if (i >= 2) break;
+//if (++i >= 10) break;
                 }
             }
         }
@@ -240,37 +232,46 @@ if (i >= 2) break;
 
     private static void loadGeoNetworkRecord(ESClient client, String index, DocumentBuilder builder, String geoNetworkUrl, String metadataRecordUUID) throws IOException, ParserConfigurationException, SAXException {
         String url = String.format("%s/srv/eng/xml.metadata.get", geoNetworkUrl);
-        String metadataRecordUrl = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrl, metadataRecordUUID);
 
+        Map<String, String> dataMap = new HashMap<String, String>();
+        dataMap.put("uuid", metadataRecordUUID);
+        String responseStr = EntityUtils.harvestPostURL(url, dataMap);
+
+/*
         String responseStr = EntityUtils.getJsoupConnection(url)
                 .data("uuid", metadataRecordUUID)
                 .method(Connection.Method.POST)
                 .execute()
                 .body();
+*/
 
-        System.out.println(String.format("METADATA RECORD UUID %s:%n%s", metadataRecordUUID, responseStr));
+//        System.out.println(String.format("METADATA RECORD UUID %s:%n%s", metadataRecordUUID, responseStr));
 
         try (ByteArrayInputStream input = new ByteArrayInputStream(
             responseStr.getBytes(StandardCharsets.UTF_8))) {
 
             Document document = builder.parse(input);
-            // Fix the document, if needed
-            document.getDocumentElement().normalize();
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(metadataRecordUUID, geoNetworkUrl, document);
+            if (geoNetworkRecord.getId() != null) {
+                System.out.println(String.format("Metadata record UUID: %s", metadataRecordUUID));
+//                System.out.println(String.format("Metadata record UUID: %s%n%s", metadataRecordUUID, geoNetworkRecord.toJSON().toString(2)));
 
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(metadataRecordUUID, metadataRecordUrl, document.getDocumentElement());
+                // TODO Uncomment when parser is ready
+                /*
+                IndexRequest indexRequest = new IndexRequest(index)
+                    .id(geoNetworkRecord.getId())
+                    .source(IndexUtils.JSONObjectToMap(geoNetworkRecord.toJSON()));
 
-            // TODO Uncomment when parser is ready
-            /*
-            IndexRequest indexRequest = new IndexRequest(index)
-                .id(geoNetworkRecord.getId())
-                .source(IndexUtils.JSONObjectToMap(geoNetworkRecord.toJSON()));
+                IndexResponse indexResponse = client.index(indexRequest);
 
-            IndexResponse indexResponse = client.index(indexRequest);
-
-            System.out.println(String.format("Indexing GeoNetwork metadata record: %s, status: %d", geoNetworkRecord.getId(), indexResponse.status().getStatus()));
-            */
+                System.out.println(String.format("Indexing GeoNetwork metadata record: %s, status: %d", geoNetworkRecord.getId(), indexResponse.status().getStatus()));
+                */
+            } else {
+                System.out.println(String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
+            }
         } catch(Exception ex) {
             System.out.println(String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
+            ex.printStackTrace();
         }
     }
 

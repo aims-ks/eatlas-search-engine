@@ -899,8 +899,10 @@ public class DummySearch {
 
         GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(
                 uuid,
-                String.format("https://eatlas.org.au/data/faces/view.xhtml?uuid=%s", uuid),
+                "https://eatlas.org.au/geonetwork",
                 null);
+
+        geoNetworkRecord.setLink(new URL(String.format("https://eatlas.org.au/data/faces/view.xhtml?uuid=%s", uuid)));
 
         geoNetworkRecord.setTitle(String.format("Random metadata record %s", randomUUIDName));
         geoNetworkRecord.setDocument(
