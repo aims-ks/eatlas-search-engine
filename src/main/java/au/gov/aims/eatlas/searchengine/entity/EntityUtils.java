@@ -30,7 +30,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
-import java.net.URL;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
@@ -39,62 +38,34 @@ import java.util.Map;
 public class EntityUtils {
     private static final Logger LOGGER = Logger.getLogger(EntityUtils.class.getName());
 
-    public static String harvestGetURL(URL url) throws IOException {
-        return url == null ? null : EntityUtils.harvestGetURL(url.toString());
-    }
+    private static final int JSOUP_RETRY = 5;
+    // NOTE: The delay is incremental: 5, 10, 20, 40, 80...
+    private static final int JSOUP_RETRY_INITIAL_DELAY = 5; // In seconds
 
-    public static String harvestGetURL(String url) throws IOException {
+    public static String harvestGetURL(String url) throws IOException, InterruptedException {
         LOGGER.debug(String.format("Harvesting GET URL body: %s", url));
 
-// TODO Retry
         // Get a HTTP document.
         // NOTE: Body in this case is the body of the response.
         //     It's the entire HTML document, not just the content
         //     of the HTML body element.
-        return EntityUtils.getJsoupConnection(url)
-                .execute()
+        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url), url)
                 .body();
     }
 
-    public static String harvestPostURL(String url, Map<String, String> dataMap) throws IOException {
+    public static String harvestPostURL(String url, Map<String, String> dataMap) throws IOException, InterruptedException {
         LOGGER.debug(String.format("Harvesting POST URL body: %s%n%s", url, mapToString(dataMap)));
 
-// TODO Retry
-        return EntityUtils.getJsoupConnection(url)
-                .data(dataMap)
-                .method(Connection.Method.POST)
-                .execute()
+        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url)
+                    .data(dataMap)
+                    .method(Connection.Method.POST), url)
                 .body();
     }
 
-    // Used for debugging
-    public static String mapToString(Map<?, ?> map) {
-        if (map == null) {
-            return "NULL";
-        }
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(String.format("{%n"));
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            Object key = entry.getKey();
-            String keyStr = key == null ? "NULL" : String.format("\"%s\"", key.toString());
-
-            Object value = entry.getValue();
-            String valueStr = value == null ? "NULL" : String.format("\"%s\"", value.toString());
-
-            sb.append(String.format("    %s: %s%n", keyStr, valueStr));
-        }
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    public static String harvestURLText(String url) throws IOException {
+    public static String harvestURLText(String url) throws IOException, InterruptedException {
         LOGGER.debug(String.format("Harvesting URL text: %s", url));
 
-// TODO Retry
-        Connection.Response response = EntityUtils.getJsoupConnection(url)
-                .execute();
+        Connection.Response response = jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url), url);
 
         String mimetype = response.contentType();
         if (mimetype == null) {
@@ -113,6 +84,28 @@ public class EntityUtils {
 
         LOGGER.warn(String.format("Unsupported mimetype: %s", mimetype));
         return response.body();
+    }
+
+    private static Connection.Response jsoupExecuteWithRetry(Connection jsoupConnection, String url) throws IOException, InterruptedException {
+        IOException lastException = null;
+        int delay = JSOUP_RETRY_INITIAL_DELAY;
+
+        for (int i=0; i<JSOUP_RETRY; i++) {
+            try {
+                return jsoupConnection.execute();
+            } catch (IOException ex) {
+                // The following IOException (and maybe more) may occur when the computer lose network connection:
+                //     SocketTimeoutException, ConnectException, UnknownHostException
+                LOGGER.warn(String.format("Connection timed out while requesting URL: %s%nWait for %d seconds before re-trying [%d/%d].",
+                        url, delay, i+1, JSOUP_RETRY));
+                lastException = ex;
+                Thread.sleep(delay * 1000L);
+                delay *= 2;
+            }
+        }
+        LOGGER.error(String.format("Connection timed out %d times while requesting URL: %s", JSOUP_RETRY, url));
+
+        throw lastException;
     }
 
     private static Connection getJsoupConnection(String url) {
@@ -165,5 +158,26 @@ public class EntityUtils {
         try (PDDocument document = PDDocument.load(documentBytes)) {
             return new PDFTextStripper().getText(document);
         }
+    }
+
+    public static String mapToString(Map<?, ?> map) {
+        if (map == null) {
+            return "NULL";
+        }
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("{%n"));
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            Object key = entry.getKey();
+            String keyStr = key == null ? "NULL" : String.format("\"%s\"", key.toString());
+
+            Object value = entry.getValue();
+            String valueStr = value == null ? "NULL" : String.format("\"%s\"", value.toString());
+
+            sb.append(String.format("    %s: %s%n", keyStr, valueStr));
+        }
+        sb.append("}");
+
+        return sb.toString();
     }
 }

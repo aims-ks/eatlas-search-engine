@@ -26,6 +26,7 @@ import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import org.apache.http.HttpHost;
+import org.apache.log4j.Logger;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RestClient;
@@ -41,6 +42,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Main {
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     public static void main(String... args) throws Exception {
         //Main.testElasticSearch();
@@ -91,19 +94,19 @@ public class Main {
      *   $ cd Desktop/projects/eAtlas-redesign/2020-Drupal9/
      *   $ docker-compose up
      */
-    private static void loadDrupalArticles() throws IOException {
+    private static void loadDrupalArticles() throws IOException, InterruptedException {
         String index = "eatlas_article";
 
         // URL to get first 10 last modified articles (using Drupal core module JSON:API)
         String url = "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=100&page[offset]=0";
 
+        String responseStr = EntityUtils.harvestGetURL(url);
+        JSONObject jsonResponse = new JSONObject(responseStr);
+
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("localhost", 9200, "http"),
                         new HttpHost("localhost", 9300, "http"))))) {
-
-            String responseStr = EntityUtils.harvestGetURL(url);
-            JSONObject jsonResponse = new JSONObject(responseStr);
 
             JSONArray jsonArticles = jsonResponse.optJSONArray("data");
             JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
@@ -171,7 +174,21 @@ public class Main {
                         new HttpHost("localhost", 9300, "http"))))) {
 
             for (ExternalLink externalLink : externalLinks) {
-                externalLink.setDocument(EntityUtils.harvestURLText(externalLink.getLink().toString()));
+                URL externalLinkUrl = externalLink.getLink();
+                if (externalLinkUrl == null) {
+                    continue;
+                }
+
+                String responseStr;
+                try {
+                    responseStr = EntityUtils.harvestURLText(externalLinkUrl.toString());
+                } catch (Exception ex) {
+                    LOGGER.error(String.format("Exception occurred while harvesting the external URL: %s",
+                            externalLinkUrl.toString()), ex);
+
+                    continue;
+                }
+                externalLink.setDocument(responseStr);
 
                 IndexRequest indexRequest = new IndexRequest(index)
                     .id(externalLink.getId())
@@ -184,7 +201,7 @@ public class Main {
         }
     }
 
-    private static void loadGeoNetworkRecords(String geoNetworkUrl) throws IOException, ParserConfigurationException, SAXException {
+    private static void loadGeoNetworkRecords(String geoNetworkUrl) throws IOException, ParserConfigurationException, SAXException, InterruptedException {
         String index = "eatlas_metadata";
 
         // https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
@@ -206,16 +223,12 @@ public class Main {
 
             Element root = document.getDocumentElement();
 
-
-
-
             List<Element> metadataRecordList = IndexUtils.getXMLChildren(root, "metadata");
             try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                     RestClient.builder(
                             new HttpHost("localhost", 9200, "http"),
                             new HttpHost("localhost", 9300, "http"))))) {
 
-int i=0;
                 for (Element metadataRecordElement : metadataRecordList) {
                     Element metadataRecordInfoElement = IndexUtils.getXMLChild(metadataRecordElement, "geonet:info");
                     Element metadataRecordUUIDElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "uuid");
@@ -223,29 +236,27 @@ int i=0;
                         String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
                         Main.loadGeoNetworkRecord(client, index, builder, geoNetworkUrl, metadataRecordUUID);
                     }
-// TODO Delete when the parser is done
-//if (++i >= 10) break;
                 }
             }
         }
     }
 
-    private static void loadGeoNetworkRecord(ESClient client, String index, DocumentBuilder builder, String geoNetworkUrl, String metadataRecordUUID) throws IOException, ParserConfigurationException, SAXException {
+    private static void loadGeoNetworkRecord(ESClient client, String index, DocumentBuilder builder, String geoNetworkUrl, String metadataRecordUUID) {
         String url = String.format("%s/srv/eng/xml.metadata.get", geoNetworkUrl);
 
         Map<String, String> dataMap = new HashMap<String, String>();
         dataMap.put("uuid", metadataRecordUUID);
-        String responseStr = EntityUtils.harvestPostURL(url, dataMap);
 
-/*
-        String responseStr = EntityUtils.getJsoupConnection(url)
-                .data("uuid", metadataRecordUUID)
-                .method(Connection.Method.POST)
-                .execute()
-                .body();
-*/
+        String responseStr;
+        try {
+            LOGGER.info(String.format("Harvesting metadata record UUID: %s from: %s", metadataRecordUUID, url));
+            responseStr = EntityUtils.harvestPostURL(url, dataMap);
+        } catch (Exception ex) {
+            LOGGER.error(String.format("Exception occurred while harvesting the metadata record UUID: %s%nUrl: %s%nPOST data: %s",
+                    metadataRecordUUID, url, EntityUtils.mapToString(dataMap)), ex);
 
-//        System.out.println(String.format("METADATA RECORD UUID %s:%n%s", metadataRecordUUID, responseStr));
+            return;
+        }
 
         try (ByteArrayInputStream input = new ByteArrayInputStream(
             responseStr.getBytes(StandardCharsets.UTF_8))) {
@@ -253,25 +264,20 @@ int i=0;
             Document document = builder.parse(input);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(metadataRecordUUID, geoNetworkUrl, document);
             if (geoNetworkRecord.getId() != null) {
-                System.out.println(String.format("Metadata record UUID: %s", metadataRecordUUID));
-//                System.out.println(String.format("Metadata record UUID: %s%n%s", metadataRecordUUID, geoNetworkRecord.toJSON().toString(2)));
-
-                // TODO Uncomment when parser is ready
-                /*
                 IndexRequest indexRequest = new IndexRequest(index)
                     .id(geoNetworkRecord.getId())
                     .source(IndexUtils.JSONObjectToMap(geoNetworkRecord.toJSON()));
 
                 IndexResponse indexResponse = client.index(indexRequest);
 
-                System.out.println(String.format("Indexing GeoNetwork metadata record: %s, status: %d", geoNetworkRecord.getId(), indexResponse.status().getStatus()));
-                */
+                LOGGER.debug(String.format("Indexing GeoNetwork metadata record: %s, status: %d",
+                        geoNetworkRecord.getId(),
+                        indexResponse.status().getStatus()));
             } else {
-                System.out.println(String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
+                LOGGER.error(String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
             }
         } catch(Exception ex) {
-            System.out.println(String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
-            ex.printStackTrace();
+            LOGGER.error(String.format("Exception occurred while harvesting metadata record UUID: %s", metadataRecordUUID), ex);
         }
     }
 

@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class EntityUtilsTest {
      * It might fail if there is no network.
      */
     @Test
-    public void testHarvestURL() throws IOException {
+    public void testHarvestURL() throws IOException, InterruptedException {
         String url = "https://google.com";
         int minimumExpectedFileSize = 10000;
 
@@ -44,7 +45,7 @@ public class EntityUtilsTest {
     }
 
     @Test
-    public void testHarvestURLRedirection() throws IOException {
+    public void testHarvestURLRedirection() throws IOException, InterruptedException {
         String url = "http://tiny.cc/f94ysz"; // Tiny URL which redirect to "https://google.com"
         int minimumExpectedFileSize = 10000;
 
@@ -57,8 +58,11 @@ public class EntityUtilsTest {
         Assert.assertTrue("The HTML document do not contain the word \"Google\"", htmlContent.contains("Google"));
     }
 
+    // Manually run to test the retry feature.
+    // It's not an automatic test because it takes about 5 minutes...
+    @Ignore
     @Test (expected = java.net.UnknownHostException.class)
-    public void testHarvestBrokenURL() throws IOException {
+    public void testHarvestBrokenURL() throws IOException, InterruptedException {
         String url = "https://bad_url_cef393a8cdff31563033e8b742dcadd5.com";
         EntityUtils.harvestGetURL(url);
     }

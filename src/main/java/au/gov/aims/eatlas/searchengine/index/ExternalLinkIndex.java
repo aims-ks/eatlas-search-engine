@@ -53,7 +53,7 @@ public class ExternalLinkIndex extends AbstractIndex<ExternalLink> {
      *   since there is always only one entity to harvest.
      */
     @Override
-    public List<ExternalLink> harvest(int limit, int offset) throws IOException {
+    public List<ExternalLink> harvest(int limit, int offset) throws IOException, InterruptedException {
         List<ExternalLink> entityList = new ArrayList<>();
 
         ExternalLink entity = new ExternalLink(this.url, this.thumbnail, this.title);

@@ -40,7 +40,7 @@ public abstract class AbstractIndex<E extends Entity> {
         this.index = index;
     }
 
-    public abstract List<E> harvest(int limit, int offset) throws IOException;
+    public abstract List<E> harvest(int limit, int offset) throws IOException, InterruptedException;
 
     public String getIndex() {
         return this.index;
