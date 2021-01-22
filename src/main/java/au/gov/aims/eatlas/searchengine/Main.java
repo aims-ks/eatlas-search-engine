@@ -59,7 +59,8 @@ public class Main {
 
         //Main.loadDrupalArticles();
         //Main.loadExternalLinks();
-        Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork");
+        //Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork");
+        Main.loadAtlasMapperLayers("https://maps.eatlas.org.au/config/layers.json");
     }
 
     private static void testElasticSearch() throws IOException {
@@ -279,6 +280,10 @@ public class Main {
         } catch(Exception ex) {
             LOGGER.error(String.format("Exception occurred while harvesting metadata record UUID: %s", metadataRecordUUID), ex);
         }
+    }
+
+    private static void loadAtlasMapperLayers(String atlasMapperUrl) {
+        // TODO!!
     }
 
     private static void loadDummyExternalLinks(int count) throws IOException {

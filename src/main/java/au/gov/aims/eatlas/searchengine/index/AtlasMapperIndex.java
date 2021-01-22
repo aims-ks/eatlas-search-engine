@@ -42,7 +42,7 @@ public class AtlasMapperIndex extends AbstractIndex<AtlasMapperLayer> {
     }
 
     @Override
-    public List<AtlasMapperLayer> harvest(int limit, int offset) {
+    public List<AtlasMapperLayer> harvest() {
         // TODO Implement
         return null;
     }

@@ -42,7 +42,7 @@ public class GeoNetworkIndex extends AbstractIndex<GeoNetworkRecord> {
     }
 
     @Override
-    public List<GeoNetworkRecord> harvest(int limit, int offset) {
+    public List<GeoNetworkRecord> harvest() {
         // TODO Implement
         return null;
     }

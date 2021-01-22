@@ -45,7 +45,7 @@ public class DrupalNodeIndex extends AbstractIndex<DrupalNode> {
     }
 
     @Override
-    public List<DrupalNode> harvest(int limit, int offset) {
+    public List<DrupalNode> harvest() {
         // TODO Implement
         // http://localhost:9090/jsonapi/node/article?sort=-changed&page[limit]=10&page[offset]=10
         return null;
