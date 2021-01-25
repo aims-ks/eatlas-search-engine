@@ -170,13 +170,23 @@ public class GeoNetworkRecord extends Entity {
                         }
                     }
 
-                    String previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
-                            geonetworkUrlStr, this.getId(), fileName);
+                    if (fileName != null) {
+                        String previewUrlStr;
+                        if (fileName.startsWith("http://") || fileName.startsWith("https://")) {
+                            // Some records puts the full URL in the preview field.
+                            // Example:
+                            //     https://eatlas.org.au/geonetwork/srv/eng/xml.metadata.get?uuid=a86f062e-f47c-49f1-ace5-3e03a2272088
+                            previewUrlStr = fileName;
+                        } else {
+                            previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
+                                    geonetworkUrlStr, this.getId(), fileName);
+                        }
 
-                    try {
-                        this.setThumbnail(new URL(previewUrlStr));
-                    } catch(Exception ex) {
-                        LOGGER.error(String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
+                        try {
+                            this.setThumbnail(new URL(previewUrlStr));
+                        } catch(Exception ex) {
+                            LOGGER.error(String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
+                        }
                     }
                 }
 
@@ -266,7 +276,8 @@ public class GeoNetworkRecord extends Entity {
                     documentPartList.add(onlineResource.toString());
                 }
 
-                this.setDocument(documentPartList.isEmpty() ? null : String.join(NL + NL, documentPartList));
+                this.setDocument(documentPartList.isEmpty() ? null :
+                        String.join(NL + NL, documentPartList));
 
 
                 // Set the metadata link to the original GeoNetwork URL.

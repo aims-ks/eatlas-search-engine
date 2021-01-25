@@ -109,19 +109,26 @@ public class EntityUtils {
     }
 
     private static Connection getJsoupConnection(String url) {
-        // NOTE: JSoup takes care of following redirections.
+        // JSoup takes care of following redirections.
         //     IOUtils.toString(URL, Charset) does not.
-        // NOTE 2: JSoup is quite picky with content types (aka mimetype).
+        //
+        // ignoreHttpErrors(true)
+        //     To make it more robust
+        // ignoreContentType(true)
+        //     JSoup is quite picky with content types (aka mimetype).
         //     It only allows text/*, application/xml, or application/*+xml
         //     Some websites could be setup with wrong content type.
         //     We use "ignoreContentType" to workaround this issue.
-        // NOTE 3: Use "ignoreHttpErrors" to make it more robust.
-        // NOTE 4: To deal with dodgy SSL certificates, add
-        //     custom sslSocketFactory
+        // maxBodySize(0)
+        //     Default to 2MB. 0 = Infinite.
+        //     AtlasMapper layer list for the eAtlas is larger than 2MB.
+        // sslSocketFactory(...)
+        //     To deal with dodgy SSL certificates.
         return Jsoup
                 .connect(url)
                 .ignoreHttpErrors(true)
                 .ignoreContentType(true)
+                .maxBodySize(0)
                 .sslSocketFactory(EntityUtils.socketFactory());
     }
 

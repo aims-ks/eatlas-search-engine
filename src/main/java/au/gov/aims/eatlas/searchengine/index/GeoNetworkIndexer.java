@@ -67,68 +67,70 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         String url = String.format("%s/srv/eng/xml.search", this.geoNetworkUrl);
 
         String responseStr = EntityUtils.harvestGetURL(url);
+        if (responseStr != null && !responseStr.isEmpty()) {
 
-        // JDOM tutorial:
-        //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
+            // JDOM tutorial:
+            //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
 
-        try (ByteArrayInputStream input = new ByteArrayInputStream(
-            responseStr.getBytes(StandardCharsets.UTF_8))) {
+            try (ByteArrayInputStream input = new ByteArrayInputStream(
+                responseStr.getBytes(StandardCharsets.UTF_8))) {
 
-            Document document = builder.parse(input);
-            // Fix the document, if needed
-            document.getDocumentElement().normalize();
+                Document document = builder.parse(input);
+                // Fix the document, if needed
+                document.getDocumentElement().normalize();
 
-            Element root = document.getDocumentElement();
+                Element root = document.getDocumentElement();
 
-            List<Element> metadataRecordList = IndexUtils.getXMLChildren(root, "metadata");
-            try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                    RestClient.builder(
-                            new HttpHost("localhost", 9200, "http"),
-                            new HttpHost("localhost", 9300, "http"))))) {
+                List<Element> metadataRecordList = IndexUtils.getXMLChildren(root, "metadata");
+                try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
+                        RestClient.builder(
+                                new HttpHost("localhost", 9200, "http"),
+                                new HttpHost("localhost", 9300, "http"))))) {
 
-                // List of metadata records which needs its parent title to be set
-                List<String> orphanMetadataRecordList = new ArrayList<>();
-                for (Element metadataRecordElement : metadataRecordList) {
-                    Element metadataRecordInfoElement = IndexUtils.getXMLChild(metadataRecordElement, "geonet:info");
-                    Element metadataRecordUUIDElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "uuid");
-                    if (metadataRecordUUIDElement != null) {
-                        String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
-                        GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(builder, metadataRecordUUID);
-                        if (geoNetworkRecord != null) {
-                            // If the record have a parent UUID,
-                            // keep it's UUID in a list so we can come back to it later to set its parent title.
-                            String parentUUID = geoNetworkRecord.getParentUUID();
-                            if (parentUUID != null && !parentUUID.isEmpty()) {
-                                orphanMetadataRecordList.add(metadataRecordUUID);
+                    // List of metadata records which needs its parent title to be set
+                    List<String> orphanMetadataRecordList = new ArrayList<>();
+                    for (Element metadataRecordElement : metadataRecordList) {
+                        Element metadataRecordInfoElement = IndexUtils.getXMLChild(metadataRecordElement, "geonet:info");
+                        Element metadataRecordUUIDElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "uuid");
+                        if (metadataRecordUUIDElement != null) {
+                            String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
+                            GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(builder, metadataRecordUUID);
+                            if (geoNetworkRecord != null) {
+                                // If the record have a parent UUID,
+                                // keep it's UUID in a list so we can come back to it later to set its parent title.
+                                String parentUUID = geoNetworkRecord.getParentUUID();
+                                if (parentUUID != null && !parentUUID.isEmpty()) {
+                                    orphanMetadataRecordList.add(metadataRecordUUID);
+                                }
+
+                                IndexResponse indexResponse = this.index(client, geoNetworkRecord);
+
+                                LOGGER.debug(String.format("Indexing GeoNetwork metadata record: %s, status: %d",
+                                        geoNetworkRecord.getId(),
+                                        indexResponse.status().getStatus()));
                             }
-
-                            IndexResponse indexResponse = this.index(client, geoNetworkRecord);
-
-                            LOGGER.debug(String.format("Indexing GeoNetwork metadata record: %s, status: %d",
-                                    geoNetworkRecord.getId(),
-                                    indexResponse.status().getStatus()));
                         }
                     }
-                }
 
-                // We have added all the records.
-                // Lets fix the records parent title.
-                for (String recordUUID : orphanMetadataRecordList) {
-                    GeoNetworkRecord geoNetworkRecord = this.get(client, recordUUID);
-                    if (geoNetworkRecord != null) {
-                        String parentRecordUUID = geoNetworkRecord.getParentUUID();
-                        GeoNetworkRecord parentRecord = this.get(client, parentRecordUUID);
-                        if (parentRecord != null) {
-                            geoNetworkRecord.setParentTitle(parentRecord.getTitle());
+                    // We have added all the records.
+                    // Lets fix the records parent title.
+                    for (String recordUUID : orphanMetadataRecordList) {
+                        GeoNetworkRecord geoNetworkRecord = this.get(client, recordUUID);
+                        if (geoNetworkRecord != null) {
+                            String parentRecordUUID = geoNetworkRecord.getParentUUID();
+                            GeoNetworkRecord parentRecord = this.get(client, parentRecordUUID);
+                            if (parentRecord != null) {
+                                geoNetworkRecord.setParentTitle(parentRecord.getTitle());
 
-                            IndexResponse indexResponse = this.index(client, geoNetworkRecord);
+                                IndexResponse indexResponse = this.index(client, geoNetworkRecord);
 
-                            LOGGER.debug(String.format("Re-indexing GeoNetwork metadata record: %s with parent title: %s, status: %d",
-                                    geoNetworkRecord.getId(),
-                                    geoNetworkRecord.getParentTitle(),
-                                    indexResponse.status().getStatus()));
+                                LOGGER.debug(String.format("Re-indexing GeoNetwork metadata record: %s with parent title: %s, status: %d",
+                                        geoNetworkRecord.getId(),
+                                        geoNetworkRecord.getParentTitle(),
+                                        indexResponse.status().getStatus()));
+                            }
                         }
                     }
                 }
@@ -144,7 +146,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         String responseStr;
         try {
-            LOGGER.info(String.format("Harvesting metadata record UUID: %s from: %s", metadataRecordUUID, url));
+            //LOGGER.info(String.format("Harvesting metadata record UUID: %s from: %s", metadataRecordUUID, url));
             responseStr = EntityUtils.harvestPostURL(url, dataMap);
         } catch (Exception ex) {
             LOGGER.error(String.format("Exception occurred while harvesting the metadata record UUID: %s%nUrl: %s%nPOST data: %s",
@@ -153,18 +155,20 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             return null;
         }
 
-        try (ByteArrayInputStream input = new ByteArrayInputStream(
-            responseStr.getBytes(StandardCharsets.UTF_8))) {
+        if (responseStr != null && !responseStr.isEmpty()) {
+            try (ByteArrayInputStream input = new ByteArrayInputStream(
+                responseStr.getBytes(StandardCharsets.UTF_8))) {
 
-            Document document = builder.parse(input);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(metadataRecordUUID, this.geoNetworkUrl, document);
-            if (geoNetworkRecord.getId() != null) {
-                return geoNetworkRecord;
-            } else {
-                LOGGER.error(String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
+                Document document = builder.parse(input);
+                GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(metadataRecordUUID, this.geoNetworkUrl, document);
+                if (geoNetworkRecord.getId() != null) {
+                    return geoNetworkRecord;
+                } else {
+                    LOGGER.error(String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
+                }
+            } catch(Exception ex) {
+                LOGGER.error(String.format("Exception occurred while harvesting metadata record UUID: %s", metadataRecordUUID), ex);
             }
-        } catch(Exception ex) {
-            LOGGER.error(String.format("Exception occurred while harvesting metadata record UUID: %s", metadataRecordUUID), ex);
         }
 
         return null;

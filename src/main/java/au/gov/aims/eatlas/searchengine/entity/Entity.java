@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
@@ -32,13 +33,11 @@ public abstract class Entity {
     private String title;
     private String document;
 
-    // The index in which the result was found
-    private String index;
-
     // URL to the search result thumbnail image
     private URL thumbnail;
 
-    // "en"
+    // The 2 letters langcode representing the language of this entity.
+    // Example: "en"
     private String langcode;
 
     public String getId() {
@@ -73,14 +72,6 @@ public abstract class Entity {
         this.document = document;
     }
 
-    public String getIndex() {
-        return this.index;
-    }
-
-    public void setIndex(String index) {
-        this.index = index;
-    }
-
     public URL getThumbnail() {
         return this.thumbnail;
     }
@@ -105,7 +96,8 @@ public abstract class Entity {
             .put("class", this.getClass().getSimpleName())
             .put("link", linkUrl == null ? null : linkUrl.toString())
             .put("title", this.getTitle())
-            .put("document", this.getDocument())
+            // Encode HTML from the document, to allow the search to all highlights as HTML tags
+            .put("document", StringEscapeUtils.escapeHtml4(this.getDocument()))
             .put("thumbnail", thumbnailUrl == null ? null : thumbnailUrl.toString())
             .put("langcode", this.getLangcode());
     }
@@ -114,7 +106,8 @@ public abstract class Entity {
         if (json != null) {
             this.id = json.optString("id", null);
             this.title = json.optString("title", null);
-            this.document = json.optString("document", null);
+            // Decode HTML since we encoded it in the toJSON method
+            this.document = StringEscapeUtils.unescapeHtml4(json.optString("document", null));
             this.langcode = json.optString("langcode", null);
 
             String linkStr = json.optString("link", null);

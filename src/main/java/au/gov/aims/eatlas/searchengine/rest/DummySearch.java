@@ -876,7 +876,7 @@ public class DummySearch {
         Random random = new Random(137 + index);
         String randomLayerName = "ea_" + this.getRandomWord(random);
 
-        AtlasMapperLayer layerEntity = new AtlasMapperLayer(null);
+        AtlasMapperLayer layerEntity = new AtlasMapperLayer(null, randomLayerName, null, null);
         layerEntity.setLink(new URL(String.format("https://maps.eatlas.org.au/index.html?intro=false&z=7&ll=148.00000,-18.00000&l0=%s,ea_ea-be%%3AWorld_Bright-Earth-e-Atlas-basemap", randomLayerName)));
         layerEntity.setTitle(String.format("AtlasMapper random layer %d is %s", index, randomLayerName));
         layerEntity.setDocument(

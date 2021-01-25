@@ -24,7 +24,6 @@ import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -76,27 +75,25 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                 String url = String.format("%s/jsonapi/node/%s?include=%s&sort=-changed&page[limit]=%d&page[offset]=%d",
                     this.drupalUrl, this.drupalNodeType, this.drupalPreviewImageField, INDEX_PAGE_SIZE, page * INDEX_PAGE_SIZE);
 
+                nodeFound = 0;
                 String responseStr = EntityUtils.harvestGetURL(url);
-                JSONObject jsonResponse = new JSONObject(responseStr);
+                if (responseStr != null && !responseStr.isEmpty()) {
+                    JSONObject jsonResponse = new JSONObject(responseStr);
 
-                JSONArray jsonNodes = jsonResponse.optJSONArray("data");
-                JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
+                    JSONArray jsonNodes = jsonResponse.optJSONArray("data");
+                    JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
 
-                nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
+                    nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
 
-                for (int i=0; i<nodeFound; i++) {
-                    DrupalNode drupalNode = new DrupalNode(jsonNodes.optJSONObject(i), jsonIncluded, this.drupalPreviewImageField);
+                    for (int i=0; i<nodeFound; i++) {
+                        DrupalNode drupalNode = new DrupalNode(jsonNodes.optJSONObject(i), jsonIncluded, this.drupalPreviewImageField);
+                        IndexResponse indexResponse = this.index(client, drupalNode);
 
-                    IndexRequest indexRequest = new IndexRequest(this.getIndex())
-                        .id(drupalNode.getId())
-                        .source(IndexUtils.JSONObjectToMap(drupalNode.toJSON()));
-
-                    IndexResponse indexResponse = client.index(indexRequest);
-
-                    LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",
-                            page,
-                            drupalNode.getNid(),
-                            indexResponse.status().getStatus()));
+                        LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",
+                                page,
+                                drupalNode.getNid(),
+                                indexResponse.status().getStatus()));
+                    }
                 }
                 page++;
             } while(nodeFound == INDEX_PAGE_SIZE);

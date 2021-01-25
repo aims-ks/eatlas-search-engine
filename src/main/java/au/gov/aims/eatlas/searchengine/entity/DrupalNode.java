@@ -37,10 +37,10 @@ public class DrupalNode extends Entity {
             URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
 
             // UUID
-            this.setId(jsonApiNode == null ? null : jsonApiNode.optString("id", null));
+            this.setId(jsonApiNode.optString("id", null));
 
             // Node ID
-            JSONObject jsonAttributes = jsonApiNode == null ? null : jsonApiNode.optJSONObject("attributes");
+            JSONObject jsonAttributes = jsonApiNode.optJSONObject("attributes");
             String nidStr = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__nid", null);
             this.nid = nidStr == null ? null : Integer.parseInt(nidStr);
 
@@ -62,7 +62,8 @@ public class DrupalNode extends Entity {
 
             // Body
             JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
-            this.setDocument(jsonBody == null ? null : EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
+            this.setDocument(jsonBody == null ? null :
+                EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
 
             // Thumbnail (aka preview image)
             if (baseUrl != null && previewImageField != null) {

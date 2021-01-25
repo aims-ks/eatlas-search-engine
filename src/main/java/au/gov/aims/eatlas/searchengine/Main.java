@@ -21,6 +21,7 @@ package au.gov.aims.eatlas.searchengine;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
+import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
@@ -47,7 +48,7 @@ public class Main {
         //Main.loadDrupalArticles();
         //Main.loadExternalLinks();
         //Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork");
-        Main.loadAtlasMapperLayers("https://maps.eatlas.org.au/config/layers.json");
+        Main.loadAtlasMapperLayers("https://maps.eatlas.org.au");
     }
 
     private static void testElasticSearch() throws IOException {
@@ -139,8 +140,10 @@ public class Main {
         geoNetworkIndex.harvest();
     }
 
-    private static void loadAtlasMapperLayers(String atlasMapperUrl) {
-        // TODO!!
+    private static void loadAtlasMapperLayers(String atlasMapperClientUrl) throws Exception {
+        String index = "eatlas_layer";
+        AtlasMapperIndexer atlasMapperIndexer = new AtlasMapperIndexer(index, atlasMapperClientUrl, "2.2.0");
+        atlasMapperIndexer.harvest();
     }
 
     private static void loadDummyExternalLinks(int count) throws IOException {

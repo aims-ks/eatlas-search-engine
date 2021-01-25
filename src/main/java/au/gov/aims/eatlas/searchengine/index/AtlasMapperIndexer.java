@@ -18,11 +18,23 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
+import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
+import org.apache.http.HttpHost;
+import org.apache.log4j.Logger;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
-    private String atlasMapperUrl;
+    private static final Logger LOGGER = Logger.getLogger(AtlasMapperIndexer.class.getName());
+
+    private String atlasMapperClientUrl;
     private String atlasMapperVersion;
 
     public AtlasMapperLayer load(JSONObject json) {
@@ -31,26 +43,60 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
     /**
      * index: eatlas_layer
-     * atlasMapperUrl: https://maps.eatlas.org.au/atlasmapper
+     * atlasMapperClientUrl: https://maps.eatlas.org.au
      * atlasMapperVersion: 2.2.0
      */
-    public AtlasMapperIndexer(String index, String atlasMapperUrl, String atlasMapperVersion) {
+    public AtlasMapperIndexer(String index, String atlasMapperClientUrl, String atlasMapperVersion) {
         super(index);
-        this.atlasMapperUrl = atlasMapperUrl;
+        this.atlasMapperClientUrl = atlasMapperClientUrl;
         this.atlasMapperVersion = atlasMapperVersion;
     }
 
     @Override
-    public void harvest() {
-        // TODO Implement
+    public void harvest() throws IOException, InterruptedException {
+        // Get the map of datasources
+        // "https://maps.eatlas.org.au/config/main.json"
+        String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
+        String mainResponseStr = EntityUtils.harvestGetURL(mainUrlStr);
+        if (mainResponseStr == null || mainResponseStr.isEmpty()) {
+            return;
+        }
+        JSONObject jsonMainConfig = new JSONObject(mainResponseStr);
+
+        // Get the list of layers
+        // "https://maps.eatlas.org.au/config/layers.json"
+        String layersUrlStr = String.format("%s/config/layers.json", this.atlasMapperClientUrl);
+        String layersResponseStr = EntityUtils.harvestGetURL(layersUrlStr);
+        if (layersResponseStr == null || layersResponseStr.isEmpty()) {
+            return;
+        }
+        JSONObject jsonLayersConfig = new JSONObject(layersResponseStr);
+
+        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9300, "http"))))) {
+
+            for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
+                JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
+
+                AtlasMapperLayer layerEntity = new AtlasMapperLayer(
+                        this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
+                IndexResponse indexResponse = this.index(client, layerEntity);
+
+                LOGGER.debug(String.format("Indexing AtlasMapper layer ID: %s, status: %d",
+                        atlasMapperLayerId,
+                        indexResponse.status().getStatus()));
+            }
+        }
     }
 
-    public String getAtlasMapperUrl() {
-        return this.atlasMapperUrl;
+    public String getAtlasMapperClientUrl() {
+        return this.atlasMapperClientUrl;
     }
 
-    public void setAtlasMapperUrl(String atlasMapperUrl) {
-        this.atlasMapperUrl = atlasMapperUrl;
+    public void setAtlasMapperClientUrl(String atlasMapperClientUrl) {
+        this.atlasMapperClientUrl = atlasMapperClientUrl;
     }
 
     public String getAtlasMapperVersion() {

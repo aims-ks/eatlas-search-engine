@@ -91,6 +91,13 @@
             <version>2.0.22</version>
         </dependency>
 
+        <!-- Apache text utils, to escape HTML -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.9</version>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>log4j</groupId>
