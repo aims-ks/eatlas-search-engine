@@ -110,6 +110,33 @@ public abstract class Entity {
             .put("langcode", this.getLangcode());
     }
 
+    protected void loadJSON(JSONObject json) {
+        if (json != null) {
+            this.id = json.optString("id", null);
+            this.title = json.optString("title", null);
+            this.document = json.optString("document", null);
+            this.langcode = json.optString("langcode", null);
+
+            String linkStr = json.optString("link", null);
+            if (linkStr != null && !linkStr.isEmpty()) {
+                try {
+                    this.setLink(new URL(linkStr));
+                } catch(Exception ex) {
+                    LOGGER.error(String.format("Invalid index entity URL found: %s", linkStr), ex);
+                }
+            }
+
+            String thumbnailStr = json.optString("thumbnail", null);
+            if (thumbnailStr != null && !thumbnailStr.isEmpty()) {
+                try {
+                    this.setThumbnail(new URL(thumbnailStr));
+                } catch(Exception ex) {
+                    LOGGER.error(String.format("Invalid index entity thumbnail URL found: %s", thumbnailStr), ex);
+                }
+            }
+        }
+    }
+
     @Override
     public String toString() {
         JSONObject json = this.toJSON();

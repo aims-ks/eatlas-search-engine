@@ -258,7 +258,7 @@ public class DummySearch {
             .setScore(23)
         );
 
-        DrupalNode drupalNode = new DrupalNode(null, null);
+        DrupalNode drupalNode = new DrupalNode(null, null, null);
         drupalNode.setLink(new URL("http://localhost:9090/node/4"));
         drupalNode.setTitle("A guide to Indigenous science, management and governance of Australian coastal waters");
         drupalNode.setDocument(

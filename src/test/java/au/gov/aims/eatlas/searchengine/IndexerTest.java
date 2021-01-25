@@ -22,11 +22,12 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESTestClient;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
-import au.gov.aims.eatlas.searchengine.index.AbstractIndex;
-import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndex;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
@@ -54,6 +55,7 @@ import java.util.Map;
 // https://www.javacodegeeks.com/2017/03/elasticsearch-java-developers-elasticsearch-java.html
 @ESIntegTestCase.ClusterScope(numDataNodes = 3)
 public class IndexerTest extends ESSingleNodeTestCase {
+    private static final Logger LOGGER = Logger.getLogger(IndexerTest.class.getName());
 
     @BeforeClass
     public static void beforeClass() {
@@ -108,38 +110,47 @@ public class IndexerTest extends ESSingleNodeTestCase {
         ClassLoader classLoader = IndexerTest.class.getClassLoader();
         String index = "eatlas_extlink";
 
-        ExternalLinkIndex seagrassWatchLinkIndex = new ExternalLinkIndex(
-            index,
+        ExternalLinkIndexer eAtlasExternalLinkIndexer = new ExternalLinkIndexer(index);
+
+        eAtlasExternalLinkIndexer.addExternalLink(
             "https://www.seagrasswatch.org/idseagrass/",
             null,
             "Tropical Seagrass Identification (Seagrass-Watch)"
         );
-        ExternalLink seagrassWatchLink = new ExternalLink(
-                seagrassWatchLinkIndex.getUrl(), seagrassWatchLinkIndex.getThumbnail(),
-                seagrassWatchLinkIndex.getTitle());
-        seagrassWatchLink.setDocument(EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
-                "externalLinks/seagrasswatch.html", StandardCharsets.UTF_8, classLoader)));
-
-        ExternalLinkIndex coralsOfTheWorldLinkIndex = new ExternalLinkIndex(
-            index,
+        eAtlasExternalLinkIndexer.addExternalLink(
             "http://www.coralsoftheworld.org/",
             null,
             "Corals of the World (AIMS)"
         );
-        ExternalLink coralsOfTheWorldLink = new ExternalLink(
-                coralsOfTheWorldLinkIndex.getUrl(), coralsOfTheWorldLinkIndex.getThumbnail(),
-                coralsOfTheWorldLinkIndex.getTitle());
-        coralsOfTheWorldLink.setDocument(EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
-                "externalLinks/coralsoftheworld.html", StandardCharsets.UTF_8, classLoader)));
 
+        // Fake the harvest
         try (ESClient client = new ESTestClient(super.node().client())) {
-            seagrassWatchLinkIndex.index(client, seagrassWatchLink);
-            coralsOfTheWorldLinkIndex.index(client, coralsOfTheWorldLink);
+            for (ExternalLinkIndexer.ExternalLinkEntry externalLinkEntry : eAtlasExternalLinkIndexer.getExternalLinkEntries()) {
+                ExternalLink entity = new ExternalLink(externalLinkEntry.getUrl(), externalLinkEntry.getThumbnail(), externalLinkEntry.getTitle());
+
+                switch (externalLinkEntry.getUrl()) {
+                    case "https://www.seagrasswatch.org/idseagrass/":
+                        entity.setDocument(EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
+                                "externalLinks/seagrasswatch.html", StandardCharsets.UTF_8, classLoader)));
+                        break;
+
+                    case "http://www.coralsoftheworld.org/":
+                        entity.setDocument(EntityUtils.extractHTMLTextContent(IOUtils.resourceToString(
+                                "externalLinks/coralsoftheworld.html", StandardCharsets.UTF_8, classLoader)));
+                        break;
+                }
+
+                IndexResponse indexResponse = eAtlasExternalLinkIndexer.index(client, entity);
+
+                LOGGER.debug(String.format("Indexing external URL: %s, status: %d",
+                        entity.getId(),
+                        indexResponse.status().getStatus()));
+            }
 
             // Wait for ElasticSearch to finish its indexation
             client.refresh(index);
 
-            JSONObject jsonLink = AbstractIndex.get(client, index, "http://www.coralsoftheworld.org/");
+            JSONObject jsonLink = AbstractIndexer.get(client, index, "http://www.coralsoftheworld.org/");
 
             // Verify the link retrieved from the index
             Assert.assertNotNull("Link retrieved from the search index is null", jsonLink);

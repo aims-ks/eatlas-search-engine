@@ -19,15 +19,14 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
+import org.json.JSONObject;
 
-import java.util.List;
-
-public class AtlasMapperIndex extends AbstractIndex<AtlasMapperLayer> {
+public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private String atlasMapperUrl;
     private String atlasMapperVersion;
 
-    public AtlasMapperIndex(String index) {
-        super(index);
+    public AtlasMapperLayer load(JSONObject json) {
+        return AtlasMapperLayer.load(json);
     }
 
     /**
@@ -35,16 +34,15 @@ public class AtlasMapperIndex extends AbstractIndex<AtlasMapperLayer> {
      * atlasMapperUrl: https://maps.eatlas.org.au/atlasmapper
      * atlasMapperVersion: 2.2.0
      */
-    public AtlasMapperIndex(String index, String atlasMapperUrl, String atlasMapperVersion) {
+    public AtlasMapperIndexer(String index, String atlasMapperUrl, String atlasMapperVersion) {
         super(index);
         this.atlasMapperUrl = atlasMapperUrl;
         this.atlasMapperVersion = atlasMapperVersion;
     }
 
     @Override
-    public List<AtlasMapperLayer> harvest() {
+    public void harvest() {
         // TODO Implement
-        return null;
     }
 
     public String getAtlasMapperUrl() {

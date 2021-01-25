@@ -22,7 +22,16 @@ import org.json.JSONObject;
 
 public class AtlasMapperLayer extends Entity {
 
+    private AtlasMapperLayer() {}
+
     public AtlasMapperLayer(JSONObject json) {
         // TODO
+    }
+
+    public static AtlasMapperLayer load(JSONObject json) {
+        AtlasMapperLayer layer = new AtlasMapperLayer();
+        layer.loadJSON(json);
+
+        return layer;
     }
 }

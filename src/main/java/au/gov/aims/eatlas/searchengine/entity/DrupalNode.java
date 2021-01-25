@@ -29,8 +29,10 @@ public class DrupalNode extends Entity {
 
     private Integer nid;
 
+    private DrupalNode() {}
+
     // Load from Drupal JSON:API output
-    public DrupalNode(JSONObject jsonApiNode, JSONArray included) {
+    public DrupalNode(JSONObject jsonApiNode, JSONArray included, String previewImageField) {
         if (jsonApiNode != null) {
             URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
 
@@ -63,8 +65,8 @@ public class DrupalNode extends Entity {
             this.setDocument(jsonBody == null ? null : EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
 
             // Thumbnail (aka preview image)
-            if (baseUrl != null) {
-                String previewImageUUID = DrupalNode.getPreviewImageUUID(jsonApiNode);
+            if (baseUrl != null && previewImageField != null) {
+                String previewImageUUID = DrupalNode.getPreviewImageUUID(jsonApiNode, previewImageField);
                 if (previewImageUUID != null) {
                     String previewImageRelativePath = DrupalNode.findPreviewImageRelativePath(previewImageUUID, included);
                     if (previewImageRelativePath != null) {
@@ -122,9 +124,9 @@ public class DrupalNode extends Entity {
         return null;
     }
 
-    private static String getPreviewImageUUID(JSONObject jsonApiNode) {
+    private static String getPreviewImageUUID(JSONObject jsonApiNode, String previewImageField) {
         JSONObject jsonRelationships = jsonApiNode == null ? null : jsonApiNode.optJSONObject("relationships");
-        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject("field_image");
+        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
         JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
         return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
     }
@@ -149,6 +151,17 @@ public class DrupalNode extends Entity {
 
     public Integer getNid() {
         return this.nid;
+    }
+
+    public static DrupalNode load(JSONObject json) {
+        DrupalNode node = new DrupalNode();
+        node.loadJSON(json);
+        String nidStr = json.optString("nid", null);
+        if (nidStr != null && !nidStr.isEmpty()) {
+            node.nid = Integer.parseInt(nidStr);
+        }
+
+        return node;
     }
 
     @Override

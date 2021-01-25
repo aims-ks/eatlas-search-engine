@@ -28,19 +28,20 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 
 // TODO Move search outside. Search should be allowed to be run against any number of indexes at once
-public abstract class AbstractIndex<E extends Entity> {
-    private static final Logger LOGGER = Logger.getLogger(AbstractIndex.class.getName());
+public abstract class AbstractIndexer<E extends Entity> {
+    private static final Logger LOGGER = Logger.getLogger(AbstractIndexer.class.getName());
 
     private String index;
 
-    public AbstractIndex(String index) {
+    public AbstractIndexer(String index) {
         this.index = index;
     }
 
-    public abstract List<E> harvest() throws IOException, InterruptedException;
+    public abstract void harvest() throws Exception;
+    public abstract E load(JSONObject json);
 
     public String getIndex() {
         return this.index;
@@ -50,8 +51,25 @@ public abstract class AbstractIndex<E extends Entity> {
          return client.index(this.getIndexRequest(entity));
     }
 
+    public E get(ESClient client, String id) throws IOException {
+        JSONObject jsonEntity = AbstractIndexer.get(client, this.index, id);
+        if (jsonEntity != null) {
+            return this.load(jsonEntity);
+        }
+        return null;
+    }
+
     public static JSONObject get(ESClient client, String index, String id) throws IOException {
-        GetResponse response = client.get(AbstractIndex.getGetRequest(index, id));
+        GetResponse response = client.get(AbstractIndexer.getGetRequest(index, id));
+        if (response == null) {
+            return null;
+        }
+
+        Map<String, Object> sourceMap = response.getSource();
+        if (sourceMap == null || sourceMap.isEmpty()) {
+            return null;
+        }
+
         return new JSONObject(response.getSource());
     }
 

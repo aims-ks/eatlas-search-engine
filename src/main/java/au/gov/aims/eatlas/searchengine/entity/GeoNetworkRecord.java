@@ -73,6 +73,8 @@ public class GeoNetworkRecord extends Entity {
     // TODO Get from index after the harvest, if we decide that it's needed
     private String parentTitle;
 
+    private GeoNetworkRecord() {}
+
     public GeoNetworkRecord(String geonetworkUrlStr, Document xmlMetadataRecord) {
         this(null, geonetworkUrlStr, xmlMetadataRecord);
     }
@@ -308,13 +310,46 @@ public class GeoNetworkRecord extends Entity {
         }
     }
 
+    public String getParentUUID() {
+        return this.parentUUID;
+    }
+
+    public String getParentTitle() {
+        return this.parentTitle;
+    }
+
+    public void setParentTitle(String parentTitle) {
+        this.parentTitle = parentTitle;
+    }
+
+    // Add the parent title at the end of the document
+    //     to index it with the record.
+    // NOTE: This method generate a document for indexation. It doesn't need to look pretty.
+    //     It just need to look good enough for the generated search highlights.
+    @Override
+    public String getDocument() {
+        String document = super.getDocument();
+        if (this.parentTitle != null && !this.parentTitle.isEmpty()) {
+            return document + NL + NL + "Parent: " + this.parentTitle;
+        }
+        return document;
+    }
+
+    public static GeoNetworkRecord load(JSONObject json) {
+        GeoNetworkRecord record = new GeoNetworkRecord();
+        record.loadJSON(json);
+        record.parentUUID = json.optString("parentUUID", null);
+        record.parentTitle = json.optString("parentTitle", null);
+
+        return record;
+    }
+
     @Override
     public JSONObject toJSON() {
         return super.toJSON()
             .put("parentUUID", this.parentUUID)
             .put("parentTitle", this.parentTitle);
     }
-
 
 
     private static class ResponsibleParty {
