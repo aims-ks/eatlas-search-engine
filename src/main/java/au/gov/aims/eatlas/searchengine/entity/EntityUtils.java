@@ -18,6 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.http.Consts;
+import org.apache.http.entity.ContentType;
 import org.apache.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -32,7 +35,6 @@ import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.Locale;
 import java.util.Map;
 
 public class EntityUtils {
@@ -49,7 +51,7 @@ public class EntityUtils {
         // NOTE: Body in this case is the body of the response.
         //     It's the entire HTML document, not just the content
         //     of the HTML body element.
-        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url), url)
+        return jsoupExecuteWithRetry(url)
                 .body();
     }
 
@@ -65,25 +67,34 @@ public class EntityUtils {
     public static String harvestURLText(String url) throws IOException, InterruptedException {
         LOGGER.debug(String.format("Harvesting URL text: %s", url));
 
-        Connection.Response response = jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url), url);
+        Connection.Response response = jsoupExecuteWithRetry(url);
 
-        String mimetype = response.contentType();
-        if (mimetype == null) {
+        String contentTypeStr = response.contentType();
+        if (contentTypeStr == null) {
             return response.body();
         }
 
-        mimetype = mimetype.trim().toLowerCase(Locale.ENGLISH);
+        try {
+            ContentType contentType = ContentType.parse(contentTypeStr);
+            String extension = getExtension(contentType);
 
-        if (mimetype.contains("text/html")) {
-            return EntityUtils.extractHTMLTextContent(response.body());
+            if ("html".equals(extension)) {
+                return EntityUtils.extractHTMLTextContent(response.body());
+            }
+            if ("pdf".equals(extension)) {
+                return EntityUtils.extractPDFTextContent(response.bodyAsBytes());
+            }
+            LOGGER.warn(String.format("Unsupported mime type: %s", contentType.getMimeType()));
+
+        } catch (Exception ex) {
+            LOGGER.warn(String.format("Unsupported content type: %s", contentTypeStr), ex);
         }
 
-        if (mimetype.contains("application/pdf")) {
-            return EntityUtils.extractPDFTextContent(response.bodyAsBytes());
-        }
-
-        LOGGER.warn(String.format("Unsupported mimetype: %s", mimetype));
         return response.body();
+    }
+
+    public static Connection.Response jsoupExecuteWithRetry(String url) throws IOException, InterruptedException {
+        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url), url);
     }
 
     private static Connection.Response jsoupExecuteWithRetry(Connection jsoupConnection, String url) throws IOException, InterruptedException {
@@ -187,4 +198,116 @@ public class EntityUtils {
 
         return sb.toString();
     }
+
+    public static String getExtension(ContentType contentType) {
+        return getExtension(contentType, null);
+    }
+    public static String getExtension(ContentType contentType, String defaultExtension) {
+        if (contentType == null) {
+            return defaultExtension;
+        }
+        String mimeType = contentType.getMimeType();
+        if (mimeType == null || mimeType.isEmpty()) {
+            return defaultExtension;
+        }
+
+        // HTML
+        if (
+            ContentType.TEXT_HTML.getMimeType().equalsIgnoreCase(mimeType) ||
+            ContentType.APPLICATION_XHTML_XML.getMimeType().equalsIgnoreCase(mimeType)
+        ) {
+            return "html";
+        }
+
+        // PDF
+        if ("application/pdf".equalsIgnoreCase(mimeType)) {
+            return "pdf";
+        }
+
+        // XML
+        if (
+            ContentType.TEXT_XML.getMimeType().equalsIgnoreCase(mimeType) ||
+            ContentType.APPLICATION_XML.getMimeType().equalsIgnoreCase(mimeType) ||
+            ContentType.APPLICATION_ATOM_XML.getMimeType().equalsIgnoreCase(mimeType) ||
+            ContentType.APPLICATION_SOAP_XML.getMimeType().equalsIgnoreCase(mimeType)
+        ) {
+            return "xml";
+        }
+
+        // JSON
+        if (ContentType.APPLICATION_JSON.getMimeType().equalsIgnoreCase(mimeType)) {
+            return "json";
+        }
+
+        // Text
+        if (ContentType.TEXT_PLAIN.getMimeType().equalsIgnoreCase(mimeType)) {
+            return "txt";
+        }
+
+        // Images
+        if (ContentType.IMAGE_BMP.getMimeType().equalsIgnoreCase(mimeType)) {
+            return "bmp";
+        }
+        if (ContentType.IMAGE_GIF.getMimeType().equalsIgnoreCase(mimeType)) {
+            return "gif";
+        }
+        if (ContentType.IMAGE_JPEG.getMimeType().equalsIgnoreCase(mimeType)) {
+            return "jpg";
+        }
+        if (
+            ContentType.IMAGE_PNG.getMimeType().equalsIgnoreCase(mimeType) ||
+            "application/png".equalsIgnoreCase(mimeType)
+        ) {
+            return "png";
+        }
+        if (
+            ContentType.IMAGE_SVG.getMimeType().equalsIgnoreCase(mimeType) ||
+            ContentType.APPLICATION_SVG_XML.getMimeType().equalsIgnoreCase(mimeType)
+        ) {
+            return "svg";
+        }
+        if (ContentType.IMAGE_TIFF.getMimeType().equalsIgnoreCase(mimeType)) {
+            return "tiff";
+        }
+        if (ContentType.IMAGE_WEBP.getMimeType().equalsIgnoreCase(mimeType)) {
+            return "webp";
+        }
+
+        // Use default extension with:
+        //     APPLICATION_FORM_URLENCODED,
+        //     MULTIPART_FORM_DATA,
+        //     APPLICATION_OCTET_STREAM
+        return defaultExtension;
+    }
+
+    public static ContentType getContentType(String filename) {
+        return getContentType(filename, ContentType.DEFAULT_BINARY);
+    }
+    public static ContentType getContentType(String filename, ContentType defaultContentType) {
+        String extension = FilenameUtils.getExtension(filename);
+        if (extension == null || extension.isEmpty()) {
+            return defaultContentType;
+        }
+
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
+        switch (extension.toLowerCase()) {
+            case "html": return ContentType.create("text/html", Consts.UTF_8);
+            case "xml": return ContentType.create("text/xml", Consts.UTF_8);
+            case "pdf": return ContentType.create("application/pdf");
+            case "json": return ContentType.APPLICATION_JSON;
+            case "txt": return ContentType.create("text/plain", Consts.UTF_8);
+
+            // Images
+            case "bmp": return ContentType.IMAGE_BMP;
+            case "gif": return ContentType.IMAGE_GIF;
+            case "jpg": return ContentType.IMAGE_JPEG;
+            case "png": return ContentType.IMAGE_PNG;
+            case "svg": return ContentType.IMAGE_SVG;
+            case "tiff": return ContentType.IMAGE_TIFF;
+            case "webp": return ContentType.IMAGE_WEBP;
+
+            default: return defaultContentType;
+        }
+    }
+
 }

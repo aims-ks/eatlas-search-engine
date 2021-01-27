@@ -33,8 +33,11 @@ public abstract class Entity {
     private String title;
     private String document;
 
-    // URL to the search result thumbnail image
-    private URL thumbnail;
+    // Search result thumbnail image
+    // If there is a cachedThumbnailFilename, call /public/img/v1/{index}/{filename} to get the image.
+    private String cachedThumbnailFilename;
+    // Otherwise, if there is a thumbnailUrl, use it as is.
+    private URL thumbnailUrl;
 
     // The 2 letters langcode representing the language of this entity.
     // Example: "en"
@@ -72,12 +75,20 @@ public abstract class Entity {
         this.document = document;
     }
 
-    public URL getThumbnail() {
-        return this.thumbnail;
+    public String getCachedThumbnailFilename() {
+        return this.cachedThumbnailFilename;
     }
 
-    public void setThumbnail(URL thumbnail) {
-        this.thumbnail = thumbnail;
+    public void setCachedThumbnailFilename(String cachedThumbnailFilename) {
+        this.cachedThumbnailFilename = cachedThumbnailFilename;
+    }
+
+    public URL getThumbnailUrl() {
+        return this.thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(URL thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     public String getLangcode() {
@@ -88,9 +99,16 @@ public abstract class Entity {
         this.langcode = langcode;
     }
 
+    public void delete() {
+        if (this.cachedThumbnailFilename != null) {
+            // TODO !! delete thumbnail file
+        }
+    }
+
     public JSONObject toJSON() {
         URL linkUrl = this.getLink();
-        URL thumbnailUrl = this.getThumbnail();
+        URL thumbnailUrl = this.getThumbnailUrl();
+
         return new JSONObject()
             .put("id", this.getId())
             .put("class", this.getClass().getSimpleName())
@@ -98,7 +116,8 @@ public abstract class Entity {
             .put("title", this.getTitle())
             // Encode HTML from the document, to allow the search to all highlights as HTML tags
             .put("document", StringEscapeUtils.escapeHtml4(this.getDocument()))
-            .put("thumbnail", thumbnailUrl == null ? null : thumbnailUrl.toString())
+            .put("cachedThumbnailFilename", this.getCachedThumbnailFilename())
+            .put("thumbnailUrl", thumbnailUrl == null ? null : thumbnailUrl.toString())
             .put("langcode", this.getLangcode());
     }
 
@@ -109,6 +128,7 @@ public abstract class Entity {
             // Decode HTML since we encoded it in the toJSON method
             this.document = StringEscapeUtils.unescapeHtml4(json.optString("document", null));
             this.langcode = json.optString("langcode", null);
+            this.cachedThumbnailFilename = json.optString("cachedThumbnailFilename", null);
 
             String linkStr = json.optString("link", null);
             if (linkStr != null && !linkStr.isEmpty()) {
@@ -119,12 +139,12 @@ public abstract class Entity {
                 }
             }
 
-            String thumbnailStr = json.optString("thumbnail", null);
-            if (thumbnailStr != null && !thumbnailStr.isEmpty()) {
+            String thumbnailUrlStr = json.optString("thumbnailUrl", null);
+            if (thumbnailUrlStr != null && !thumbnailUrlStr.isEmpty()) {
                 try {
-                    this.setThumbnail(new URL(thumbnailStr));
+                    this.setThumbnailUrl(new URL(thumbnailUrlStr));
                 } catch(Exception ex) {
-                    LOGGER.error(String.format("Invalid index entity thumbnail URL found: %s", thumbnailStr), ex);
+                    LOGGER.error(String.format("Invalid index entity thumbnail URL found: %s", thumbnailUrlStr), ex);
                 }
             }
         }

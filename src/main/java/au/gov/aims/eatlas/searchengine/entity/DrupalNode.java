@@ -18,10 +18,12 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.net.URL;
 
 public class DrupalNode extends Entity {
@@ -32,7 +34,7 @@ public class DrupalNode extends Entity {
     private DrupalNode() {}
 
     // Load from Drupal JSON:API output
-    public DrupalNode(JSONObject jsonApiNode, JSONArray included, String previewImageField) {
+    public DrupalNode(String index, JSONObject jsonApiNode, JSONArray included, String previewImageField) {
         if (jsonApiNode != null) {
             URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
 
@@ -72,7 +74,12 @@ public class DrupalNode extends Entity {
                     String previewImageRelativePath = DrupalNode.findPreviewImageRelativePath(previewImageUUID, included);
                     if (previewImageRelativePath != null) {
                         try {
-                            this.setThumbnail(new URL(baseUrl, previewImageRelativePath));
+                            URL thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
+                            this.setThumbnailUrl(thumbnailUrl);
+                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, index, this.getId());
+                            if (cachedThumbnailFile != null) {
+                                this.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                            }
                         } catch(Exception ex) {
                             LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
                         }

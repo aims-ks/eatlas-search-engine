@@ -126,7 +126,7 @@ public class IndexerTest extends ESSingleNodeTestCase {
         // Fake the harvest
         try (ESClient client = new ESTestClient(super.node().client())) {
             for (ExternalLinkIndexer.ExternalLinkEntry externalLinkEntry : eAtlasExternalLinkIndexer.getExternalLinkEntries()) {
-                ExternalLink entity = new ExternalLink(externalLinkEntry.getUrl(), externalLinkEntry.getThumbnail(), externalLinkEntry.getTitle());
+                ExternalLink entity = new ExternalLink(index, externalLinkEntry.getUrl(), externalLinkEntry.getThumbnail(), externalLinkEntry.getTitle());
 
                 switch (externalLinkEntry.getUrl()) {
                     case "https://www.seagrasswatch.org/idseagrass/":

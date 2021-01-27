@@ -96,6 +96,11 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                         Element metadataRecordUUIDElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "uuid");
                         if (metadataRecordUUIDElement != null) {
                             String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
+
+                            GeoNetworkRecord oldRecord = this.get(client, metadataRecordUUID);
+                            if (oldRecord != null) {
+                                oldRecord.delete();
+                            }
                             GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(builder, metadataRecordUUID);
                             if (geoNetworkRecord != null) {
                                 // If the record have a parent UUID,
@@ -160,7 +165,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 responseStr.getBytes(StandardCharsets.UTF_8))) {
 
                 Document document = builder.parse(input);
-                GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(metadataRecordUUID, this.geoNetworkUrl, document);
+                GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), metadataRecordUUID, this.geoNetworkUrl, document);
                 if (geoNetworkRecord.getId() != null) {
                     return geoNetworkRecord;
                 } else {

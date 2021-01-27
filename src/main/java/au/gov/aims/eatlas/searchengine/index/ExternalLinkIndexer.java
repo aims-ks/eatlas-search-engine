@@ -82,7 +82,7 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                 for (ExternalLinkEntry externalLinkEntry : this.externalLinkEntries) {
                     String url = externalLinkEntry.url;
                     if (url != null && !url.isEmpty()) {
-                        ExternalLink entity = new ExternalLink(url, externalLinkEntry.thumbnail, externalLinkEntry.title);
+                        ExternalLink entity = new ExternalLink(this.getIndex(), url, externalLinkEntry.thumbnail, externalLinkEntry.title);
 
                         String responseStr = null;
                         try {

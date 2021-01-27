@@ -81,7 +81,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
 
                 AtlasMapperLayer layerEntity = new AtlasMapperLayer(
-                        this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
+                        this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
                 IndexResponse indexResponse = this.index(client, layerEntity);
 
                 LOGGER.debug(String.format("Indexing AtlasMapper layer ID: %s, status: %d",

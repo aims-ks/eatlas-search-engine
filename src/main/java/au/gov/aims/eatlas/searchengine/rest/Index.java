@@ -47,7 +47,7 @@ public class Index {
     // NOTE:
     //   The search engine will need to do a complete re-harvest once in a while to remove deleted nodes
 
-    // NOTE: The "status" API in unused and should be deleted
+    // TODO: The "status" API in unused and should be deleted
     @GET
     @Path("status")
     @Produces(MediaType.APPLICATION_JSON)

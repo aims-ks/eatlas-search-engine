@@ -246,6 +246,7 @@ public class DummySearch {
         List<SearchResult> results = new ArrayList<SearchResult>();
 
         ExternalLink brokenLink = new ExternalLink(
+            "eatlas_broken",
             "https://broken.bad/should/not/appear/in/search/results/",
             "https://lh3.googleusercontent.com/proxy/f9semJrOD1mcB78d_iD90HJvjKhmrYv5c5n3HGYq8nxFkHs_5gd_8P5IomW3JfkNOw8XUvUBUBc4VSaDd52MYnhvzQ",
             "eatlas_broken"
@@ -258,7 +259,7 @@ public class DummySearch {
             .setScore(23)
         );
 
-        DrupalNode drupalNode = new DrupalNode(null, null, null);
+        DrupalNode drupalNode = new DrupalNode("eatlas_article", null, null, null);
         drupalNode.setLink(new URL("http://localhost:9090/node/4"));
         drupalNode.setTitle("A guide to Indigenous science, management and governance of Australian coastal waters");
         drupalNode.setDocument(
@@ -815,7 +816,7 @@ public class DummySearch {
                 "<p>&nbsp;</p>" +
                 "<h3>Important...</h3>" +
                 "<p>Please read, cite and use these documents responsibly by referring to any special requirements outlined. Note that this is a rapidly evolving area with many new plans to be finalised and published shortly (<a href=\"https://www.abc.net.au/news/2016-11-23/kimberley-marine-park-created-around-horizontal-falls/8050330\" target=\"_blank\">here is an example</a>). It is your responsibility to ensure that you are aware of the most up to date information.</p>");
-        drupalNode.setThumbnail(new URL("https://cdn131.picsart.com/339459399004201.jpg?to=crop&r=256"));
+        drupalNode.setThumbnailUrl(new URL("https://cdn131.picsart.com/339459399004201.jpg?to=crop&r=256"));
         drupalNode.setLangcode("en");
         results.add(new SearchResult()
             .setEntity(drupalNode.toJSON())
@@ -824,6 +825,7 @@ public class DummySearch {
         );
 
         ExternalLink googleLink = new ExternalLink(
+            "eatlas_extlink",
             "https://google.com",
             "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif",
             "Google search engine"
@@ -856,6 +858,7 @@ public class DummySearch {
         String randomSearchTerm = this.getRandomWord(random);
 
         ExternalLink googleSearchLink = new ExternalLink(
+            "eatlas_extlink",
             String.format("https://www.google.com/search?q=%s", randomSearchTerm),
             "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif",
             String.format("Google search %d for %s", index, randomSearchTerm)
@@ -873,31 +876,36 @@ public class DummySearch {
     }
 
     private SearchResult getRandomLayerSearchResult(int index) throws MalformedURLException {
+        String searchIndex = "eatlas_layer";
+
         Random random = new Random(137 + index);
         String randomLayerName = "ea_" + this.getRandomWord(random);
 
-        AtlasMapperLayer layerEntity = new AtlasMapperLayer(null, randomLayerName, null, null);
+        AtlasMapperLayer layerEntity = new AtlasMapperLayer(searchIndex, null, randomLayerName, null, null);
         layerEntity.setLink(new URL(String.format("https://maps.eatlas.org.au/index.html?intro=false&z=7&ll=148.00000,-18.00000&l0=%s,ea_ea-be%%3AWorld_Bright-Earth-e-Atlas-basemap", randomLayerName)));
         layerEntity.setTitle(String.format("AtlasMapper random layer %d is %s", index, randomLayerName));
         layerEntity.setDocument(
                 "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
                 String.format("<p>AtlasMapper random layer name %s.</p>", randomLayerName) +
                 "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>");
-        layerEntity.setThumbnail(new URL("https://github.com/aims-ks/atlasmapper/blob/master/logo/AtlasMapper_icon_256x242px.png?raw=true"));
+        layerEntity.setThumbnailUrl(new URL("https://github.com/aims-ks/atlasmapper/blob/master/logo/AtlasMapper_icon_256x242px.png?raw=true"));
         layerEntity.setLangcode("en");
 
         return new SearchResult()
             .setEntity(layerEntity.toJSON())
-            .setIndex("eatlas_layer")
+            .setIndex(searchIndex)
             .setScore(12);
     }
 
     private SearchResult getRandomMetadataSearchResult(int index) throws MalformedURLException {
+        String searchIndex = "eatlas_metadata";
+
         Random random = new Random(11 + index);
         String randomUUIDName = this.getRandomWord(random);
         String uuid = UUID.nameUUIDFromBytes(randomUUIDName.getBytes(StandardCharsets.UTF_8)).toString();
 
         GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(
+                searchIndex,
                 uuid,
                 "https://eatlas.org.au/geonetwork",
                 null);
@@ -908,12 +916,12 @@ public class DummySearch {
         geoNetworkRecord.setDocument(
                 "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
                 "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>");
-        geoNetworkRecord.setThumbnail(new URL("https://eatlas.org.au/geonetwork/srv/en/resources.get?uuid=e8854605-d169-44ca-9364-aa5c2c87ff67&access=public&fname=preview-map_s.png"));
+        geoNetworkRecord.setThumbnailUrl(new URL("https://eatlas.org.au/geonetwork/srv/en/resources.get?uuid=e8854605-d169-44ca-9364-aa5c2c87ff67&access=public&fname=preview-map_s.png"));
         geoNetworkRecord.setLangcode("en");
 
         return new SearchResult()
             .setEntity(geoNetworkRecord.toJSON())
-            .setIndex("eatlas_metadata")
+            .setIndex(searchIndex)
             .setScore(12);
     }
 

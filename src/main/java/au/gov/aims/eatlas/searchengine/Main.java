@@ -46,9 +46,9 @@ public class Main {
         //Main.loadDummyExternalLinks(15000);
 
         //Main.loadDrupalArticles();
-        //Main.loadExternalLinks();
+        Main.loadExternalLinks();
         //Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork");
-        Main.loadAtlasMapperLayers("https://maps.eatlas.org.au");
+        //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au");
     }
 
     private static void testElasticSearch() throws IOException {
@@ -156,6 +156,7 @@ public class Main {
 
             for (int i=0; i<count; i++) {
                 ExternalLink externalLink = new ExternalLink(
+                    index,
                     String.format("http://www.domain.com/result/%d", i),
                     "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif",
                     String.format("Dummy link number: %d", i)

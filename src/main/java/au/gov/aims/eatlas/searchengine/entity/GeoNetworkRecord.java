@@ -19,12 +19,14 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
+import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,13 +77,9 @@ public class GeoNetworkRecord extends Entity {
 
     private GeoNetworkRecord() {}
 
-    public GeoNetworkRecord(String geonetworkUrlStr, Document xmlMetadataRecord) {
-        this(null, geonetworkUrlStr, xmlMetadataRecord);
-    }
-
     // geonetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
-    public GeoNetworkRecord(String metadataRecordUUID, String geonetworkUrlStr, Document xmlMetadataRecord) {
+    public GeoNetworkRecord(String index, String metadataRecordUUID, String geonetworkUrlStr, Document xmlMetadataRecord) {
         String pointOfTruthUrlStr = null;
         if (xmlMetadataRecord != null) {
             // TODO Parse the record!
@@ -183,7 +181,12 @@ public class GeoNetworkRecord extends Entity {
                         }
 
                         try {
-                            this.setThumbnail(new URL(previewUrlStr));
+                            URL thumbnailUrl = new URL(previewUrlStr);
+                            this.setThumbnailUrl(thumbnailUrl);
+                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, index, this.getId());
+                            if (cachedThumbnailFile != null) {
+                                this.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                            }
                         } catch(Exception ex) {
                             LOGGER.error(String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
                         }

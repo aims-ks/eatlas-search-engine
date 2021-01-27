@@ -86,7 +86,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                     nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
 
                     for (int i=0; i<nodeFound; i++) {
-                        DrupalNode drupalNode = new DrupalNode(jsonNodes.optJSONObject(i), jsonIncluded, this.drupalPreviewImageField);
+                        DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonNodes.optJSONObject(i), jsonIncluded, this.drupalPreviewImageField);
                         IndexResponse indexResponse = this.index(client, drupalNode);
 
                         LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",

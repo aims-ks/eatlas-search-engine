@@ -94,14 +94,18 @@ public class AtlasMapperLayer extends Entity {
      *             "status": "OKAY"
      *         }
      */
-    public AtlasMapperLayer(String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig) {
+    public AtlasMapperLayer(String index, String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig) {
         this.setId(atlasMapperLayerId);
 
         if (jsonLayer != null && jsonMainConfig != null) {
             this.setTitle(jsonLayer.optString("title", null));
             this.setDocument(jsonLayer.optString("description", null));
             this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig));
-            this.setThumbnail(this.getLayerThumbnailUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig));
+
+            // TODO Create a thumbnail image in "eatlas_layer" directory, save it with
+            //   this.setCachedThumbnailFilename();
+            this.setThumbnailUrl(this.getLayerThumbnailUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig));
+
             this.setLangcode("en");
         }
     }
