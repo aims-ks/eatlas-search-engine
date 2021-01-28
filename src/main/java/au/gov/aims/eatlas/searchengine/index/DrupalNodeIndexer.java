@@ -63,7 +63,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     }
 
     @Override
-    public void harvest() throws IOException, InterruptedException {
+    public void harvest(Long lastModified) throws IOException, InterruptedException {
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("localhost", 9200, "http"),
@@ -87,6 +87,11 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
                     for (int i=0; i<nodeFound; i++) {
                         DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonNodes.optJSONObject(i), jsonIncluded, this.drupalPreviewImageField);
+                        DrupalNode oldNode = this.get(client, drupalNode.getId());
+                        if (oldNode != null) {
+                            oldNode.deleteThumbnail();
+                        }
+
                         IndexResponse indexResponse = this.index(client, drupalNode);
 
                         LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",

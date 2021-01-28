@@ -32,6 +32,7 @@ public class ExternalLink extends Entity {
 
     public ExternalLink(String index, String urlStr, String thumbnailUrlStr, String title) {
         this.setId(urlStr);
+        this.setIndex(index);
         this.setTitle(title);
 
         if (urlStr != null) {
@@ -46,7 +47,7 @@ public class ExternalLink extends Entity {
             try {
                 URL thumbnailUrl = new URL(thumbnailUrlStr);
                 this.setThumbnailUrl(thumbnailUrl);
-                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, index, null);
+                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), null);
                 if (cachedThumbnailFile != null) {
                     this.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                 }

@@ -18,14 +18,20 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.net.URL;
 
 public abstract class Entity {
     private static final Logger LOGGER = Logger.getLogger(DrupalNode.class.getName());
+    private String index;
+
+    private Long lastIndexed;
+    private Long lastModified;
 
     private String id;
     private URL link;
@@ -42,6 +48,30 @@ public abstract class Entity {
     // The 2 letters langcode representing the language of this entity.
     // Example: "en"
     private String langcode;
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+
+    public String getIndex() {
+        return this.index;
+    }
+
+    public void setLastIndexed(Long lastIndexed) {
+        this.lastIndexed = lastIndexed;
+    }
+
+    public Long getLastIndexed() {
+        return this.lastIndexed;
+    }
+
+    public void setLastModified(Long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public Long getLastModified() {
+        return this.lastModified;
+    }
 
     public String getId() {
         return this.id;
@@ -99,9 +129,14 @@ public abstract class Entity {
         this.langcode = langcode;
     }
 
-    public void delete() {
-        if (this.cachedThumbnailFilename != null) {
-            // TODO !! delete thumbnail file
+    public void deleteThumbnail() {
+        String index = this.getIndex();
+        String cachedThumbnailFilename = this.getCachedThumbnailFilename();
+        if (index == null || cachedThumbnailFilename != null) {
+            File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
+            if (cachedFile != null && cachedFile.exists() && !cachedFile.delete()) {
+                LOGGER.error(String.format("Cached image can not be deleted: %s", cachedFile.toString()));
+            }
         }
     }
 
@@ -111,6 +146,9 @@ public abstract class Entity {
 
         return new JSONObject()
             .put("id", this.getId())
+            .put("index", this.getIndex())
+            .put("lastIndexed", this.getLastIndexed())
+            .put("lastModified", this.getLastModified())
             .put("class", this.getClass().getSimpleName())
             .put("link", linkUrl == null ? null : linkUrl.toString())
             .put("title", this.getTitle())
@@ -123,12 +161,23 @@ public abstract class Entity {
 
     protected void loadJSON(JSONObject json) {
         if (json != null) {
-            this.id = json.optString("id", null);
-            this.title = json.optString("title", null);
+            this.setId(json.optString("id", null));
+            this.setIndex(json.optString("index", null));
+            this.setTitle(json.optString("title", null));
             // Decode HTML since we encoded it in the toJSON method
-            this.document = StringEscapeUtils.unescapeHtml4(json.optString("document", null));
-            this.langcode = json.optString("langcode", null);
-            this.cachedThumbnailFilename = json.optString("cachedThumbnailFilename", null);
+            this.setDocument(StringEscapeUtils.unescapeHtml4(json.optString("document", null)));
+            this.setLangcode(json.optString("langcode", null));
+            this.setCachedThumbnailFilename(json.optString("cachedThumbnailFilename", null));
+
+            String lastIndexedStr = json.optString("lastIndexed", null);
+            if (lastIndexedStr != null) {
+                this.setLastIndexed(Long.parseLong(lastIndexedStr));
+            }
+
+            String lastModifiedStr = json.optString("lastModified", null);
+            if (lastModifiedStr != null) {
+                this.setLastModified(Long.parseLong(lastModifiedStr));
+            }
 
             String linkStr = json.optString("link", null);
             if (linkStr != null && !linkStr.isEmpty()) {

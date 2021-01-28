@@ -35,6 +35,8 @@ public class DrupalNode extends Entity {
 
     // Load from Drupal JSON:API output
     public DrupalNode(String index, JSONObject jsonApiNode, JSONArray included, String previewImageField) {
+        this.setIndex(index);
+
         if (jsonApiNode != null) {
             URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
 
@@ -76,7 +78,7 @@ public class DrupalNode extends Entity {
                         try {
                             URL thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
                             this.setThumbnailUrl(thumbnailUrl);
-                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, index, this.getId());
+                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), this.getId());
                             if (cachedThumbnailFile != null) {
                                 this.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                             }

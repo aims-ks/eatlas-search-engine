@@ -62,7 +62,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
-    public void harvest() throws Exception {
+    public void harvest(Long lastModified) throws Exception {
         // https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
         String url = String.format("%s/srv/eng/xml.search", this.geoNetworkUrl);
 
@@ -99,7 +99,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
                             GeoNetworkRecord oldRecord = this.get(client, metadataRecordUUID);
                             if (oldRecord != null) {
-                                oldRecord.delete();
+                                oldRecord.deleteThumbnail();
                             }
                             GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(builder, metadataRecordUUID);
                             if (geoNetworkRecord != null) {

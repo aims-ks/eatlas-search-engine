@@ -60,13 +60,11 @@ public class ImageCache {
             @PathParam("index") String index,
             @PathParam("filename") String filename
     ) {
-        String safeIndex = safeString(index);
-        File cacheDir = getCacheDirectory(safeIndex);
-        if (cacheDir == null) {
-            return null;
+        File cachedFile = getCachedFile(index, filename);
+        if (cachedFile == null) {
+            LOGGER.warn(String.format("Cached image not found: %s/%s", index, filename));
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-
-        File cachedFile = new File(cacheDir, filename);
         if (!cachedFile.canRead()) {
             LOGGER.warn(String.format("Cached image not found: %s", cachedFile.toString()));
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -87,6 +85,16 @@ public class ImageCache {
             LOGGER.error(String.format("Server error: %s", ex.getMessage()), ex);
             return Response.serverError().entity(String.format("Server error: %s", ex.getMessage())).build();
         }
+    }
+
+    public static File getCachedFile(String index, String filename) {
+        String safeIndex = safeString(index);
+        File cacheDir = getCacheDirectory(safeIndex);
+        if (cacheDir == null) {
+            return null;
+        }
+
+        return new File(cacheDir, filename);
     }
 
     protected static File getCacheDirectory(String index) {
@@ -153,15 +161,6 @@ public class ImageCache {
         FileUtils.writeByteArrayToFile(cacheFile, imageBytes);
 
         return cacheFile;
-
-        /*
-        // TODO Get base URL from config!
-        String searchEngineBaseUrl = "http://localhost:8080/eatlas-search-engine";
-
-        String cachedImageUrlStr = String.format("%s/public/img/v1/%s/%s", searchEngineBaseUrl, safeIndex, cacheFile.getName());
-System.out.println(cachedImageUrlStr);
-        return cachedImageUrlStr;
-        */
     }
 
     private static String getFileExtension(String contentTypeStr) throws IOException {

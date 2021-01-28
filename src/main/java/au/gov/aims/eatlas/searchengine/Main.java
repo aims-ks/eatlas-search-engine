@@ -89,7 +89,8 @@ public class Main {
         DrupalNodeIndexer drupalNodeIndex = new DrupalNodeIndexer(
             index, "http://localhost:9090", "9", "article", "field_image");
 
-        drupalNodeIndex.harvest();
+        Long lastModified = null;
+        drupalNodeIndex.harvest(lastModified);
     }
 
     private static void loadExternalLinks() throws IOException, InterruptedException {
@@ -131,19 +132,24 @@ public class Main {
             "Tropical Seagrass Identification (Seagrass-Watch)"
         );
 
-        eAtlasExternalLinkIndexer.harvest();
+        Long lastModified = null;
+        eAtlasExternalLinkIndexer.harvest(lastModified);
     }
 
     private static void loadGeoNetworkRecords(String geoNetworkUrl) throws Exception {
         String index = "eatlas_metadata";
         GeoNetworkIndexer geoNetworkIndex = new GeoNetworkIndexer(index, geoNetworkUrl, "3.0");
-        geoNetworkIndex.harvest();
+
+        Long lastModified = null;
+        geoNetworkIndex.harvest(lastModified);
     }
 
     private static void loadAtlasMapperLayers(String atlasMapperClientUrl) throws Exception {
         String index = "eatlas_layer";
         AtlasMapperIndexer atlasMapperIndexer = new AtlasMapperIndexer(index, atlasMapperClientUrl, "2.2.0");
-        atlasMapperIndexer.harvest();
+
+        Long lastModified = null;
+        atlasMapperIndexer.harvest(lastModified);
     }
 
     private static void loadDummyExternalLinks(int count) throws IOException {

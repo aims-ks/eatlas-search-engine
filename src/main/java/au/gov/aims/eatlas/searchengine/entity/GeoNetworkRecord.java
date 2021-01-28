@@ -80,6 +80,7 @@ public class GeoNetworkRecord extends Entity {
     // geonetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
     public GeoNetworkRecord(String index, String metadataRecordUUID, String geonetworkUrlStr, Document xmlMetadataRecord) {
+        this.setIndex(index);
         String pointOfTruthUrlStr = null;
         if (xmlMetadataRecord != null) {
             // TODO Parse the record!
@@ -183,7 +184,7 @@ public class GeoNetworkRecord extends Entity {
                         try {
                             URL thumbnailUrl = new URL(previewUrlStr);
                             this.setThumbnailUrl(thumbnailUrl);
-                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, index, this.getId());
+                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), this.getId());
                             if (cachedThumbnailFile != null) {
                                 this.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                             }

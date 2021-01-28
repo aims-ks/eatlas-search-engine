@@ -53,7 +53,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    public void harvest() throws IOException, InterruptedException {
+    public void harvest(Long lastModified) throws IOException, InterruptedException {
         // Get the map of datasources
         // "https://maps.eatlas.org.au/config/main.json"
         String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
@@ -79,6 +79,11 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
             for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
                 JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
+
+                AtlasMapperLayer oldLayer = this.get(client, atlasMapperLayerId);
+                if (oldLayer != null) {
+                    oldLayer.deleteThumbnail();
+                }
 
                 AtlasMapperLayer layerEntity = new AtlasMapperLayer(
                         this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);

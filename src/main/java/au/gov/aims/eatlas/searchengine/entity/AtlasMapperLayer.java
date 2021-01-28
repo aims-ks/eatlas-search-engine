@@ -96,6 +96,7 @@ public class AtlasMapperLayer extends Entity {
      */
     public AtlasMapperLayer(String index, String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig) {
         this.setId(atlasMapperLayerId);
+        this.setIndex(index);
 
         if (jsonLayer != null && jsonMainConfig != null) {
             this.setTitle(jsonLayer.optString("title", null));

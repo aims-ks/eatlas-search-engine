@@ -40,7 +40,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         this.index = index;
     }
 
-    public abstract void harvest() throws Exception;
+    public abstract void harvest(Long lastModified) throws Exception;
     public abstract E load(JSONObject json);
 
     public String getIndex() {
@@ -48,7 +48,8 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     public IndexResponse index(ESClient client, E entity) throws IOException {
-         return client.index(this.getIndexRequest(entity));
+        entity.setLastIndexed(System.currentTimeMillis());
+        return client.index(this.getIndexRequest(entity));
     }
 
     public E get(ESClient client, String id) throws IOException {

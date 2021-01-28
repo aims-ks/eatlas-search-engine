@@ -71,7 +71,7 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
      *   since there is always only one entity to harvest.
      */
     @Override
-    public void harvest() throws IOException, InterruptedException {
+    public void harvest(Long lastModified) throws IOException, InterruptedException {
 
         if (this.externalLinkEntries != null && !this.externalLinkEntries.isEmpty()) {
             try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
@@ -83,6 +83,10 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                     String url = externalLinkEntry.url;
                     if (url != null && !url.isEmpty()) {
                         ExternalLink entity = new ExternalLink(this.getIndex(), url, externalLinkEntry.thumbnail, externalLinkEntry.title);
+                        ExternalLink oldEntity = this.get(client, entity.getId());
+                        if (oldEntity != null) {
+                            oldEntity.deleteThumbnail();
+                        }
 
                         String responseStr = null;
                         try {
