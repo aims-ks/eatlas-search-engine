@@ -43,7 +43,7 @@ import java.util.Map;
 public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private static final Logger LOGGER = Logger.getLogger(AtlasMapperIndexer.class.getName());
     private static final int THUMBNAIL_MAX_WIDTH = 300;
-    private static final int THUMBNAIL_MAX_HEIGHT = 300;
+    private static final int THUMBNAIL_MAX_HEIGHT = 200;
     private static final float THUMBNAIL_MARGIN = 0.1f; // Margin, in percentage
 
     private String atlasMapperClientUrl;
@@ -262,39 +262,56 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             south = bbox.optFloat(1, south);
             east = bbox.optFloat(2, east);
             north = bbox.optFloat(3, north);
+
+            if (west > east) {
+                float temp = east;
+                east = west;
+                west = temp;
+            }
+
+            if (south > north) {
+                float temp = south;
+                south = north;
+                north = temp;
+            }
+
+            // If bbox have ridiculous values, don't even try...
+            if (west < -200 || west > 200) { return null; }
+            if (south < -100 || south > 100) { return null; }
+            if (east < -200 || east > 200) { return null; }
+            if (north < -100 || north > 100) { return null; }
+
+            // Fix very small bbox (single point)
+            float _bboxWidth = east - west;
+            float _bboxHeight = north - south;
+            if (_bboxWidth < 0.01) {
+                west -= 0.005;
+                east += 0.005;
+            }
+            if (_bboxHeight < 0.01) {
+                south -= 0.005;
+                north += 0.005;
+            }
+
+            // Add layer margin
+            west = west - _bboxWidth * THUMBNAIL_MARGIN;
+            south = south - _bboxHeight * THUMBNAIL_MARGIN;
+            east = east + _bboxWidth * THUMBNAIL_MARGIN;
+            north = north + _bboxHeight * THUMBNAIL_MARGIN;
+
+            // Fix out-of-bounds bbox
+            if (west < -180) { west = -180; }
+            if (west > 180) { west = 180; }
+            if (south < -90) { south = -90; }
+            if (south > 90) { south = 90; }
+            if (east < -180) { east = -180; }
+            if (east > 180) { east = 180; }
+            if (north < -90) { north = -90; }
+            if (north > 90) { north = 90; }
         }
-        // If bbox have ridiculous values, don't even try...
-        if (west < -200 || west > 200) { return null; }
-        if (south < -100 || south > 100) { return null; }
-        if (east < -200 || east > 200) { return null; }
-        if (north < -100 || north > 100) { return null; }
 
-        // Fix impossible bbox
-        if (west < -180) { west = -180; }
-        if (west > 180) { west = 180; }
-        if (south < -90) { south = -90; }
-        if (south > 90) { south = 90; }
-        if (east < -180) { east = -180; }
-        if (east > 180) { east = 180; }
-        if (north < -90) { north = -90; }
-        if (north > 90) { north = 90; }
-
-        // NOTE: Math.abs is only useful when coordinated are inverted. Should not happen.
-        float bboxWidth = Math.abs(east - west);
-        float bboxHeight = Math.abs(north - south);
-
-        // Add layer margin
-        if (bboxWidth < 0.1) { bboxWidth = 0.1f; }
-        if (bboxHeight < 0.1) { bboxHeight = 0.1f; }
-        west = Math.max(west - bboxWidth * THUMBNAIL_MARGIN, -180);
-        south = Math.max(south - bboxHeight * THUMBNAIL_MARGIN, -90);
-        east = Math.min(east + bboxWidth * THUMBNAIL_MARGIN, 180);
-        north = Math.min(north + bboxHeight * THUMBNAIL_MARGIN, 90);
-
-        // Re-calculate bbox dimensions after adding margin
-        bboxWidth = Math.abs(east - west);
-        bboxHeight = Math.abs(north - south);
-
+        float bboxWidth = east - west;
+        float bboxHeight = north - south;
 
         // Calculate width x height, respecting max width and max height,
         //     and respecting layer aspect ratio.

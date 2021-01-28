@@ -54,7 +54,7 @@ import java.net.URL;
 @Path("/img/v1")
 public class ImageCache {
     private static final Logger LOGGER = Logger.getLogger(ImageCache.class.getName());
-    private static final float BASE_LAYER_ALPHA = 0.5f;
+    private static final float BASE_LAYER_ALPHA = 0.4f;
     private static File imageCacheDir = null;
 
     // /img/v1/{index}/{filename}
