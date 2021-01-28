@@ -48,8 +48,9 @@ public class Main {
 
         //Main.loadExternalLinks();
 
-        Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", System.currentTimeMillis() - (4 * DAY_MS));
-        //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", null);
+        // 2 hours
+        //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", System.currentTimeMillis() - (4 * DAY_MS));
+        Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", null);
 
         //Main.loadDrupalArticles(System.currentTimeMillis() - DAY_MS);
         //Main.loadDrupalArticles(null);

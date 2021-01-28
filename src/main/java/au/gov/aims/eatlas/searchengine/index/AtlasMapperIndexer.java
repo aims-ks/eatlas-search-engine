@@ -132,6 +132,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 try {
                     AtlasMapperLayer oldLayer = this.get(client, atlasMapperLayerId);
                     if (oldLayer != null) {
+                        // TODO Delete thumbnail if older than 1 month old (?)
                         oldLayer.deleteThumbnail();
                     }
                 } catch(Exception ex) {
@@ -140,6 +141,36 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
                 AtlasMapperLayer layerEntity = new AtlasMapperLayer(
                         this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
+
+                /*
+                // TODO Create the thumbnail only if it's missing
+                //     Something like this:
+
+                try {
+                    boolean createThumbnail = true;
+                    String index = this.getIndex();
+                    AtlasMapperLayer oldLayer = this.get(client, atlasMapperLayerId);
+                    if (oldLayer != null) {
+                        String cachedThumbnailFilename = oldLayer.getCachedThumbnailFilename();
+                        if (index != null && cachedThumbnailFilename != null) {
+                            File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
+                            if (cachedFile != null && cachedFile.exists()) {
+                                layerEntity.setCachedThumbnailFilename(oldLayer.getCachedThumbnailFilename());
+                                createThumbnail = false;
+                            }
+                        }
+                    }
+
+                    if (createThumbnail) {
+                        File cachedThumbnailFile = this.createLayerThumbnail(atlasMapperLayerId, baseLayerId, jsonLayersConfig, jsonMainConfig);
+                        if (cachedThumbnailFile != null) {
+                            layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                        }
+                    }
+                } catch(Exception ex) {
+                    LOGGER.warn(String.format("Exception occurred while looking for previous version of an AtlasMapper layer: %s", atlasMapperLayerId), ex);
+                }
+                */
 
                 try {
                     File cachedThumbnailFile = this.createLayerThumbnail(atlasMapperLayerId, baseLayerId, jsonLayersConfig, jsonMainConfig);
@@ -161,6 +192,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 }
             }
 
+            // TODO Delete old thumbnails older than 1 month old (?)
             this.cleanUp(client, harvestStart, "AtlasMapper layer");
         }
     }
@@ -232,7 +264,18 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         String layerName = jsonLayer.optString("layerName", null);
         boolean isBaseLayer = jsonLayer.optBoolean("isBaseLayer", false);
-        String serviceUrlStr = dataSource.optString("serviceUrl", null);
+        String serviceUrlStr = jsonLayer.optString("serviceUrl", null);
+        if (serviceUrlStr == null) {
+            serviceUrlStr = dataSource.optString("serviceUrl", null);
+        }
+
+        String wmsVersion = jsonLayer.optString("wmsVersion", null);
+        if (wmsVersion == null) {
+            wmsVersion = dataSource.optString("wmsVersion", null);
+        }
+        if (wmsVersion == null) {
+            wmsVersion = "1.1.1";
+        }
 
         URI serviceUri = URI.create(serviceUrlStr);
 
@@ -333,9 +376,10 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         queryMap.put("SERVICE", "WMS");
         queryMap.put("REQUEST", "GetMap");
         queryMap.put("LAYERS", layerName);
+        queryMap.put("STYLES", ""); // Needed for THREDDS
         queryMap.put("FORMAT", format);
         queryMap.put("TRANSPARENT", transparent);
-        queryMap.put("VERSION", "1.1.1");
+        queryMap.put("VERSION", wmsVersion);
         queryMap.put("SRS", "EPSG:4326");
         // CRS is only necessary with WMS 1.3.0, but some WMS server do not interpret "version" properly.
         queryMap.put("CRS", "EPSG:4326");
