@@ -25,6 +25,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -34,8 +35,14 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 /**
@@ -47,6 +54,7 @@ import java.net.URL;
 @Path("/img/v1")
 public class ImageCache {
     private static final Logger LOGGER = Logger.getLogger(ImageCache.class.getName());
+    private static final float BASE_LAYER_ALPHA = 0.5f;
     private static File imageCacheDir = null;
 
     // /img/v1/{index}/{filename}
@@ -124,6 +132,15 @@ public class ImageCache {
             return null;
         }
 
+        File cacheDir = getCacheDirectory(index);
+        if (cacheDir == null) {
+            return null;
+        }
+        if (!cacheDir.canWrite()) {
+            LOGGER.error(String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
+            return null;
+        }
+
         String urlStr = imageUrl.toString();
         Connection.Response imageResponse = EntityUtils.jsoupExecuteWithRetry(urlStr);
         if (imageResponse == null) {
@@ -132,15 +149,6 @@ public class ImageCache {
         int statusCode = imageResponse.statusCode();
         if (statusCode < 200 || statusCode >= 300) {
             LOGGER.warn(String.format("Invalid image URL: %s status code: %d", urlStr, statusCode));
-            return null;
-        }
-
-        File cacheDir = getCacheDirectory(index);
-        if (cacheDir == null) {
-            return null;
-        }
-        if (!cacheDir.canWrite()) {
-            LOGGER.error(String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
             return null;
         }
 
@@ -160,6 +168,77 @@ public class ImageCache {
         FileUtils.writeByteArrayToFile(cacheFile, imageBytes);
 
         return cacheFile;
+    }
+
+    public static File cacheLayer(URL baseLayerImageUrl, URL layerImageUrl, String index, String filenamePrefix) throws IOException, InterruptedException {
+        if (baseLayerImageUrl == null || layerImageUrl == null || index == null) {
+            return null;
+        }
+
+        File cacheDir = getCacheDirectory(index);
+        if (cacheDir == null) {
+            return null;
+        }
+        if (!cacheDir.canWrite()) {
+            LOGGER.error(String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
+            return null;
+        }
+
+        // Get layer image (using JSoup to benefit from the retry feature)
+        String layerUrlStr = layerImageUrl.toString();
+        Connection.Response layerImageResponse = EntityUtils.jsoupExecuteWithRetry(layerUrlStr);
+        if (layerImageResponse == null) {
+            return null;
+        }
+        int layerStatusCode = layerImageResponse.statusCode();
+        if (layerStatusCode < 200 || layerStatusCode >= 300) {
+            LOGGER.warn(String.format("Invalid layer URL: %s status code: %d", layerUrlStr, layerStatusCode));
+            return null;
+        }
+
+        // Get base layer image (using JSoup to benefit from the retry feature)
+        String baseLayerUrlStr = baseLayerImageUrl.toString();
+        Connection.Response baseLayerImageResponse = EntityUtils.jsoupExecuteWithRetry(baseLayerUrlStr);
+        if (baseLayerImageResponse == null) {
+            return null;
+        }
+        int baseLayerStatusCode = baseLayerImageResponse.statusCode();
+        if (baseLayerStatusCode < 200 || baseLayerStatusCode >= 300) {
+            LOGGER.warn(String.format("Invalid base layer URL: %s status code: %d", baseLayerUrlStr, baseLayerStatusCode));
+            return null;
+        }
+
+        String extension = "jpg";
+        File cacheFile = getUniqueFile(cacheDir, layerImageUrl, filenamePrefix, extension);
+
+        BufferedImage baseLayerImage = createImageFromResponse(baseLayerImageResponse);
+        BufferedImage layerImage = createImageFromResponse(layerImageResponse);
+
+        BufferedImage combined = new BufferedImage(baseLayerImage.getWidth(), baseLayerImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = (Graphics2D)combined.getGraphics();
+        // Fill the image with white paint
+        graphics.setColor(new Color(255, 255, 255));
+        graphics.fillRect(0, 0, combined.getWidth(), combined.getHeight());
+
+        // Draw the background image (50% opacity)
+        Composite defaultComposite = graphics.getComposite();
+        graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, BASE_LAYER_ALPHA));
+        graphics.drawImage(baseLayerImage, 0, 0, null);
+        graphics.setComposite(defaultComposite);
+
+        // Draw the layer on top
+        graphics.drawImage(layerImage, 0, 0, null);
+
+        // Saved image to disk
+        ImageIO.write(combined, "jpg", cacheFile);
+
+        return cacheFile;
+    }
+
+    private static BufferedImage createImageFromResponse(Connection.Response response) throws IOException {
+        try (InputStream inputStream = response.bodyStream()) {
+            return ImageIO.read(inputStream);
+        }
     }
 
     private static String getFileExtension(String contentTypeStr) throws IOException {

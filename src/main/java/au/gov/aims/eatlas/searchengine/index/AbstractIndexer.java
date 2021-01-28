@@ -57,7 +57,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         return client.index(this.getIndexRequest(entity));
     }
 
-    public void cleanUp(ESClient client, long lastIndexed, String entityDisplayName) throws IOException {
+    public void cleanUp(ESClient client, long lastIndexed, String entityDisplayName) {
         long deletedIndexedItems = this.deleteOldIndexedItems(client, lastIndexed);
         if (deletedIndexedItems > 0) {
             LOGGER.info(String.format("Deleted %d indexed %s",
@@ -71,18 +71,23 @@ public abstract class AbstractIndexer<E extends Entity> {
         }
     }
 
-    private long deleteOldIndexedItems(ESClient client, long lastIndexed) throws IOException {
+    private long deleteOldIndexedItems(ESClient client, long lastIndexed) {
         DeleteByQueryRequest deleteRequest = this.getDeleteOldItemsRequest(lastIndexed);
-        BulkByScrollResponse response = client.deleteByQuery(deleteRequest);
 
-        if (response != null) {
-            return response.getDeleted();
+        try {
+            BulkByScrollResponse response = client.deleteByQuery(deleteRequest);
+
+            if (response != null) {
+                return response.getDeleted();
+            }
+        } catch(Exception ex) {
+            LOGGER.error("Exception occurred deleting old indexed entities", ex);
         }
 
         return 0;
     }
 
-    private long deleteOldThumbnails(long lastIndexed) throws IOException {
+    private long deleteOldThumbnails(long lastIndexed) {
         File cacheDirectory = ImageCache.getCacheDirectory(this.getIndex());
 
         if (cacheDirectory != null && cacheDirectory.isDirectory()) {
@@ -93,7 +98,7 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         return 0;
     }
-    private long deleteOldThumbnailsRecursive(File dir, long lastIndexed) throws IOException {
+    private long deleteOldThumbnailsRecursive(File dir, long lastIndexed) {
         long deleted = 0;
         File[] files = dir.listFiles();
         if (files != null) {

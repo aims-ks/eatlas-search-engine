@@ -132,7 +132,7 @@ public abstract class Entity {
     public void deleteThumbnail() {
         String index = this.getIndex();
         String cachedThumbnailFilename = this.getCachedThumbnailFilename();
-        if (index == null || cachedThumbnailFilename != null) {
+        if (index != null && cachedThumbnailFilename != null) {
             File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
             if (cachedFile != null && cachedFile.exists() && !cachedFile.delete()) {
                 LOGGER.error(String.format("Cached image can not be deleted: %s", cachedFile.toString()));

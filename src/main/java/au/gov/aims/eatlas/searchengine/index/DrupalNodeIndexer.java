@@ -83,7 +83,12 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                     this.drupalUrl, this.drupalNodeType, this.drupalPreviewImageField, INDEX_PAGE_SIZE, page * INDEX_PAGE_SIZE);
 
                 nodeFound = 0;
-                String responseStr = EntityUtils.harvestGetURL(url);
+                String responseStr = null;
+                try {
+                    responseStr = EntityUtils.harvestGetURL(url);
+                } catch(Exception ex) {
+                    LOGGER.warn(String.format("Exception occurred while requesting a page of Drupal nodes. Node type: %s",  this.drupalNodeType), ex);
+                }
                 if (responseStr != null && !responseStr.isEmpty()) {
                     JSONObject jsonResponse = new JSONObject(responseStr);
 
@@ -102,17 +107,25 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                             break;
                         }
 
-                        DrupalNode oldNode = this.get(client, drupalNode.getId());
-                        if (oldNode != null) {
-                            oldNode.deleteThumbnail();
+                        try {
+                            DrupalNode oldNode = this.get(client, drupalNode.getId());
+                            if (oldNode != null) {
+                                oldNode.deleteThumbnail();
+                            }
+                        } catch(Exception ex) {
+                            LOGGER.warn(String.format("Exception occurred while looking for previous version of a Drupal node: %s, node type: %s", drupalNode.getId(), this.drupalNodeType), ex);
                         }
 
-                        IndexResponse indexResponse = this.index(client, drupalNode);
+                        try {
+                            IndexResponse indexResponse = this.index(client, drupalNode);
 
-                        LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",
-                                page,
-                                drupalNode.getNid(),
-                                indexResponse.status().getStatus()));
+                            LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",
+                                    page,
+                                    drupalNode.getNid(),
+                                    indexResponse.status().getStatus()));
+                        } catch(Exception ex) {
+                            LOGGER.warn(String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", drupalNode.getId(), this.drupalNodeType), ex);
+                        }
                     }
                 }
                 page++;

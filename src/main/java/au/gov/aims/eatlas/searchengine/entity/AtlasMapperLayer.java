@@ -102,11 +102,6 @@ public class AtlasMapperLayer extends Entity {
             this.setTitle(jsonLayer.optString("title", null));
             this.setDocument(jsonLayer.optString("description", null));
             this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig));
-
-            // TODO Create a thumbnail image in "eatlas_layer" directory, save it with
-            //   this.setCachedThumbnailFilename();
-            this.setThumbnailUrl(this.getLayerThumbnailUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig));
-
             this.setLangcode("en");
         }
     }
@@ -137,7 +132,7 @@ public class AtlasMapperLayer extends Entity {
         String linkStr = String.format("%s/index.html?intro=false&l0=%s", atlasMapperClientUrl, atlasMapperLayerId);
 
         // Find the default base layer:
-        String baseLayer = this.getBaseLayer(jsonMainConfig);
+        String baseLayer = AtlasMapperLayer.getBaseLayer(jsonMainConfig);
         if (baseLayer != null) {
             linkStr += "," + baseLayer;
         }
@@ -154,22 +149,13 @@ public class AtlasMapperLayer extends Entity {
         return null;
     }
 
-    private URL getLayerThumbnailUrl(String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig) {
-        // TODO
-        //   1. Craft URL for the basemap, in the BBox of the layer
-        //   2. Craft URL for the layer, in the BBox of the layer
-        //   3. Download images and stitch them together
-        //   4. Save image in the search engine cache and return cache URL
-        return null;
-    }
-
     // Find the base layer from the AtlasMapper main config
-    private String getBaseLayer(JSONObject jsonMainResponse) {
-        if (jsonMainResponse == null) {
+    public static String getBaseLayer(JSONObject jsonMainConfig) {
+        if (jsonMainConfig == null) {
             return null;
         }
 
-        JSONArray jsonDefaultLayers = jsonMainResponse.optJSONArray("defaultLayers");
+        JSONArray jsonDefaultLayers = jsonMainConfig.optJSONArray("defaultLayers");
         if (jsonDefaultLayers == null) {
             return null;
         }
@@ -179,15 +165,103 @@ public class AtlasMapperLayer extends Entity {
             if (jsonDefaultLayer != null) {
                 boolean isBaseLayer = jsonDefaultLayer.optBoolean("isBaseLayer", false);
                 if (isBaseLayer) {
-                    String baseLayer = jsonDefaultLayer.optString("layerId", null);
-                    if (baseLayer != null) {
-                        return baseLayer;
+                    String atlasMapperLayerId = jsonDefaultLayer.optString("layerId", null);
+                    if (atlasMapperLayerId != null) {
+                        return atlasMapperLayerId;
                     }
                 }
             }
         }
 
         return null;
+    }
+
+    public static String getWMSBaseLayer(JSONObject jsonMainConfig, JSONObject jsonLayersConfig) {
+        if (jsonMainConfig == null) {
+            return null;
+        }
+
+        JSONArray jsonDefaultLayers = jsonMainConfig.optJSONArray("defaultLayers");
+        if (jsonDefaultLayers == null) {
+            return null;
+        }
+
+        JSONObject dataSources = jsonMainConfig.optJSONObject("dataSources");
+        if (dataSources == null) {
+            return null;
+        }
+
+        for (int i=0; i<jsonDefaultLayers.length(); i++) {
+            JSONObject jsonDefaultLayer = jsonDefaultLayers.getJSONObject(i);
+            if (isWMSBaseLayer(jsonDefaultLayer, dataSources)) {
+                String atlasMapperLayerId = jsonDefaultLayer.optString("layerId", null);
+                if (atlasMapperLayerId != null) {
+                    return atlasMapperLayerId;
+                }
+            }
+        }
+
+        // There is no WMS base layers in default layers. Look for a WMS base layer in the list of layer.
+        // NOTE: This could be expensive (lots of CPU). Hopefully that won't happen often.
+        for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
+            JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
+            if (isWMSBaseLayer(jsonLayer, dataSources)) {
+                return atlasMapperLayerId;
+            }
+        }
+
+        return null;
+    }
+
+    private static boolean isWMSBaseLayer(JSONObject jsonLayer, JSONObject dataSources) {
+        if (jsonLayer == null || dataSources == null) {
+            return false;
+        }
+
+        boolean isBaseLayer = jsonLayer.optBoolean("isBaseLayer", false);
+        if (!isBaseLayer) {
+            return false;
+        }
+
+        String dataSourceId = jsonLayer.optString("dataSourceId", null);
+        if (dataSourceId == null) {
+            return false;
+        }
+
+        JSONObject dataSource = dataSources.optJSONObject(dataSourceId);
+        if (dataSource == null) {
+            return false;
+        }
+
+        return AtlasMapperLayer.isWMS(dataSource);
+    }
+
+    public static boolean isWMS(JSONObject dataSource) {
+        if (dataSource == null) {
+            return false;
+        }
+
+        String layerType = dataSource.optString("layerType", null);
+        if (layerType == null) {
+            return false;
+        }
+
+        switch (layerType) {
+            case "WMS":
+            case "WMTS":
+            case "NCWMS":
+            case "THREDDS":
+                return true;
+
+            case "ARCGIS_MAPSERVER":
+            case "ARCGIS_CACHE":
+            case "KML":
+            case "GOOGLE":
+            case "BING":
+            case "XYZ":
+            default:
+                return false;
+        }
     }
 
     private JSONObject getDataSourceConfig(JSONObject jsonLayer, JSONObject jsonMainConfig) {

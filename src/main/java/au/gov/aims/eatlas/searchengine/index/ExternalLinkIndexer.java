@@ -88,9 +88,14 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                     String url = externalLinkEntry.url;
                     if (url != null && !url.isEmpty()) {
                         ExternalLink entity = new ExternalLink(this.getIndex(), url, externalLinkEntry.thumbnail, externalLinkEntry.title);
-                        ExternalLink oldEntity = this.get(client, entity.getId());
-                        if (oldEntity != null) {
-                            oldEntity.deleteThumbnail();
+
+                        try {
+                            ExternalLink oldEntity = this.get(client, entity.getId());
+                            if (oldEntity != null) {
+                                oldEntity.deleteThumbnail();
+                            }
+                        } catch(Exception ex) {
+                            LOGGER.warn(String.format("Exception occurred while looking for previous version of an external URL: %s", url), ex);
                         }
 
                         String responseStr = null;
@@ -104,11 +109,15 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                         if (responseStr != null) {
                             entity.setDocument(responseStr);
 
-                            IndexResponse indexResponse = this.index(client, entity);
+                            try {
+                                IndexResponse indexResponse = this.index(client, entity);
 
-                            LOGGER.debug(String.format("Indexing external URL: %s, status: %d",
-                                    entity.getId(),
-                                    indexResponse.status().getStatus()));
+                                LOGGER.debug(String.format("Indexing external URL: %s, status: %d",
+                                        entity.getId(),
+                                        indexResponse.status().getStatus()));
+                            } catch(Exception ex) {
+                                LOGGER.warn(String.format("Exception occurred while indexing an external URL: %s", url), ex);
+                            }
                         }
                     }
                 }

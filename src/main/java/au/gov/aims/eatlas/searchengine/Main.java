@@ -47,12 +47,14 @@ public class Main {
         //Main.loadDummyExternalLinks(15000);
 
         //Main.loadExternalLinks();
-        //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au");
+
+        Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", System.currentTimeMillis() - (4 * DAY_MS));
+        //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", null);
 
         //Main.loadDrupalArticles(System.currentTimeMillis() - DAY_MS);
         //Main.loadDrupalArticles(null);
 
-        Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork", System.currentTimeMillis() - (1 * DAY_MS));
+        //Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork", System.currentTimeMillis() - (7 * DAY_MS));
         //Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork", null);
     }
 
@@ -146,11 +148,10 @@ public class Main {
         geoNetworkIndex.harvest(lastHarvest);
     }
 
-    private static void loadAtlasMapperLayers(String atlasMapperClientUrl) throws Exception {
+    private static void loadAtlasMapperLayers(String atlasMapperClientUrl, Long lastHarvest) throws Exception {
         String index = "eatlas_layer";
         AtlasMapperIndexer atlasMapperIndexer = new AtlasMapperIndexer(index, atlasMapperClientUrl, "2.2.0");
 
-        Long lastHarvest = null;
         atlasMapperIndexer.harvest(lastHarvest);
     }
 

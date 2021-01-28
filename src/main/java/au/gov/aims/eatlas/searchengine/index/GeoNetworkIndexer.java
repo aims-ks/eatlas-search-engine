@@ -65,7 +65,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
     @Override
     public void harvest(Long lastHarvested) throws Exception {
-        // https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
         String lastHarvestedISODateStr = null;
         if (lastHarvested != null) {
             // NOTE: GeoNetwork last modified date (aka dateFrom) are rounded to seconds,
@@ -80,6 +79,9 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         // GeoNetwork export API URL
         // If we have a "lastHarvested" parameter, request metadata records modified since that date (with a small buffer)
         // Otherwise, request everything.
+        // NOTE: According to the doc, the parameter "dateFrom" is used to filter on creation date, but in fact,
+        //     it filters on modification date (which is what we want).
+        //     https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
         String url = fullHarvest ?
             String.format("%s/srv/eng/xml.search", this.geoNetworkUrl) :
             String.format("%s/srv/eng/xml.search?dateFrom=%s",
@@ -118,10 +120,15 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                         if (metadataRecordUUIDElement != null) {
                             String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
 
-                            GeoNetworkRecord oldRecord = this.get(client, metadataRecordUUID);
-                            if (oldRecord != null) {
-                                oldRecord.deleteThumbnail();
+                            try {
+                                GeoNetworkRecord oldRecord = this.get(client, metadataRecordUUID);
+                                if (oldRecord != null) {
+                                    oldRecord.deleteThumbnail();
+                                }
+                            } catch(Exception ex) {
+                                LOGGER.warn(String.format("Exception occurred while looking for previous version of a GeoNetwork record: %s", metadataRecordUUID), ex);
                             }
+
                             GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(builder, metadataRecordUUID);
                             if (geoNetworkRecord != null) {
                                 // If the record have a parent UUID,
@@ -131,11 +138,15 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                                     orphanMetadataRecordList.add(metadataRecordUUID);
                                 }
 
-                                IndexResponse indexResponse = this.index(client, geoNetworkRecord);
+                                try {
+                                    IndexResponse indexResponse = this.index(client, geoNetworkRecord);
 
-                                LOGGER.debug(String.format("Indexing GeoNetwork metadata record: %s, status: %d",
-                                        geoNetworkRecord.getId(),
-                                        indexResponse.status().getStatus()));
+                                    LOGGER.debug(String.format("Indexing GeoNetwork metadata record: %s, status: %d",
+                                            geoNetworkRecord.getId(),
+                                            indexResponse.status().getStatus()));
+                                } catch(Exception ex) {
+                                    LOGGER.warn(String.format("Exception occurred while indexing a GeoNetwork record: %s", metadataRecordUUID), ex);
+                                }
                             }
                         }
                     }
@@ -143,19 +154,35 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     // We have added all the records.
                     // Lets fix the records parent title.
                     for (String recordUUID : orphanMetadataRecordList) {
-                        GeoNetworkRecord geoNetworkRecord = this.get(client, recordUUID);
+                        GeoNetworkRecord geoNetworkRecord = null;
+                        try {
+                            geoNetworkRecord = this.get(client, recordUUID);
+                        } catch(Exception ex) {
+                            LOGGER.warn(String.format("Exception occurred while loading a GeoNetwork record from the search index: %s", recordUUID), ex);
+                        }
+
                         if (geoNetworkRecord != null) {
                             String parentRecordUUID = geoNetworkRecord.getParentUUID();
-                            GeoNetworkRecord parentRecord = this.get(client, parentRecordUUID);
+                            GeoNetworkRecord parentRecord = null;
+                            try {
+                                parentRecord = this.get(client, parentRecordUUID);
+                            } catch(Exception ex) {
+                                LOGGER.warn(String.format("Exception occurred while loading a parent GeoNetwork record from the search index: %s", parentRecordUUID), ex);
+                            }
+
                             if (parentRecord != null) {
                                 geoNetworkRecord.setParentTitle(parentRecord.getTitle());
 
-                                IndexResponse indexResponse = this.index(client, geoNetworkRecord);
+                                try {
+                                    IndexResponse indexResponse = this.index(client, geoNetworkRecord);
 
-                                LOGGER.debug(String.format("Re-indexing GeoNetwork metadata record: %s with parent title: %s, status: %d",
-                                        geoNetworkRecord.getId(),
-                                        geoNetworkRecord.getParentTitle(),
-                                        indexResponse.status().getStatus()));
+                                    LOGGER.debug(String.format("Re-indexing GeoNetwork metadata record: %s with parent title: %s, status: %d",
+                                            geoNetworkRecord.getId(),
+                                            geoNetworkRecord.getParentTitle(),
+                                            indexResponse.status().getStatus()));
+                                } catch(Exception ex) {
+                                    LOGGER.warn(String.format("Exception occurred while re-indexing a GeoNetwork record: %s", recordUUID), ex);
+                                }
                             }
                         }
                     }

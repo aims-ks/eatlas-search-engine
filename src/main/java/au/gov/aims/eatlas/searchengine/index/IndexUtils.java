@@ -18,8 +18,12 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Connection;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -28,9 +32,11 @@ import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class IndexUtils {
+    private static final Logger LOGGER = Logger.getLogger(IndexUtils.class.getName());
 
     public static Map<String, Object> JSONObjectToMap(JSONObject jsonObject) {
         if (jsonObject == null || jsonObject.isEmpty()) {
@@ -77,6 +83,29 @@ public class IndexUtils {
         return array;
     }
 
+    public static Long parseHttpLastModifiedHeader(Connection.Response response) {
+        if (response == null) {
+            return null;
+        }
+
+        return IndexUtils.parseHttpLastModifiedHeader(response.header("Last-Modified"));
+    }
+    public static Long parseHttpLastModifiedHeader(String lastModifiedHeader) {
+        if (lastModifiedHeader == null || lastModifiedHeader.isEmpty()) {
+            return null;
+        }
+
+        DateTime lastModifiedDate = null;
+        try {
+            lastModifiedDate = DateTimeFormat.forPattern("E, dd MMM yyyy HH:mm:ss z")
+                .withLocale(Locale.ENGLISH)
+                .parseDateTime(lastModifiedHeader);
+        } catch(Exception ex) {
+            LOGGER.error(String.format("Exception occurred while parsing the HTTP header Last-Modified date: %s", lastModifiedHeader), ex);
+        }
+
+        return lastModifiedDate == null ? null : lastModifiedDate.getMillis();
+    }
 
     // Helper methods to help parsing XML
 
