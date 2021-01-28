@@ -63,16 +63,21 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     }
 
     @Override
-    public void harvest(Long lastIndexed) throws IOException, InterruptedException {
+    public void harvest(Long lastHarvested) throws IOException, InterruptedException {
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("localhost", 9200, "http"),
                         new HttpHost("localhost", 9300, "http"))))) {
 
+            boolean fullHarvest = lastHarvested == null;
             long harvestStart = System.currentTimeMillis();
 
             int nodeFound, page = 0;
+            boolean stop = false;
             do {
+                // Ordered by lastModified (changed).
+                // If the parameter lastHarvested is set, harvest nodes until we found a node that was last modified before
+                //     the lastHarvested parameter.
                 // "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=100&page[offset]=0"
                 String url = String.format("%s/jsonapi/node/%s?include=%s&sort=-changed&page[limit]=%d&page[offset]=%d",
                     this.drupalUrl, this.drupalNodeType, this.drupalPreviewImageField, INDEX_PAGE_SIZE, page * INDEX_PAGE_SIZE);
@@ -89,6 +94,14 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
                     for (int i=0; i<nodeFound; i++) {
                         DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonNodes.optJSONObject(i), jsonIncluded, this.drupalPreviewImageField);
+
+                        // NOTE: Drupal last modified date (aka changed date) are rounded to seconds,
+                        //     and can be a bit off. Use a 10s margin for safety.
+                        if (!fullHarvest && lastHarvested != null && drupalNode.getLastModified() < lastHarvested + 10000) {
+                            stop = true;
+                            break;
+                        }
+
                         DrupalNode oldNode = this.get(client, drupalNode.getId());
                         if (oldNode != null) {
                             oldNode.deleteThumbnail();
@@ -103,9 +116,10 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                     }
                 }
                 page++;
-            } while(nodeFound == INDEX_PAGE_SIZE);
+            } while(!stop && nodeFound == INDEX_PAGE_SIZE);
 
-            if (lastIndexed == null) {
+            // Only cleanup when we are doing a full harvest
+            if (fullHarvest) {
                 this.cleanUp(client, harvestStart, String.format("Drupal node of type %s", this.drupalNodeType));
             }
         }

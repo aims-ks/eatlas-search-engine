@@ -86,7 +86,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         File cacheDirectory = ImageCache.getCacheDirectory(this.getIndex());
 
         if (cacheDirectory != null && cacheDirectory.isDirectory()) {
-            // NOTE: File timestamps are ofter rounded to seconds, and can be a bit off.
+            // NOTE: File timestamps are often rounded to seconds, and can be a bit off.
             //     Use a 10s margin for safety.
             return this.deleteOldThumbnailsRecursive(cacheDirectory, lastIndexed - 10000);
         }

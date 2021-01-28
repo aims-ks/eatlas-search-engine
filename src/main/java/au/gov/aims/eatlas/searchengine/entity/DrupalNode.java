@@ -20,6 +20,9 @@ package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -50,6 +53,16 @@ public class DrupalNode extends Entity {
 
             // Title
             this.setTitle(jsonAttributes == null ? null : jsonAttributes.optString("title", null));
+
+            // Last modified
+            String changedDateStr = jsonAttributes == null ? null : jsonAttributes.optString("changed", null);
+            if (changedDateStr != null && !changedDateStr.isEmpty()) {
+                DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
+                DateTime changedDate = dateParser.parseDateTime(changedDateStr);
+                if (changedDate != null) {
+                    this.setLastModified(changedDate.getMillis());
+                }
+            }
 
             // Node URL
             String nodeRelativePath = DrupalNode.getNodeRelativeUrl(jsonApiNode);

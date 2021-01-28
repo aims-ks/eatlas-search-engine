@@ -40,15 +40,20 @@ import java.util.Map;
 
 public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final long DAY_MS = 24 * 60 * 60 * 1000;
 
     public static void main(String... args) throws Exception {
         //Main.testElasticSearch();
         //Main.loadDummyExternalLinks(15000);
 
-        Main.loadDrupalArticles();
-        Main.loadExternalLinks();
-        Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork");
+        //Main.loadExternalLinks();
         //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au");
+
+        //Main.loadDrupalArticles(System.currentTimeMillis() - DAY_MS);
+        //Main.loadDrupalArticles(null);
+
+        Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork", System.currentTimeMillis() - (1 * DAY_MS));
+        //Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork", null);
     }
 
     private static void testElasticSearch() throws IOException {
@@ -83,14 +88,13 @@ public class Main {
      *   $ cd Desktop/projects/eAtlas-redesign/2020-Drupal9/
      *   $ docker-compose up
      */
-    private static void loadDrupalArticles() throws IOException, InterruptedException {
+    private static void loadDrupalArticles(Long lastHarvest) throws IOException, InterruptedException {
         String index = "eatlas_article";
 
         DrupalNodeIndexer drupalNodeIndex = new DrupalNodeIndexer(
             index, "http://localhost:9090", "9", "article", "field_image");
 
-        Long lastIndexed = null;
-        drupalNodeIndex.harvest(lastIndexed);
+        drupalNodeIndex.harvest(lastHarvest);
     }
 
     private static void loadExternalLinks() throws IOException, InterruptedException {
@@ -131,24 +135,23 @@ public class Main {
             "Tropical Seagrass Identification (Seagrass-Watch)"
         );
 
-        Long lastIndexed = null;
-        eAtlasExternalLinkIndexer.harvest(lastIndexed);
+        Long lastHarvest = null;
+        eAtlasExternalLinkIndexer.harvest(lastHarvest);
     }
 
-    private static void loadGeoNetworkRecords(String geoNetworkUrl) throws Exception {
+    private static void loadGeoNetworkRecords(String geoNetworkUrl, Long lastHarvest) throws Exception {
         String index = "eatlas_metadata";
         GeoNetworkIndexer geoNetworkIndex = new GeoNetworkIndexer(index, geoNetworkUrl, "3.0");
 
-        Long lastIndexed = null;
-        geoNetworkIndex.harvest(lastIndexed);
+        geoNetworkIndex.harvest(lastHarvest);
     }
 
     private static void loadAtlasMapperLayers(String atlasMapperClientUrl) throws Exception {
         String index = "eatlas_layer";
         AtlasMapperIndexer atlasMapperIndexer = new AtlasMapperIndexer(index, atlasMapperClientUrl, "2.2.0");
 
-        Long lastIndexed = null;
-        atlasMapperIndexer.harvest(lastIndexed);
+        Long lastHarvest = null;
+        atlasMapperIndexer.harvest(lastHarvest);
     }
 
     private static void loadDummyExternalLinks(int count) throws IOException {

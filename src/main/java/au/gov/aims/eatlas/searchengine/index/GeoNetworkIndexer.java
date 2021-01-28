@@ -27,6 +27,8 @@ import org.apache.log4j.Logger;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -62,9 +64,26 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
-    public void harvest(Long lastIndexed) throws Exception {
+    public void harvest(Long lastHarvested) throws Exception {
         // https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
-        String url = String.format("%s/srv/eng/xml.search", this.geoNetworkUrl);
+        String lastHarvestedISODateStr = null;
+        if (lastHarvested != null) {
+            // NOTE: GeoNetwork last modified date (aka dateFrom) are rounded to seconds,
+            //     and can be a bit off. Use a 10s margin for safety.
+            DateTime lastHarvestedDate = new DateTime(lastHarvested + 10000);
+            if (lastHarvestedDate != null) {
+                lastHarvestedISODateStr = lastHarvestedDate.toString(ISODateTimeFormat.dateTimeNoMillis());
+            }
+        }
+        boolean fullHarvest = lastHarvestedISODateStr == null;
+
+        // GeoNetwork export API URL
+        // If we have a "lastHarvested" parameter, request metadata records modified since that date (with a small buffer)
+        // Otherwise, request everything.
+        String url = fullHarvest ?
+            String.format("%s/srv/eng/xml.search", this.geoNetworkUrl) :
+            String.format("%s/srv/eng/xml.search?dateFrom=%s",
+                this.geoNetworkUrl, lastHarvestedISODateStr);
 
         String responseStr = EntityUtils.harvestGetURL(url);
         if (responseStr != null && !responseStr.isEmpty()) {
@@ -141,7 +160,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                         }
                     }
 
-                    if (lastIndexed == null) {
+                    // Only cleanup when we are doing a full harvest
+                    if (fullHarvest) {
                         this.cleanUp(client, harvestStart, "GeoNetwork metadata record");
                     }
                 }

@@ -53,9 +53,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    public void harvest(Long lastIndexed) throws IOException, InterruptedException {
+    public void harvest(Long lastHarvested) throws IOException, InterruptedException {
         // There is no way to know if an AtlasMapper was modified since last indexation.
-        // Therefore, the lastIndexed parameter is ignored.
+        // Therefore, the lastHarvested parameter is ignored.
         // Always perform a full harvest.
 
         // Get the map of datasources

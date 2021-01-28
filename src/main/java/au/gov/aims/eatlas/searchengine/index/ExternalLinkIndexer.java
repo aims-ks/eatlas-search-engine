@@ -71,9 +71,9 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
      *   since there is always only one entity to harvest.
      */
     @Override
-    public void harvest(Long lastIndexed) throws IOException, InterruptedException {
+    public void harvest(Long lastHarvested) throws IOException, InterruptedException {
         // There is no reliable way to know if a website was modified since last indexation.
-        // Therefore, the lastIndexed parameter is ignored.
+        // Therefore, the lastHarvested parameter is ignored.
         // Always perform a full harvest.
 
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
