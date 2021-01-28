@@ -53,7 +53,11 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    public void harvest(Long lastModified) throws IOException, InterruptedException {
+    public void harvest(Long lastIndexed) throws IOException, InterruptedException {
+        // There is no way to know if an AtlasMapper was modified since last indexation.
+        // Therefore, the lastIndexed parameter is ignored.
+        // Always perform a full harvest.
+
         // Get the map of datasources
         // "https://maps.eatlas.org.au/config/main.json"
         String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
@@ -77,6 +81,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                         new HttpHost("localhost", 9200, "http"),
                         new HttpHost("localhost", 9300, "http"))))) {
 
+            long harvestStart = System.currentTimeMillis();
+
             for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
                 JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
 
@@ -93,6 +99,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                         atlasMapperLayerId,
                         indexResponse.status().getStatus()));
             }
+
+            this.cleanUp(client, harvestStart, "AtlasMapper layer");
         }
     }
 

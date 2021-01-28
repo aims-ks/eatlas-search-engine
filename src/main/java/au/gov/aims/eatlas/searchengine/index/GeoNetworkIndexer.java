@@ -62,7 +62,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
-    public void harvest(Long lastModified) throws Exception {
+    public void harvest(Long lastIndexed) throws Exception {
         // https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
         String url = String.format("%s/srv/eng/xml.search", this.geoNetworkUrl);
 
@@ -88,6 +88,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                         RestClient.builder(
                                 new HttpHost("localhost", 9200, "http"),
                                 new HttpHost("localhost", 9300, "http"))))) {
+
+                    long harvestStart = System.currentTimeMillis();
 
                     // List of metadata records which needs its parent title to be set
                     List<String> orphanMetadataRecordList = new ArrayList<>();
@@ -137,6 +139,10 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                                         indexResponse.status().getStatus()));
                             }
                         }
+                    }
+
+                    if (lastIndexed == null) {
+                        this.cleanUp(client, harvestStart, "GeoNetwork metadata record");
                     }
                 }
             }

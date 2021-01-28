@@ -30,6 +30,8 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
 import java.io.IOException;
 
@@ -57,8 +59,13 @@ public class ESTestClient implements ESClient {
 
     @Override
     public CountResponse count(CountRequest countRequest) throws IOException {
-        // TODO Find a way to do this if needed in tests
-        return null;
+        // Elasticsearch test framework have no support for this.
+        throw new UnsupportedOperationException("Elasticsearch test framework doesn't support count");
+    }
+
+    @Override
+    public BulkByScrollResponse deleteByQuery(DeleteByQueryRequest deleteRequest) throws IOException {
+        throw new UnsupportedOperationException("Elasticsearch test framework doesn't support deleteByQuery");
     }
 
     @Override

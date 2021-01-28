@@ -63,11 +63,13 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     }
 
     @Override
-    public void harvest(Long lastModified) throws IOException, InterruptedException {
+    public void harvest(Long lastIndexed) throws IOException, InterruptedException {
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("localhost", 9200, "http"),
                         new HttpHost("localhost", 9300, "http"))))) {
+
+            long harvestStart = System.currentTimeMillis();
 
             int nodeFound, page = 0;
             do {
@@ -102,6 +104,10 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                 }
                 page++;
             } while(nodeFound == INDEX_PAGE_SIZE);
+
+            if (lastIndexed == null) {
+                this.cleanUp(client, harvestStart, String.format("Drupal node of type %s", this.drupalNodeType));
+            }
         }
     }
 

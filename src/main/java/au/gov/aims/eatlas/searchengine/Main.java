@@ -45,9 +45,9 @@ public class Main {
         //Main.testElasticSearch();
         //Main.loadDummyExternalLinks(15000);
 
-        //Main.loadDrupalArticles();
+        Main.loadDrupalArticles();
         Main.loadExternalLinks();
-        //Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork");
+        Main.loadGeoNetworkRecords("https://eatlas.org.au/geonetwork");
         //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au");
     }
 
@@ -89,15 +89,14 @@ public class Main {
         DrupalNodeIndexer drupalNodeIndex = new DrupalNodeIndexer(
             index, "http://localhost:9090", "9", "article", "field_image");
 
-        Long lastModified = null;
-        drupalNodeIndex.harvest(lastModified);
+        Long lastIndexed = null;
+        drupalNodeIndex.harvest(lastIndexed);
     }
 
     private static void loadExternalLinks() throws IOException, InterruptedException {
         String index = "eatlas_extlink";
 
         ExternalLinkIndexer eAtlasExternalLinkIndexer = new ExternalLinkIndexer(index);
-
         eAtlasExternalLinkIndexer.addExternalLink(
             "http://www.csiro.au/connie2/",
             "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/connie2-hydrodynamic-modelling.png?itok=gVbD37jD",
@@ -132,24 +131,24 @@ public class Main {
             "Tropical Seagrass Identification (Seagrass-Watch)"
         );
 
-        Long lastModified = null;
-        eAtlasExternalLinkIndexer.harvest(lastModified);
+        Long lastIndexed = null;
+        eAtlasExternalLinkIndexer.harvest(lastIndexed);
     }
 
     private static void loadGeoNetworkRecords(String geoNetworkUrl) throws Exception {
         String index = "eatlas_metadata";
         GeoNetworkIndexer geoNetworkIndex = new GeoNetworkIndexer(index, geoNetworkUrl, "3.0");
 
-        Long lastModified = null;
-        geoNetworkIndex.harvest(lastModified);
+        Long lastIndexed = null;
+        geoNetworkIndex.harvest(lastIndexed);
     }
 
     private static void loadAtlasMapperLayers(String atlasMapperClientUrl) throws Exception {
         String index = "eatlas_layer";
         AtlasMapperIndexer atlasMapperIndexer = new AtlasMapperIndexer(index, atlasMapperClientUrl, "2.2.0");
 
-        Long lastModified = null;
-        atlasMapperIndexer.harvest(lastModified);
+        Long lastIndexed = null;
+        atlasMapperIndexer.harvest(lastIndexed);
     }
 
     private static void loadDummyExternalLinks(int count) throws IOException {

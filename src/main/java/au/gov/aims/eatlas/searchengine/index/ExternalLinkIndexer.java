@@ -71,14 +71,19 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
      *   since there is always only one entity to harvest.
      */
     @Override
-    public void harvest(Long lastModified) throws IOException, InterruptedException {
+    public void harvest(Long lastIndexed) throws IOException, InterruptedException {
+        // There is no reliable way to know if a website was modified since last indexation.
+        // Therefore, the lastIndexed parameter is ignored.
+        // Always perform a full harvest.
 
-        if (this.externalLinkEntries != null && !this.externalLinkEntries.isEmpty()) {
-            try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                    RestClient.builder(
-                            new HttpHost("localhost", 9200, "http"),
-                            new HttpHost("localhost", 9300, "http"))))) {
+        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9300, "http"))))) {
 
+            long harvestStart = System.currentTimeMillis();
+
+            if (this.externalLinkEntries != null && !this.externalLinkEntries.isEmpty()) {
                 for (ExternalLinkEntry externalLinkEntry : this.externalLinkEntries) {
                     String url = externalLinkEntry.url;
                     if (url != null && !url.isEmpty()) {
@@ -108,6 +113,8 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                     }
                 }
             }
+
+            this.cleanUp(client, harvestStart, "external URL");
         }
     }
 

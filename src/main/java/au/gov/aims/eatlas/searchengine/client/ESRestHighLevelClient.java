@@ -30,6 +30,8 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
 import java.io.IOException;
 
@@ -58,6 +60,11 @@ public class ESRestHighLevelClient implements ESClient {
     @Override
     public CountResponse count(CountRequest countRequest) throws IOException {
         return this.client.count(countRequest, RequestOptions.DEFAULT);
+    }
+
+    @Override
+    public BulkByScrollResponse deleteByQuery(DeleteByQueryRequest deleteRequest) throws IOException {
+        return this.client.deleteByQuery(deleteRequest, RequestOptions.DEFAULT);
     }
 
     @Override

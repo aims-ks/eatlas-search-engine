@@ -88,8 +88,7 @@ public class ImageCache {
     }
 
     public static File getCachedFile(String index, String filename) {
-        String safeIndex = safeString(index);
-        File cacheDir = getCacheDirectory(safeIndex);
+        File cacheDir = getCacheDirectory(index);
         if (cacheDir == null) {
             return null;
         }
@@ -97,15 +96,17 @@ public class ImageCache {
         return new File(cacheDir, filename);
     }
 
-    protected static File getCacheDirectory(String index) {
+    public static File getCacheDirectory(String index) {
         if (index == null || index.isEmpty()) {
             return null;
         }
+        String safeIndex = safeString(index);
+
         if (imageCacheDir == null) {
             // TODO: Get / save image cache path in config!
             imageCacheDir = new File("/home/glafond/Desktop/TMP_INPUT/imageCache/");
         }
-        File indexCacheDir = new File(imageCacheDir, index);
+        File indexCacheDir = new File(imageCacheDir, safeIndex);
         indexCacheDir.mkdirs();
         if (!indexCacheDir.isDirectory()) {
             LOGGER.error(String.format("The image cache directory %s doesn't exist and can not be created.", indexCacheDir));
@@ -134,9 +135,7 @@ public class ImageCache {
             return null;
         }
 
-        String safeIndex = safeString(index);
-
-        File cacheDir = getCacheDirectory(safeIndex);
+        File cacheDir = getCacheDirectory(index);
         if (cacheDir == null) {
             return null;
         }
@@ -195,6 +194,6 @@ public class ImageCache {
     }
 
     public static String safeString(String urlPath) {
-        return urlPath.replaceAll("[^a-zA-Z0-9_\\-]", "_");
+        return urlPath == null ? null : urlPath.replaceAll("[^a-zA-Z0-9_\\-]", "_");
     }
 }

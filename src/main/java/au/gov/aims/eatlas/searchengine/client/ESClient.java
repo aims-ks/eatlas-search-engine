@@ -27,6 +27,8 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
 import java.io.IOException;
 
@@ -42,6 +44,7 @@ public interface ESClient extends AutoCloseable {
     GetResponse get(GetRequest getRequest) throws IOException;
     SearchResponse search(SearchRequest searchRequest) throws IOException;
     CountResponse count(CountRequest countRequest) throws IOException;
+    BulkByScrollResponse deleteByQuery(DeleteByQueryRequest deleteRequest) throws IOException;
 
     RefreshResponse refresh(String ... indices) throws IOException;
 
