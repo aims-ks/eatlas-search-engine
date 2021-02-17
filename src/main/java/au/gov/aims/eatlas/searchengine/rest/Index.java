@@ -18,12 +18,15 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -77,5 +80,72 @@ public class Index {
 
         // Return the JSON array with a OK status.
         return Response.ok(responseTxt).cacheControl(noCache).build();
+    }
+
+    // TODO Needs to be logged in? Post username password? I still need to figure out a safe way to do this
+    @POST
+    @Path("reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response reindex(
+            @Context HttpServletRequest servletRequest,
+            @QueryParam("full") Boolean full // List of indexes to query
+    ) {
+        try {
+            SearchEngineConfig config = SearchEngineConfig.getInstance(servletRequest.getServletContext());
+            JSONObject jsonStatus = Index.internalReindex(config, full == null ? true : full);
+
+            String responseTxt = jsonStatus.toString();
+
+            // Disable cache DURING DEVELOPMENT!
+            CacheControl noCache = new CacheControl();
+            noCache.setNoCache(true);
+
+            // Return the JSON array with a OK status.
+            return Response.ok(responseTxt).cacheControl(noCache).build();
+
+        } catch(Exception ex) {
+            JSONObject jsonStatus = new JSONObject()
+                .put("status", "error")
+                .put("message", ServletUtils.getExceptionMessage(ex))
+                .put("stacktrace", ServletUtils.exceptionToJSON(ex));
+
+            String responseTxt = jsonStatus.toString();
+
+            // Disable cache DURING DEVELOPMENT!
+            CacheControl noCache = new CacheControl();
+            noCache.setNoCache(true);
+
+            // Return the JSON array with a OK status.
+            return Response.ok(responseTxt).cacheControl(noCache).build();
+        }
+    }
+
+    public static JSONObject internalReindex(SearchEngineConfig config, boolean full) throws Exception {
+        // Re-index
+        JSONObject jsonElapseTime = new JSONObject();
+        if (config != null) {
+            List<AbstractIndexer> indexers = config.getIndexers();
+            if (indexers != null && !indexers.isEmpty()) {
+                for (AbstractIndexer indexer : indexers) {
+                    if (indexer.isEnabled()) {
+                        LOGGER.info(String.format("Reindexing %s class %s",
+                                indexer.getIndex(), indexer.getClass().getSimpleName()));
+
+                        indexer.harvest(full);
+                        config.save();
+
+                        Long elapse = indexer.getLastIndexElapse();
+                        long elapseSec = elapse == null ? -1 : elapse/1000;
+                        LOGGER.info(String.format("-- %s class %s reindexing time: %d sec",
+                                indexer.getIndex(), indexer.getClass().getSimpleName(), elapseSec));
+                        jsonElapseTime.put(indexer.getIndex(), String.format("%d sec", elapseSec));
+                    }
+                }
+            }
+        }
+
+        return new JSONObject()
+            .put("status", "success")
+            .put("elapseTime", jsonElapseTime);
     }
 }

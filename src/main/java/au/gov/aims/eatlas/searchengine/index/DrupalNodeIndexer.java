@@ -19,18 +19,18 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
-import org.apache.http.HttpHost;
+import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.io.File;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     private static final Logger LOGGER = Logger.getLogger(DrupalNodeIndexer.class.getName());
@@ -43,6 +43,27 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     private String drupalVersion;
     private String drupalNodeType;
     private String drupalPreviewImageField;
+
+    public static DrupalNodeIndexer fromJSON(String index, JSONObject json) {
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
+
+        return new DrupalNodeIndexer(
+            index,
+            json.optString("drupalUrl", null),
+            json.optString("drupalVersion", null),
+            json.optString("drupalNodeType", null),
+            json.optString("drupalPreviewImageField", null));
+    }
+
+    public JSONObject toJSON() {
+        return this.getJsonBase()
+            .put("drupalUrl", this.drupalUrl)
+            .put("drupalVersion", this.drupalVersion)
+            .put("drupalNodeType", this.drupalNodeType)
+            .put("drupalPreviewImageField", this.drupalPreviewImageField);
+    }
 
     public DrupalNode load(JSONObject json) {
         return DrupalNode.load(json);
@@ -63,79 +84,151 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     }
 
     @Override
-    public void harvest(Long lastHarvested) throws IOException, InterruptedException {
-        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http"))))) {
+    protected void internalHarvest(ESClient client, Long lastHarvested) {
+        boolean fullHarvest = lastHarvested == null;
+        long harvestStart = System.currentTimeMillis();
 
-            boolean fullHarvest = lastHarvested == null;
-            long harvestStart = System.currentTimeMillis();
+        Set<String> usedThumbnails = null;
+        if (fullHarvest) {
+            usedThumbnails = new HashSet<String>();
+        }
 
-            int nodeFound, page = 0;
-            boolean stop = false;
-            do {
-                // Ordered by lastModified (changed).
-                // If the parameter lastHarvested is set, harvest nodes until we found a node that was last modified before
-                //     the lastHarvested parameter.
-                // "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=100&page[offset]=0"
-                String url = String.format("%s/jsonapi/node/%s?include=%s&sort=-changed&page[limit]=%d&page[offset]=%d",
-                    this.drupalUrl, this.drupalNodeType, this.drupalPreviewImageField, INDEX_PAGE_SIZE, page * INDEX_PAGE_SIZE);
+        int nodeFound, page = 0;
+        boolean stop = false;
+        do {
+            // Ordered by lastModified (changed).
+            // If the parameter lastHarvested is set, harvest nodes until we found a node that was last modified before
+            //     the lastHarvested parameter.
+            // "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=100&page[offset]=0"
+            String url = String.format("%s/jsonapi/node/%s?include=%s&sort=-changed&page[limit]=%d&page[offset]=%d",
+                this.drupalUrl, this.drupalNodeType, this.drupalPreviewImageField, INDEX_PAGE_SIZE, page * INDEX_PAGE_SIZE);
 
-                nodeFound = 0;
-                String responseStr = null;
-                try {
-                    responseStr = EntityUtils.harvestGetURL(url);
-                } catch(Exception ex) {
-                    LOGGER.warn(String.format("Exception occurred while requesting a page of Drupal nodes. Node type: %s",  this.drupalNodeType), ex);
-                }
-                if (responseStr != null && !responseStr.isEmpty()) {
-                    JSONObject jsonResponse = new JSONObject(responseStr);
+            nodeFound = 0;
+            String responseStr = null;
+            try {
+                responseStr = EntityUtils.harvestGetURL(url);
+            } catch(Exception ex) {
+                LOGGER.warn(String.format("Exception occurred while requesting a page of Drupal nodes. Node type: %s",  this.drupalNodeType), ex);
+            }
+            if (responseStr != null && !responseStr.isEmpty()) {
+                JSONObject jsonResponse = new JSONObject(responseStr);
 
-                    JSONArray jsonNodes = jsonResponse.optJSONArray("data");
-                    JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
+                JSONArray jsonNodes = jsonResponse.optJSONArray("data");
+                JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
 
-                    nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
+                nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
 
-                    for (int i=0; i<nodeFound; i++) {
-                        DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonNodes.optJSONObject(i), jsonIncluded, this.drupalPreviewImageField);
+                for (int i=0; i<nodeFound; i++) {
+                    JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
+                    DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode);
 
-                        // NOTE: Drupal last modified date (aka changed date) are rounded to seconds,
-                        //     and can be a bit off. Use a 10s margin for safety.
-                        if (!fullHarvest && lastHarvested != null && drupalNode.getLastModified() < lastHarvested + 10000) {
-                            stop = true;
-                            break;
-                        }
+                    DrupalNode oldNode = null;
+                    try {
+                        oldNode = this.get(client, drupalNode.getId());
+                    } catch(Exception ex) {
+                        LOGGER.warn(String.format("Exception occurred while looking for previous version of a Drupal node: %s, node type: %s",
+                                drupalNode.getId(), this.drupalNodeType), ex);
+                    }
 
-                        try {
-                            DrupalNode oldNode = this.get(client, drupalNode.getId());
-                            if (oldNode != null) {
-                                oldNode.deleteThumbnail();
+                    // Thumbnail (aka preview image)
+                    try {
+                        URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
+                        if (baseUrl != null && this.drupalPreviewImageField != null) {
+                            String previewImageUUID = DrupalNodeIndexer.getPreviewImageUUID(jsonApiNode, this.drupalPreviewImageField);
+                            if (previewImageUUID != null) {
+                                String previewImageRelativePath = DrupalNodeIndexer.findPreviewImageRelativePath(previewImageUUID, jsonIncluded);
+                                if (previewImageRelativePath != null) {
+                                    try {
+                                        URL thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
+                                        drupalNode.setThumbnailUrl(thumbnailUrl);
+
+                                        String cachedThumbnailFilename = oldNode == null ? null : oldNode.getCachedThumbnailFilename();
+                                        File cachedFile = cachedThumbnailFilename == null ? null : ImageCache.getCachedFile(this.getIndex(), cachedThumbnailFilename);
+                                        URL oldThumbnailUrl = oldNode == null ? null : oldNode.getThumbnailUrl();
+                                        String oldThumbnailUrlStr = oldThumbnailUrl == null ? null : oldThumbnailUrl.toString();
+
+                                        if (!thumbnailUrl.toString().equals(oldThumbnailUrlStr) || this.isThumbnailOutdated(cachedFile)) {
+                                            cachedFile.delete();
+                                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), drupalNode.getId());
+                                            if (cachedThumbnailFile != null) {
+                                                drupalNode.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                                            }
+                                        } else {
+                                            drupalNode.setCachedThumbnailFilename(cachedThumbnailFilename);
+                                        }
+                                    } catch(Exception ex) {
+                                        LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+                                    }
+                                } else {
+                                    if (oldNode != null) {
+                                        oldNode.deleteThumbnail();
+                                    }
+                                }
                             }
-                        } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while looking for previous version of a Drupal node: %s, node type: %s", drupalNode.getId(), this.drupalNodeType), ex);
                         }
+                    } catch(Exception ex) {
+                        LOGGER.warn(String.format("Exception occurred while managing the thumbnail for Drupal node: %s, node type: %s",
+                                drupalNode.getId(), this.drupalNodeType), ex);
+                    }
 
-                        try {
-                            IndexResponse indexResponse = this.index(client, drupalNode);
-
-                            LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",
-                                    page,
-                                    drupalNode.getNid(),
-                                    indexResponse.status().getStatus()));
-                        } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", drupalNode.getId(), this.drupalNodeType), ex);
+                    if (usedThumbnails != null) {
+                        String thumbnailFilename = drupalNode.getCachedThumbnailFilename();
+                        if (thumbnailFilename != null) {
+                            usedThumbnails.add(thumbnailFilename);
                         }
                     }
-                }
-                page++;
-            } while(!stop && nodeFound == INDEX_PAGE_SIZE);
 
-            // Only cleanup when we are doing a full harvest
-            if (fullHarvest) {
-                this.cleanUp(client, harvestStart, String.format("Drupal node of type %s", this.drupalNodeType));
+                    // NOTE: Drupal last modified date (aka changed date) are rounded to seconds,
+                    //     and can be a bit off. Use a 10s margin for safety.
+                    if (!fullHarvest && lastHarvested != null && drupalNode.getLastModified() < lastHarvested + 10000) {
+                        stop = true;
+                        break;
+                    }
+
+                    try {
+                        IndexResponse indexResponse = this.index(client, drupalNode);
+
+                        LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",
+                                page,
+                                drupalNode.getNid(),
+                                indexResponse.status().getStatus()));
+                    } catch(Exception ex) {
+                        LOGGER.warn(String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", drupalNode.getId(), this.drupalNodeType), ex);
+                    }
+                }
+            }
+            page++;
+        } while(!stop && nodeFound == INDEX_PAGE_SIZE);
+
+        // Only cleanup when we are doing a full harvest
+        if (fullHarvest) {
+            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal node of type %s", this.drupalNodeType));
+        }
+    }
+
+    private static String getPreviewImageUUID(JSONObject jsonApiNode, String previewImageField) {
+        JSONObject jsonRelationships = jsonApiNode == null ? null : jsonApiNode.optJSONObject("relationships");
+        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
+        JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
+        return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
+    }
+
+    private static String findPreviewImageRelativePath(String imageUUID, JSONArray included) {
+        if (imageUUID == null || included == null) {
+            return null;
+        }
+
+        for (int i=0; i < included.length(); i++) {
+            JSONObject jsonInclude = included.optJSONObject(i);
+            String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
+            if (imageUUID.equals(includeId)) {
+                JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
+                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
+                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
             }
         }
+
+        return null;
     }
 
     public String getDrupalUrl() {

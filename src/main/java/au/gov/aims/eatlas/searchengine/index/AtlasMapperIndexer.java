@@ -19,15 +19,11 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
-import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.glassfish.jersey.uri.UriComponent;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,7 +34,9 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private static final Logger LOGGER = Logger.getLogger(AtlasMapperIndexer.class.getName());
@@ -48,6 +46,23 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
     private String atlasMapperClientUrl;
     private String atlasMapperVersion;
+
+    public static AtlasMapperIndexer fromJSON(String index, JSONObject json) {
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
+
+        return new AtlasMapperIndexer(
+            index,
+            json.optString("atlasMapperClientUrl", null),
+            json.optString("atlasMapperVersion", null));
+    }
+
+    public JSONObject toJSON() {
+        return this.getJsonBase()
+            .put("atlasMapperClientUrl", this.atlasMapperClientUrl)
+            .put("atlasMapperVersion", this.atlasMapperVersion);
+    }
 
     public AtlasMapperLayer load(JSONObject json) {
         return AtlasMapperLayer.load(json);
@@ -65,7 +80,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    public void harvest(Long lastHarvested) throws Exception {
+    protected void internalHarvest(ESClient client, Long lastHarvested) {
         // There is no way to get last modified layers from AtlasMapper.
         // Therefore, we only perform an harvest if the JSON files are more recent than lastHarvested.
 
@@ -73,14 +88,28 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         // "https://maps.eatlas.org.au/config/main.json"
         String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
 
-        Connection.Response mainResponse = EntityUtils.jsoupExecuteWithRetry(mainUrlStr);
+        Connection.Response mainResponse = null;
+        try {
+            mainResponse = EntityUtils.jsoupExecuteWithRetry(mainUrlStr);
+        } catch(Exception ex) {
+            LOGGER.error(String.format("Exception occurred while downloading the AtlasMapper main configuration file: %s",
+                    mainUrlStr), ex);
+            return;
+        }
         Long mainLastModified = IndexUtils.parseHttpLastModifiedHeader(mainResponse);
 
         // Get the list of layers
         // "https://maps.eatlas.org.au/config/layers.json"
         String layersUrlStr = String.format("%s/config/layers.json", this.atlasMapperClientUrl);
 
-        Connection.Response layersResponse = EntityUtils.jsoupExecuteWithRetry(layersUrlStr);
+        Connection.Response layersResponse = null;
+        try {
+            layersResponse = EntityUtils.jsoupExecuteWithRetry(layersUrlStr);
+        } catch(Exception ex) {
+            LOGGER.error(String.format("Exception occurred while downloading the AtlasMapper layers file: %s",
+                    layersUrlStr), ex);
+            return;
+        }
         Long layersLastModified = IndexUtils.parseHttpLastModifiedHeader(layersResponse);
 
         if (lastHarvested != null) {
@@ -116,85 +145,70 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         }
         JSONObject jsonLayersConfig = new JSONObject(layersResponseStr);
 
-        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http"))))) {
+        long harvestStart = System.currentTimeMillis();
 
-            long harvestStart = System.currentTimeMillis();
+        // Get URL of the base layer
+        String baseLayerId = AtlasMapperLayer.getWMSBaseLayer(jsonMainConfig, jsonLayersConfig);
 
-            // Get URL of the base layer
-            String baseLayerId = AtlasMapperLayer.getWMSBaseLayer(jsonMainConfig, jsonLayersConfig);
+        Set<String> usedThumbnails = new HashSet<String>();
+        for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
+            JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
 
-            for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
-                JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
+            AtlasMapperLayer layerEntity = new AtlasMapperLayer(
+                    this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
 
-                try {
-                    AtlasMapperLayer oldLayer = this.get(client, atlasMapperLayerId);
-                    if (oldLayer != null) {
-                        // TODO Delete thumbnail if older than 1 month old (?)
-                        oldLayer.deleteThumbnail();
+            AtlasMapperLayer oldLayer = null;
+            try {
+                oldLayer = this.get(client, atlasMapperLayerId);
+            } catch(Exception ex) {
+                LOGGER.warn(String.format("Exception occurred while looking for previous version of an AtlasMapper layer: %s",
+                        atlasMapperLayerId), ex);
+            }
+
+            // Create the thumbnail only if it's missing or outdated
+            boolean createThumbnail = true;
+            String index = this.getIndex();
+            if (oldLayer != null) {
+                String cachedThumbnailFilename = oldLayer.getCachedThumbnailFilename();
+                if (index != null && cachedThumbnailFilename != null) {
+                    File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
+                    if (!this.isThumbnailOutdated(cachedFile)) {
+                        layerEntity.setCachedThumbnailFilename(cachedThumbnailFilename);
+                        createThumbnail = false;
                     }
-                } catch(Exception ex) {
-                    LOGGER.warn(String.format("Exception occurred while looking for previous version of an AtlasMapper layer: %s", atlasMapperLayerId), ex);
                 }
+            }
 
-                AtlasMapperLayer layerEntity = new AtlasMapperLayer(
-                        this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
-
-                /*
-                // TODO Create the thumbnail only if it's missing
-                //     Something like this:
-
-                try {
-                    boolean createThumbnail = true;
-                    String index = this.getIndex();
-                    AtlasMapperLayer oldLayer = this.get(client, atlasMapperLayerId);
-                    if (oldLayer != null) {
-                        String cachedThumbnailFilename = oldLayer.getCachedThumbnailFilename();
-                        if (index != null && cachedThumbnailFilename != null) {
-                            File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
-                            if (cachedFile != null && cachedFile.exists()) {
-                                layerEntity.setCachedThumbnailFilename(oldLayer.getCachedThumbnailFilename());
-                                createThumbnail = false;
-                            }
-                        }
-                    }
-
-                    if (createThumbnail) {
-                        File cachedThumbnailFile = this.createLayerThumbnail(atlasMapperLayerId, baseLayerId, jsonLayersConfig, jsonMainConfig);
-                        if (cachedThumbnailFile != null) {
-                            layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                        }
-                    }
-                } catch(Exception ex) {
-                    LOGGER.warn(String.format("Exception occurred while looking for previous version of an AtlasMapper layer: %s", atlasMapperLayerId), ex);
-                }
-                */
-
+            if (createThumbnail) {
                 try {
                     File cachedThumbnailFile = this.createLayerThumbnail(atlasMapperLayerId, baseLayerId, jsonLayersConfig, jsonMainConfig);
                     if (cachedThumbnailFile != null) {
                         layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                     }
                 } catch(Exception ex) {
-                    LOGGER.warn(String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s", atlasMapperLayerId), ex);
-                }
-
-                try {
-                    IndexResponse indexResponse = this.index(client, layerEntity);
-
-                    LOGGER.debug(String.format("Indexing AtlasMapper layer ID: %s, status: %d",
-                            atlasMapperLayerId,
-                            indexResponse.status().getStatus()));
-                } catch(Exception ex) {
-                    LOGGER.warn(String.format("Exception occurred while indexing an AtlasMapper layer: %s", atlasMapperLayerId), ex);
+                    LOGGER.warn(String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s",
+                            atlasMapperLayerId), ex);
                 }
             }
 
-            // TODO Delete old thumbnails older than 1 month old (?)
-            this.cleanUp(client, harvestStart, "AtlasMapper layer");
+            String thumbnailFilename = layerEntity.getCachedThumbnailFilename();
+            if (thumbnailFilename != null) {
+                usedThumbnails.add(thumbnailFilename);
+            }
+
+            try {
+                IndexResponse indexResponse = this.index(client, layerEntity);
+
+                LOGGER.debug(String.format("Indexing AtlasMapper layer ID: %s, status: %d",
+                        atlasMapperLayerId,
+                        indexResponse.status().getStatus()));
+            } catch(Exception ex) {
+                LOGGER.warn(String.format("Exception occurred while indexing an AtlasMapper layer: %s", atlasMapperLayerId), ex);
+            }
         }
+
+        // Delete old thumbnails older than the TTL (1 month old)
+        this.cleanUp(client, harvestStart, usedThumbnails, "AtlasMapper layer");
     }
 
     private File createLayerThumbnail(String atlasMapperLayerId, String baseLayerId, JSONObject jsonLayersConfig, JSONObject jsonMainConfig) throws Exception {

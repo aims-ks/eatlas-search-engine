@@ -23,6 +23,8 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.xml.sax.SAXParseException;
 
 import javax.servlet.http.HttpServletResponse;
@@ -141,6 +143,42 @@ public class ServletUtils {
             msg = defaultMsg;
         }
         return msg;
+    }
+
+    public static JSONArray exceptionToJSON(Throwable exception) {
+        if (exception == null) {
+            return null;
+        }
+
+        JSONArray jsonExceptions = new JSONArray();
+
+        Throwable cause = exception;
+        while (cause != null) {
+            JSONObject jsonException = new JSONObject();
+
+            String exceptionMessage = cause.getMessage();
+            if (exceptionMessage == null) {
+                jsonException.put("message", "Unexpected error occurred: " + exception.getClass().getSimpleName());
+            } else {
+                jsonException.put("message", exceptionMessage);
+            }
+
+            JSONArray causeStackTrace = new JSONArray();
+            for (StackTraceElement element : cause.getStackTrace()) {
+                if (element != null) {
+                    causeStackTrace.put(element.toString());
+                }
+            }
+            if (causeStackTrace.length() > 0) {
+                jsonException.put("stacktrace", causeStackTrace);
+            }
+
+            jsonExceptions.put(jsonException);
+
+            cause = cause.getCause();
+        }
+
+        return jsonExceptions;
     }
 
     public static boolean isBlank(String str) {

@@ -19,14 +19,12 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
-import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -184,11 +182,8 @@ public class GeoNetworkRecord extends Entity {
                         try {
                             URL thumbnailUrl = new URL(previewUrlStr);
                             this.setThumbnailUrl(thumbnailUrl);
-                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), this.getId());
-                            if (cachedThumbnailFile != null) {
-                                this.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                            }
                         } catch(Exception ex) {
+                            this.setThumbnailUrl(null);
                             LOGGER.error(String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
                         }
                     }
@@ -227,7 +222,17 @@ public class GeoNetworkRecord extends Entity {
                         String label = onlineResource.getLabel();
                         String safeLabel = label == null ? "" : label.toLowerCase(Locale.ENGLISH);
                         if ("WWW:LINK-1.0-http--metadata-URL".equals(onlineResource.protocol) && safeLabel.contains("point of truth")) {
-                            pointOfTruthUrlStr = onlineResource.linkage;
+                            if (onlineResource.linkage != null) {
+                                if (pointOfTruthUrlStr != null) {
+                                    LOGGER.warn(String.format("Metadata record UUID %s have multiple point of truth",
+                                        this.getId()));
+                                }
+                                pointOfTruthUrlStr = onlineResource.linkage;
+                                if (!pointOfTruthUrlStr.contains(this.getId())) {
+                                    LOGGER.warn(String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
+                                        this.getId(), pointOfTruthUrlStr));
+                                }
+                            }
                         } else {
                             onlineResources.add(onlineResource);
                         }

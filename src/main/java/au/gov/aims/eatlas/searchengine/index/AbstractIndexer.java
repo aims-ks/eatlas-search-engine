@@ -18,14 +18,19 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
+import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -34,22 +39,161 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 // TODO Move search outside. Search should be allowed to be run against any number of indexes at once
 public abstract class AbstractIndexer<E extends Entity> {
     private static final Logger LOGGER = Logger.getLogger(AbstractIndexer.class.getName());
+    private static final long DAY_MS = 24 * 60 * 60 * 1000;
 
+    private boolean enabled;
     private String index;
+    private Long lastIndexed;
+    private Long lastIndexElapse;
+    private Long thumbnailTTL; // TTL, in days
 
     public AbstractIndexer(String index) {
         this.index = index;
     }
 
-    public abstract void harvest(Long lastIndexed) throws Exception;
+    protected abstract void internalHarvest(ESClient client, Long lastIndexed);
     public abstract E load(JSONObject json);
+    public abstract JSONObject toJSON();
+
+    // If full is true, re-index everything.
+    // If not, only index what have changed since last indexation.
+    public void harvest(boolean full) throws Exception {
+        long lastIndexedStarts = System.currentTimeMillis();
+
+        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9300, "http"))))) {
+
+            this.internalHarvest(client, full ? null : this.lastIndexed);
+        }
+
+        long lastIndexedEnds = System.currentTimeMillis();
+        this.lastIndexed = lastIndexedStarts;
+        this.lastIndexElapse = lastIndexedEnds - lastIndexedStarts;
+    }
+
+    protected JSONObject getJsonBase() {
+        return new JSONObject()
+            .put("class", this.getClass().getSimpleName())
+            .put("enabled", this.isEnabled())
+            .put("index", this.index)
+            .put("lastIndexed", this.lastIndexed)
+            .put("lastIndexElapse", this.lastIndexElapse)
+            .put("thumbnailTTL", this.thumbnailTTL);
+    }
+
+    public static AbstractIndexer fromJSON(JSONObject json) {
+        if (json == null) {
+            return null;
+        }
+
+        String className = json.optString("class");
+        if (className == null) {
+            LOGGER.warn(String.format("Invalid indexer JSON Object. Property \"class\" missing.%n%s", json.toString(2)));
+            return null;
+        }
+
+        String index = json.optString("index", null);
+        if (index == null) {
+            LOGGER.warn(String.format("Invalid indexer JSON Object. Property \"index\" missing.%n%s", json.toString(2)));
+            return null;
+        }
+
+        AbstractIndexer indexer = null;
+        switch(className) {
+            case "AtlasMapperIndexer":
+                indexer = AtlasMapperIndexer.fromJSON(index, json);
+                break;
+
+            case "DrupalNodeIndexer":
+                indexer = DrupalNodeIndexer.fromJSON(index, json);
+                break;
+
+            case "ExternalLinkIndexer":
+                indexer = ExternalLinkIndexer.fromJSON(index, json);
+                break;
+
+            case "GeoNetworkIndexer":
+                indexer = GeoNetworkIndexer.fromJSON(index, json);
+                break;
+
+            default:
+                LOGGER.warn(String.format("Unsupported indexer class: %s%n%s", className, json.toString(2)));
+                return null;
+        }
+
+        if (indexer == null) {
+            return null;
+        }
+
+        indexer.enabled = json.optBoolean("enabled", true);
+
+        Long lastIndexed = null;
+        if (json.has("lastIndexed")) {
+            lastIndexed = json.optLong("lastIndexed", -1);
+        }
+        indexer.lastIndexed = lastIndexed;
+
+        Long lastIndexElapse = null;
+        if (json.has("lastIndexElapse")) {
+            lastIndexElapse = json.optLong("lastIndexElapse", -1);
+        }
+        indexer.lastIndexElapse = lastIndexElapse;
+
+        Long thumbnailTTL = null;
+        if (json.has("thumbnailTTL")) {
+            thumbnailTTL = json.optLong("thumbnailTTL", -1);
+        }
+        indexer.thumbnailTTL = thumbnailTTL;
+
+        return indexer;
+    }
 
     public String getIndex() {
         return this.index;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public void setLastIndexed(Long lastIndexed) {
+        this.lastIndexed = lastIndexed;
+    }
+
+    public Long getLastIndexed() {
+        return this.lastIndexed;
+    }
+
+    public Long getLastIndexElapse() {
+        return this.lastIndexElapse;
+    }
+
+    public long getThumbnailTTL() {
+        return this.thumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalThumbnailTTL() : this.thumbnailTTL;
+    }
+
+    public boolean isThumbnailOutdated(File thumbnailFile) {
+        if (thumbnailFile == null) {
+            return true;
+        }
+
+        if (!thumbnailFile.exists()) {
+            return true;
+        }
+
+        long now = System.currentTimeMillis();
+        long thumbnailLastModified = thumbnailFile.lastModified();
+        long thumbnailAgeMs = now - thumbnailLastModified;
+        long thumbnailAgeDays = thumbnailAgeMs / DAY_MS;
+
+        return thumbnailAgeDays >= this.getThumbnailTTL();
     }
 
     public IndexResponse index(ESClient client, E entity) throws IOException {
@@ -57,14 +201,15 @@ public abstract class AbstractIndexer<E extends Entity> {
         return client.index(this.getIndexRequest(entity));
     }
 
-    public void cleanUp(ESClient client, long lastIndexed, String entityDisplayName) {
+    // Only called with complete re-index
+    public void cleanUp(ESClient client, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName) {
         long deletedIndexedItems = this.deleteOldIndexedItems(client, lastIndexed);
         if (deletedIndexedItems > 0) {
             LOGGER.info(String.format("Deleted %d indexed %s",
                     deletedIndexedItems, entityDisplayName));
         }
 
-        long deletedThumbnails = this.deleteOldThumbnails(lastIndexed);
+        long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails);
         if (deletedThumbnails > 0) {
             LOGGER.info(String.format("Deleted %d cached %s thumbnail",
                     deletedThumbnails, entityDisplayName));
@@ -87,26 +232,26 @@ public abstract class AbstractIndexer<E extends Entity> {
         return 0;
     }
 
-    private long deleteOldThumbnails(long lastIndexed) {
+    private long deleteOldThumbnails(Set<String> usedThumbnails) {
         File cacheDirectory = ImageCache.getCacheDirectory(this.getIndex());
 
+        // Loop through each thumbnail files and delete the ones that are unused
         if (cacheDirectory != null && cacheDirectory.isDirectory()) {
-            // NOTE: File timestamps are often rounded to seconds, and can be a bit off.
-            //     Use a 10s margin for safety.
-            return this.deleteOldThumbnailsRecursive(cacheDirectory, lastIndexed - 10000);
+            return this.deleteOldThumbnailsRecursive(cacheDirectory, usedThumbnails);
         }
 
         return 0;
     }
-    private long deleteOldThumbnailsRecursive(File dir, long lastIndexed) {
+    private long deleteOldThumbnailsRecursive(File dir, Set<String> usedThumbnails) {
         long deleted = 0;
         File[] files = dir.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    deleted += deleteOldThumbnailsRecursive(file, lastIndexed);
+                    deleted += deleteOldThumbnailsRecursive(file, usedThumbnails);
                 } else if (file.isFile()) {
-                    if (file.lastModified() < lastIndexed) {
+                    String thumbnailName = file.getName();
+                    if (!usedThumbnails.contains(thumbnailName)) {
                         if (file.delete()) {
                             deleted++;
                         } else {
@@ -166,5 +311,10 @@ public abstract class AbstractIndexer<E extends Entity> {
         deleteRequest.setConflicts("proceed");
 
         return deleteRequest;
+    }
+
+    @Override
+    public String toString() {
+        return this.toJSON().toString(2);
     }
 }

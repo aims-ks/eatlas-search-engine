@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -55,6 +56,7 @@ import java.net.URL;
 public class ImageCache {
     private static final Logger LOGGER = Logger.getLogger(ImageCache.class.getName());
     private static final float BASE_LAYER_ALPHA = 0.4f;
+    private static final String DEFAULT_IMAGE_CACHE_DIR = "/tmp/eatlas-search-engine-cache";
     private static File imageCacheDir = null;
 
     // /img/v1/{index}/{filename}
@@ -111,8 +113,18 @@ public class ImageCache {
         String safeIndex = safeString(index);
 
         if (imageCacheDir == null) {
-            // TODO: Get / save image cache path in config!
-            imageCacheDir = new File("/home/glafond/Desktop/TMP_INPUT/imageCache/");
+            SearchEngineConfig config = SearchEngineConfig.getInstance();
+            if (config != null) {
+                String imageCacheDirStr = config.getImageCacheDirectory();
+                if (imageCacheDirStr != null) {
+                    imageCacheDir = new File(imageCacheDirStr);
+                }
+            }
+            if (imageCacheDir == null) {
+                LOGGER.warn(String.format("Missing configuration property \"imageCacheDirectory\". Using default image cache directory: %s",
+                        DEFAULT_IMAGE_CACHE_DIR));
+                imageCacheDir = new File(DEFAULT_IMAGE_CACHE_DIR);
+            }
         }
         File indexCacheDir = new File(imageCacheDir, safeIndex);
         indexCacheDir.mkdirs();
@@ -165,6 +177,7 @@ public class ImageCache {
         }
 
         // Cache image to disk
+        LOGGER.info(String.format("Caching preview image %s to %s", urlStr, cacheFile));
         FileUtils.writeByteArrayToFile(cacheFile, imageBytes);
 
         return cacheFile;
@@ -230,6 +243,7 @@ public class ImageCache {
         graphics.drawImage(layerImage, 0, 0, null);
 
         // Saved image to disk
+        LOGGER.info(String.format("Caching layer preview image %s to %s", layerImageUrl, cacheFile));
         ImageIO.write(combined, "jpg", cacheFile);
 
         return cacheFile;

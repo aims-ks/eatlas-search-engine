@@ -18,11 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.net.URL;
 
 public class ExternalLink extends Entity {
@@ -30,7 +28,7 @@ public class ExternalLink extends Entity {
 
     private ExternalLink() {}
 
-    public ExternalLink(String index, String urlStr, String thumbnailUrlStr, String title) {
+    public ExternalLink(String index, String urlStr, String title) {
         this.setId(urlStr);
         this.setIndex(index);
         this.setTitle(title);
@@ -40,19 +38,6 @@ public class ExternalLink extends Entity {
                 this.setLink(new URL(urlStr));
             } catch(Exception ex) {
                 LOGGER.error(String.format("Invalid external URL found: %s", urlStr), ex);
-            }
-        }
-
-        if (thumbnailUrlStr != null) {
-            try {
-                URL thumbnailUrl = new URL(thumbnailUrlStr);
-                this.setThumbnailUrl(thumbnailUrl);
-                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), null);
-                if (cachedThumbnailFile != null) {
-                    this.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                }
-            } catch(Exception ex) {
-                LOGGER.error(String.format("Invalid external URL thumbnail found: %s", thumbnailUrlStr), ex);
             }
         }
     }

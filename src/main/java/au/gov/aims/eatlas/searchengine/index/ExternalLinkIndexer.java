@@ -19,25 +19,59 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
-import org.apache.http.HttpHost;
+import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
     private static final Logger LOGGER = Logger.getLogger(ExternalLinkIndexer.class.getName());
 
     // List of "title, url, thumbnail"
     private List<ExternalLinkEntry> externalLinkEntries;
+
+    public static ExternalLinkIndexer fromJSON(String index, JSONObject json) {
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
+
+        ExternalLinkIndexer indexer = new ExternalLinkIndexer(index);
+
+        JSONArray jsonExternalLinkEntries = json.optJSONArray("externalLinkEntries");
+        if (jsonExternalLinkEntries != null && !jsonExternalLinkEntries.isEmpty()) {
+            for (int i=0; i<jsonExternalLinkEntries.length(); i++) {
+                JSONObject jsonExternalLinkEntry = jsonExternalLinkEntries.optJSONObject(i);
+                ExternalLinkEntry externalLinkEntry = ExternalLinkEntry.fromJSON(jsonExternalLinkEntry);
+                if (externalLinkEntry != null) {
+                    indexer.addExternalLink(externalLinkEntry);
+                }
+            }
+        }
+
+        return indexer;
+    }
+
+    public JSONObject toJSON() {
+        JSONArray jsonExternalLinkEntries = new JSONArray();
+        if (this.externalLinkEntries != null && !externalLinkEntries.isEmpty()) {
+            for (ExternalLinkEntry externalLinkEntry : this.externalLinkEntries) {
+                jsonExternalLinkEntries.put(externalLinkEntry.toJSON());
+            }
+        }
+
+        return this.getJsonBase()
+            .put("externalLinkEntries", jsonExternalLinkEntries);
+    }
 
     public ExternalLink load(JSONObject json) {
         return ExternalLink.load(json);
@@ -71,78 +105,95 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
      *   since there is always only one entity to harvest.
      */
     @Override
-    public void harvest(Long lastHarvested) throws IOException, InterruptedException {
+    protected void internalHarvest(ESClient client, Long lastHarvested) {
         // There is no reliable way to know if a website was modified since last indexation.
         // Therefore, the lastHarvested parameter is ignored.
         // Always perform a full harvest.
 
-        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http"))))) {
+        long harvestStart = System.currentTimeMillis();
 
-            long harvestStart = System.currentTimeMillis();
+        Set<String> usedThumbnails = new HashSet<String>();
+        if (this.externalLinkEntries != null && !this.externalLinkEntries.isEmpty()) {
+            for (ExternalLinkEntry externalLinkEntry : this.externalLinkEntries) {
+                String url = externalLinkEntry.url;
+                if (url != null && !url.isEmpty()) {
 
-            if (this.externalLinkEntries != null && !this.externalLinkEntries.isEmpty()) {
-                for (ExternalLinkEntry externalLinkEntry : this.externalLinkEntries) {
-                    String url = externalLinkEntry.url;
-                    if (url != null && !url.isEmpty()) {
-                        ExternalLink entity = new ExternalLink(this.getIndex(), url, externalLinkEntry.thumbnail, externalLinkEntry.title);
+                    ExternalLink entity = new ExternalLink(this.getIndex(), url, externalLinkEntry.title);
+                    ExternalLink oldEntity = null;
+                    try {
+                        oldEntity = this.get(client, entity.getId());
+                    } catch(Exception ex) {
+                        LOGGER.warn(String.format("Exception occurred while looking for previous version of an external URL: %s", url), ex);
+                    }
 
-                        try {
-                            ExternalLink oldEntity = this.get(client, entity.getId());
-                            if (oldEntity != null) {
-                                oldEntity.deleteThumbnail();
-                            }
-                        } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while looking for previous version of an external URL: %s", url), ex);
-                        }
+                    String cachedThumbnailFilename = oldEntity == null ? null : oldEntity.getCachedThumbnailFilename();
+                    File cachedFile = cachedThumbnailFilename == null ? null : ImageCache.getCachedFile(this.getIndex(), cachedThumbnailFilename);
+                    URL oldThumbnailUrl = oldEntity == null ? null : oldEntity.getThumbnailUrl();
+                    String oldThumbnailUrlStr = oldThumbnailUrl == null ? null : oldThumbnailUrl.toString();
 
-                        String responseStr = null;
-                        try {
-                            responseStr = EntityUtils.harvestURLText(url);
-                        } catch (Exception ex) {
-                            LOGGER.error(String.format("Exception occurred while harvesting the external URL: %s",
-                                    url), ex);
-                        }
+                    String thumbnailUrlStr = externalLinkEntry.thumbnail;
 
-                        if (responseStr != null) {
-                            entity.setDocument(responseStr);
-
+                    if (thumbnailUrlStr != null) {
+                        if (!thumbnailUrlStr.equals(oldThumbnailUrlStr) || this.isThumbnailOutdated(cachedFile)) {
                             try {
-                                IndexResponse indexResponse = this.index(client, entity);
+                                oldEntity.deleteThumbnail();
 
-                                LOGGER.debug(String.format("Indexing external URL: %s, status: %d",
-                                        entity.getId(),
-                                        indexResponse.status().getStatus()));
+                                URL thumbnailUrl = new URL(thumbnailUrlStr);
+                                entity.setThumbnailUrl(thumbnailUrl);
+                                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), null);
+                                if (cachedThumbnailFile != null) {
+                                    entity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                                }
                             } catch(Exception ex) {
-                                LOGGER.warn(String.format("Exception occurred while indexing an external URL: %s", url), ex);
+                                LOGGER.error(String.format("Invalid external URL thumbnail found: %s", thumbnailUrlStr), ex);
                             }
+                        } else {
+                            entity.setThumbnailUrl(oldThumbnailUrl);
+                            entity.setCachedThumbnailFilename(cachedThumbnailFilename);
+                        }
+                    }
+
+                    String thumbnailFilename = entity.getCachedThumbnailFilename();
+                    if (thumbnailFilename != null) {
+                        usedThumbnails.add(thumbnailFilename);
+                    }
+
+                    String responseStr = null;
+                    try {
+                        responseStr = EntityUtils.harvestURLText(url);
+                    } catch (Exception ex) {
+                        LOGGER.error(String.format("Exception occurred while harvesting the external URL: %s",
+                                url), ex);
+                    }
+
+                    if (responseStr != null) {
+                        entity.setDocument(responseStr);
+
+                        try {
+                            IndexResponse indexResponse = this.index(client, entity);
+
+                            LOGGER.debug(String.format("Indexing external URL: %s, status: %d",
+                                    entity.getId(),
+                                    indexResponse.status().getStatus()));
+                        } catch(Exception ex) {
+                            LOGGER.warn(String.format("Exception occurred while indexing an external URL: %s", url), ex);
                         }
                     }
                 }
             }
-
-            this.cleanUp(client, harvestStart, "external URL");
         }
+
+        this.cleanUp(client, harvestStart, usedThumbnails, "external URL");
     }
 
     public static class ExternalLinkEntry {
-        private String title;
         private String url;
         private String thumbnail;
+        private String title;
 
         public ExternalLinkEntry(String url, String thumbnail, String title) {
-            this.title = title;
             this.url = url;
             this.thumbnail = thumbnail;
-        }
-
-        public String getTitle() {
-            return this.title;
-        }
-
-        public void setTitle(String title) {
             this.title = title;
         }
 
@@ -160,6 +211,37 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
 
         public void setThumbnail(String thumbnail) {
             this.thumbnail = thumbnail;
+        }
+
+        public String getTitle() {
+            return this.title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public static ExternalLinkEntry fromJSON(JSONObject json) {
+            if (json == null || json.isEmpty()) {
+                return null;
+            }
+
+            return new ExternalLinkEntry(
+                json.optString("url", null),
+                json.optString("thumbnail", null),
+                json.optString("title", null));
+        }
+
+        public JSONObject toJSON() {
+            return new JSONObject()
+                .put("url", this.url)
+                .put("thumbnail", this.thumbnail)
+                .put("title", this.title);
+        }
+
+        @Override
+        public String toString() {
+            return this.toJSON().toString(2);
         }
     }
 }

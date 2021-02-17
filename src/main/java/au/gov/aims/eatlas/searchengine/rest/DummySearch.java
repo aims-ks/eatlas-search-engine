@@ -248,9 +248,9 @@ public class DummySearch {
         ExternalLink brokenLink = new ExternalLink(
             "eatlas_broken",
             "https://broken.bad/should/not/appear/in/search/results/",
-            "https://lh3.googleusercontent.com/proxy/f9semJrOD1mcB78d_iD90HJvjKhmrYv5c5n3HGYq8nxFkHs_5gd_8P5IomW3JfkNOw8XUvUBUBc4VSaDd52MYnhvzQ",
             "eatlas_broken"
         );
+        brokenLink.setThumbnailUrl(new URL("https://lh3.googleusercontent.com/proxy/f9semJrOD1mcB78d_iD90HJvjKhmrYv5c5n3HGYq8nxFkHs_5gd_8P5IomW3JfkNOw8XUvUBUBc4VSaDd52MYnhvzQ"));
         brokenLink.setDocument("BROKEN DOCUMENT");
         brokenLink.setLangcode("en");
         results.add(new SearchResult()
@@ -259,7 +259,7 @@ public class DummySearch {
             .setScore(23)
         );
 
-        DrupalNode drupalNode = new DrupalNode("eatlas_article", null, null, null);
+        DrupalNode drupalNode = new DrupalNode("eatlas_article", null);
         drupalNode.setLink(new URL("http://localhost:9090/node/4"));
         drupalNode.setTitle("A guide to Indigenous science, management and governance of Australian coastal waters");
         drupalNode.setDocument(
@@ -827,9 +827,9 @@ public class DummySearch {
         ExternalLink googleLink = new ExternalLink(
             "eatlas_extlink",
             "https://google.com",
-            "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif",
             "Google search engine"
         );
+        googleLink.setThumbnailUrl(new URL("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif"));
         googleLink.setDocument("<p>Google Search, I'm Feeling Lucky.</p>");
         googleLink.setLangcode("en");
         results.add(new SearchResult()
@@ -853,16 +853,16 @@ public class DummySearch {
         return results;
     }
 
-    private SearchResult getRandomGoogleSearchResult(int index) {
+    private SearchResult getRandomGoogleSearchResult(int index) throws MalformedURLException {
         Random random = new Random(91 + index);
         String randomSearchTerm = this.getRandomWord(random);
 
         ExternalLink googleSearchLink = new ExternalLink(
             "eatlas_extlink",
             String.format("https://www.google.com/search?q=%s", randomSearchTerm),
-            "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif",
             String.format("Google search %d for %s", index, randomSearchTerm)
         );
+        googleSearchLink.setThumbnailUrl(new URL("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif"));
         googleSearchLink.setDocument(
                 "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
                 String.format("<p>Google search result for random word %s.</p>", randomSearchTerm) +

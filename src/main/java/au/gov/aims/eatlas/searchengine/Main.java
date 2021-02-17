@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
@@ -26,6 +27,7 @@ import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
+import au.gov.aims.eatlas.searchengine.rest.Index;
 import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.index.IndexRequest;
@@ -33,16 +35,25 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
-    private static final long DAY_MS = 24 * 60 * 60 * 1000;
 
     public static void main(String... args) throws Exception {
+        File configFile = new File("/tmp/eatlas_search_engine.json");
+        //configFile.delete();
+        SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json");
+
+        Index.internalReindex(config, true);
+
+        // TODO Create a default config file so it won't start with nothing
+
         //Main.testElasticSearch();
         //Main.loadDummyExternalLinks(15000);
 
@@ -50,7 +61,7 @@ public class Main {
 
         // 2 hours
         //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", System.currentTimeMillis() - (4 * DAY_MS));
-        Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", null);
+        //Main.loadAtlasMapperLayers("https://maps.eatlas.org.au", null);
 
         //Main.loadDrupalArticles(System.currentTimeMillis() - DAY_MS);
         //Main.loadDrupalArticles(null);
@@ -91,16 +102,17 @@ public class Main {
      *   $ cd Desktop/projects/eAtlas-redesign/2020-Drupal9/
      *   $ docker-compose up
      */
-    private static void loadDrupalArticles(Long lastHarvest) throws IOException, InterruptedException {
+    private static void loadDrupalArticles(Long lastHarvest) throws Exception {
         String index = "eatlas_article";
 
         DrupalNodeIndexer drupalNodeIndex = new DrupalNodeIndexer(
             index, "http://localhost:9090", "9", "article", "field_image");
 
-        drupalNodeIndex.harvest(lastHarvest);
+        drupalNodeIndex.setLastIndexed(lastHarvest);
+        drupalNodeIndex.harvest(false);
     }
 
-    private static void loadExternalLinks() throws IOException, InterruptedException {
+    private static void loadExternalLinks() throws Exception {
         String index = "eatlas_extlink";
 
         ExternalLinkIndexer eAtlasExternalLinkIndexer = new ExternalLinkIndexer(index);
@@ -139,21 +151,24 @@ public class Main {
         );
 
         Long lastHarvest = null;
-        eAtlasExternalLinkIndexer.harvest(lastHarvest);
+        eAtlasExternalLinkIndexer.setLastIndexed(lastHarvest);
+        eAtlasExternalLinkIndexer.harvest(false);
     }
 
     private static void loadGeoNetworkRecords(String geoNetworkUrl, Long lastHarvest) throws Exception {
         String index = "eatlas_metadata";
         GeoNetworkIndexer geoNetworkIndex = new GeoNetworkIndexer(index, geoNetworkUrl, "3.0");
 
-        geoNetworkIndex.harvest(lastHarvest);
+        geoNetworkIndex.setLastIndexed(lastHarvest);
+        geoNetworkIndex.harvest(false);
     }
 
     private static void loadAtlasMapperLayers(String atlasMapperClientUrl, Long lastHarvest) throws Exception {
         String index = "eatlas_layer";
         AtlasMapperIndexer atlasMapperIndexer = new AtlasMapperIndexer(index, atlasMapperClientUrl, "2.2.0");
 
-        atlasMapperIndexer.harvest(lastHarvest);
+        atlasMapperIndexer.setLastIndexed(lastHarvest);
+        atlasMapperIndexer.harvest(false);
     }
 
     private static void loadDummyExternalLinks(int count) throws IOException {
@@ -168,9 +183,9 @@ public class Main {
                 ExternalLink externalLink = new ExternalLink(
                     index,
                     String.format("http://www.domain.com/result/%d", i),
-                    "https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif",
                     String.format("Dummy link number: %d", i)
                 );
+                externalLink.setThumbnailUrl(new URL("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif"));
                 externalLink.setDocument(
                     "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
                     "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>");

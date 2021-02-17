@@ -1,0 +1,64 @@
+{
+  "imageCacheDirectory": "/home/glafond/Desktop/TMP_INPUT/imageCache/",
+  "indexers": [
+    {
+      "class": "DrupalNodeIndexer",
+      "index": "eatlas_article",
+      "lastIndexed": 1613531540111,
+
+      "drupalUrl": "http://localhost:9090",
+      "drupalVersion": "9",
+      "drupalNodeType": "article",
+      "drupalPreviewImageField": "field_image"
+
+    }, {
+      "class": "ExternalLinkIndexer",
+      "index": "eatlas_extlink",
+      "lastIndexed": 1613531541220,
+
+      "externalLinkEntries": [
+        {
+          "url": "http://www.csiro.au/connie2/",
+          "thumbnail": "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/connie2-hydrodynamic-modelling.png?itok=gVbD37jD",
+          "title": "Connie 2 Online interactive hydrodynamic modelling"
+        }, {
+          "url": "https://doi.org/10.1002/aqc.3115",
+          "thumbnail": "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/GBRMPA-GBRMP-zoning.jpg?itok=XNuZPHhB",
+          "title": "Marine zoning revisited: How decades of zoning the Great Barrier Reef has evolved as an effective spatial planning approach for marine ecosystem based management"
+        }, {
+          "url": "https://doi.org/10.1371/journal.pone.0221855",
+          "thumbnail": "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/journal.pone_.0221855.g003.PNG?itok=TiczR9En",
+          "title": "Preferences and perceptions of the recreational spearfishery of the Great Barrier Reef - Paper"
+        }, {
+          "url": "https://research.csiro.au/seltmp/wp-content/uploads/sites/214/2019/06/SELTMP-ResidentsChangesReport-May2019.pdf",
+          "thumbnail": "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/SELTMP-ResidentsChangesReport-May2019.jpg?itok=EANyhXRR",
+          "title": "Changes among coastal residents of the Great Barrier Reef region from 2013 to 2017 - Social and Economic Long Term Monitoring Program (SELTMP)"
+        }, {
+          "url": "http://marine.ga.gov.au",
+          "thumbnail": "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/eatlas/external-links/AusSeabed-marine-data-portal-preview.jpg?itok=4yFzhXHd",
+          "title": "AusSeabed Marine Data Discovery portal"
+        }, {
+          "url": "http://www.seagrasswatch.org/id_seagrass.html",
+          "thumbnail": "https://eatlas.org.au/sites/default/files/styles/square_thumbnail/public/shared/nerp-te/5-3/Seagrass%20Maggie%20Jan%20081.jpg?itok=cqHnl8-D",
+          "title": "Tropical Seagrass Identification (Seagrass-Watch)"
+        }
+      ]
+
+    }, {
+      "class": "GeoNetworkIndexer",
+      "index": "eatlas_metadata",
+      "lastIndexed": 1613531568221,
+
+      "geoNetworkUrl": "https://eatlas.org.au/geonetwork",
+      "geoNetworkVersion": "3.0"
+
+    }, {
+      "class": "AtlasMapperIndexer",
+      "index": "eatlas_layer",
+      "lastIndexed": 1613532056978,
+
+      "atlasMapperClientUrl": "https://maps.eatlas.org.au",
+      "atlasMapperVersion": "2.2.0"
+    }
+  ]
+}

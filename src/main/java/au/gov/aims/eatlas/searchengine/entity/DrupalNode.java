@@ -18,15 +18,12 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.net.URL;
 
 public class DrupalNode extends Entity {
@@ -37,7 +34,7 @@ public class DrupalNode extends Entity {
     private DrupalNode() {}
 
     // Load from Drupal JSON:API output
-    public DrupalNode(String index, JSONObject jsonApiNode, JSONArray included, String previewImageField) {
+    public DrupalNode(String index, JSONObject jsonApiNode) {
         this.setIndex(index);
 
         if (jsonApiNode != null) {
@@ -81,30 +78,10 @@ public class DrupalNode extends Entity {
             JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
             this.setDocument(jsonBody == null ? null :
                 EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
-
-            // Thumbnail (aka preview image)
-            if (baseUrl != null && previewImageField != null) {
-                String previewImageUUID = DrupalNode.getPreviewImageUUID(jsonApiNode, previewImageField);
-                if (previewImageUUID != null) {
-                    String previewImageRelativePath = DrupalNode.findPreviewImageRelativePath(previewImageUUID, included);
-                    if (previewImageRelativePath != null) {
-                        try {
-                            URL thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
-                            this.setThumbnailUrl(thumbnailUrl);
-                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), this.getId());
-                            if (cachedThumbnailFile != null) {
-                                this.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                            }
-                        } catch(Exception ex) {
-                            LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
-                        }
-                    }
-                }
-            }
         }
     }
 
-    private static URL getDrupalBaseUrl(JSONObject jsonApiNode) {
+    public static URL getDrupalBaseUrl(JSONObject jsonApiNode) {
         JSONObject jsonLinks = jsonApiNode == null ? null : jsonApiNode.optJSONObject("links");
         JSONObject jsonLinksSelf = jsonLinks == null ? null : jsonLinks.optJSONObject("self");
         String linksSelfHref = jsonLinksSelf == null ? null : jsonLinksSelf.optString("href", null);
@@ -142,31 +119,6 @@ public class DrupalNode extends Entity {
         String nid = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__nid", null);
         if (nid != null) {
             return "/node/" + nid;
-        }
-
-        return null;
-    }
-
-    private static String getPreviewImageUUID(JSONObject jsonApiNode, String previewImageField) {
-        JSONObject jsonRelationships = jsonApiNode == null ? null : jsonApiNode.optJSONObject("relationships");
-        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
-        JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
-        return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
-    }
-
-    private static String findPreviewImageRelativePath(String imageUUID, JSONArray included) {
-        if (imageUUID == null || included == null) {
-            return null;
-        }
-
-        for (int i=0; i < included.length(); i++) {
-            JSONObject jsonInclude = included.optJSONObject(i);
-            String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
-            if (imageUUID.equals(includeId)) {
-                JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
-                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
-                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
-            }
         }
 
         return null;
