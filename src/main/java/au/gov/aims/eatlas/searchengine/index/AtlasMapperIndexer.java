@@ -213,11 +213,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         }
 
         // Get layer data source
-        String dataSourceId = jsonLayer.optString("dataSourceId", null);
-        if (dataSourceId == null) {
-            return null;
-        }
-        JSONObject dataSource = dataSources.optJSONObject(dataSourceId);
+        JSONObject dataSource = AtlasMapperLayer.getDataSourceConfig(jsonLayer, jsonMainConfig);
 
         JSONArray bbox = jsonLayer.optJSONArray("layerBoundingBox");
 
@@ -238,8 +234,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         // If layer is a base layer (or can't find a WMS base layer), simply call cache with the layer URL.
         if (baseLayerUrl == null) {
-            ImageCache.cache(layerUrl, this.getIndex(), atlasMapperLayerId);
-            return null;
+            return ImageCache.cache(layerUrl, this.getIndex(), atlasMapperLayerId);
         }
 
         // Combine layers and cache them.

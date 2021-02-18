@@ -42,8 +42,7 @@ public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     public static void main(String... args) throws Exception {
-        boolean fullHarvest = false;
-        //boolean fullHarvest = false;
+        boolean fullHarvest = true;
 
         File configFile = new File("/home/glafond/Desktop/TMP_INPUT/imageCache/eatlas_search_engine.json");
         //configFile.delete();

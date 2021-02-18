@@ -123,8 +123,10 @@ public class EntityUtils {
         // JSoup takes care of following redirections.
         //     IOUtils.toString(URL, Charset) does not.
         //
-        // timeout(60000)
-        //     Socket timeout, in ms. Default: 30000 (30 seconds)
+        // timeout(120000)
+        //     Socket timeout, in ms. Set to 120,000 (2 minutes).
+        //     Some services (i.e. Legacy GeoServer) take almost 2 minutes to respond.
+        //     Default: 30000 (30 seconds)
         // ignoreHttpErrors(true)
         //     To make it more robust
         // ignoreContentType(true)
@@ -139,7 +141,7 @@ public class EntityUtils {
         //     To deal with dodgy SSL certificates.
         return Jsoup
                 .connect(url)
-                .timeout(60000)
+                .timeout(120000)
                 .ignoreHttpErrors(true)
                 .ignoreContentType(true)
                 .maxBodySize(0)

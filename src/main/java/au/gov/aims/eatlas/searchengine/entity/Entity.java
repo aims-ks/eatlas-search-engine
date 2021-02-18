@@ -149,6 +149,8 @@ public abstract class Entity {
 
     // Make sure thumbnailUrl is set before calling this.
     public boolean isThumbnailOutdated(Entity oldEntity, Long thumbnailTTL) {
+        boolean reDownloadBrokenThumbnails = false;
+
         if (oldEntity == null) {
             // No old entity, assume it's a new entry, the thumbnail was never downloaded
             return true;
@@ -187,7 +189,7 @@ public abstract class Entity {
             // The last download attempt was less than 30 days ago,
             // and there was not thumbnail to download (or downlaod failed).
             // Lets wait before trying again.
-            return false;
+            return reDownloadBrokenThumbnails;
         }
 
         File thumbnailFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);

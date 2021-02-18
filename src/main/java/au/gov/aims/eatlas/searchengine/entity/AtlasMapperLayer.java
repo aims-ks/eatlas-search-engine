@@ -27,6 +27,8 @@ import java.net.URL;
 public class AtlasMapperLayer extends Entity {
     private static final Logger LOGGER = Logger.getLogger(AtlasMapperLayer.class.getName());
 
+    private String dataSourceName;
+
     private AtlasMapperLayer() {}
 
     /**
@@ -99,8 +101,19 @@ public class AtlasMapperLayer extends Entity {
         this.setIndex(index);
 
         if (jsonLayer != null && jsonMainConfig != null) {
+            JSONObject dataSource = AtlasMapperLayer.getDataSourceConfig(jsonLayer, jsonMainConfig);
+            this.dataSourceName = dataSource == null ? null : dataSource.optString("dataSourceName", null);
+
+            String document = WikiFormatter.getText(jsonLayer.optString("description", null));
+            if (this.dataSourceName != null && !this.dataSourceName.isEmpty()) {
+                if (document == null) {
+                    document = "";
+                }
+                document += String.format("%nData source: %s", this.dataSourceName);
+            }
+
             this.setTitle(jsonLayer.optString("title", null));
-            this.setDocument(jsonLayer.optString("description", null));
+            this.setDocument(document);
             this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig));
             this.setLangcode("en");
         }
@@ -264,7 +277,11 @@ public class AtlasMapperLayer extends Entity {
         }
     }
 
-    private JSONObject getDataSourceConfig(JSONObject jsonLayer, JSONObject jsonMainConfig) {
+    public String getDataSourceName() {
+        return this.dataSourceName;
+    }
+
+    public static JSONObject getDataSourceConfig(JSONObject jsonLayer, JSONObject jsonMainConfig) {
         if (jsonLayer == null || jsonMainConfig == null) {
             return null;
         }
@@ -283,7 +300,14 @@ public class AtlasMapperLayer extends Entity {
     public static AtlasMapperLayer load(JSONObject json) {
         AtlasMapperLayer layer = new AtlasMapperLayer();
         layer.loadJSON(json);
+        layer.dataSourceName = json.optString("dataSourceName", null);
 
         return layer;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        return super.toJSON()
+            .put("dataSourceName", this.dataSourceName);
     }
 }

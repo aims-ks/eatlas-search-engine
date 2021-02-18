@@ -260,8 +260,9 @@ public class GeoNetworkRecord extends Entity {
                 List<String> documentPartList = new ArrayList<String>();
 
                 // Add abstract
-                if (dataAbstract != null) {
-                    documentPartList.add(dataAbstract);
+                String parsedAbstract = WikiFormatter.getText(dataAbstract);
+                if (parsedAbstract != null) {
+                    documentPartList.add(parsedAbstract);
                 }
 
                 // Add contact (excluding metadataContact)
@@ -480,9 +481,11 @@ public class GeoNetworkRecord extends Entity {
             if (this.email != null) {
                 partList.add(this.email);
             }
-            if (this.website != null) {
-                partList.add(this.website.toString());
-            }
+            // NOTE: Do not index the URLs
+            //if (this.website != null) {
+            //    partList.add(this.website.toString());
+            //}
+
             // Role do not need to be indexed.
             return partList.isEmpty() ? null : String.join(NL, partList);
         }
@@ -535,17 +538,12 @@ public class GeoNetworkRecord extends Entity {
                     return this.name == null ? "" : String.format("Layer: %s", this.name);
 
                 default:
-                    // NOTE: Add space around the URL because some parser struggle to identify URL
-                    //     when they are not surrounded with whitespaces.
                     String label = this.getLabel();
                     if (label == null) {
                         label = "";
                     }
-                    String link = this.linkage;
-                    if (link == null) {
-                        link = "";
-                    }
-                    return String.format("%s ( %s )", label, link);
+                    // NOTE: Do not index the URLs
+                    return label;
             }
         }
     }
