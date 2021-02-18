@@ -44,7 +44,6 @@ import java.util.Set;
 // TODO Move search outside. Search should be allowed to be run against any number of indexes at once
 public abstract class AbstractIndexer<E extends Entity> {
     private static final Logger LOGGER = Logger.getLogger(AbstractIndexer.class.getName());
-    private static final long DAY_MS = 24 * 60 * 60 * 1000;
 
     private boolean enabled;
     private String index;
@@ -179,23 +178,6 @@ public abstract class AbstractIndexer<E extends Entity> {
         return this.thumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalThumbnailTTL() : this.thumbnailTTL;
     }
 
-    public boolean isThumbnailOutdated(File thumbnailFile) {
-        if (thumbnailFile == null) {
-            return true;
-        }
-
-        if (!thumbnailFile.exists()) {
-            return true;
-        }
-
-        long now = System.currentTimeMillis();
-        long thumbnailLastModified = thumbnailFile.lastModified();
-        long thumbnailAgeMs = now - thumbnailLastModified;
-        long thumbnailAgeDays = thumbnailAgeMs / DAY_MS;
-
-        return thumbnailAgeDays >= this.getThumbnailTTL();
-    }
-
     public IndexResponse index(ESClient client, E entity) throws IOException {
         entity.setLastIndexed(System.currentTimeMillis());
         return client.index(this.getIndexRequest(entity));
@@ -209,6 +191,17 @@ public abstract class AbstractIndexer<E extends Entity> {
                     deletedIndexedItems, entityDisplayName));
         }
 
+        // Refresh ElasticSearch indexes, to be sure the
+        // search engine won't return deleted records.
+        // NOTE: This need to be done before deleting thumbnails
+        //     otherwise the search engine could return old records
+        //     which refers to thumbnails that doesn't exist anymore.
+        try {
+            client.refresh(this.index);
+        } catch(Exception ex) {
+            LOGGER.error(String.format("Exception occurred while refreshing the search index: %s", this.index), ex);
+        }
+
         long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails);
         if (deletedThumbnails > 0) {
             LOGGER.info(String.format("Deleted %d cached %s thumbnail",
@@ -219,17 +212,19 @@ public abstract class AbstractIndexer<E extends Entity> {
     private long deleteOldIndexedItems(ESClient client, long lastIndexed) {
         DeleteByQueryRequest deleteRequest = this.getDeleteOldItemsRequest(lastIndexed);
 
+        // Delete old records
+        long deleted = 0;
         try {
             BulkByScrollResponse response = client.deleteByQuery(deleteRequest);
 
             if (response != null) {
-                return response.getDeleted();
+                deleted = response.getDeleted();
             }
         } catch(Exception ex) {
-            LOGGER.error("Exception occurred deleting old indexed entities", ex);
+            LOGGER.error(String.format("Exception occurred while deleting old indexed entities in search index: %s", this.index), ex);
         }
 
-        return 0;
+        return deleted;
     }
 
     private long deleteOldThumbnails(Set<String> usedThumbnails) {
@@ -271,6 +266,18 @@ public abstract class AbstractIndexer<E extends Entity> {
         if (jsonEntity != null) {
             return this.load(jsonEntity);
         }
+        return null;
+    }
+
+    public E safeGet(ESClient client, String id) {
+        try {
+            return this.get(client, id);
+        } catch(Exception ex) {
+            // Should not happen
+            LOGGER.warn(String.format("Exception occurred while looking for item ID \"%s\" in the search index.",
+                    id), ex);
+        }
+
         return null;
     }
 

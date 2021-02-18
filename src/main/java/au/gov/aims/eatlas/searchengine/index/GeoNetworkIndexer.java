@@ -150,21 +150,16 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
                 // List of metadata records which needs its parent title to be set
                 List<String> orphanMetadataRecordList = new ArrayList<>();
+                int total = metadataRecordList.size();
+                int current = 0;
                 for (Element metadataRecordElement : metadataRecordList) {
+                    current++;
                     Element metadataRecordInfoElement = IndexUtils.getXMLChild(metadataRecordElement, "geonet:info");
                     Element metadataRecordUUIDElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "uuid");
                     if (metadataRecordUUIDElement != null) {
                         String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
 
-                        GeoNetworkRecord oldRecord = null;
-                        try {
-                            oldRecord = this.get(client, metadataRecordUUID);
-                        } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while looking for previous version of a GeoNetwork record: %s",
-                                    metadataRecordUUID), ex);
-                        }
-
-                        GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(builder, metadataRecordUUID, oldRecord);
+                        GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(client, builder, metadataRecordUUID);
                         if (geoNetworkRecord != null) {
                             // If the record have a parent UUID,
                             // keep it's UUID in a list so we can come back to it later to set its parent title.
@@ -176,7 +171,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                             try {
                                 IndexResponse indexResponse = this.index(client, geoNetworkRecord);
 
-                                LOGGER.debug(String.format("Indexing GeoNetwork metadata record: %s, status: %d",
+                                LOGGER.debug(String.format("[%d/%d] Indexing GeoNetwork metadata record: %s, status: %d",
+                                        current, total,
                                         geoNetworkRecord.getId(),
                                         indexResponse.status().getStatus()));
                             } catch(Exception ex) {
@@ -193,24 +189,20 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     }
                 }
 
+                // Refresh the index to be sure to find parent records, if they are new
+                try {
+                    client.refresh(this.getIndex());
+                } catch(Exception ex) {
+                    LOGGER.error(String.format("Exception occurred while refreshing the search index: %s", this.getIndex()), ex);
+                }
+
                 // We have added all the records.
                 // Lets fix the records parent title.
                 for (String recordUUID : orphanMetadataRecordList) {
-                    GeoNetworkRecord geoNetworkRecord = null;
-                    try {
-                        geoNetworkRecord = this.get(client, recordUUID);
-                    } catch(Exception ex) {
-                        LOGGER.warn(String.format("Exception occurred while loading a GeoNetwork record from the search index: %s", recordUUID), ex);
-                    }
-
+                    GeoNetworkRecord geoNetworkRecord = this.safeGet(client, recordUUID);;
                     if (geoNetworkRecord != null) {
                         String parentRecordUUID = geoNetworkRecord.getParentUUID();
-                        GeoNetworkRecord parentRecord = null;
-                        try {
-                            parentRecord = this.get(client, parentRecordUUID);
-                        } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while loading a parent GeoNetwork record from the search index: %s", parentRecordUUID), ex);
-                        }
+                        GeoNetworkRecord parentRecord = this.safeGet(client, parentRecordUUID);
 
                         if (parentRecord != null) {
                             geoNetworkRecord.setParentTitle(parentRecord.getTitle());
@@ -240,7 +232,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         }
     }
 
-    private GeoNetworkRecord loadGeoNetworkRecord(DocumentBuilder builder, String metadataRecordUUID, GeoNetworkRecord oldRecord) {
+    private GeoNetworkRecord loadGeoNetworkRecord(ESClient client, DocumentBuilder builder, String metadataRecordUUID) {
         String url = String.format("%s/srv/eng/xml.metadata.get", this.geoNetworkUrl);
 
         Map<String, String> dataMap = new HashMap<String, String>();
@@ -264,32 +256,24 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 Document document = builder.parse(input);
                 GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), metadataRecordUUID, this.geoNetworkUrl, document);
                 if (geoNetworkRecord.getId() != null) {
-
-                    // Cache thumbnail
                     URL thumbnailUrl = geoNetworkRecord.getThumbnailUrl();
-                    if (thumbnailUrl != null) {
-                        URL oldRecordThumbnailUrl = oldRecord == null ? null : oldRecord.getThumbnailUrl();
-                        String oldRecordThumbnailUrlStr = oldRecordThumbnailUrl == null ? null : oldRecordThumbnailUrl.toString();
-                        String cachedThumbnailFilename = oldRecord == null ? null : oldRecord.getCachedThumbnailFilename();
-                        File cachedFile = cachedThumbnailFilename == null ? null : ImageCache.getCachedFile(this.getIndex(), cachedThumbnailFilename);
+                    geoNetworkRecord.setThumbnailUrl(thumbnailUrl);
 
-                        if (!thumbnailUrl.toString().equals(oldRecordThumbnailUrlStr) || this.isThumbnailOutdated(cachedFile)) {
-                            if (oldRecord != null) {
-                                oldRecord.deleteThumbnail();
+                    // Create the thumbnail if it's missing or outdated
+                    GeoNetworkRecord oldRecord = this.safeGet(client, geoNetworkRecord.getId());
+                    if (geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getThumbnailTTL())) {
+                        try {
+                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), geoNetworkRecord.getId());
+                            if (cachedThumbnailFile != null) {
+                                geoNetworkRecord.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                             }
-                            try {
-                                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), geoNetworkRecord.getId());
-                                if (cachedThumbnailFile != null) {
-                                    geoNetworkRecord.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                                }
-                            } catch(Exception ex) {
-                                LOGGER.error(String.format("Invalid metadata thumbnail URL found in record %s: %s",
-                                        geoNetworkRecord.getId(), thumbnailUrl), ex);
-                            }
-                        } else {
-                            geoNetworkRecord.setThumbnailUrl(oldRecordThumbnailUrl);
-                            geoNetworkRecord.setCachedThumbnailFilename(cachedThumbnailFilename);
+                        } catch(Exception ex) {
+                            LOGGER.warn(String.format("Exception occurred while creating a thumbnail for metadata record UUID: %s",
+                                    metadataRecordUUID), ex);
                         }
+                        geoNetworkRecord.setThumbnailLastIndexed(System.currentTimeMillis());
+                    } else {
+                        geoNetworkRecord.useCachedThumbnail(oldRecord);
                     }
 
                     return geoNetworkRecord;

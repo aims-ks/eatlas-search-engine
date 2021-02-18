@@ -122,53 +122,40 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
                     DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode);
 
-                    DrupalNode oldNode = null;
-                    try {
-                        oldNode = this.get(client, drupalNode.getId());
-                    } catch(Exception ex) {
-                        LOGGER.warn(String.format("Exception occurred while looking for previous version of a Drupal node: %s, node type: %s",
-                                drupalNode.getId(), this.drupalNodeType), ex);
-                    }
-
                     // Thumbnail (aka preview image)
-                    try {
-                        URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
-                        if (baseUrl != null && this.drupalPreviewImageField != null) {
-                            String previewImageUUID = DrupalNodeIndexer.getPreviewImageUUID(jsonApiNode, this.drupalPreviewImageField);
-                            if (previewImageUUID != null) {
-                                String previewImageRelativePath = DrupalNodeIndexer.findPreviewImageRelativePath(previewImageUUID, jsonIncluded);
-                                if (previewImageRelativePath != null) {
+                    URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
+                    if (baseUrl != null && this.drupalPreviewImageField != null) {
+                        String previewImageUUID = DrupalNodeIndexer.getPreviewImageUUID(jsonApiNode, this.drupalPreviewImageField);
+                        if (previewImageUUID != null) {
+                            String previewImageRelativePath = DrupalNodeIndexer.findPreviewImageRelativePath(previewImageUUID, jsonIncluded);
+                            if (previewImageRelativePath != null) {
+                                URL thumbnailUrl = null;
+                                try {
+                                    thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
+                                } catch(Exception ex) {
+                                    LOGGER.warn(String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
+                                            drupalNode.getId(), this.drupalNodeType), ex);
+                                }
+                                drupalNode.setThumbnailUrl(thumbnailUrl);
+
+                                // Create the thumbnail if it's missing or outdated
+                                DrupalNode oldNode = this.safeGet(client, drupalNode.getId());
+                                if (drupalNode.isThumbnailOutdated(oldNode, this.getThumbnailTTL())) {
                                     try {
-                                        URL thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
-                                        drupalNode.setThumbnailUrl(thumbnailUrl);
-
-                                        String cachedThumbnailFilename = oldNode == null ? null : oldNode.getCachedThumbnailFilename();
-                                        File cachedFile = cachedThumbnailFilename == null ? null : ImageCache.getCachedFile(this.getIndex(), cachedThumbnailFilename);
-                                        URL oldThumbnailUrl = oldNode == null ? null : oldNode.getThumbnailUrl();
-                                        String oldThumbnailUrlStr = oldThumbnailUrl == null ? null : oldThumbnailUrl.toString();
-
-                                        if (!thumbnailUrl.toString().equals(oldThumbnailUrlStr) || this.isThumbnailOutdated(cachedFile)) {
-                                            cachedFile.delete();
-                                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), drupalNode.getId());
-                                            if (cachedThumbnailFile != null) {
-                                                drupalNode.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                                            }
-                                        } else {
-                                            drupalNode.setCachedThumbnailFilename(cachedThumbnailFilename);
+                                        File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), drupalNode.getId());
+                                        if (cachedThumbnailFile != null) {
+                                            drupalNode.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                                         }
                                     } catch(Exception ex) {
-                                        LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+                                        LOGGER.warn(String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
+                                                drupalNode.getId(), this.drupalNodeType), ex);
                                     }
+                                    drupalNode.setThumbnailLastIndexed(System.currentTimeMillis());
                                 } else {
-                                    if (oldNode != null) {
-                                        oldNode.deleteThumbnail();
-                                    }
+                                    drupalNode.useCachedThumbnail(oldNode);
                                 }
                             }
                         }
-                    } catch(Exception ex) {
-                        LOGGER.warn(String.format("Exception occurred while managing the thumbnail for Drupal node: %s, node type: %s",
-                                drupalNode.getId(), this.drupalNodeType), ex);
                     }
 
                     if (usedThumbnails != null) {
@@ -188,8 +175,10 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                     try {
                         IndexResponse indexResponse = this.index(client, drupalNode);
 
-                        LOGGER.debug(String.format("Indexing drupal nodes page %d node ID: %s, status: %d",
-                                page,
+                        // NOTE: We don't know how many nodes (or pages or nodes) there is.
+                        //     We index until we reach the bottom of the barrel...
+                        LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal node ID: %s, status: %d",
+                                page+1, i+1, nodeFound,
                                 drupalNode.getNid(),
                                 indexResponse.status().getStatus()));
                     } catch(Exception ex) {

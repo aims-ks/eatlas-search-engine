@@ -151,35 +151,18 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         String baseLayerId = AtlasMapperLayer.getWMSBaseLayer(jsonMainConfig, jsonLayersConfig);
 
         Set<String> usedThumbnails = new HashSet<String>();
+        int total = jsonLayersConfig.length();
+        int current = 0;
         for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
+            current++;
             JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
 
             AtlasMapperLayer layerEntity = new AtlasMapperLayer(
                     this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
 
-            AtlasMapperLayer oldLayer = null;
-            try {
-                oldLayer = this.get(client, atlasMapperLayerId);
-            } catch(Exception ex) {
-                LOGGER.warn(String.format("Exception occurred while looking for previous version of an AtlasMapper layer: %s",
-                        atlasMapperLayerId), ex);
-            }
-
-            // Create the thumbnail only if it's missing or outdated
-            boolean createThumbnail = true;
-            String index = this.getIndex();
-            if (oldLayer != null) {
-                String cachedThumbnailFilename = oldLayer.getCachedThumbnailFilename();
-                if (index != null && cachedThumbnailFilename != null) {
-                    File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
-                    if (!this.isThumbnailOutdated(cachedFile)) {
-                        layerEntity.setCachedThumbnailFilename(cachedThumbnailFilename);
-                        createThumbnail = false;
-                    }
-                }
-            }
-
-            if (createThumbnail) {
+            // Create the thumbnail if it's missing or outdated
+            AtlasMapperLayer oldLayer = this.safeGet(client, atlasMapperLayerId);
+            if (layerEntity.isThumbnailOutdated(oldLayer, this.getThumbnailTTL())) {
                 try {
                     File cachedThumbnailFile = this.createLayerThumbnail(atlasMapperLayerId, baseLayerId, jsonLayersConfig, jsonMainConfig);
                     if (cachedThumbnailFile != null) {
@@ -189,6 +172,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                     LOGGER.warn(String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s",
                             atlasMapperLayerId), ex);
                 }
+                layerEntity.setThumbnailLastIndexed(System.currentTimeMillis());
+            } else {
+                layerEntity.useCachedThumbnail(oldLayer);
             }
 
             String thumbnailFilename = layerEntity.getCachedThumbnailFilename();
@@ -199,7 +185,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             try {
                 IndexResponse indexResponse = this.index(client, layerEntity);
 
-                LOGGER.debug(String.format("Indexing AtlasMapper layer ID: %s, status: %d",
+                LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, status: %d",
+                        current, total,
                         atlasMapperLayerId,
                         indexResponse.status().getStatus()));
             } catch(Exception ex) {

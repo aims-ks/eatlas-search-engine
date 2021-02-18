@@ -28,9 +28,19 @@ import java.net.URL;
 
 public abstract class Entity {
     private static final Logger LOGGER = Logger.getLogger(DrupalNode.class.getName());
+    private static final long DAY_MS = 24 * 60 * 60 * 1000;
+
     private String index;
 
+    // Last the entry was saved into the search index
     private Long lastIndexed;
+    // Last time the thumbnail was downloaded.
+    // That's also used for records which doesn't have a thumbnail,
+    // to avoid attempting to download them everytime.
+    private Long thumbnailLastIndexed;
+
+    // Last modified, as provided by the entity provider
+    // i.e. metadata last modified, provided by GeoNetwork
     private Long lastModified;
 
     private String id;
@@ -63,6 +73,14 @@ public abstract class Entity {
 
     public Long getLastIndexed() {
         return this.lastIndexed;
+    }
+
+    public void setThumbnailLastIndexed(Long thumbnailLastIndexed) {
+        this.thumbnailLastIndexed = thumbnailLastIndexed;
+    }
+
+    public Long getThumbnailLastIndexed() {
+        return this.thumbnailLastIndexed;
     }
 
     public void setLastModified(Long lastModified) {
@@ -129,6 +147,74 @@ public abstract class Entity {
         this.langcode = langcode;
     }
 
+    // Make sure thumbnailUrl is set before calling this.
+    public boolean isThumbnailOutdated(Entity oldEntity, Long thumbnailTTL) {
+        if (oldEntity == null) {
+            // No old entity, assume it's a new entry, the thumbnail was never downloaded
+            return true;
+        }
+
+        // Check if the thumbnail URL have changed
+        // NOTE: equals on URL attempt to resolve the URL, which is overkill in this case.
+        //     It's much faster and easier to check the URL string, even if it could give
+        //     false negative (i.e. 2 different URLs pointing to the same page).
+        //     Also, it's easier to check with empty string rather than trying to handle nulls.
+        URL oldUrl = oldEntity.getThumbnailUrl();
+        String oldUrlStr = oldUrl == null ? "" : oldUrl.toString();
+        URL newUrl = this.getThumbnailUrl();
+        String newUrlStr = newUrl == null ? "" : newUrl.toString();
+
+        if (!oldUrlStr.equals(newUrlStr)) {
+            return true;
+        }
+
+        Long thumbnailLastIndexed = oldEntity.getThumbnailLastIndexed();
+        if (thumbnailLastIndexed == null) {
+            return true;
+        }
+
+        long now = System.currentTimeMillis();
+        long thumbnailIndexAgeMs = now - thumbnailLastIndexed;
+        long thumbnailIndexAgeDays = thumbnailIndexAgeMs / DAY_MS;
+
+        if (thumbnailIndexAgeDays >= thumbnailTTL) {
+            return true;
+        }
+
+        // Lets check if the file on disk exists
+        String cachedThumbnailFilename = oldEntity.getCachedThumbnailFilename();
+        if (cachedThumbnailFilename == null) {
+            // The last download attempt was less than 30 days ago,
+            // and there was not thumbnail to download (or downlaod failed).
+            // Lets wait before trying again.
+            return false;
+        }
+
+        File thumbnailFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
+        if (thumbnailFile == null) {
+            // Unlikely, but if the thumbnail folder is manually deleted,
+            // this is where it will be requested to re-download the thumbnail.
+            return true;
+        }
+
+        if (!thumbnailFile.exists()) {
+            // The thumbnail was manually deleted.
+            return true;
+        }
+
+        long thumbnailLastModified = thumbnailFile.lastModified();
+        long thumbnailAgeMs = now - thumbnailLastModified;
+        long thumbnailAgeDays = thumbnailAgeMs / DAY_MS;
+
+        return thumbnailAgeDays >= thumbnailTTL;
+    }
+
+    public void useCachedThumbnail(Entity oldEntity) {
+        this.setThumbnailUrl(oldEntity == null ? null : oldEntity.getThumbnailUrl());
+        this.setCachedThumbnailFilename(oldEntity == null ? null : oldEntity.getCachedThumbnailFilename());
+        this.setThumbnailLastIndexed(oldEntity == null ? System.currentTimeMillis() : oldEntity.getThumbnailLastIndexed());
+    }
+
     public void deleteThumbnail() {
         String index = this.getIndex();
         String cachedThumbnailFilename = this.getCachedThumbnailFilename();
@@ -149,6 +235,7 @@ public abstract class Entity {
             .put("index", this.getIndex())
             .put("lastIndexed", this.getLastIndexed())
             .put("lastModified", this.getLastModified())
+            .put("thumbnailLastIndexed", this.getThumbnailLastIndexed())
             .put("class", this.getClass().getSimpleName())
             .put("link", linkUrl == null ? null : linkUrl.toString())
             .put("title", this.getTitle())
@@ -177,6 +264,11 @@ public abstract class Entity {
             String lastModifiedStr = json.optString("lastModified", null);
             if (lastModifiedStr != null) {
                 this.setLastModified(Long.parseLong(lastModifiedStr));
+            }
+
+            String thumbnailLastIndexedStr = json.optString("thumbnailLastIndexed", null);
+            if (thumbnailLastIndexedStr != null) {
+                this.setThumbnailLastIndexed(Long.parseLong(thumbnailLastIndexedStr));
             }
 
             String linkStr = json.optString("link", null);
