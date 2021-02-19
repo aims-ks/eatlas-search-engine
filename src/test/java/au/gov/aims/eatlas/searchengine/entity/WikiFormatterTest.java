@@ -61,7 +61,7 @@ public class WikiFormatterTest {
 
     @Test
     public void testGetText() {
-        String wikiText = "==Test multi line /Wiki/ format.==\n" +
+        String wikiText = "==Test multi <line> /Wiki/ format.==\n" +
                 "This *star is never closed so it must not be apply.\n" +
                 "This /slash is closed at the end of the document so everything from here should be italic.\n" +
                 "*Shipping list:*\n" +
@@ -102,7 +102,7 @@ public class WikiFormatterTest {
                 "End of italic./\n" +
                 "\n";
 
-        String expected = "Test multi line Wiki format. " +
+        String expected = "Test multi <line> Wiki format. " +
                 "This *star is never closed so it must not be apply. " +
                 "This slash is closed at the end of the document so everything from here should be italic. " +
                 "Shipping list: " +

@@ -64,9 +64,14 @@ public class WikiFormatter {
             return null;
         }
 
-        String html = WikiFormatter.getInstance().format(input);
+        String html = WikiFormatter.getInstance().format(_safeHtml(input));
 
         return (html == null || html.isEmpty()) ? null : html;
+    }
+
+    protected static String _safeHtml(String input) {
+        if (input == null) { return null; }
+        return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     // Inspired from AtlasMapper:
