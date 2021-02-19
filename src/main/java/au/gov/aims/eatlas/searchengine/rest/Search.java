@@ -273,9 +273,14 @@ public class Search {
     private static SearchSourceBuilder getBaseSearchQuery(String needle) {
         return new SearchSourceBuilder()
             // Search in document OR title
+//            .query(QueryBuilders.boolQuery()
+//                .should(QueryBuilders.matchQuery("title", needle).boost(2))
+//                .should(QueryBuilders.matchQuery("document", needle)))
+
             .query(QueryBuilders.boolQuery()
-                .should(QueryBuilders.matchQuery("title", needle).boost(2))
-                .should(QueryBuilders.matchQuery("document", needle)))
+                .should(QueryBuilders.queryStringQuery(needle).defaultField("title").boost(2))
+                .should(QueryBuilders.queryStringQuery(needle).defaultField("document")))
+
             .timeout(new TimeValue(60, TimeUnit.SECONDS));
     }
 

@@ -44,7 +44,7 @@ public class Main {
     public static void main(String... args) throws Exception {
         boolean fullHarvest = true;
 
-        File configFile = new File("/home/glafond/Desktop/TMP_INPUT/imageCache/eatlas_search_engine.json");
+        File configFile = new File("/var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/eatlas_search_engine.json");
 
         SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json");
         Index.internalReindex(config, fullHarvest);

@@ -65,24 +65,16 @@ public class SearchEngineConfig {
         this.reload();
     }
 
-    // For internal use
+    // For internal use (rest.WebApplication)
     public static SearchEngineConfig createInstance(ServletContext context) throws IOException {
         return createInstance(getConfigFile(context), "eatlas_search_engine_default.json");
     }
 
-    // For internal use
+    // For internal use (tests)
     public static SearchEngineConfig createInstance(File configFile, String resourcePath) throws IOException {
         if (checkConfigFile(configFile, resourcePath, true)) {
             instance = new SearchEngineConfig(configFile);
         }
-        return instance;
-    }
-
-    public static SearchEngineConfig getInstance(ServletContext context) throws IOException {
-        if (instance == null) {
-            SearchEngineConfig.createInstance(context);
-        }
-
         return instance;
     }
 

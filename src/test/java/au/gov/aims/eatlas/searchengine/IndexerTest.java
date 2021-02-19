@@ -43,7 +43,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
@@ -128,7 +127,6 @@ public class IndexerTest extends ESSingleNodeTestCase {
         try (ESClient client = new ESTestClient(super.node().client())) {
             for (ExternalLinkIndexer.ExternalLinkEntry externalLinkEntry : eAtlasExternalLinkIndexer.getExternalLinkEntries()) {
                 ExternalLink entity = new ExternalLink(index, externalLinkEntry.getUrl(), externalLinkEntry.getTitle());
-                entity.setThumbnailUrl(new URL(externalLinkEntry.getThumbnail()));
 
                 switch (externalLinkEntry.getUrl()) {
                     case "https://www.seagrasswatch.org/idseagrass/":

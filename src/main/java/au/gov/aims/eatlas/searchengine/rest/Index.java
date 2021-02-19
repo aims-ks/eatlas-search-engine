@@ -91,7 +91,7 @@ public class Index {
             @QueryParam("full") Boolean full // List of indexes to query
     ) {
         try {
-            SearchEngineConfig config = SearchEngineConfig.getInstance(servletRequest.getServletContext());
+            SearchEngineConfig config = SearchEngineConfig.getInstance();
             JSONObject jsonStatus = Index.internalReindex(config, full == null ? true : full);
 
             String responseTxt = jsonStatus.toString();
