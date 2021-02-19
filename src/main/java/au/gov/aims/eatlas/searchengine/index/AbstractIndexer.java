@@ -48,8 +48,9 @@ public abstract class AbstractIndexer<E extends Entity> {
     private boolean enabled;
     private String index;
     private Long lastIndexed;
-    private Long lastIndexElapse;
+    private Long lastIndexRuntime;
     private Long thumbnailTTL; // TTL, in days
+    private Long brokenThumbnailTTL; // TTL, in days
 
     public AbstractIndexer(String index) {
         this.index = index;
@@ -74,7 +75,7 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         long lastIndexedEnds = System.currentTimeMillis();
         this.lastIndexed = lastIndexedStarts;
-        this.lastIndexElapse = lastIndexedEnds - lastIndexedStarts;
+        this.lastIndexRuntime = lastIndexedEnds - lastIndexedStarts;
     }
 
     protected JSONObject getJsonBase() {
@@ -83,8 +84,9 @@ public abstract class AbstractIndexer<E extends Entity> {
             .put("enabled", this.isEnabled())
             .put("index", this.index)
             .put("lastIndexed", this.lastIndexed)
-            .put("lastIndexElapse", this.lastIndexElapse)
-            .put("thumbnailTTL", this.thumbnailTTL);
+            .put("lastIndexRuntime", this.lastIndexRuntime)
+            .put("thumbnailTTL", this.thumbnailTTL)
+            .put("brokenThumbnailTTL", this.brokenThumbnailTTL);
     }
 
     public static AbstractIndexer fromJSON(JSONObject json) {
@@ -139,17 +141,23 @@ public abstract class AbstractIndexer<E extends Entity> {
         }
         indexer.lastIndexed = lastIndexed;
 
-        Long lastIndexElapse = null;
+        Long lastIndexRuntime = null;
         if (json.has("lastIndexElapse")) {
-            lastIndexElapse = json.optLong("lastIndexElapse", -1);
+            lastIndexRuntime = json.optLong("lastIndexRuntime", -1);
         }
-        indexer.lastIndexElapse = lastIndexElapse;
+        indexer.lastIndexRuntime = lastIndexRuntime;
 
         Long thumbnailTTL = null;
         if (json.has("thumbnailTTL")) {
             thumbnailTTL = json.optLong("thumbnailTTL", -1);
         }
         indexer.thumbnailTTL = thumbnailTTL;
+
+        Long brokenThumbnailTTL = null;
+        if (json.has("brokenThumbnailTTL")) {
+            brokenThumbnailTTL = json.optLong("brokenThumbnailTTL", -1);
+        }
+        indexer.brokenThumbnailTTL = brokenThumbnailTTL;
 
         return indexer;
     }
@@ -170,12 +178,16 @@ public abstract class AbstractIndexer<E extends Entity> {
         return this.lastIndexed;
     }
 
-    public Long getLastIndexElapse() {
-        return this.lastIndexElapse;
+    public Long getLastIndexRuntime() {
+        return this.lastIndexRuntime;
     }
 
     public long getThumbnailTTL() {
         return this.thumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalThumbnailTTL() : this.thumbnailTTL;
+    }
+
+    public long getBrokenThumbnailTTL() {
+        return this.brokenThumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalBrokenThumbnailTTL() : this.brokenThumbnailTTL;
     }
 
     public IndexResponse index(ESClient client, E entity) throws IOException {

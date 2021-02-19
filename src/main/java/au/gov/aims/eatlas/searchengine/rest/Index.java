@@ -134,11 +134,11 @@ public class Index {
                         indexer.harvest(full);
                         config.save();
 
-                        Long elapse = indexer.getLastIndexElapse();
-                        long elapseSec = elapse == null ? -1 : elapse/1000;
+                        Long runtime = indexer.getLastIndexRuntime();
+                        long runtimeSec = runtime == null ? -1 : runtime/1000;
                         LOGGER.info(String.format("-- %s class %s reindexing time: %d sec",
-                                indexer.getIndex(), indexer.getClass().getSimpleName(), elapseSec));
-                        jsonElapseTime.put(indexer.getIndex(), String.format("%d sec", elapseSec));
+                                indexer.getIndex(), indexer.getClass().getSimpleName(), runtimeSec));
+                        jsonElapseTime.put(indexer.getIndex(), String.format("%d sec", runtimeSec));
                     }
                 }
             }

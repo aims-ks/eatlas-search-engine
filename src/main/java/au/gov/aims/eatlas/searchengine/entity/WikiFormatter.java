@@ -18,45 +18,61 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import org.jsoup.Jsoup;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
+
 /**
  * Parse the "Wiki" text format used in GeoNetwork
  * and by AtlasMapper.
  */
 public class WikiFormatter {
+    private static final char EMPTY_CHAR = '\0';
+    private static final int MAX_URL_LENGTH = 40;
+
     private static final WikiFormatter instance;
+
     static {
         instance = new WikiFormatter();
     }
 
     private WikiFormatter() {}
 
-    private static WikiFormatter getInstance() {
+    protected static WikiFormatter getInstance() {
         return instance;
     }
 
     public static String getText(String input) {
+        String html = WikiFormatter.getHTML(input);
+
+        if (html == null || html.isEmpty()) {
+            return null;
+        }
+
+        // Extract text from HTML using Jsoup HTML parser
+        String text = Jsoup.parse(html).text();
+
+        return (text == null || text.isEmpty()) ? null : text;
+    }
+
+    public static String getHTML(String input) {
         if (input == null) {
             return null;
         }
 
         String html = WikiFormatter.getInstance().format(input);
 
-        if (html.isEmpty()) {
-            return null;
-        }
-
-        // Extract text from HTML
+        return (html == null || html.isEmpty()) ? null : html;
     }
 
     // Inspired from AtlasMapper:
     //     atlasmapper/clientResources/amc/modules/Utils/WikiFormater.js
-    private String format(String input) {
-        if (input == null) {
-            return null;
-        }
-
-        input = input.trim();
-        if (input.isEmpty()) {
+    protected String format(String input) {
+        if (this.isBlank(input)) {
             return input;
         }
 
@@ -64,10 +80,10 @@ public class WikiFormatter {
         input = input.replace("\r\n", "\n").replace("\r", "\n");
 
         String output = "", htmlChunk = "";
-        char currentChar = '\0';
+        char currentChar = EMPTY_CHAR;
 
         for (int i=0, len=input.length(); i<len; i++) {
-            currentChar = input.charAt(i);
+            currentChar = this.charAt(input, i);
             htmlChunk = "";
 
             // ********************
@@ -88,7 +104,7 @@ public class WikiFormatter {
                     if (closeTag != null) {
                         htmlChunk += openTag.tag + this.format(input.substring(openTag.index+1, closeTag.index)) + closeTag.tag;
                         i = closeTag.index;
-                        currentChar = i < len ? input.charAt(i) : '\0';
+                        currentChar = i < len ? this.charAt(input, i) : EMPTY_CHAR;
                     }
                 }
             }
@@ -96,16 +112,17 @@ public class WikiFormatter {
             // *************
             // * Wiki URLs *
             // *************
-            if (currentChar === '[' && i+1 < len && input.charAt(i+1) === '[') {
-                var index = i, inURL = true, isURL = false;
+            if (currentChar == '[' && i+1 < len && this.charAt(input, i+1) == '[') {
+                int index = i;
+                boolean inURL = true, isURL = false;
                 // Find the index of the last URL chars
                 // NOTE: URLs can not contains URL, so the first closing tag is for the current URL.
                 while (inURL && index < len) {
                     // '\n' is not allow in Wiki URL
-                    if (input.charAt(index) === '\n') {
+                    if (this.charAt(input, index) == '\n') {
                         inURL = false;
                     }
-                    if (input.charAt(index+1) !== ']' && input.charAt(index) === ']' && input.charAt(index-1) === ']') {
+                    if (this.charAt(input, index+1) != ']' && this.charAt(input, index) == ']' && this.charAt(input, index-1) == ']') {
                         inURL = false;
                         isURL = true;
                     }
@@ -114,40 +131,49 @@ public class WikiFormatter {
                     }
                 }
                 if (isURL) {
-                    var wikiURL = input.substring(i+2, index-1);
-                    var urlStr, filename, label, dim, cssClass, wikiURLParts = wikiURL.split('|');
+                    String wikiURL = input.substring(i+2, index-1);
+                    String urlStr, filename = "", label, dim = "", cssClass = "";
+                    String[] wikiURLParts = wikiURL.split("\\|");
 
-                    var type = 'URL';
+                    String type = "URL";
                     if (wikiURLParts.length >= 2) {
-                        if (wikiURLParts[0] === 'IMG') {
+                        if ("IMG".equals(wikiURLParts[0])) {
                             // Remove IMG
-                            type = wikiURLParts.shift();
-                            urlStr = wikiURLParts.shift();
+                            //type = wikiURLParts.shift();
+                            type = wikiURLParts[0]; wikiURLParts = this.arrayShift(wikiURLParts);
+                            //urlStr = wikiURLParts.shift();
+                            urlStr = wikiURLParts[0]; wikiURLParts = this.arrayShift(wikiURLParts);
                             if (wikiURLParts.length > 1) {
-                                dim = wikiURLParts.pop();
+                                //dim = wikiURLParts.pop();
+                                dim = wikiURLParts[wikiURLParts.length-1]; wikiURLParts = this.arrayPop(wikiURLParts);
                             }
                             if (wikiURLParts.length > 1) {
                                 cssClass = dim;
-                                dim = wikiURLParts.pop();
+                                //dim = wikiURLParts.pop();
+                                dim = wikiURLParts[wikiURLParts.length-1]; wikiURLParts = this.arrayPop(wikiURLParts);
                             }
-                            label = wikiURLParts.join('|');
-                        } else if (wikiURLParts[0] === 'DOWNLOAD') {
+                            //label = wikiURLParts.join('|');
+                            label = String.join("|", wikiURLParts);
+                        } else if ("DOWNLOAD".equals(wikiURLParts[0])) {
                             // Remove DOWNLOAD
-                            type = wikiURLParts.shift();
+                            //type = wikiURLParts.shift();
+                            type = wikiURLParts[0]; wikiURLParts = this.arrayShift(wikiURLParts);
                             if (wikiURLParts.length >= 2) {
-                                urlStr = wikiURLParts.shift();
-                                filename = wikiURLParts.shift();
-                                label = this.format(wikiURLParts.join('|'));
-                                if (!label) {
+                                //urlStr = wikiURLParts.shift();
+                                urlStr = wikiURLParts[0]; wikiURLParts = this.arrayShift(wikiURLParts);
+                                //filename = wikiURLParts.shift();
+                                filename = wikiURLParts[0]; wikiURLParts = this.arrayShift(wikiURLParts);
+                                label = this.format(String.join("|", wikiURLParts));
+                                if (this.isBlank(label)) {
                                     label = filename;
                                 }
                             } else {
                                 urlStr = wikiURLParts[0];
                                 filename = urlStr;
 
-                                var lastSlashIndex = filename.lastIndexOf('/');
-                                var questionMarkIndex = filename.indexOf('?');
-                                if (questionMarkIndex < 0) { questionMarkIndex = filename.length; }
+                                int lastSlashIndex = filename.lastIndexOf('/');
+                                int questionMarkIndex = filename.indexOf('?');
+                                if (questionMarkIndex < 0) { questionMarkIndex = filename.length(); }
 
                                 if (lastSlashIndex+1 < questionMarkIndex) {
                                     filename = filename.substring(lastSlashIndex+1, questionMarkIndex);
@@ -155,45 +181,52 @@ public class WikiFormatter {
                                 label = filename;
                             }
                         } else {
-                            urlStr = wikiURLParts.shift();
-                            label = this.format(wikiURLParts.join('|'));
+                            //urlStr = wikiURLParts.shift();
+                            urlStr = wikiURLParts[0]; wikiURLParts = this.arrayShift(wikiURLParts);
+                            label = this.format(String.join("|", wikiURLParts));
                         }
                     } else {
                         label = this._truncateURLForDisplay(wikiURL);
                         urlStr = wikiURL;
                     }
 
-                    if (urlStr.indexOf('://') !== -1) {
-                        target = '_blank';
+                    /*
+                    if (urlStr.contains("://")) {
+                        target = "_blank";
                     }
+                    */
 
-                    if (type === 'IMG') {
-                        var style = '';
-                        if (dim) {
-                            dim = dim.split('X');
-                            var width = dim[0];
-                            var height = dim.length > 1 ? dim[1] : null;
-                            if (width && width != '?') {
-                                style += 'width:' + width + (isNaN(width) ? '' : 'px') + ';';
+                    if ("IMG".equals(type)) {
+                        String style = "";
+                        if (!this.isBlank(dim)) {
+                            String[] dimArray = dim.split("X");
+                            String width = dimArray[0];
+                            String height = dimArray.length > 1 ? dimArray[1] : null;
+                            if (!this.isBlank(width) && !"?".equals(width)) {
+                                style += "width:" + width + (this.isNaN(width) ? "" : "px") + ';';
                             }
-                            if (height && height != '?') {
-                                style += 'height:' + height + (isNaN(height) ? '' : 'px') + ';';
+                            if (!this.isBlank(height) && !"?".equals(height)) {
+                                style += "height:" + height + (this.isNaN(height) ? "" : "px") + ';';
                             }
                         }
-                        htmlChunk += '<img src="'+urlStr+'"'+(cssClass ? ' class="'+cssClass+'"' : '')+(style ? ' style="'+style+'"' : '')+' alt="'+label+'" title="'+label+'"/>';
-                    } else if (type === 'DOWNLOAD') {
+                        htmlChunk += "<img src=\""+urlStr+"\""+
+                            (!this.isBlank(cssClass) ? " class=\""+cssClass+"\"" : "")+
+                            (!this.isBlank(style) ? " style=\""+style+"\"" : "")+
+                            " alt=\""+label+"\" title=\""+label+"\"/>";
+                    } else if ("DOWNLOAD".equals(type)) {
                         // NOTE: A[DOWNLOAD] is a HTML5 attribute. It's ignored if the browser do not support it.
                         //     http://www.w3.org/html/wg/drafts/html/master/links.html#downloading-resources
-                        htmlChunk += '<a href="'+urlStr+'" download="'+filename+'" target="_blank">'+label+'</a>';
+                        htmlChunk += "<a href=\""+urlStr+"\" download=\""+filename+"\" target=\"_blank\">"+label+"</a>";
                     } else {
-                        var target = '';
-                        if (urlStr.indexOf('://') !== -1) {
-                            target = '_blank';
+                        String target = "";
+                        if (urlStr.contains("://")) {
+                            target = "_blank";
                         }
-                        htmlChunk += '<a href="'+urlStr+'"'+(target ? ' target="'+target+'"' : '')+'>'+label+'</a>';
+                        htmlChunk += "<a href=\""+urlStr+"\""+
+                            (!this.isBlank(target) ? " target=\""+target+"\"" : "")+">"+label+"</a>";
                     }
                     i = index;
-                    currentChar = i < len ? input.charAt(i) : '';
+                    currentChar = i < len ? this.charAt(input, i) : EMPTY_CHAR;
                 }
             }
 
@@ -201,12 +234,12 @@ public class WikiFormatter {
             // * Complete URLs (http://...) *
             // ******************************
             if (this._isCompleteURL(input, i)) {
-                var urlStr = this._toURL(input, i);
-                if (urlStr) {
-                    var label = this._truncateURLForDisplay(urlStr);
-                    htmlChunk += '<a href="'+urlStr+'" target="_blank">'+label+'</a>';
-                    i += urlStr.length-1;
-                    currentChar = i < len ? input.charAt(i) : '';
+                String urlStr = this._toURL(input, i);
+                if (!this.isBlank(urlStr)) {
+                    String label = this._truncateURLForDisplay(urlStr);
+                    htmlChunk += "<a href=\""+urlStr+"\" target=\"_blank\">"+label+"</a>";
+                    i += urlStr.length()-1;
+                    currentChar = i < len ? this.charAt(input, i) : EMPTY_CHAR;
                 }
             }
 
@@ -214,51 +247,51 @@ public class WikiFormatter {
             // * Incomplete URLs (www...) *
             // ****************************
             if (this._isIncompleteURL(input, i)) {
-                var urlStr = this._toURL(input, i);
-                if (urlStr) {
-                    var label = this._truncateURLForDisplay(urlStr);
-                    htmlChunk += '<a href="http://'+urlStr+'" target="_blank">'+label+'</a>';
-                    i += urlStr.length-1;
-                    currentChar = i < len ? input.charAt(i) : '';
+                String urlStr = this._toURL(input, i);
+                if (!this.isBlank(urlStr)) {
+                    String label = this._truncateURLForDisplay(urlStr);
+                    htmlChunk += "<a href=\"http://"+urlStr+"\" target=\"_blank\">"+label+"</a>";
+                    i += urlStr.length()-1;
+                    currentChar = i < len ? this.charAt(input, i) : EMPTY_CHAR;
                 }
             }
 
             // ***********************************
             // * Headers (<h1>, <h2>, ..., <h6>) *
             // ***********************************
-            if (currentChar === '=' && (i <= 0 || input.charAt(i-1) === '\n')) {
+            if (currentChar == '=' && (i <= 0 || this.charAt(input, i-1) == '\n')) {
                 // Collect open tag ("\n=====")
-                var index = i, openTag = '=', closeTag = '',
-                    lineStartIndex = i, lineEndIndex;
-                while (index+1 < len && input.charAt(index+1) === '=') {
+                int index = i, lineStartIndex = i, lineEndIndex;
+                String openTag = "=", closeTag = "";
+                while (index+1 < len && this.charAt(input, index+1) == '=') {
                     index++;
-                    openTag += '=';
+                    openTag += "=";
                 }
 
                 // Collect close tag ("=====\n")
-                while (index+1 < len && input.charAt(index+1) !== '\n') {
+                while (index+1 < len && this.charAt(input, index+1) != '\n') {
                     index++;
-                    if (input.charAt(index) === '=') {
-                        closeTag += '=';
+                    if (this.charAt(input, index) == '=') {
+                        closeTag += "=";
                     } else {
                         // reset
-                        closeTag = '';
+                        closeTag = "";
                     }
                 }
                 lineEndIndex = index;
 
-                var headerTagNumber = Math.min(openTag.length, closeTag.length) - 1;
+                int headerTagNumber = Math.min(openTag.length(), closeTag.length()) - 1;
                 if (headerTagNumber >= 1 && headerTagNumber <= 6) {
-                    htmlChunk += '<h'+headerTagNumber+'>' +
+                    htmlChunk += "<h"+headerTagNumber+">" +
                             this.format(input.substring(
                                     lineStartIndex + headerTagNumber + 1,
                                     lineEndIndex - headerTagNumber)) +
-                            '</h'+headerTagNumber+'>\n';
+                            "</h"+headerTagNumber+">\n";
 
                     // lineEndIndex   => last '='
                     // lineEndIndex+1 => the '\n'
                     i = lineEndIndex+1;
-                    currentChar = i < len ? input.charAt(i) : '';
+                    currentChar = i < len ? this.charAt(input, i) : EMPTY_CHAR;
                 }
             }
 
@@ -267,9 +300,10 @@ public class WikiFormatter {
             // ***************
             if (this._isListLine(input, i)) {
                 // Collect all lines that define the list
-                var index = i, inList = true;
+                int index = i;
+                boolean inList = true;
                 while (inList && index < len) {
-                    if (index > 0 && input.charAt(index-1) === '\n') {
+                    if (index > 0 && this.charAt(input, index-1) == '\n') {
                         // The cursor is at the beginning of a new line.
                         // It's time to check if the line is still part
                         // of the bullet list.
@@ -279,11 +313,11 @@ public class WikiFormatter {
                         index++;
                     }
                 }
-                var listBlock = input.substring(i, index);
+                String listBlock = input.substring(i, index);
 
                 htmlChunk += this._createHTMLList(this._createListObjFromWikiFormat(listBlock));
                 i = index-1;
-                currentChar = i < len ? input.charAt(i) : '';
+                currentChar = i < len ? this.charAt(input, i) : EMPTY_CHAR;
             }
 
             // *****************
@@ -291,9 +325,10 @@ public class WikiFormatter {
             // *****************
             if (this._isListLine(input, i, true)) {
                 // Collect all lines that define the list
-                var index = i, inList = true;
+                int index = i;
+                boolean inList = true;
                 while (inList && index < len) {
-                    if (index > 0 && input.charAt(index-1) === '\n') {
+                    if (index > 0 && this.charAt(input, index-1) == '\n') {
                         // The cursor is at the beginning of a new line.
                         // It's time to check if the line is still part
                         // of the bullet list.
@@ -303,16 +338,16 @@ public class WikiFormatter {
                         index++;
                     }
                 }
-                var listBlock = input.substring(i, index);
+                String listBlock = input.substring(i, index);
 
                 htmlChunk += this._createHTMLList(this._createListObjFromWikiFormat(listBlock, true), true);
                 i = index-1;
-                currentChar = i < len ? input.charAt(i) : '';
+                currentChar = i < len ? this.charAt(input, i) : EMPTY_CHAR;
             }
 
             // Default
-            if (htmlChunk == '') {
-                htmlChunk = currentChar;
+            if ("".equals(htmlChunk) && currentChar != EMPTY_CHAR) {
+                htmlChunk = "" + currentChar;
             }
 
             output += htmlChunk;
@@ -325,48 +360,53 @@ public class WikiFormatter {
         return car == '*' || car == '/' || car == '_' || car == '-';
     }
 
-    private boolean _isListLine(input, index, numbered) {
-        var len = input.length, bulletChar = numbered ? '#' : '*';
-        if (input.charAt(index) !== bulletChar || (index > 0 && input.charAt(index-1) !== '\n')) {
+    private boolean _isListLine(String input, int index) {
+        return this._isListLine(input, index, false);
+    }
+    private boolean _isListLine(String input, int index, boolean numbered) {
+        int len = input.length();
+        char bulletChar = numbered ? '#' : '*';
+        if (this.charAt(input, index) != bulletChar || (index > 0 && this.charAt(input, index-1) != '\n')) {
             return false;
         }
-        while (index < len && input.charAt(index) === bulletChar) {
+        while (index < len && this.charAt(input, index) == bulletChar) {
             index++;
         }
         // It is a list only if the next character after the stars is a white space.
-        return /\s/.test(input.charAt(index));
+        // return /\s/.test(input.charAt(index));
+        return Character.isWhitespace(this.charAt(input, index));
     }
 
     private Tag _getStyleTag(String input, int index) {
         Tag tag = new Tag(
-            input.charAt(index),
+            this.charAt(input, index),
             index
         );
 
-        // Delimiter: Allow caracter before the style char, to be considered as a style char.
+        // Delimiter: Allow character before the style char, to be considered as a style char.
         //     Example: "This is *important* " => "important" is considered as bold because it's surrounded by spaces.
-        //         "end of -sentence-." => "sentence" is striked out because has a space before and a period after.
+        //         "end of -sentence-." => "sentence" is struck out because has a space before and a period after.
         //         "value1|*value2*" => "value2" is bold because it has a pipe before and a end of string at the end.
-        //             The pipe and brakets chars are mostly used to detect style inside element, like in a link label,
-        //             to not accidently consider the label style end with the current style end.
-        var styleDelimiterInRegex = /[\w:\.,\[\]\(\){}]/;
-        var styleDelimiterOutRegex = /[^\w:]/;
+        //             The pipe and brackets chars are mostly used to detect style inside element, like in a link label,
+        //             to not accidentally consider the label style end with the current style end.
+        Pattern styleDelimiterInRegex = Pattern.compile("[\\w:\\.,\\[\\]\\(\\){}]");
+        Pattern styleDelimiterOutRegex = Pattern.compile("[^\\w:]");
 
         // Check if the sequence start with white space
         int len = input.length(), startIndex = index, endIndex = index;
-        while (startIndex-1 >= 0 && this._isStyleChar(input.charAt(startIndex-1))) {
+        while (startIndex-1 >= 0 && this._isStyleChar(this.charAt(input, startIndex-1))) {
             startIndex--;
         }
-        while (endIndex+1 < len && this._isStyleChar(input.charAt(endIndex+1))) {
+        while (endIndex+1 < len && this._isStyleChar(this.charAt(input, endIndex+1))) {
             endIndex++;
         }
 
-        if ((startIndex-1 >= 0 && styleDelimiterInRegex.test(input.charAt(startIndex-1))) &&
-                (endIndex+1 >= len || styleDelimiterOutRegex.test(input.charAt(endIndex+1)))) {
+        if ((startIndex-1 >= 0 && styleDelimiterInRegex.matcher(""+this.charAt(input, startIndex-1)).find()) &&
+                (endIndex+1 >= len || styleDelimiterOutRegex.matcher(""+this.charAt(input, endIndex+1)).find())) {
             //console.log('        CLOSE');
             tag.open = false;
-        } else if ((startIndex-1 < 0 || styleDelimiterOutRegex.test(input.charAt(startIndex-1))) &&
-                (endIndex+1 <= len && styleDelimiterInRegex.test(input.charAt(endIndex+1)))) {
+        } else if ((startIndex-1 < 0 || styleDelimiterOutRegex.matcher(""+this.charAt(input, startIndex-1)).find()) &&
+                (endIndex+1 <= len && styleDelimiterInRegex.matcher(""+this.charAt(input, endIndex+1)).find())) {
             //console.log('        OPEN');
             tag.open = true;
         } else {
@@ -390,16 +430,17 @@ public class WikiFormatter {
     }
 
     private Tag _findCloseTag(String input, Tag openTag) {
-        var tag, closeTag, currentChar = '';
-        for (var i=openTag.index+1, len=input.length; i<len; i++) {
-            currentChar = input.charAt(i);
+        Tag tag, closeTag;
+        char currentChar = EMPTY_CHAR;
+        for (int i=openTag.index+1, len=input.length(); i<len; i++) {
+            currentChar = this.charAt(input, i);
             if (this._isStyleChar(currentChar)) {
                 tag = this._getStyleTag(input, i);
-                if (tag && tag.type === openTag.type) {
+                if (tag != null && Objects.equals(tag.type, openTag.type)) {
                     if (tag.open) {
                         // Find the close tag for the new open tag
                         closeTag = this._findCloseTag(input, tag);
-                        if (!closeTag) {
+                        if (closeTag == null) {
                             return null; // unbalanced
                         }
                         // Continue to look from close this tag.
@@ -411,59 +452,63 @@ public class WikiFormatter {
                 }
             }
         }
+
+        return null;
     }
 
-    private String _createListObjFromWikiFormat(String listStr, boolean numbered) {
-        var bulletChar = numbered ? '#' : '*';
-        var valueRegex = numbered ? /^#+\s+/ : /^\*+\s+/;
+    private List<ListItem> _createListObjFromWikiFormat(String listStr) {
+        return this._createListObjFromWikiFormat(listStr, false);
+    }
+    private List<ListItem> _createListObjFromWikiFormat(String listStr, boolean numbered) {
+        char bulletChar = numbered ? '#' : '*';
+        String valueRegex = numbered ? "^#+\\s+" : "^\\*+\\s+";
 
         // Split on '\r' (Mac), '\n' (UNIX) or '\r\n' (Windows)
-        var bulletListItems = listStr.replace(/[\n\r]+/g, '\n').split('\n');
+        String[] bulletListItems = listStr.replaceAll("[\n\r]+", "\n").split("\n");
 
-        var bulletListObj = [];
-        for (var i=0, len=bulletListItems.length; i<len; i++) {
-            var itemStr = bulletListItems[i];
+        List<ListItem> bulletListObj = new ArrayList<ListItem>();
+        for (int i=0, len=bulletListItems.length; i<len; i++) {
+            String itemStr = bulletListItems[i];
 
-            var value = itemStr.replace(valueRegex, '');
-            var index = 0;
-            var listPtr = bulletListObj;
-            while (itemStr.charAt(index) === bulletChar) {
+            String value = itemStr.replaceAll(valueRegex, "");
+            int index = 0;
+            List<ListItem> listPtr = bulletListObj;
+            while (this.charAt(itemStr, index) == bulletChar) {
                 index++;
-                if (listPtr.length === 0) {
-                    listPtr.push({
-                        children: []
-                    });
+                if (listPtr.size() == 0) {
+                    listPtr.add(new ListItem());
                 }
-                listPtr = listPtr[listPtr.length-1].children;
+                listPtr = listPtr.get(listPtr.size()-1).children;
             }
-            listPtr.push({
-                value: value,
-                children: []
-            });
+            listPtr.add(new ListItem(value));
         }
 
         // Get ride of the root
-        return bulletListObj[0].children;
+        return bulletListObj.get(0).children;
     }
 
-    private String _createHTMLList(list, boolean numbered) {
-        var listTagName = numbered ? 'ol' : 'ul';
+    private String _createHTMLList(List<ListItem> list) {
+        return this._createHTMLList(list, false);
+    }
+    private String _createHTMLList(List<ListItem> list, boolean numbered) {
+        String listTagName = numbered ? "ol" : "ul";
 
-        var htmlList = '<'+listTagName+'>\n';
-        for (var i=0, len=list.length; i<len; i++) {
-            htmlList += '<li>' + this.format(list[i].value);
-            if (list[i].children && list[i].children.length > 0) {
-                htmlList += '\n' + this._createHTMLList(list[i].children, numbered);
+        String htmlList = "<"+listTagName+">\n";
+        for (int i=0, len=list.size(); i<len; i++) {
+            ListItem listItem = list.get(i);
+            htmlList += "<li>" + this.format(listItem.value);
+            if (!listItem.children.isEmpty()) {
+                htmlList += '\n' + this._createHTMLList(listItem.children, numbered);
             }
-            htmlList += '</li>\n';
+            htmlList += "</li>\n";
         }
-        htmlList += '</'+listTagName+'>\n';
+        htmlList += "</"+listTagName+">\n";
 
         return htmlList;
     }
 
     private String _truncateURLForDisplay(String url) {
-        var maxUrlLength = this.MAX_URL_LENGTH || 40;
+        int maxUrlLength = MAX_URL_LENGTH;
 
         if (maxUrlLength == 1) {
             return ".";
@@ -473,43 +518,100 @@ public class WikiFormatter {
             return "..";
         }
 
-        if (maxUrlLength > 0 && maxUrlLength < url.length) {
-            var beginningLength = Math.round((maxUrlLength-3) * 3.0/4);
-            var endingLength = maxUrlLength - beginningLength - 3; // 3 is for the "..."
+        if (maxUrlLength > 0 && maxUrlLength < url.length()) {
+            int beginningLength = (int)Math.round((maxUrlLength-3) * 3.0/4);
+            int endingLength = maxUrlLength - beginningLength - 3; // 3 is for the "..."
             if (beginningLength > 1 && endingLength == 0) {
                 beginningLength--;
                 endingLength = 1;
             }
-            return url.substring(0, beginningLength) + "..." + url.substring(url.length - endingLength);
+            return url.substring(0, beginningLength) + "..." + url.substring(url.length() - endingLength);
         }
 
         return url;
     }
 
     private boolean _isCompleteURL(String input, int i) {
-        var inputChunk = input.substr(i, 10);
-        return /^(sftp|ftp|http|https|file):\/\//.test(inputChunk);
+        //var inputChunk = input.substr(i, 10);
+        //return /^(sftp|ftp|http|https|file):\/\//.test(inputChunk);
+        return input.startsWith("sftp://", i) ||
+            input.startsWith("ftp://", i) ||
+            input.startsWith("http://", i) ||
+            input.startsWith("https://", i) ||
+            input.startsWith("file://", i);
     }
 
     private boolean _isIncompleteURL(String input, int i) {
-        var inputChunk = input.substr(i, 5);
-        return /^www\.\S/.test(inputChunk);
+        //var inputChunk = input.substr(i, 5);
+        //return /^www\.\S/.test(inputChunk);
+        return input.startsWith("www.", i);
     }
 
     private String _toURL(String input, int i) {
-        var urlCharRegex = /[a-zA-Z0-9\$\-_\.\+\!\*'\(\),;\/\?:@=&#%]/,
-            urlEndingCharRegex = /[a-zA-Z0-9\/]/,
-            len = input.length, index = i;
+        Pattern urlCharRegex = Pattern.compile("[a-zA-Z0-9\\$\\-_\\.\\+\\!\\*'\\(\\),;\\/\\?:@=&#%]");
+        Pattern urlEndingCharRegex = Pattern.compile("[a-zA-Z0-9\\/]");
+        int len = input.length(), index = i;
 
-        while (index < len && urlCharRegex.test(input.charAt(index))) {
+        while (index < len && urlCharRegex.matcher(""+this.charAt(input, index)).find()) {
             index++;
         }
         index--;
-        while (index >= 0 && !urlEndingCharRegex.test(input.charAt(index))) {
+        while (index >= 0 && !urlEndingCharRegex.matcher(""+this.charAt(input, index)).find()) {
             index--;
         }
 
         return input.substring(i, index+1);
+    }
+
+    /**
+     * Attempt at replicated JavaScript String.charAt()
+     * JavaScript return an empty character when the index is out of bounds.
+     * Java crash with an "StringIndexOutOfBoundsException" exception.
+     */
+    protected char charAt(String str, int index) {
+        if (index < 0 || index >= str.length()) {
+            return EMPTY_CHAR;
+        }
+        return str.charAt(index);
+    }
+
+    /**
+     * Attempt at replicated JavaScript array.shift()
+     * Usage:
+     *     String element = array[0]; array = this.arrayShift(array);
+     */
+    protected String[] arrayShift(String[] array) {
+        if (array.length <= 0) {
+            return null;
+        }
+
+        return Arrays.copyOfRange(array, 1, array.length);
+    }
+
+    /**
+     * Attempt at replicated JavaScript array.pop()
+     * Usage:
+     *     String element = array[array.length-1]; array = this.arrayPop(array);
+     */
+    protected String[] arrayPop(String[] array) {
+        if (array.length <= 0) {
+            return null;
+        }
+
+        return Arrays.copyOfRange(array, 0, array.length - 1);
+    }
+
+    protected boolean isBlank(String str) {
+        return (str == null || str.isEmpty());
+    }
+
+    protected boolean isNaN(String str) {
+        try {
+            double value = Double.parseDouble(str);
+            return Double.isNaN(value);
+        } catch(Exception ex) {
+            return true;
+        }
     }
 
     private static class Tag {
@@ -521,6 +623,19 @@ public class WikiFormatter {
         public Tag(char type, int index) {
             this.type = type;
             this.index = index;
+        }
+    }
+
+    private static class ListItem {
+        public String value;
+        public List<ListItem> children;
+
+        public ListItem() {
+            this.children = new ArrayList<ListItem>();
+        }
+        public ListItem(String value) {
+            this();
+            this.value = value;
         }
     }
 }

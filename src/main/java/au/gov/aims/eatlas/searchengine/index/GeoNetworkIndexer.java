@@ -261,7 +261,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
                     // Create the thumbnail if it's missing or outdated
                     GeoNetworkRecord oldRecord = this.safeGet(client, geoNetworkRecord.getId());
-                    if (geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getThumbnailTTL())) {
+                    if (geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
                         try {
                             File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), geoNetworkRecord.getId());
                             if (cachedThumbnailFile != null) {

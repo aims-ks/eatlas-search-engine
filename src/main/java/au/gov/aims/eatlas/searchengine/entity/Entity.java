@@ -148,9 +148,7 @@ public abstract class Entity {
     }
 
     // Make sure thumbnailUrl is set before calling this.
-    public boolean isThumbnailOutdated(Entity oldEntity, Long thumbnailTTL) {
-        boolean reDownloadBrokenThumbnails = false;
-
+    public boolean isThumbnailOutdated(Entity oldEntity, Long thumbnailTTL, Long brokenThumbnailTTL) {
         if (oldEntity == null) {
             // No old entity, assume it's a new entry, the thumbnail was never downloaded
             return true;
@@ -179,17 +177,21 @@ public abstract class Entity {
         long thumbnailIndexAgeMs = now - thumbnailLastIndexed;
         long thumbnailIndexAgeDays = thumbnailIndexAgeMs / DAY_MS;
 
-        if (thumbnailIndexAgeDays >= thumbnailTTL) {
-            return true;
-        }
-
         // Lets check if the file on disk exists
         String cachedThumbnailFilename = oldEntity.getCachedThumbnailFilename();
         if (cachedThumbnailFilename == null) {
-            // The last download attempt was less than 30 days ago,
-            // and there was not thumbnail to download (or downlaod failed).
-            // Lets wait before trying again.
-            return reDownloadBrokenThumbnails;
+            // Broken thumbnail
+
+            // The last download attempt was less more 1 day ago (broken thumbnail TTL),
+            // and there was no thumbnail to download (or download failed).
+            return thumbnailIndexAgeDays >= brokenThumbnailTTL;
+
+        } else {
+            // Cached thumbnail
+            // The thumbnail was downloaded more than 30 day ago (thumbnail TTL),
+            if (thumbnailIndexAgeDays >= thumbnailTTL) {
+                return true;
+            }
         }
 
         File thumbnailFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);

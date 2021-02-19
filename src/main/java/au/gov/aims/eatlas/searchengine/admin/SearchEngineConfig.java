@@ -35,7 +35,9 @@ import java.util.List;
 
 public class SearchEngineConfig {
     private static final Logger LOGGER = Logger.getLogger(SearchEngineConfig.class.getName());
+
     private static final long DEFAULT_GLOBAL_THUMBNAIL_TTL = 30; // TTL, in days
+    private static final long DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL = 1; // TTL, in days
 
     // CONFIG_FILE_PROPERTY can be set in many different ways (same as GeoServer)
     // * Servlet context parameter (web.xml)
@@ -54,6 +56,7 @@ public class SearchEngineConfig {
 
     // Values saved in the config file
     private long globalThumbnailTTL = DEFAULT_GLOBAL_THUMBNAIL_TTL; // TTL, in days
+    private long globalBrokenThumbnailTTL = DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL; // TTL, in days
     private String imageCacheDirectory;
     private List<AbstractIndexer> indexers;
 
@@ -167,6 +170,14 @@ public class SearchEngineConfig {
 
     public void setGlobalThumbnailTTL(Long globalThumbnailTTL) {
         this.globalThumbnailTTL = globalThumbnailTTL == null ? DEFAULT_GLOBAL_THUMBNAIL_TTL : globalThumbnailTTL;
+    }
+
+    public long getGlobalBrokenThumbnailTTL() {
+        return this.globalBrokenThumbnailTTL;
+    }
+
+    public void setGlobalBrokenThumbnailTTL(Long globalBrokenThumbnailTTL) {
+        this.globalBrokenThumbnailTTL = globalBrokenThumbnailTTL == null ? DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL : globalBrokenThumbnailTTL;
     }
 
     // Find config file
@@ -290,12 +301,14 @@ public class SearchEngineConfig {
 
         return new JSONObject()
             .put("globalThumbnailTTL", this.globalThumbnailTTL)
+            .put("globalBrokenThumbnailTTL", this.globalBrokenThumbnailTTL)
             .put("imageCacheDirectory", this.imageCacheDirectory)
             .put("indexers", jsonIndexers);
     }
 
     private void loadJSON(JSONObject json) {
         this.globalThumbnailTTL = json.optLong("globalThumbnailTTL", DEFAULT_GLOBAL_THUMBNAIL_TTL);
+        this.globalBrokenThumbnailTTL = json.optLong("globalBrokenThumbnailTTL", DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL);
         this.imageCacheDirectory = json.optString("imageCacheDirectory", null);
 
         JSONArray jsonIndexers = json.optJSONArray("indexers");
