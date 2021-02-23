@@ -54,7 +54,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Path("/search/v1")
@@ -271,16 +273,15 @@ public class Search {
      *   are based on the same query.
      */
     private static SearchSourceBuilder getBaseSearchQuery(String needle) {
+        // Search in document and title by default.
+        // User can still specified a field using "field:keyword".
+        // Example: dataSourceName:legacy
+        Map<String, Float> defaultSearchFields = new HashMap<String, Float>();
+        defaultSearchFields.put("title", 2f);
+        defaultSearchFields.put("document", 1f);
+
         return new SearchSourceBuilder()
-            // Search in document OR title
-//            .query(QueryBuilders.boolQuery()
-//                .should(QueryBuilders.matchQuery("title", needle).boost(2))
-//                .should(QueryBuilders.matchQuery("document", needle)))
-
-            .query(QueryBuilders.boolQuery()
-                .should(QueryBuilders.queryStringQuery(needle).defaultField("title").boost(2))
-                .should(QueryBuilders.queryStringQuery(needle).defaultField("document")))
-
+            .query(QueryBuilders.queryStringQuery(needle).fields(defaultSearchFields))
             .timeout(new TimeValue(60, TimeUnit.SECONDS));
     }
 
