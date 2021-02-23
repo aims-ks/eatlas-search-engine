@@ -300,7 +300,7 @@ public class AtlasMapperLayer extends Entity {
     public static AtlasMapperLayer load(JSONObject json) {
         AtlasMapperLayer layer = new AtlasMapperLayer();
         layer.loadJSON(json);
-        layer.dataSourceName = json.optString("dataSourceName", null);
+        layer.dataSourceName = json.optString("datasource", null);
 
         return layer;
     }
@@ -308,6 +308,6 @@ public class AtlasMapperLayer extends Entity {
     @Override
     public JSONObject toJSON() {
         return super.toJSON()
-            .put("dataSourceName", this.dataSourceName);
+            .put("datasource", this.dataSourceName);
     }
 }

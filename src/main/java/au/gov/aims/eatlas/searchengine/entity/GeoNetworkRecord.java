@@ -360,7 +360,7 @@ public class GeoNetworkRecord extends Entity {
         GeoNetworkRecord record = new GeoNetworkRecord();
         record.loadJSON(json);
         record.parentUUID = json.optString("parentUUID", null);
-        record.parentTitle = json.optString("parentTitle", null);
+        record.parentTitle = json.optString("parent", null);
 
         return record;
     }
@@ -369,7 +369,7 @@ public class GeoNetworkRecord extends Entity {
     public JSONObject toJSON() {
         return super.toJSON()
             .put("parentUUID", this.parentUUID)
-            .put("parentTitle", this.parentTitle);
+            .put("parent", this.parentTitle);
     }
 
 
