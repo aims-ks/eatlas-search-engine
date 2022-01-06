@@ -26,17 +26,19 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Missing from Java 9+ -->
+        <!-- Missing jars from some version of Java (9 and 10) -->
+        <!--
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.3.0</version>
+            <version>2.3.1</version>
         </dependency>
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
         </dependency>
+        -->
 
         <!-- REST API framework -->
         <dependency>
@@ -56,13 +58,13 @@
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
-            <version>7.9.1</version>
+            <version>7.16.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.13.3</version>
+            <version>2.17.0</version>
         </dependency>
 
         <dependency>
@@ -74,21 +76,21 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.8.0</version>
+            <version>2.11.0</version>
         </dependency>
 
         <!-- JSoup HTML parser -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.13.1</version>
+            <version>1.14.3</version>
         </dependency>
 
         <!-- Apache PDF parser -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>2.0.22</version>
+            <version>2.0.24</version>
         </dependency>
 
         <!-- Apache text utils, to escape HTML -->
@@ -111,7 +113,7 @@
         <dependency>
             <groupId>org.elasticsearch.test</groupId>
             <artifactId>framework</artifactId>
-            <version>7.9.1</version>
+            <version>7.16.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
