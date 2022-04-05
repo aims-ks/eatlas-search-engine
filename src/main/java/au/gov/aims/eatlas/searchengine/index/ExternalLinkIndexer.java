@@ -22,8 +22,8 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.index.IndexResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
+public class ExternalLinkIndexer extends AbstractIndexer {
     private static final Logger LOGGER = Logger.getLogger(ExternalLinkIndexer.class.getName());
 
     // List of "title, url, thumbnail"
@@ -135,7 +135,7 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                     entity.setThumbnailUrl(thumbnailUrl);
 
                     // Create the thumbnail if it's missing or outdated
-                    ExternalLink oldEntity = this.safeGet(client, entity.getId());
+                    ExternalLink oldEntity = (ExternalLink)this.safeGet(client, entity.getId());
                     if (entity.isThumbnailOutdated(oldEntity, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
                         try {
                             File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), null);
@@ -170,10 +170,10 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                         try {
                             IndexResponse indexResponse = this.index(client, entity);
 
-                            LOGGER.debug(String.format("[%d/%d] Indexing external URL: %s, status: %d",
+                            LOGGER.debug(String.format("[%d/%d] Indexing external URL: %s, index response status: %s",
                                     current, total,
                                     entity.getId(),
-                                    indexResponse.status().getStatus()));
+                                    indexResponse.result()));
                         } catch(Exception ex) {
                             LOGGER.warn(String.format("Exception occurred while indexing an external URL: %s", url), ex);
                         }

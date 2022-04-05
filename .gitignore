@@ -4,3 +4,6 @@
 
 # Maven files
 target/
+
+# Ignore the symbolic link, placed in here to make things easier to find
+data/

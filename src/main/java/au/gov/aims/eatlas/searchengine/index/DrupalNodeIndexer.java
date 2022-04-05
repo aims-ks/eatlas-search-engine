@@ -22,8 +22,8 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.index.IndexResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -32,7 +32,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
+public class DrupalNodeIndexer extends AbstractIndexer {
     private static final Logger LOGGER = Logger.getLogger(DrupalNodeIndexer.class.getName());
 
     // Number of Drupal node to index per page.
@@ -139,7 +139,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                                 drupalNode.setThumbnailUrl(thumbnailUrl);
 
                                 // Create the thumbnail if it's missing or outdated
-                                DrupalNode oldNode = this.safeGet(client, drupalNode.getId());
+                                DrupalNode oldNode = (DrupalNode)this.safeGet(client, drupalNode.getId());
                                 if (drupalNode.isThumbnailOutdated(oldNode, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
                                     try {
                                         File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), drupalNode.getId());
@@ -177,10 +177,10 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
                         // NOTE: We don't know how many nodes (or pages or nodes) there is.
                         //     We index until we reach the bottom of the barrel...
-                        LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal node ID: %s, status: %d",
+                        LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal node ID: %s, index response status: %s",
                                 page+1, i+1, nodeFound,
                                 drupalNode.getNid(),
-                                indexResponse.status().getStatus()));
+                                indexResponse.result()));
                     } catch(Exception ex) {
                         LOGGER.warn(String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", drupalNode.getId(), this.drupalNodeType), ex);
                     }

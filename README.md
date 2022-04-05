@@ -1,3 +1,15 @@
+TODO:
+- Upgrade deprecated class in:
+  au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient.RestHighLevelClient
+
+- Fix tests
+
+- Upgrade libs in POM
+
+- Fix missing index bug
+
+- Put config in Drupal module config
+
 ## What is the eAtlasSearchEngine
 
 ## Indexation library
@@ -20,7 +32,9 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
 ## Personal notes
 
 - TODO list, HOWTO, what I have learn, etc:  
-  ```~/Desktop/projects/eAtlas-redesign/2020-Drupal9/README.md```
+  ```
+  ~/Desktop/projects/eAtlas-redesign/2020-Drupal9/README.md
+  ```
 
 - Starting the search engine:
   ```
@@ -34,8 +48,31 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   $ docker-compose up
   ```
 
+- Re-index:
+
+  There is no API for doing this at the moment.
+  1. Open the project in IntelliJ
+  2. Find the class `au.gov.aims.eatlas.searchengine.Main`
+  3. Right-click - Run 'Main.main()'
+
+  The config file is in:
+  ```
+  /home/glafond/Desktop/projects/tomcat/etc-tomcat-Catalina-data/eatlas-search-engine/eatlas_search_engine.json
+  ```
+
+- Delete index:
+
+  ```
+  $ docker-compose down
+  $ docker-compose up
+  ```
+
 - Testing search engine:  
-  ```http://localhost:8080/eatlas-search-engine/public/search/v1?q=lorem&idx=eatlas_article```
+  ```
+  http://localhost:8080/eatlas-search-engine/public/search/v1?q=lorem&idx=eatlas_article
+  ```
 
 - Drupal website:  
-  ```http://localhost:9090/```
+  ```
+  http://localhost:9090/
+  ```

@@ -21,22 +21,24 @@ package au.gov.aims.eatlas.searchengine;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
+import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
-import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import au.gov.aims.eatlas.searchengine.rest.Index;
+import au.gov.aims.eatlas.searchengine.rest.Search;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.CountResponse;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
@@ -44,49 +46,55 @@ public class Main {
     public static void main(String... args) throws Exception {
         boolean fullHarvest = true;
 
-        // Changed to work with Tomcat9, might not work with main (may require file right changes)
         File configFile = new File("/var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/eatlas_search_engine.json");
 
         SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json");
         Index.internalReindex(config, fullHarvest);
 
-        //Main.testElasticSearch();
+
         //Main.loadDummyExternalLinks(15000);
+
+        //Main.doNothing();
     }
 
-    private static void testElasticSearch() throws IOException {
-        // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/java-rest-high-document-index.html
-        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http"))))) {
+    private static void doNothing() throws IOException {
+        // Create the low-level client
+        RestClient restClient = RestClient.builder(
+                new HttpHost("localhost", 9200, "http"),
+                new HttpHost("localhost", 9300, "http")
+            ).build();
 
-            Map<String, Object> jsonMap = new HashMap<>();
-            jsonMap.put("user", "kimchy");
-            jsonMap.put("postDate", new Date());
-            jsonMap.put("message", "trying out Elasticsearch");
+        // Create the transport with a Jackson mapper
+        ElasticsearchTransport transport = new RestClientTransport(
+            restClient, new JacksonJsonpMapper());
 
-            IndexRequest indexRequest = new IndexRequest("posts")
-                .id("1")
-                .source(jsonMap);
+        // And create the API client
+        ElasticsearchClient rawClient = new ElasticsearchClient(transport);
 
-            IndexResponse indexResponse = client.index(indexRequest);
-
-            String index = indexResponse.getIndex();
-            String id = indexResponse.getId();
-
-            System.out.println("index: " + index);
-            System.out.println("id: " + id);
-        }
+        rawClient._transport().close();
+        rawClient.shutdown();
     }
 
     private static void loadDummyExternalLinks(int count) throws IOException {
         String index = "eatlas_dummy";
 
-        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http"))))) {
+        // Create the low-level client
+        RestClient restClient = RestClient.builder(
+                new HttpHost("localhost", 9200, "http"),
+                new HttpHost("localhost", 9300, "http")
+            ).build();
+
+        // Create the transport with a Jackson mapper
+        ElasticsearchTransport transport = new RestClientTransport(
+            restClient, new JacksonJsonpMapper());
+
+        // And create the API client
+        ElasticsearchClient rawClient = new ElasticsearchClient(transport);
+
+        try(ESClient client = new ESRestHighLevelClient(rawClient)) {
+
+            CountResponse countResponseBefore = client.count(Search.getSearchSummaryRequest("Lorem", index));
+            System.out.println("Count before: " + countResponseBefore.count());
 
             for (int i=0; i<count; i++) {
                 ExternalLink externalLink = new ExternalLink(
@@ -99,14 +107,19 @@ public class Main {
                     "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
                     "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>");
 
-                IndexRequest indexRequest = new IndexRequest(index)
-                    .id(externalLink.getId())
-                    .source(IndexUtils.JSONObjectToMap(externalLink.toJSON()));
+                IndexRequest<Entity> indexRequest = new IndexRequest.Builder<Entity>()
+                        .index(index)
+                        .id(externalLink.getId())
+                        .document(externalLink)
+                        .build();
 
                 IndexResponse indexResponse = client.index(indexRequest);
 
-                System.out.println(String.format("Indexing dummy URL: %s, status: %d", externalLink.getId(), indexResponse.status().getStatus()));
+                System.out.println(String.format("Indexing dummy URL: %s, status: %s", externalLink.getId(), indexResponse.result()));
             }
+
+            CountResponse countResponseAfter = client.count(Search.getSearchSummaryRequest("Lorem", index));
+            System.out.println("Count after: " + countResponseAfter.count());
         }
     }
 }

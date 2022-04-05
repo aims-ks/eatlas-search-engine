@@ -22,9 +22,9 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
 import jakarta.ws.rs.core.MultivaluedMap;
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.index.IndexResponse;
 import org.glassfish.jersey.uri.UriComponent;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,7 +38,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
+public class AtlasMapperIndexer extends AbstractIndexer {
     private static final Logger LOGGER = Logger.getLogger(AtlasMapperIndexer.class.getName());
     private static final int THUMBNAIL_MAX_WIDTH = 300;
     private static final int THUMBNAIL_MAX_HEIGHT = 200;
@@ -161,7 +161,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                     this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
 
             // Create the thumbnail if it's missing or outdated
-            AtlasMapperLayer oldLayer = this.safeGet(client, atlasMapperLayerId);
+            AtlasMapperLayer oldLayer = (AtlasMapperLayer)this.safeGet(client, atlasMapperLayerId);
             if (layerEntity.isThumbnailOutdated(oldLayer, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
                 try {
                     File cachedThumbnailFile = this.createLayerThumbnail(atlasMapperLayerId, baseLayerId, jsonLayersConfig, jsonMainConfig);
@@ -185,10 +185,10 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             try {
                 IndexResponse indexResponse = this.index(client, layerEntity);
 
-                LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, status: %d",
+                LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, index response status: %s",
                         current, total,
                         atlasMapperLayerId,
-                        indexResponse.status().getStatus()));
+                        indexResponse.result()));
             } catch(Exception ex) {
                 LOGGER.warn(String.format("Exception occurred while indexing an AtlasMapper layer: %s", atlasMapperLayerId), ex);
             }

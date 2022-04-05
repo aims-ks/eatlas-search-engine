@@ -18,8 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.search;
 
-import org.elasticsearch.common.text.Text;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import au.gov.aims.eatlas.searchengine.entity.Entity;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ import java.util.Map;
 public class SearchResult {
     // URL to follow to access the indexed document
     private String id;
-    private JSONObject entity;
+    private Entity entity;
 
     private List<String> highlights;
 
@@ -41,7 +40,7 @@ public class SearchResult {
 
     // Lucene document score
     //   https://lucene.apache.org/core/8_6_2/core/org/apache/lucene/search/ScoreDoc.html
-    private float score;
+    private Double score;
 
     public String getId() {
         return this.id;
@@ -52,11 +51,11 @@ public class SearchResult {
         return this;
     }
 
-    public JSONObject getEntity() {
+    public Entity getEntity() {
         return this.entity;
     }
 
-    public SearchResult setEntity(JSONObject entity) {
+    public SearchResult setEntity(Entity entity) {
         this.entity = entity;
         return this;
     }
@@ -74,14 +73,11 @@ public class SearchResult {
     }
 
     // Helper
-    public SearchResult addHighlights(Map<String, HighlightField> highlightsMap) {
+    public SearchResult addHighlights(Map<String, List<String>> highlightsMap) {
         if (highlightsMap != null) {
-            for (HighlightField highlightField : highlightsMap.values()) {
-                Text[] fragments = highlightField.fragments();
-                if (fragments != null) {
-                    for (Text fragment : fragments) {
-                        this.addHighlight(fragment.string());
-                    }
+            for (List<String> highlights : highlightsMap.values()) {
+                for (String highlight : highlights) {
+                    this.addHighlight(highlight);
                 }
             }
         }
@@ -97,11 +93,11 @@ public class SearchResult {
         return this;
     }
 
-    public float getScore() {
+    public Double getScore() {
         return this.score;
     }
 
-    public SearchResult setScore(float score) {
+    public SearchResult setScore(Double score) {
         this.score = score;
         return this;
     }
@@ -111,7 +107,7 @@ public class SearchResult {
             .put("id", this.id)
             .put("index", this.index)
             .put("score", this.score)
-            .put("entity", this.entity)
+            .put("entity", this.entity.toJSON())
             .put("highlights", this.highlights);
     }
 

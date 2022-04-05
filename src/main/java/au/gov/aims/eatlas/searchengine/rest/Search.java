@@ -20,11 +20,27 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
+import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.search.ErrorMessage;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.IndicesOptions;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.CountRequest;
+import co.elastic.clients.elasticsearch.core.CountResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Highlight;
+import co.elastic.clients.elasticsearch.core.search.HighlightField;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import co.elastic.clients.util.ObjectBuilder;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -36,28 +52,14 @@ import jakarta.ws.rs.core.Response;
 import org.apache.http.HttpHost;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.core.CountRequest;
-import org.elasticsearch.client.core.CountResponse;
-import org.elasticsearch.core.TimeValue;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 @Path("/search/v1")
 public class Search {
@@ -115,10 +117,20 @@ public class Search {
 
         SearchResults results = new SearchResults();
 
-        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http"))))) {
+        // Create the low-level client
+        RestClient restClient = RestClient.builder(
+                new HttpHost("localhost", 9200, "http"),
+                new HttpHost("localhost", 9300, "http")
+            ).build();
+
+        // Create the transport with a Jackson mapper
+        ElasticsearchTransport transport = new RestClientTransport(
+            restClient, new JacksonJsonpMapper());
+
+        // And create the API client
+        ElasticsearchClient rawClient = new ElasticsearchClient(transport);
+
+        try(ESClient client = new ESRestHighLevelClient(rawClient)) {
 
             String[] idxArray = idx.toArray(new String[0]);
 
@@ -169,7 +181,7 @@ public class Search {
         long totalCount = 0;
         for (String index : indexes) {
             CountResponse response = client.count(Search.getSearchSummaryRequest(needle, index));
-            long count = response.getCount();
+            long count = response.count();
             if (count > 0) {
                 totalCount += count;
 
@@ -186,13 +198,17 @@ public class Search {
     }
 
     public static CountRequest getSearchSummaryRequest(String needle, String ... indexes) {
-        SearchSourceBuilder sourceBuilder = Search.getBaseSearchQuery(needle)
-            .fetchSource(false);
+        // Create a search query here
+        SearchRequest.Builder sourceBuilder = Search.getBaseSearchQuery(needle);
+                // TODO IMPORTANT! I have no idea how to do this...
+                //.fetchSource(false);
 
-        return new CountRequest()
-            .indices(indexes)
-            .indicesOptions(Search.getSearchIndicesOptions())
-            .query(sourceBuilder.query());
+        return new CountRequest.Builder()
+                .index(Arrays.asList(indexes))
+                .ignoreUnavailable(true)
+                .allowNoIndices(true)
+                .query(sourceBuilder.build().query())
+                .build();
     }
 
     /**
@@ -221,23 +237,23 @@ public class Search {
     public static List<SearchResult> search(ESClient client, String needle, int from, int size, String ... indexes)
             throws IOException {
 
-        SearchResponse response = client.search(Search.getSearchRequest(needle, from, size, indexes));
+        SearchResponse<Entity> response = client.search(Search.getSearchRequest(needle, from, size, indexes));
 
         //LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", indexes %s:%n%s",
         //    needle, attribute, Arrays.toString(indexes), response.toString()));
 
         List<SearchResult> results = new ArrayList<>();
 
-        SearchHits hits = response.getHits();
-        for (SearchHit hit : hits.getHits()) {
-            JSONObject jsonEntity = new JSONObject(hit.getSourceAsMap());
+        HitsMetadata<Entity> hits = response.hits();
+        for (Hit<Entity> hit : hits.hits()) {
+            Entity entity = hit.source();
 
             results.add(new SearchResult()
-                .setId(hit.getId())
-                .setIndex(hit.getIndex())
-                .setScore(hit.getScore())
-                .addHighlights(hit.getHighlightFields())
-                .setEntity(jsonEntity)
+                .setId(entity.getId())
+                .setIndex(entity.getIndex())
+                .setScore(hit.score())
+                .addHighlights(hit.highlight())
+                .setEntity(entity)
             );
         }
 
@@ -250,21 +266,30 @@ public class Search {
      */
     public static SearchRequest getSearchRequest(String needle, int from, int size, String ... indexes) {
         // Used to highlight search results in the field that was used with the search
+        /*
         HighlightBuilder highlightBuilder = new HighlightBuilder()
             .preTags("<strong>")
             .postTags("</strong>")
             .field("document");
+        */
 
-        SearchSourceBuilder sourceBuilder = Search.getBaseSearchQuery(needle)
-            .from(from) // Used to continue the search (get next page)
-            .size(size) // Number of results to return. Default = 10
-            .fetchSource(true)
-            .highlighter(highlightBuilder);
-
-        return new SearchRequest()
-            .indices(indexes)
-            .indicesOptions(Search.getSearchIndicesOptions())
-            .source(sourceBuilder);
+        return Search.getBaseSearchQuery(needle)
+                .from(from) // Used to continue the search (get next page)
+                .size(size) // Number of results to return. Default = 10
+                //.fetchSource(true) // TODO
+                .highlight(new Function<Highlight.Builder, ObjectBuilder<Highlight>>() {
+                    @Override
+                    public ObjectBuilder<Highlight> apply(Highlight.Builder builder) {
+                        return builder
+                                .preTags("<strong>")
+                                .postTags("</strong>")
+                                .fields("document", new HighlightField.Builder().field("document").build());
+                    }
+                })
+                .index(Arrays.asList(indexes))
+                .ignoreUnavailable(true)
+                .allowNoIndices(true)
+                .build();
     }
 
     /**
@@ -272,17 +297,28 @@ public class Search {
      * This is done here to ensure both the search and the summary
      *   are based on the same query.
      */
-    private static SearchSourceBuilder getBaseSearchQuery(String needle) {
+    private static SearchRequest.Builder getBaseSearchQuery(String needle) {
         // Search in document and title by default.
-        // User can still specified a field using "field:keyword".
+        // User can still specify a field using "field:keyword".
         // Example: dataSourceName:legacy
+        /*
         Map<String, Float> defaultSearchFields = new HashMap<String, Float>();
         defaultSearchFields.put("title", 2f);
         defaultSearchFields.put("document", 1f);
+        */
+        List<String> defaultSearchFields = new ArrayList<>();
+        defaultSearchFields.add("title");
+        defaultSearchFields.add("document");
 
+        return new SearchRequest.Builder()
+                .query(QueryBuilders.queryString().query(needle).fields(defaultSearchFields).build()._toQuery())
+                .timeout("60s"); // Wild guess, there is no doc, no example for this!!
+
+/*
         return new SearchSourceBuilder()
             .query(QueryBuilders.queryStringQuery(needle).fields(defaultSearchFields))
             .timeout(new TimeValue(60, TimeUnit.SECONDS));
+*/
     }
 
     /**
@@ -292,11 +328,16 @@ public class Search {
      *   index.
      */
     private static IndicesOptions getSearchIndicesOptions() {
-        return IndicesOptions.fromOptions(
+        /*
             true, // ignoreUnavailable
             true,  // allowNoIndices
             false, // expandToOpenIndices
             false // expandToCloseIndices
-        );
+        */
+
+        return new IndicesOptions.Builder()
+                .ignoreUnavailable(true)
+                .allowNoIndices(true)
+                .build();
     }
 }

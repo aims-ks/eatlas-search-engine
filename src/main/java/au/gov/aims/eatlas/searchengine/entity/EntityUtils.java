@@ -40,7 +40,7 @@ import java.util.Map;
 public class EntityUtils {
     private static final Logger LOGGER = Logger.getLogger(EntityUtils.class.getName());
 
-    private static final int JSOUP_RETRY = 5;
+    private static final int JSOUP_RETRY = 2;//5;
     // NOTE: The delay is incremental: 5, 10, 20, 40, 80...
     private static final int JSOUP_RETRY_INITIAL_DELAY = 5; // In seconds
 

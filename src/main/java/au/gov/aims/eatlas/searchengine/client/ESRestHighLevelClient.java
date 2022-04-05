@@ -18,62 +18,64 @@
  */
 package au.gov.aims.eatlas.searchengine.client;
 
-import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
-import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.core.CountRequest;
-import org.elasticsearch.client.core.CountResponse;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryRequest;
+import au.gov.aims.eatlas.searchengine.entity.Entity;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.CountRequest;
+import co.elastic.clients.elasticsearch.core.CountResponse;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
+import co.elastic.clients.elasticsearch.core.GetRequest;
+import co.elastic.clients.elasticsearch.core.GetResponse;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.indices.RefreshRequest;
+import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class ESRestHighLevelClient implements ESClient {
-    private RestHighLevelClient client;
+    private final ElasticsearchClient client;
 
-    public ESRestHighLevelClient(RestHighLevelClient client) {
+    public ESRestHighLevelClient(ElasticsearchClient client) {
         this.client = client;
     }
 
     @Override
-    public IndexResponse index(IndexRequest indexRequest) throws IOException {
-        return this.client.index(indexRequest, RequestOptions.DEFAULT);
+    public IndexResponse index(IndexRequest<Entity> indexRequest) throws IOException {
+        return this.client.index(indexRequest);
     }
 
     @Override
-    public GetResponse get(GetRequest getRequest) throws IOException {
-        return this.client.get(getRequest, RequestOptions.DEFAULT);
+    public GetResponse<Entity> get(GetRequest getRequest) throws IOException {
+        return this.client.get(getRequest, Entity.class);
     }
 
     @Override
-    public SearchResponse search(SearchRequest searchRequest) throws IOException {
-        return this.client.search(searchRequest, RequestOptions.DEFAULT);
+    public SearchResponse<Entity> search(SearchRequest searchRequest) throws IOException {
+        return this.client.search(searchRequest, Entity.class);
     }
 
     @Override
     public CountResponse count(CountRequest countRequest) throws IOException {
-        return this.client.count(countRequest, RequestOptions.DEFAULT);
+        return this.client.count(countRequest);
     }
 
     @Override
-    public BulkByScrollResponse deleteByQuery(DeleteByQueryRequest deleteRequest) throws IOException {
-        return this.client.deleteByQuery(deleteRequest, RequestOptions.DEFAULT);
+    public DeleteByQueryResponse deleteByQuery(DeleteByQueryRequest deleteRequest) throws IOException {
+        return this.client.deleteByQuery(deleteRequest);
     }
 
     @Override
     public RefreshResponse refresh(String ... indices) throws IOException {
-        return this.client.indices().refresh(new RefreshRequest(indices), RequestOptions.DEFAULT);
+        return this.client.indices().refresh(new RefreshRequest.Builder().index(Arrays.asList(indices)).build());
     }
 
     @Override
     public void close() throws IOException {
-        this.client.close();
+        this.client._transport().close();
+        this.client.shutdown();
     }
 }

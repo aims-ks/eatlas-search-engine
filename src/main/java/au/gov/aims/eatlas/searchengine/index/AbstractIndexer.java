@@ -23,26 +23,31 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.Conflicts;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
+import co.elastic.clients.elasticsearch.core.GetRequest;
+import co.elastic.clients.elasticsearch.core.GetResponse;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.json.JsonData;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 
 // TODO Move search outside. Search should be allowed to be run against any number of indexes at once
-public abstract class AbstractIndexer<E extends Entity> {
+public abstract class AbstractIndexer {
     private static final Logger LOGGER = Logger.getLogger(AbstractIndexer.class.getName());
 
     private boolean enabled;
@@ -57,7 +62,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     protected abstract void internalHarvest(ESClient client, Long lastIndexed);
-    public abstract E load(JSONObject json);
+    public abstract Entity load(JSONObject json);
     public abstract JSONObject toJSON();
 
     // If full is true, re-index everything.
@@ -65,11 +70,46 @@ public abstract class AbstractIndexer<E extends Entity> {
     public void harvest(boolean full) throws Exception {
         long lastIndexedStarts = System.currentTimeMillis();
 
+/*
+
+// Create the low-level client
+RestClient restClient = RestClient.builder(
+    new HttpHost("localhost", 9200)).build();
+
+// Create the transport with a Jackson mapper
+ElasticsearchTransport transport = new RestClientTransport(
+    restClient, new JacksonJsonpMapper());
+
+// And create the API client
+ElasticsearchClient client = new ElasticsearchClient(transport);
+
+*/
+
+/*
         try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("localhost", 9200, "http"),
                         new HttpHost("localhost", 9300, "http"))))) {
 
+            this.internalHarvest(client, full ? null : this.lastIndexed);
+        }
+*/
+
+        // Create the low-level client
+        RestClient restClient = RestClient.builder(
+                new HttpHost("localhost", 9200, "http"),
+                new HttpHost("localhost", 9300, "http")
+            ).build();
+
+        // Create the transport with a Jackson mapper
+        ElasticsearchTransport transport = new RestClientTransport(
+            restClient, new JacksonJsonpMapper());
+
+        // And create the API client
+        ElasticsearchClient rawClient = new ElasticsearchClient(transport);
+
+        try(ESClient client = new ESRestHighLevelClient(rawClient)) {
+            client.refresh(this.index);
             this.internalHarvest(client, full ? null : this.lastIndexed);
         }
 
@@ -190,7 +230,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         return this.brokenThumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalBrokenThumbnailTTL() : this.brokenThumbnailTTL;
     }
 
-    public IndexResponse index(ESClient client, E entity) throws IOException {
+    public IndexResponse index(ESClient client, Entity entity) throws IOException {
         entity.setLastIndexed(System.currentTimeMillis());
         return client.index(this.getIndexRequest(entity));
     }
@@ -225,12 +265,12 @@ public abstract class AbstractIndexer<E extends Entity> {
         DeleteByQueryRequest deleteRequest = this.getDeleteOldItemsRequest(lastIndexed);
 
         // Delete old records
-        long deleted = 0;
+        Long deleted = 0L;
         try {
-            BulkByScrollResponse response = client.deleteByQuery(deleteRequest);
+            DeleteByQueryResponse response = client.deleteByQuery(deleteRequest);
 
             if (response != null) {
-                deleted = response.getDeleted();
+                deleted = response.deleted();
             }
         } catch(Exception ex) {
             LOGGER.error(String.format("Exception occurred while deleting old indexed entities in search index: %s", this.index), ex);
@@ -273,15 +313,11 @@ public abstract class AbstractIndexer<E extends Entity> {
         return deleted;
     }
 
-    public E get(ESClient client, String id) throws IOException {
-        JSONObject jsonEntity = AbstractIndexer.get(client, this.index, id);
-        if (jsonEntity != null) {
-            return this.load(jsonEntity);
-        }
-        return null;
+    public Entity get(ESClient client, String id) throws IOException {
+        return AbstractIndexer.get(client, this.index, id);
     }
 
-    public E safeGet(ESClient client, String id) {
+    public Entity safeGet(ESClient client, String id) {
         try {
             return this.get(client, id);
         } catch(Exception ex) {
@@ -293,43 +329,47 @@ public abstract class AbstractIndexer<E extends Entity> {
         return null;
     }
 
-    public static JSONObject get(ESClient client, String index, String id) throws IOException {
-        GetResponse response = client.get(AbstractIndexer.getGetRequest(index, id));
+    public static Entity get(ESClient client, String index, String id) throws IOException {
+        GetResponse<Entity> response = client.get(AbstractIndexer.getGetRequest(index, id));
         if (response == null) {
             return null;
         }
 
-        Map<String, Object> sourceMap = response.getSource();
-        if (sourceMap == null || sourceMap.isEmpty()) {
-            return null;
-        }
-
-        return new JSONObject(response.getSource());
+        return response.source();
     }
 
     // Low level
 
-    public IndexRequest getIndexRequest(E entity) {
-        return new IndexRequest(this.getIndex())
-            .id(entity.getId())
-            .source(IndexUtils.JSONObjectToMap(entity.toJSON()));
+    public IndexRequest<Entity> getIndexRequest(Entity entity) {
+        return new IndexRequest.Builder<Entity>()
+                .index(this.getIndex())
+                .id(entity.getId())
+                .document(entity)
+                .build();
     }
 
     public static GetRequest getGetRequest(String index, String id) {
-        return new GetRequest(index)
-            .id(id);
+        return new GetRequest.Builder()
+                .index(index)
+                .id(id)
+                .build();
     }
 
     public DeleteByQueryRequest getDeleteOldItemsRequest(long olderThanLastIndexed) {
-        // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/master/java-rest-high-document-delete-by-query.html
-        DeleteByQueryRequest deleteRequest = new DeleteByQueryRequest(this.index)
-            .setQuery(QueryBuilders.rangeQuery("lastIndexed").lt(olderThanLastIndexed))
-            .setRefresh(true);
+        Query query = new Query.Builder()
+                .range(QueryBuilders.range()
+                        .field("lastIndexed")
+                        .lt(JsonData.of(olderThanLastIndexed))
+                        .build()
+                )
+                .build();
 
-        // Set "proceed" on version conflict
-        deleteRequest.setConflicts("proceed");
-
-        return deleteRequest;
+        return new DeleteByQueryRequest.Builder()
+                .index(this.index)
+                .query(query)
+                .refresh(true)
+                .conflicts(Conflicts.Proceed)
+                .build();
     }
 
     @Override

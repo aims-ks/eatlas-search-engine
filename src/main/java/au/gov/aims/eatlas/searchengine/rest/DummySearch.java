@@ -254,9 +254,9 @@ public class DummySearch {
         brokenLink.setDocument("BROKEN DOCUMENT");
         brokenLink.setLangcode("en");
         results.add(new SearchResult()
-            .setEntity(brokenLink.toJSON())
+            .setEntity(brokenLink)
             .setIndex("eatlas_broken")
-            .setScore(23)
+            .setScore(23.0)
         );
 
         DrupalNode drupalNode = new DrupalNode("eatlas_article", null);
@@ -819,9 +819,9 @@ public class DummySearch {
         drupalNode.setThumbnailUrl(new URL("https://cdn131.picsart.com/339459399004201.jpg?to=crop&r=256"));
         drupalNode.setLangcode("en");
         results.add(new SearchResult()
-            .setEntity(drupalNode.toJSON())
+            .setEntity(drupalNode)
             .setIndex("eatlas_article")
-            .setScore(23)
+            .setScore(23.0)
         );
 
         ExternalLink googleLink = new ExternalLink(
@@ -833,9 +833,9 @@ public class DummySearch {
         googleLink.setDocument("<p>Google Search, I'm Feeling Lucky.</p>");
         googleLink.setLangcode("en");
         results.add(new SearchResult()
-            .setEntity(googleLink.toJSON())
+            .setEntity(googleLink)
             .setIndex("eatlas_extlink")
-            .setScore(12)
+            .setScore(12.0)
         );
 
         for (int i=0; i<200; i++) {
@@ -870,9 +870,9 @@ public class DummySearch {
         googleSearchLink.setLangcode("en");
 
         return new SearchResult()
-            .setEntity(googleSearchLink.toJSON())
+            .setEntity(googleSearchLink)
             .setIndex("eatlas_extlink")
-            .setScore(12);
+            .setScore(12.0);
     }
 
     private SearchResult getRandomLayerSearchResult(int index) throws MalformedURLException {
@@ -892,9 +892,9 @@ public class DummySearch {
         layerEntity.setLangcode("en");
 
         return new SearchResult()
-            .setEntity(layerEntity.toJSON())
+            .setEntity(layerEntity)
             .setIndex(searchIndex)
-            .setScore(12);
+            .setScore(12.0);
     }
 
     private SearchResult getRandomMetadataSearchResult(int index) throws MalformedURLException {
@@ -920,9 +920,9 @@ public class DummySearch {
         geoNetworkRecord.setLangcode("en");
 
         return new SearchResult()
-            .setEntity(geoNetworkRecord.toJSON())
+            .setEntity(geoNetworkRecord)
             .setIndex(searchIndex)
-            .setScore(12);
+            .setScore(12.0);
     }
 
     private String getRandomWord(Random random) {
