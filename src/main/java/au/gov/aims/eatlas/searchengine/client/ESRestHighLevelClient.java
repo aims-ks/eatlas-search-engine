@@ -19,11 +19,12 @@
 package au.gov.aims.eatlas.searchengine.client;
 
 import au.gov.aims.eatlas.searchengine.entity.Entity;
-import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.analysis.Analyzer;
-import co.elastic.clients.elasticsearch._types.analysis.StandardAnalyzer;
-import co.elastic.clients.elasticsearch._types.analysis.TokenFilter;
+import co.elastic.clients.elasticsearch._types.analysis.CustomAnalyzer;
+import co.elastic.clients.elasticsearch._types.mapping.Property;
+import co.elastic.clients.elasticsearch._types.mapping.TextProperty;
+import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
@@ -36,8 +37,9 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
+import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
+import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.elasticsearch.indices.ExistsRequest;
-import co.elastic.clients.elasticsearch.indices.IndexSettingBlocks;
 import co.elastic.clients.elasticsearch.indices.IndexSettings;
 import co.elastic.clients.elasticsearch.indices.IndexSettingsAnalysis;
 import co.elastic.clients.elasticsearch.indices.RefreshRequest;
@@ -61,27 +63,81 @@ public class ESRestHighLevelClient implements ESClient {
         return existsResponse.value();
     }
 
+    // Temporary method, to allow me to reset the index.
+    public DeleteIndexResponse deleteIndex(String indexName) throws IOException {
+        if (this.indexExists(indexName)) {
+            DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(indexName).build();
+            return this.client.indices().delete(deleteIndexRequest);
+        }
+        return null;
+    }
+
     @Override
     public CreateIndexResponse createIndex(String indexName) throws IOException {
-        // TODO Setup English Stemming
-        // https://www.elastic.co/guide/en/elasticsearch/reference/current/stemming.html
-
         if (!this.indexExists(indexName)) {
-            CreateIndexRequest createIndexRequest = new CreateIndexRequest.Builder()
-                    .index(indexName)
-    //                .settings(IndexSettings) // TODO There should be pre-configured settings for English Stemming
-    /*
-                    .settings(new IndexSettings.Builder()
-                            .analysis(new IndexSettingsAnalysis.Builder()
-                                    .analyzer("english_analyser", new Analyzer.Builder()
-                                            .standard(new StandardAnalyzer.Builder().build())
+            // A setting that works, but is probably overkill
+            /*
+            new IndexSettings.Builder()
+                    .analysis(new IndexSettingsAnalysis.Builder()
+                            .analyzer("english_analyser", new Analyzer.Builder()
+                                    .custom(new CustomAnalyzer.Builder()
+                                            .tokenizer("standard")
+                                            // IMPORTANT: The order of the filters matters.
+                                            .filter("asciifolding", "lowercase", "possessive_english_stemmer", "english_stemmer")
                                             .build())
-                                    .filter("english_stemmer", new TokenFilter.Builder()
-                                            .
+                                    .build())
+                            // Available stemmer algo (aka language)
+                            // https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-stemmer-tokenfilter.html
+                            .filter("english_stemmer", new TokenFilter.Builder()
+                                    .definition(new TokenFilterDefinition.Builder()
+                                            .stemmer(new StemmerTokenFilter.Builder()
+                                                    .language("english")
+                                                    .build())
+                                            .build())
+                                    .build())
+                            .filter("possessive_english_stemmer", new TokenFilter.Builder()
+                                    .definition(new TokenFilterDefinition.Builder()
+                                            .stemmer(new StemmerTokenFilter.Builder()
+                                                    .language("possessive_english")
+                                                    .build())
                                             .build())
                                     .build())
                             .build())
-    */
+                    .build();
+            */
+
+            // Create an index with English Stemming:
+            //     https://www.elastic.co/guide/en/elasticsearch/reference/current/stemming.html
+
+            // JSON configuration, which I used as a guide to implement this stemmer:
+            //     https://stackoverflow.com/questions/27204606/stemming-and-highlighting-for-phrase-search
+            CreateIndexRequest createIndexRequest = new CreateIndexRequest.Builder()
+                    .index(indexName)
+                    .mappings(new TypeMapping.Builder()
+                            .properties("document", new Property.Builder()
+                                    .text(new TextProperty.Builder()
+                                            .analyzer("english_analyser")
+                                            .store(true)
+                                            .build())
+                                    .build())
+                            .properties("title", new Property.Builder()
+                                    .text(new TextProperty.Builder()
+                                            .analyzer("english_analyser")
+                                            .store(true)
+                                            .build())
+                                    .build())
+                            .build())
+                    .settings(new IndexSettings.Builder()
+                            .analysis(new IndexSettingsAnalysis.Builder()
+                                    .analyzer("english_analyser", new Analyzer.Builder()
+                                            .custom(new CustomAnalyzer.Builder()
+                                                    .tokenizer("classic")
+                                                    // IMPORTANT: The order of the filters matters.
+                                                    .filter("asciifolding", "lowercase", "classic", "kstem")
+                                                    .build())
+                                            .build())
+                                    .build())
+                            .build())
                     .build();
 
             return this.client.indices().create(createIndexRequest);
@@ -122,7 +178,6 @@ public class ESRestHighLevelClient implements ESClient {
 
     @Override
     public void close() throws IOException {
-        this.client._transport().close();
         this.client.shutdown();
     }
 }

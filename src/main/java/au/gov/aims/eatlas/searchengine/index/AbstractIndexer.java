@@ -70,20 +70,23 @@ public abstract class AbstractIndexer<E extends Entity> {
     public void harvest(boolean full) throws Exception {
         long lastIndexedStarts = System.currentTimeMillis();
 
-        // Create the low-level client
-        RestClient restClient = RestClient.builder(
-                new HttpHost("localhost", 9200, "http"),
-                new HttpHost("localhost", 9300, "http")
-            ).build();
+        try(
+            // Create the low-level client
+            RestClient restClient = RestClient.builder(
+                    new HttpHost("localhost", 9200, "http"),
+                    new HttpHost("localhost", 9300, "http")
+                ).build();
 
-        // Create the transport with a Jackson mapper
-        ElasticsearchTransport transport = new RestClientTransport(
-            restClient, new JacksonJsonpMapper());
+            // Create the transport with a Jackson mapper
+            ElasticsearchTransport transport = new RestClientTransport(
+                restClient, new JacksonJsonpMapper());
 
-        // And create the API client
-        ElasticsearchClient rawClient = new ElasticsearchClient(transport);
+            // And create the API client
+            ESClient client = new ESRestHighLevelClient(new ElasticsearchClient(transport))
+        ) {
+            // TODO - DELETE
+            System.out.println("DELETE INDEX [" + this.getIndex() + "]: " + ((ESRestHighLevelClient)client).deleteIndex(this.getIndex()));
 
-        try(ESClient client = new ESRestHighLevelClient(rawClient)) {
             client.createIndex(this.getIndex());
             this.internalHarvest(client, full ? null : this.lastIndexed);
         }

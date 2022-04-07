@@ -149,21 +149,20 @@ public class Search {
 
         SearchResults results = new SearchResults();
 
-        // Create the low-level client
-        RestClient restClient = RestClient.builder(
-                new HttpHost("localhost", 9200, "http"),
-                new HttpHost("localhost", 9300, "http")
-            ).build();
+        try(
+            // Create the low-level client
+            RestClient restClient = RestClient.builder(
+                    new HttpHost("localhost", 9200, "http"),
+                    new HttpHost("localhost", 9300, "http")
+                ).build();
 
-        // Create the transport with a Jackson mapper
-        ElasticsearchTransport transport = new RestClientTransport(
-            restClient, new JacksonJsonpMapper());
+            // Create the transport with a Jackson mapper
+            ElasticsearchTransport transport = new RestClientTransport(
+                restClient, new JacksonJsonpMapper());
 
-        // And create the API client
-        ElasticsearchClient rawClient = new ElasticsearchClient(transport);
-
-        try(ESClient client = new ESRestHighLevelClient(rawClient)) {
-
+            // And create the API client
+            ESClient client = new ESRestHighLevelClient(new ElasticsearchClient(transport))
+        ) {
             String[] idxArray = idx.toArray(new String[0]);
 
             Summary searchSummary = Search.searchSummary(client, q, idxArray);

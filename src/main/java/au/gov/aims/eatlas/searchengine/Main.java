@@ -89,13 +89,15 @@ public class Main {
 
         // Test search
 
+        String searchQuery = "shark";
+
         List<String> idx = new ArrayList<String>();
         idx.add("eatlas_article");
-        idx.add("eatlas_extlink");
-        idx.add("eatlas_metadata");
-        idx.add("eatlas_layer");
+        //idx.add("eatlas_extlink");
+        //idx.add("eatlas_metadata");
+        //idx.add("eatlas_layer");
 
-        SearchResults results = Search.paginationSearch("e", 0, 100, idx, null);
+        SearchResults results = Search.paginationSearch(searchQuery, 0, 100, idx, null);
         System.out.println(results.toJSON().toString(2));
 
     }
@@ -114,27 +116,28 @@ public class Main {
         // And create the API client
         ElasticsearchClient rawClient = new ElasticsearchClient(transport);
 
-        rawClient._transport().close();
+        restClient.close();
+        transport.close();
         rawClient.shutdown();
     }
 
     private static void loadDummyExternalLinks(int count) throws IOException {
         String index = "eatlas_dummy";
 
-        // Create the low-level client
-        RestClient restClient = RestClient.builder(
-                new HttpHost("localhost", 9200, "http"),
-                new HttpHost("localhost", 9300, "http")
-            ).build();
+        try(
+            // Create the low-level client
+            RestClient restClient = RestClient.builder(
+                    new HttpHost("localhost", 9200, "http"),
+                    new HttpHost("localhost", 9300, "http")
+                ).build();
 
-        // Create the transport with a Jackson mapper
-        ElasticsearchTransport transport = new RestClientTransport(
-            restClient, new JacksonJsonpMapper());
+            // Create the transport with a Jackson mapper
+            ElasticsearchTransport transport = new RestClientTransport(
+                restClient, new JacksonJsonpMapper());
 
-        // And create the API client
-        ElasticsearchClient rawClient = new ElasticsearchClient(transport);
-
-        try(ESClient client = new ESRestHighLevelClient(rawClient)) {
+            // And create the API client
+            ESClient client = new ESRestHighLevelClient(new ElasticsearchClient(transport))
+        ) {
 
             CountResponse countResponseBefore = client.count(Search.getSearchSummaryRequest("Lorem", index));
             System.out.println("Count before: " + countResponseBefore.count());
