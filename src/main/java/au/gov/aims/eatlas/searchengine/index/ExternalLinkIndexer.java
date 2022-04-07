@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ExternalLinkIndexer extends AbstractIndexer {
+public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
     private static final Logger LOGGER = Logger.getLogger(ExternalLinkIndexer.class.getName());
 
     // List of "title, url, thumbnail"
@@ -116,70 +116,35 @@ public class ExternalLinkIndexer extends AbstractIndexer {
         if (this.externalLinkEntries != null && !this.externalLinkEntries.isEmpty()) {
             int total = this.externalLinkEntries.size();
             int current = 0;
+
+            ThreadGroup threadGroup = new ThreadGroup(this.getIndex());
             for (ExternalLinkEntry externalLinkEntry : this.externalLinkEntries) {
                 current++;
-                String url = externalLinkEntry.url;
-                if (url != null && !url.isEmpty()) {
-                    ExternalLink entity = new ExternalLink(this.getIndex(), url, externalLinkEntry.title);
 
-                    URL thumbnailUrl = null;
-                    String thumbnailUrlStr = externalLinkEntry.thumbnail;
-                    if (thumbnailUrlStr != null) {
-                        try {
-                            thumbnailUrl = new URL(thumbnailUrlStr);
-                        } catch(Exception ex) {
-                            LOGGER.error(String.format("Invalid thumbnail URL found for external link: %s%nThumbnail URL: %s",
-                                    entity.getId(), thumbnailUrlStr), ex);
-                        }
-                    }
-                    entity.setThumbnailUrl(thumbnailUrl);
-
-                    // Create the thumbnail if it's missing or outdated
-                    ExternalLink oldEntity = (ExternalLink)this.safeGet(client, entity.getId());
-                    if (entity.isThumbnailOutdated(oldEntity, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
-                        try {
-                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), null);
-                            if (cachedThumbnailFile != null) {
-                                entity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                            }
-                        } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while creating a thumbnail for external link: %s",
-                                    entity.getId()), ex);
-                        }
-                        entity.setThumbnailLastIndexed(System.currentTimeMillis());
-                    } else {
-                        entity.useCachedThumbnail(oldEntity);
-                    }
-
-                    String thumbnailFilename = entity.getCachedThumbnailFilename();
-                    if (thumbnailFilename != null) {
-                        usedThumbnails.add(thumbnailFilename);
-                    }
-
-                    String responseStr = null;
-                    try {
-                        responseStr = EntityUtils.harvestURLText(url);
-                    } catch (Exception ex) {
-                        LOGGER.error(String.format("Exception occurred while harvesting the external URL: %s",
-                                url), ex);
-                    }
-
-                    if (responseStr != null) {
-                        entity.setDocument(responseStr);
-
-                        try {
-                            IndexResponse indexResponse = this.index(client, entity);
-
-                            LOGGER.debug(String.format("[%d/%d] Indexing external URL: %s, index response status: %s",
-                                    current, total,
-                                    entity.getId(),
-                                    indexResponse.result()));
-                        } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while indexing an external URL: %s", url), ex);
-                        }
-                    }
-                }
+                // Start the harvest thread
+                // NOTE: Download external URL can take a while, when the server is slow, far away (latency) or simply times out.
+                //     Threading here makes a huge difference.
+                String threadName = this.getIndex() + "_" + current + "/" + total;
+                ExternalLinkIndexerThread thread = new ExternalLinkIndexerThread(threadGroup, threadName, client, externalLinkEntry, current, total);
+                thread.start();
             }
+
+            // Wait for the threads to finish
+            Thread[] threadArray = new Thread[total];
+            threadGroup.enumerate(threadArray);
+
+            // wait all runner to finish,
+            for (Thread thread : threadArray) {
+                try {
+                    thread.join();
+                } catch(InterruptedException ex) {
+                    LOGGER.error(String.format("Thread %s was interrupted",
+                            thread.getName()), ex);
+                }
+                String thumbnailFilename = ((ExternalLinkIndexerThread)thread).getThumbnailFilename();
+                usedThumbnails.add(thumbnailFilename);
+            }
+
         }
 
         this.cleanUp(client, harvestStart, usedThumbnails, "external URL");
@@ -241,6 +206,91 @@ public class ExternalLinkIndexer extends AbstractIndexer {
         @Override
         public String toString() {
             return this.toJSON().toString(2);
+        }
+    }
+
+    public class ExternalLinkIndexerThread extends Thread {
+        private final ESClient client;
+        private final ExternalLinkEntry externalLinkEntry;
+        private final int current;
+        private final int total;
+        private String thumbnailFilename;
+
+        public ExternalLinkIndexerThread(ThreadGroup threadGroup, String threadName, ESClient client, ExternalLinkEntry externalLinkEntry, int current, int total) {
+            super(threadGroup, threadName);
+
+            this.client = client;
+            this.externalLinkEntry = externalLinkEntry;
+            this.current = current;
+            this.total = total;
+            this.thumbnailFilename = null;
+        }
+
+        public String getThumbnailFilename() {
+            return this.thumbnailFilename;
+        }
+
+        @Override
+        public void run() {
+            String url = this.externalLinkEntry.url;
+            if (url != null && !url.isEmpty()) {
+                ExternalLink entity = new ExternalLink(ExternalLinkIndexer.this.getIndex(), url, this.externalLinkEntry.title);
+
+                URL thumbnailUrl = null;
+                String thumbnailUrlStr = this.externalLinkEntry.thumbnail;
+                if (thumbnailUrlStr != null) {
+                    try {
+                        thumbnailUrl = new URL(thumbnailUrlStr);
+                    } catch(Exception ex) {
+                        LOGGER.error(String.format("Invalid thumbnail URL found for external link: %s%nThumbnail URL: %s",
+                                entity.getId(), thumbnailUrlStr), ex);
+                    }
+                }
+                entity.setThumbnailUrl(thumbnailUrl);
+
+                // Create the thumbnail if it's missing or outdated
+                ExternalLink oldEntity = ExternalLinkIndexer.this.safeGet(this.client, ExternalLink.class, entity.getId());
+                if (entity.isThumbnailOutdated(oldEntity, ExternalLinkIndexer.this.getThumbnailTTL(), ExternalLinkIndexer.this.getBrokenThumbnailTTL())) {
+                    try {
+                        File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, ExternalLinkIndexer.this.getIndex(), null);
+                        if (cachedThumbnailFile != null) {
+                            entity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                        }
+                    } catch(Exception ex) {
+                        LOGGER.warn(String.format("Exception occurred while creating a thumbnail for external link: %s",
+                                entity.getId()), ex);
+                    }
+                    entity.setThumbnailLastIndexed(System.currentTimeMillis());
+                } else {
+                    entity.useCachedThumbnail(oldEntity);
+                }
+
+                this.thumbnailFilename = entity.getCachedThumbnailFilename();
+
+                String responseStr = null;
+                try {
+                    responseStr = EntityUtils.harvestURLText(url);
+                } catch (Exception ex) {
+                    LOGGER.error(String.format("Exception occurred while harvesting the external URL: %s. Error message: %s",
+                            url, ex.getMessage()));
+                    LOGGER.trace("Stacktrace", ex);
+                }
+
+                if (responseStr != null) {
+                    entity.setDocument(responseStr);
+
+                    try {
+                        IndexResponse indexResponse = ExternalLinkIndexer.this.index(client, entity);
+
+                        LOGGER.debug(String.format("[%d/%d] Indexing external URL: %s, index response status: %s",
+                                current, total,
+                                entity.getId(),
+                                indexResponse.result()));
+                    } catch(Exception ex) {
+                        LOGGER.warn(String.format("Exception occurred while indexing an external URL: %s", url), ex);
+                    }
+                }
+            }
         }
     }
 }

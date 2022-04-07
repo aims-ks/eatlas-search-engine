@@ -32,7 +32,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DrupalNodeIndexer extends AbstractIndexer {
+public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     private static final Logger LOGGER = Logger.getLogger(DrupalNodeIndexer.class.getName());
 
     // Number of Drupal node to index per page.
@@ -119,6 +119,9 @@ public class DrupalNodeIndexer extends AbstractIndexer {
                 nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
 
                 for (int i=0; i<nodeFound; i++) {
+
+                    // TODO Threaded
+
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
                     DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode);
 
@@ -139,7 +142,7 @@ public class DrupalNodeIndexer extends AbstractIndexer {
                                 drupalNode.setThumbnailUrl(thumbnailUrl);
 
                                 // Create the thumbnail if it's missing or outdated
-                                DrupalNode oldNode = (DrupalNode)this.safeGet(client, drupalNode.getId());
+                                DrupalNode oldNode = this.safeGet(client, DrupalNode.class, drupalNode.getId());
                                 if (drupalNode.isThumbnailOutdated(oldNode, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
                                     try {
                                         File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), drupalNode.getId());

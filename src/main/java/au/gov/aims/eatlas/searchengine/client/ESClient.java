@@ -29,6 +29,7 @@ import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 
 import java.io.IOException;
@@ -41,8 +42,12 @@ import java.io.IOException;
  *     environment and with a real ElasticSearch engine.
  */
 public interface ESClient extends AutoCloseable {
-    IndexResponse index(IndexRequest<Entity> indexRequest) throws IOException;
-    GetResponse<Entity> get(GetRequest getRequest) throws IOException;
+    boolean indexExists(String indexName) throws IOException;
+    CreateIndexResponse createIndex(String indexName) throws IOException;
+
+    <E extends Entity> IndexResponse index(IndexRequest<E> indexRequest) throws IOException;
+    <E extends Entity> GetResponse<E> get(GetRequest getRequest, Class<E> entityClass) throws IOException;
+    // Search needs to work with any Entity types
     SearchResponse<Entity> search(SearchRequest searchRequest) throws IOException;
     CountResponse count(CountRequest countRequest) throws IOException;
     DeleteByQueryResponse deleteByQuery(DeleteByQueryRequest deleteRequest) throws IOException;

@@ -21,10 +21,19 @@ package au.gov.aims.eatlas.searchengine;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
+import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
+import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
+import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
+import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
+import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndexer;
+import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Index;
 import au.gov.aims.eatlas.searchengine.rest.Search;
+import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
@@ -39,6 +48,8 @@ import org.elasticsearch.client.RestClient;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
@@ -49,12 +60,44 @@ public class Main {
         File configFile = new File("/var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/eatlas_search_engine.json");
 
         SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json");
-        Index.internalReindex(config, fullHarvest);
 
+        // Re-index everything
+        //Index.internalReindex(config, fullHarvest);
+
+
+        // Re-index individual indexes
+
+        DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
+        Index.internalReindex(config, drupalNodeIndexer, fullHarvest);
+
+        ExternalLinkIndexer externalLinkIndexer = (ExternalLinkIndexer)config.getIndexer("eatlas_extlink");
+        //Index.internalReindex(config, externalLinkIndexer, fullHarvest);
+
+        GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
+        //Index.internalReindex(config, geoNetworkIndexer, fullHarvest);
+
+        AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
+        //Index.internalReindex(config, atlasMapperIndexer, fullHarvest);
+
+
+        // Create a bunch of dummy external links
 
         //Main.loadDummyExternalLinks(15000);
 
         //Main.doNothing();
+
+
+        // Test search
+
+        List<String> idx = new ArrayList<String>();
+        idx.add("eatlas_article");
+        idx.add("eatlas_extlink");
+        idx.add("eatlas_metadata");
+        idx.add("eatlas_layer");
+
+        SearchResults results = Search.paginationSearch("e", 0, 100, idx, null);
+        System.out.println(results.toJSON().toString(2));
+
     }
 
     private static void doNothing() throws IOException {

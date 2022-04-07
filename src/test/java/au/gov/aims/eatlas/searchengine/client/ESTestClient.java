@@ -30,6 +30,7 @@ import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 
 import java.io.IOException;
@@ -43,12 +44,22 @@ public class ESTestClient implements ESClient {
     }
 
     @Override
-    public IndexResponse index(IndexRequest<Entity> indexRequest) throws IOException {
+    public boolean indexExists(String indexName) throws IOException {
+        return false; // TODO
+    }
+
+    @Override
+    public CreateIndexResponse createIndex(String indexName) throws IOException {
+        return null;// TODO
+    }
+
+    @Override
+    public <E extends Entity> IndexResponse index(IndexRequest<E> indexRequest) throws IOException {
         return null;//this.client.index(indexRequest).actionGet();
     }
 
     @Override
-    public GetResponse<Entity> get(GetRequest getRequest) throws IOException {
+    public <E extends Entity> GetResponse<E> get(GetRequest getRequest, Class<E> entityClass) throws IOException {
         return null;//this.client.get(getRequest).actionGet();
     }
 

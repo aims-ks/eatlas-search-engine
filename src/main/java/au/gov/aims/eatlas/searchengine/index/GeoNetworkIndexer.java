@@ -42,7 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class GeoNetworkIndexer extends AbstractIndexer {
+public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     private static final Logger LOGGER = Logger.getLogger(GeoNetworkIndexer.class.getName());
 
     private String geoNetworkUrl;
@@ -153,6 +153,9 @@ public class GeoNetworkIndexer extends AbstractIndexer {
                 int total = metadataRecordList.size();
                 int current = 0;
                 for (Element metadataRecordElement : metadataRecordList) {
+
+                    // TODO Threaded
+
                     current++;
                     Element metadataRecordInfoElement = IndexUtils.getXMLChild(metadataRecordElement, "geonet:info");
                     Element metadataRecordUUIDElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "uuid");
@@ -199,10 +202,10 @@ public class GeoNetworkIndexer extends AbstractIndexer {
                 // We have added all the records.
                 // Lets fix the records parent title.
                 for (String recordUUID : orphanMetadataRecordList) {
-                    GeoNetworkRecord geoNetworkRecord = (GeoNetworkRecord)this.safeGet(client, recordUUID);;
+                    GeoNetworkRecord geoNetworkRecord = this.safeGet(client, GeoNetworkRecord.class, recordUUID);;
                     if (geoNetworkRecord != null) {
                         String parentRecordUUID = geoNetworkRecord.getParentUUID();
-                        GeoNetworkRecord parentRecord = (GeoNetworkRecord)this.safeGet(client, parentRecordUUID);
+                        GeoNetworkRecord parentRecord = this.safeGet(client, GeoNetworkRecord.class, parentRecordUUID);
 
                         if (parentRecord != null) {
                             geoNetworkRecord.setParentTitle(parentRecord.getTitle());
@@ -269,7 +272,7 @@ public class GeoNetworkIndexer extends AbstractIndexer {
                     geoNetworkRecord.setThumbnailUrl(thumbnailUrl);
 
                     // Create the thumbnail if it's missing or outdated
-                    GeoNetworkRecord oldRecord = (GeoNetworkRecord)this.safeGet(client, geoNetworkRecord.getId());
+                    GeoNetworkRecord oldRecord = this.safeGet(client, GeoNetworkRecord.class, geoNetworkRecord.getId());
                     if (geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
                         try {
                             File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), geoNetworkRecord.getId());

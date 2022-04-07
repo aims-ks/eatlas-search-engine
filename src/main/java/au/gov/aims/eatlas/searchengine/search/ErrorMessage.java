@@ -1,7 +1,8 @@
 package au.gov.aims.eatlas.searchengine.search;
 
-import jakarta.ws.rs.core.Response;
 import org.json.JSONObject;
+
+import javax.ws.rs.core.Response;
 
 public class ErrorMessage {
     private String errorMessage;

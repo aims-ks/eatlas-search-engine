@@ -23,13 +23,13 @@ import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
-import jakarta.ws.rs.core.MultivaluedMap;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.uri.UriComponent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -38,7 +38,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class AtlasMapperIndexer extends AbstractIndexer {
+public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private static final Logger LOGGER = Logger.getLogger(AtlasMapperIndexer.class.getName());
     private static final int THUMBNAIL_MAX_WIDTH = 300;
     private static final int THUMBNAIL_MAX_HEIGHT = 200;
@@ -154,6 +154,9 @@ public class AtlasMapperIndexer extends AbstractIndexer {
         int total = jsonLayersConfig.length();
         int current = 0;
         for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
+
+            // TODO Threaded
+
             current++;
             JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
 
@@ -161,7 +164,7 @@ public class AtlasMapperIndexer extends AbstractIndexer {
                     this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
 
             // Create the thumbnail if it's missing or outdated
-            AtlasMapperLayer oldLayer = (AtlasMapperLayer)this.safeGet(client, atlasMapperLayerId);
+            AtlasMapperLayer oldLayer = this.safeGet(client, AtlasMapperLayer.class, atlasMapperLayerId);
             if (layerEntity.isThumbnailOutdated(oldLayer, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
                 try {
                     File cachedThumbnailFile = this.createLayerThumbnail(atlasMapperLayerId, baseLayerId, jsonLayersConfig, jsonMainConfig);

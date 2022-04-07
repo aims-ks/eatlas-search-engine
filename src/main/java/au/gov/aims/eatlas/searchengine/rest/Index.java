@@ -20,20 +20,20 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.CacheControl;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/index/v1")
@@ -128,16 +128,7 @@ public class Index {
             if (indexers != null && !indexers.isEmpty()) {
                 for (AbstractIndexer indexer : indexers) {
                     if (indexer.isEnabled()) {
-                        LOGGER.info(String.format("Reindexing %s class %s",
-                                indexer.getIndex(), indexer.getClass().getSimpleName()));
-
-                        indexer.harvest(full);
-                        config.save();
-
-                        Long runtime = indexer.getLastIndexRuntime();
-                        long runtimeSec = runtime == null ? -1 : runtime/1000;
-                        LOGGER.info(String.format("-- %s class %s reindexing time: %d sec",
-                                indexer.getIndex(), indexer.getClass().getSimpleName(), runtimeSec));
+                        long runtimeSec = Index.internalReindex(config, indexer, full);
                         jsonElapseTime.put(indexer.getIndex(), String.format("%d sec", runtimeSec));
                     }
                 }
@@ -148,4 +139,20 @@ public class Index {
             .put("status", "success")
             .put("elapseTime", jsonElapseTime);
     }
+
+    public static long internalReindex(SearchEngineConfig config, AbstractIndexer indexer, boolean full) throws Exception {
+        LOGGER.info(String.format("Reindexing %s class %s",
+                indexer.getIndex(), indexer.getClass().getSimpleName()));
+
+        indexer.harvest(full);
+        config.save();
+
+        Long runtime = indexer.getLastIndexRuntime();
+        long runtimeSec = runtime == null ? -1 : runtime/1000;
+        LOGGER.info(String.format("-- %s class %s reindexing time: %d sec",
+                indexer.getIndex(), indexer.getClass().getSimpleName(), runtimeSec));
+
+        return runtimeSec;
+    }
+
 }

@@ -27,7 +27,6 @@ import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.IndicesOptions;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
@@ -40,26 +39,24 @@ import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-import co.elastic.clients.util.ObjectBuilder;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.CacheControl;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import org.apache.http.HttpHost;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.elasticsearch.client.RestClient;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 @Path("/search/v1")
 public class Search {
@@ -78,23 +75,6 @@ public class Search {
         LOGGER.log(Level.WARN, "q: " + q);
         LOGGER.log(Level.WARN, "start: " + start);
         LOGGER.log(Level.WARN, "hits: " + hits);
-        if (idx != null && !idx.isEmpty()) {
-            for (int i=0; i<idx.size(); i++) {
-                LOGGER.log(Level.WARN, "idx["+i+"]: " + idx.get(i));
-            }
-        }
-        if (fidx != null && !fidx.isEmpty()) {
-            for (int i=0; i<fidx.size(); i++) {
-                LOGGER.log(Level.WARN, "fidx["+i+"]: " + fidx.get(i));
-            }
-        }
-
-        if (start == null) {
-            start = 0;
-        }
-        if (hits == null) {
-            hits = 10;
-        }
 
         // Disable cache DURING DEVELOPMENT!
         CacheControl noCache = new CacheControl();
@@ -113,6 +93,58 @@ public class Search {
                 .setErrorMessage("Invalid request. Missing parameter idx")
                 .setStatus(status);
             return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
+        }
+
+
+        SearchResults results = null;
+        try {
+            results = paginationSearch(q, start, hits, idx, fidx);
+
+        } catch(Exception ex) {
+            String errorMessageStr = String.format("An exception occurred during the search: %s", ex.getMessage());
+            LOGGER.log(Level.ERROR, errorMessageStr, ex);
+            Response.Status status = Response.Status.INTERNAL_SERVER_ERROR;
+            ErrorMessage errorMessage = new ErrorMessage()
+                .setErrorMessage(errorMessageStr)
+                .setStatus(status);
+            return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
+        }
+
+        String responseTxt = results.toString();
+        LOGGER.log(Level.DEBUG, responseTxt);
+
+        // Return the JSON array with a OK status.
+        return Response.ok(responseTxt).cacheControl(noCache).build();
+    }
+
+    public static SearchResults paginationSearch(
+            String q,
+            Integer start,
+            Integer hits,
+            List<String> idx, // List of indexes used for the summary
+            List<String> fidx // List of indexes to filter the search results (optional)
+    ) throws IOException {
+
+        if (idx != null && !idx.isEmpty()) {
+            for (int i=0; i<idx.size(); i++) {
+                LOGGER.log(Level.WARN, "idx["+i+"]: " + idx.get(i));
+            }
+        }
+        if (fidx != null && !fidx.isEmpty()) {
+            for (int i=0; i<fidx.size(); i++) {
+                LOGGER.log(Level.WARN, "fidx["+i+"]: " + fidx.get(i));
+            }
+        }
+
+        if (q == null || idx == null) {
+            return null;
+        }
+
+        if (start == null) {
+            start = 0;
+        }
+        if (hits == null) {
+            hits = 10;
         }
 
         SearchResults results = new SearchResults();
@@ -145,22 +177,9 @@ public class Search {
             }
 
             results.setSearchResults(searchResults);
-
-        } catch(Exception ex) {
-            String errorMessageStr = String.format("An exception occurred during the search: %s", ex.getMessage());
-            LOGGER.log(Level.ERROR, errorMessageStr, ex);
-            Response.Status status = Response.Status.INTERNAL_SERVER_ERROR;
-            ErrorMessage errorMessage = new ErrorMessage()
-                .setErrorMessage(errorMessageStr)
-                .setStatus(status);
-            return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
         }
 
-        String responseTxt = results.toString();
-        LOGGER.log(Level.DEBUG, responseTxt);
-
-        // Return the JSON array with a OK status.
-        return Response.ok(responseTxt).cacheControl(noCache).build();
+        return results;
     }
 
     /**
@@ -200,8 +219,6 @@ public class Search {
     public static CountRequest getSearchSummaryRequest(String needle, String ... indexes) {
         // Create a search query here
         SearchRequest.Builder sourceBuilder = Search.getBaseSearchQuery(needle);
-                // TODO IMPORTANT! I have no idea how to do this...
-                //.fetchSource(false);
 
         return new CountRequest.Builder()
                 .index(Arrays.asList(indexes))
@@ -266,26 +283,16 @@ public class Search {
      */
     public static SearchRequest getSearchRequest(String needle, int from, int size, String ... indexes) {
         // Used to highlight search results in the field that was used with the search
-        /*
-        HighlightBuilder highlightBuilder = new HighlightBuilder()
-            .preTags("<strong>")
-            .postTags("</strong>")
-            .field("document");
-        */
+        Highlight.Builder highlightBuilder = new Highlight.Builder()
+                .preTags("<strong>")
+                .postTags("</strong>")
+                .fields("document", new HighlightField.Builder().build());
 
+        // https://discuss.elastic.co/t/8-1-0-java-client-searchrequest-example/299640
         return Search.getBaseSearchQuery(needle)
                 .from(from) // Used to continue the search (get next page)
                 .size(size) // Number of results to return. Default = 10
-                //.fetchSource(true) // TODO
-                .highlight(new Function<Highlight.Builder, ObjectBuilder<Highlight>>() {
-                    @Override
-                    public ObjectBuilder<Highlight> apply(Highlight.Builder builder) {
-                        return builder
-                                .preTags("<strong>")
-                                .postTags("</strong>")
-                                .fields("document", new HighlightField.Builder().field("document").build());
-                    }
-                })
+                .highlight(highlightBuilder.build())
                 .index(Arrays.asList(indexes))
                 .ignoreUnavailable(true)
                 .allowNoIndices(true)
@@ -301,11 +308,6 @@ public class Search {
         // Search in document and title by default.
         // User can still specify a field using "field:keyword".
         // Example: dataSourceName:legacy
-        /*
-        Map<String, Float> defaultSearchFields = new HashMap<String, Float>();
-        defaultSearchFields.put("title", 2f);
-        defaultSearchFields.put("document", 1f);
-        */
         List<String> defaultSearchFields = new ArrayList<>();
         defaultSearchFields.add("title");
         defaultSearchFields.add("document");
@@ -313,31 +315,5 @@ public class Search {
         return new SearchRequest.Builder()
                 .query(QueryBuilders.queryString().query(needle).fields(defaultSearchFields).build()._toQuery())
                 .timeout("60s"); // Wild guess, there is no doc, no example for this!!
-
-/*
-        return new SearchSourceBuilder()
-            .query(QueryBuilders.queryStringQuery(needle).fields(defaultSearchFields))
-            .timeout(new TimeValue(60, TimeUnit.SECONDS));
-*/
-    }
-
-    /**
-     * Return search indexes options.
-     * This is used to prevent the search from crashing
-     *   when the client refer to an empty (or non-existent)
-     *   index.
-     */
-    private static IndicesOptions getSearchIndicesOptions() {
-        /*
-            true, // ignoreUnavailable
-            true,  // allowNoIndices
-            false, // expandToOpenIndices
-            false // expandToCloseIndices
-        */
-
-        return new IndicesOptions.Builder()
-                .ignoreUnavailable(true)
-                .allowNoIndices(true)
-                .build();
     }
 }

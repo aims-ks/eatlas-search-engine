@@ -122,6 +122,17 @@ public class SearchEngineConfig {
         return this.indexers;
     }
 
+    public AbstractIndexer getIndexer(String index) {
+        if (index != null && this.indexers != null) {
+            for (AbstractIndexer foundIndexer : this.indexers) {
+                if (index.equals(foundIndexer.getIndex())) {
+                    return foundIndexer;
+                }
+            }
+        }
+        return null;
+    }
+
     public void addIndexer(AbstractIndexer indexer) {
         if (this.indexers == null) {
             this.indexers = new ArrayList<>();
@@ -130,15 +141,11 @@ public class SearchEngineConfig {
     }
 
     public AbstractIndexer removeIndexer(String index) {
-        AbstractIndexer indexer = null;
-        if (index != null && this.indexers != null) {
-            for (AbstractIndexer foundIndexer : this.indexers) {
-                if (index.equals(foundIndexer.getIndex())) {
-                    return this.removeIndexer(foundIndexer) ? foundIndexer : null;
-                }
-            }
+        AbstractIndexer foundIndexer = this.getIndexer(index);
+        if (foundIndexer != null) {
+            return this.removeIndexer(foundIndexer) ? foundIndexer : null;
         }
-        return indexer;
+        return null;
     }
 
     public boolean removeIndexer(AbstractIndexer indexer) {

@@ -47,11 +47,11 @@ import java.io.IOException;
 import java.util.Set;
 
 // TODO Move search outside. Search should be allowed to be run against any number of indexes at once
-public abstract class AbstractIndexer {
+public abstract class AbstractIndexer<E extends Entity> {
     private static final Logger LOGGER = Logger.getLogger(AbstractIndexer.class.getName());
 
     private boolean enabled;
-    private String index;
+    private final String index;
     private Long lastIndexed;
     private Long lastIndexRuntime;
     private Long thumbnailTTL; // TTL, in days
@@ -70,31 +70,6 @@ public abstract class AbstractIndexer {
     public void harvest(boolean full) throws Exception {
         long lastIndexedStarts = System.currentTimeMillis();
 
-/*
-
-// Create the low-level client
-RestClient restClient = RestClient.builder(
-    new HttpHost("localhost", 9200)).build();
-
-// Create the transport with a Jackson mapper
-ElasticsearchTransport transport = new RestClientTransport(
-    restClient, new JacksonJsonpMapper());
-
-// And create the API client
-ElasticsearchClient client = new ElasticsearchClient(transport);
-
-*/
-
-/*
-        try (ESClient client = new ESRestHighLevelClient(new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http"))))) {
-
-            this.internalHarvest(client, full ? null : this.lastIndexed);
-        }
-*/
-
         // Create the low-level client
         RestClient restClient = RestClient.builder(
                 new HttpHost("localhost", 9200, "http"),
@@ -109,7 +84,7 @@ ElasticsearchClient client = new ElasticsearchClient(transport);
         ElasticsearchClient rawClient = new ElasticsearchClient(transport);
 
         try(ESClient client = new ESRestHighLevelClient(rawClient)) {
-            client.refresh(this.index);
+            client.createIndex(this.getIndex());
             this.internalHarvest(client, full ? null : this.lastIndexed);
         }
 
@@ -146,6 +121,7 @@ ElasticsearchClient client = new ElasticsearchClient(transport);
             return null;
         }
 
+        // TODO Use annotation to find indexer
         AbstractIndexer indexer = null;
         switch(className) {
             case "AtlasMapperIndexer":
@@ -230,7 +206,7 @@ ElasticsearchClient client = new ElasticsearchClient(transport);
         return this.brokenThumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalBrokenThumbnailTTL() : this.brokenThumbnailTTL;
     }
 
-    public IndexResponse index(ESClient client, Entity entity) throws IOException {
+    public IndexResponse index(ESClient client, E entity) throws IOException {
         entity.setLastIndexed(System.currentTimeMillis());
         return client.index(this.getIndexRequest(entity));
     }
@@ -265,7 +241,7 @@ ElasticsearchClient client = new ElasticsearchClient(transport);
         DeleteByQueryRequest deleteRequest = this.getDeleteOldItemsRequest(lastIndexed);
 
         // Delete old records
-        Long deleted = 0L;
+        Long deleted = null;
         try {
             DeleteByQueryResponse response = client.deleteByQuery(deleteRequest);
 
@@ -276,7 +252,7 @@ ElasticsearchClient client = new ElasticsearchClient(transport);
             LOGGER.error(String.format("Exception occurred while deleting old indexed entities in search index: %s", this.index), ex);
         }
 
-        return deleted;
+        return deleted == null ? 0L : deleted;
     }
 
     private long deleteOldThumbnails(Set<String> usedThumbnails) {
@@ -313,13 +289,13 @@ ElasticsearchClient client = new ElasticsearchClient(transport);
         return deleted;
     }
 
-    public Entity get(ESClient client, String id) throws IOException {
-        return AbstractIndexer.get(client, this.index, id);
+    public E get(ESClient client, Class<E> entityClass, String id) throws IOException {
+        return AbstractIndexer.get(client, entityClass, this.index, id);
     }
 
-    public Entity safeGet(ESClient client, String id) {
+    public E safeGet(ESClient client, Class<E> entityClass, String id) {
         try {
-            return this.get(client, id);
+            return this.get(client, entityClass, id);
         } catch(Exception ex) {
             // Should not happen
             LOGGER.warn(String.format("Exception occurred while looking for item ID \"%s\" in the search index.",
@@ -329,8 +305,9 @@ ElasticsearchClient client = new ElasticsearchClient(transport);
         return null;
     }
 
-    public static Entity get(ESClient client, String index, String id) throws IOException {
-        GetResponse<Entity> response = client.get(AbstractIndexer.getGetRequest(index, id));
+    public static <E extends Entity> E get(ESClient client, Class<E> entityClass, String index, String id) throws IOException {
+        // TODO: Entity is abstract! Jackson can't instantiate it! Use Generics
+        GetResponse<E> response = client.get(AbstractIndexer.getGetRequest(index, id), entityClass);
         if (response == null) {
             return null;
         }
@@ -340,8 +317,8 @@ ElasticsearchClient client = new ElasticsearchClient(transport);
 
     // Low level
 
-    public IndexRequest<Entity> getIndexRequest(Entity entity) {
-        return new IndexRequest.Builder<Entity>()
+    public IndexRequest<E> getIndexRequest(E entity) {
+        return new IndexRequest.Builder<E>()
                 .index(this.getIndex())
                 .id(entity.getId())
                 .document(entity)

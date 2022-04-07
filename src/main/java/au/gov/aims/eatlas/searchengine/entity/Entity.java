@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -26,6 +27,12 @@ import org.json.JSONObject;
 import java.io.File;
 import java.net.URL;
 
+/*
+ * TODO Use Jackson to serialise / deserialise the Entities instead of defining a toJSON and fromJSON method.
+ *    (that's what Jackson is for)
+ */
+
+@JsonDeserialize(using = EntityDeserializer.class)
 public abstract class Entity {
     private static final Logger LOGGER = Logger.getLogger(DrupalNode.class.getName());
     private static final long DAY_MS = 24 * 60 * 60 * 1000;

@@ -76,3 +76,11 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   ```
   http://localhost:9090/
   ```
+
+- Deploy
+
+  ```
+  $ sudo -u tomcat cp ~/Desktop/projects/Intellij/projects/eatlas-search-engine/target/eatlas-search-engine.war ~/Desktop/projects/tomcat/var-lib-tomcat-webapps/eatlas-search-engine.war
+  $ tail -f /var/log/tomcat9/catalina.out
+  $ journalctl -n 500 -f -u tomcat9.service
+  ```
