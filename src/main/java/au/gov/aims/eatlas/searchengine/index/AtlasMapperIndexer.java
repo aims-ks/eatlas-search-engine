@@ -33,13 +33,18 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private static final Logger LOGGER = Logger.getLogger(AtlasMapperIndexer.class.getName());
+    private static final int THREAD_POOL_SIZE = 10;
     private static final int THUMBNAIL_MAX_WIDTH = 300;
     private static final int THUMBNAIL_MAX_HEIGHT = 200;
     private static final float THUMBNAIL_MARGIN = 0.1f; // Margin, in percentage
@@ -150,113 +155,63 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         // Get URL of the base layer
         String baseLayerId = AtlasMapperLayer.getWMSBaseLayer(jsonMainConfig, jsonLayersConfig);
 
-        Set<String> usedThumbnails = new HashSet<String>();
+        Set<String> usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         int total = jsonLayersConfig.length();
         int current = 0;
+
+        ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
         for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
-
-            // TODO Threaded
-
             current++;
-            JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
 
-            AtlasMapperLayer layerEntity = new AtlasMapperLayer(
-                    this.getIndex(), this.atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig);
+            Thread thread = new AtlasMapperIndexerThread(
+                    client, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig, baseLayerId, usedThumbnails, current, total);
 
-            // Create the thumbnail if it's missing or outdated
-            AtlasMapperLayer oldLayer = this.safeGet(client, AtlasMapperLayer.class, atlasMapperLayerId);
-            if (layerEntity.isThumbnailOutdated(oldLayer, this.getThumbnailTTL(), this.getBrokenThumbnailTTL())) {
-                try {
-                    File cachedThumbnailFile = this.createLayerThumbnail(atlasMapperLayerId, baseLayerId, jsonLayersConfig, jsonMainConfig);
-                    if (cachedThumbnailFile != null) {
-                        layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                    }
-                } catch(Exception ex) {
-                    LOGGER.warn(String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s",
-                            atlasMapperLayerId), ex);
-                }
-                layerEntity.setThumbnailLastIndexed(System.currentTimeMillis());
-            } else {
-                layerEntity.useCachedThumbnail(oldLayer);
-            }
+            threadPool.execute(thread);
+        }
 
-            String thumbnailFilename = layerEntity.getCachedThumbnailFilename();
-            if (thumbnailFilename != null) {
-                usedThumbnails.add(thumbnailFilename);
-            }
-
-            try {
-                IndexResponse indexResponse = this.index(client, layerEntity);
-
-                LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, index response status: %s",
-                        current, total,
-                        atlasMapperLayerId,
-                        indexResponse.result()));
-            } catch(Exception ex) {
-                LOGGER.warn(String.format("Exception occurred while indexing an AtlasMapper layer: %s", atlasMapperLayerId), ex);
-            }
+        threadPool.shutdown();
+        try {
+            threadPool.awaitTermination(1, TimeUnit.HOURS);
+        } catch(InterruptedException ex) {
+            LOGGER.error("The AtlasMapper layers indexation was interrupted", ex);
         }
 
         // Delete old thumbnails older than the TTL (1 month old)
         this.cleanUp(client, harvestStart, usedThumbnails, "AtlasMapper layer");
     }
 
-    private File createLayerThumbnail(String atlasMapperLayerId, String baseLayerId, JSONObject jsonLayersConfig, JSONObject jsonMainConfig) throws Exception {
-        if (atlasMapperLayerId == null || jsonLayersConfig == null || jsonMainConfig == null) {
-            return null;
-        }
-
-        // Get list of data source
-        JSONObject dataSources = jsonMainConfig.optJSONObject("dataSources");
-
-        // Get layer configuration
-        JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
-        if (jsonLayer == null || dataSources == null) {
-            return null;
-        }
-
-        // Get layer data source
-        JSONObject dataSource = AtlasMapperLayer.getDataSourceConfig(jsonLayer, jsonMainConfig);
-
-        JSONArray bbox = jsonLayer.optJSONArray("layerBoundingBox");
-
-        // Get URL of the layer
-        URL layerUrl = this.getLayerUrl(dataSource, jsonLayer, bbox);
-
-        boolean isBaseLayer = jsonLayer.optBoolean("isBaseLayer", false);
-
-        URL baseLayerUrl = null;
-        if (!isBaseLayer) {
-            // Get URL of the base layer
-            JSONObject jsonBaseLayer = baseLayerId == null ? null : jsonLayersConfig.optJSONObject(baseLayerId);
-            String baseLayerDataSourceId = jsonBaseLayer == null ? null : jsonBaseLayer.optString("dataSourceId", null);
-            JSONObject baseLayerDataSource = dataSources.optJSONObject(baseLayerDataSourceId);
-
-            baseLayerUrl = this.getLayerUrl(baseLayerDataSource, jsonBaseLayer, bbox);
-        }
-
-        // If layer is a base layer (or can't find a WMS base layer), simply call cache with the layer URL.
-        if (baseLayerUrl == null) {
-            return ImageCache.cache(layerUrl, this.getIndex(), atlasMapperLayerId);
-        }
-
-        // Combine layers and cache them.
-        return ImageCache.cacheLayer(baseLayerUrl, layerUrl, this.getIndex(), atlasMapperLayerId);
+    public String getAtlasMapperClientUrl() {
+        return this.atlasMapperClientUrl;
     }
 
-    private URL getLayerUrl(JSONObject dataSource, JSONObject jsonLayer, JSONArray bbox) throws Exception {
+    public void setAtlasMapperClientUrl(String atlasMapperClientUrl) {
+        this.atlasMapperClientUrl = atlasMapperClientUrl;
+    }
+
+    public String getAtlasMapperVersion() {
+        return this.atlasMapperVersion;
+    }
+
+    public void setAtlasMapperVersion(String atlasMapperVersion) {
+        this.atlasMapperVersion = atlasMapperVersion;
+    }
+
+
+    // Static methods, use by AtlasMapperIndexerThread
+
+    public static URL getLayerUrl(JSONObject dataSource, JSONObject jsonLayer, JSONArray bbox) throws Exception {
         if (dataSource == null || jsonLayer == null) {
             return null;
         }
 
         if (AtlasMapperLayer.isWMS(dataSource)) {
-            return this.getWMSLayerUrl(dataSource, jsonLayer, bbox);
+            return AtlasMapperIndexer.getWMSLayerUrl(dataSource, jsonLayer, bbox);
         }
 
         return null;
     }
 
-    private URL getWMSLayerUrl(JSONObject dataSource, JSONObject jsonLayer, JSONArray bbox) throws Exception {
+    public static URL getWMSLayerUrl(JSONObject dataSource, JSONObject jsonLayer, JSONArray bbox) throws Exception {
         if (dataSource == null || jsonLayer == null) {
             return null;
         }
@@ -401,19 +356,116 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             serviceUri.getPath() + "?" + querySb.toString());
     }
 
-    public String getAtlasMapperClientUrl() {
-        return this.atlasMapperClientUrl;
-    }
+    public class AtlasMapperIndexerThread extends Thread {
+        private final ESClient client;
+        private final String atlasMapperLayerId;
+        private final JSONObject jsonMainConfig;
+        private final JSONObject jsonLayersConfig;
+        private final String baseLayerId;
+        private final Set<String> usedThumbnails;
+        private final int current;
+        private final int total;
 
-    public void setAtlasMapperClientUrl(String atlasMapperClientUrl) {
-        this.atlasMapperClientUrl = atlasMapperClientUrl;
-    }
+        public AtlasMapperIndexerThread(
+                ESClient client,
+                String atlasMapperLayerId,
+                JSONObject jsonMainConfig,
+                JSONObject jsonLayersConfig,
+                String baseLayerId,
+                Set<String> usedThumbnails,
+                int current, int total
+        ) {
+            this.client = client;
+            this.atlasMapperLayerId = atlasMapperLayerId;
+            this.jsonMainConfig = jsonMainConfig;
+            this.jsonLayersConfig = jsonLayersConfig;
+            this.baseLayerId = baseLayerId;
+            this.usedThumbnails = usedThumbnails;
+            this.current = current;
+            this.total = total;
+        }
 
-    public String getAtlasMapperVersion() {
-        return this.atlasMapperVersion;
-    }
+        @Override
+        public void run() {
+            JSONObject jsonLayer = this.jsonLayersConfig.optJSONObject(this.atlasMapperLayerId);
 
-    public void setAtlasMapperVersion(String atlasMapperVersion) {
-        this.atlasMapperVersion = atlasMapperVersion;
+            AtlasMapperLayer layerEntity = new AtlasMapperLayer(
+                    AtlasMapperIndexer.this.getIndex(), AtlasMapperIndexer.this.atlasMapperClientUrl, this.atlasMapperLayerId, jsonLayer, this.jsonMainConfig);
+
+            // Create the thumbnail if it's missing or outdated
+            AtlasMapperLayer oldLayer = AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId);
+            if (layerEntity.isThumbnailOutdated(oldLayer, AtlasMapperIndexer.this.getThumbnailTTL(), AtlasMapperIndexer.this.getBrokenThumbnailTTL())) {
+                try {
+                    File cachedThumbnailFile = this.createLayerThumbnail(jsonLayer);
+                    if (cachedThumbnailFile != null) {
+                        layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                    }
+                } catch(Exception ex) {
+                    LOGGER.warn(String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s",
+                            this.atlasMapperLayerId), ex);
+                }
+                layerEntity.setThumbnailLastIndexed(System.currentTimeMillis());
+            } else {
+                layerEntity.useCachedThumbnail(oldLayer);
+            }
+
+            String thumbnailFilename = layerEntity.getCachedThumbnailFilename();
+            if (thumbnailFilename != null) {
+                this.usedThumbnails.add(thumbnailFilename);
+            }
+
+            try {
+                IndexResponse indexResponse = AtlasMapperIndexer.this.index(this.client, layerEntity);
+
+                LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, index response status: %s",
+                        this.current, this.total,
+                        this.atlasMapperLayerId,
+                        indexResponse.result()));
+            } catch(Exception ex) {
+                LOGGER.warn(String.format("Exception occurred while indexing an AtlasMapper layer: %s", this.atlasMapperLayerId), ex);
+            }
+        }
+
+        private File createLayerThumbnail(JSONObject jsonLayer) throws Exception {
+            if (this.atlasMapperLayerId == null || this.jsonLayersConfig == null || this.jsonMainConfig == null) {
+                return null;
+            }
+
+            // Get list of data source
+            JSONObject dataSources = this.jsonMainConfig.optJSONObject("dataSources");
+
+            // Get layer configuration
+            if (jsonLayer == null || dataSources == null) {
+                return null;
+            }
+
+            // Get layer data source
+            JSONObject dataSource = AtlasMapperLayer.getDataSourceConfig(jsonLayer, this.jsonMainConfig);
+
+            JSONArray bbox = jsonLayer.optJSONArray("layerBoundingBox");
+
+            // Get URL of the layer
+            URL layerUrl = AtlasMapperIndexer.getLayerUrl(dataSource, jsonLayer, bbox);
+
+            boolean isBaseLayer = jsonLayer.optBoolean("isBaseLayer", false);
+
+            URL baseLayerUrl = null;
+            if (!isBaseLayer) {
+                // Get URL of the base layer
+                JSONObject jsonBaseLayer = this.baseLayerId == null ? null : this.jsonLayersConfig.optJSONObject(this.baseLayerId);
+                String baseLayerDataSourceId = jsonBaseLayer == null ? null : jsonBaseLayer.optString("dataSourceId", null);
+                JSONObject baseLayerDataSource = dataSources.optJSONObject(baseLayerDataSourceId);
+
+                baseLayerUrl = AtlasMapperIndexer.getLayerUrl(baseLayerDataSource, jsonBaseLayer, bbox);
+            }
+
+            // If layer is a base layer (or can't find a WMS base layer), simply call cache with the layer URL.
+            if (baseLayerUrl == null) {
+                return ImageCache.cache(layerUrl, AtlasMapperIndexer.this.getIndex(), this.atlasMapperLayerId);
+            }
+
+            // Combine layers and cache them.
+            return ImageCache.cacheLayer(baseLayerUrl, layerUrl, AtlasMapperIndexer.this.getIndex(), this.atlasMapperLayerId);
+        }
     }
 }

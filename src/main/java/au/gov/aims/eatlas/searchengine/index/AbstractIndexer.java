@@ -85,7 +85,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             ESClient client = new ESRestHighLevelClient(new ElasticsearchClient(transport))
         ) {
             // TODO - DELETE
-            System.out.println("DELETE INDEX [" + this.getIndex() + "]: " + ((ESRestHighLevelClient)client).deleteIndex(this.getIndex()));
+            //System.out.println("DELETE INDEX [" + this.getIndex() + "]: " + ((ESRestHighLevelClient)client).deleteIndex(this.getIndex()));
 
             client.createIndex(this.getIndex());
             this.internalHarvest(client, full ? null : this.lastIndexed);
@@ -235,7 +235,7 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails);
         if (deletedThumbnails > 0) {
-            LOGGER.info(String.format("Deleted %d cached %s thumbnail",
+            LOGGER.info(String.format("Deleted %d cached thumbnail for %s",
                     deletedThumbnails, entityDisplayName));
         }
     }

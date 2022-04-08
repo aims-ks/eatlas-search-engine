@@ -67,17 +67,22 @@ public class Main {
 
         // Re-index individual indexes
 
+        // TODO Implement LEMMATIZATION (mice => mouse, foot => feet, tooth => teeth, etc):
+        //     https://apprize.best/data/elasticsearch_1/23.html
+        // TODO Fix JUnit tests
+        // TODO Implement UI - Configure, re-index button, try search
+
         DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
         Index.internalReindex(config, drupalNodeIndexer, fullHarvest);
 
         ExternalLinkIndexer externalLinkIndexer = (ExternalLinkIndexer)config.getIndexer("eatlas_extlink");
-        //Index.internalReindex(config, externalLinkIndexer, fullHarvest);
+        Index.internalReindex(config, externalLinkIndexer, fullHarvest);
 
         GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
-        //Index.internalReindex(config, geoNetworkIndexer, fullHarvest);
+        Index.internalReindex(config, geoNetworkIndexer, fullHarvest);
 
         AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-        //Index.internalReindex(config, atlasMapperIndexer, fullHarvest);
+        Index.internalReindex(config, atlasMapperIndexer, fullHarvest);
 
 
         // Create a bunch of dummy external links
@@ -92,9 +97,9 @@ public class Main {
         String searchQuery = "shark";
 
         List<String> idx = new ArrayList<String>();
-        idx.add("eatlas_article");
+        //idx.add("eatlas_article");
         //idx.add("eatlas_extlink");
-        //idx.add("eatlas_metadata");
+        idx.add("eatlas_metadata");
         //idx.add("eatlas_layer");
 
         SearchResults results = Search.paginationSearch(searchQuery, 0, 100, idx, null);

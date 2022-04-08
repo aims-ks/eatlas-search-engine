@@ -283,7 +283,7 @@ public class Search {
     public static SearchRequest getSearchRequest(String needle, int from, int size, String ... indexes) {
         // Used to highlight search results in the field that was used with the search
         Highlight.Builder highlightBuilder = new Highlight.Builder()
-                .preTags("<strong>")
+                .preTags("<strong class=\"search-highlight\">")
                 .postTags("</strong>")
                 .fields("document", new HighlightField.Builder().build());
 

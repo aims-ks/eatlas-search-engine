@@ -30,12 +30,17 @@ import org.json.JSONObject;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
     private static final Logger LOGGER = Logger.getLogger(ExternalLinkIndexer.class.getName());
+    private static final int THREAD_POOL_SIZE = 10;
 
     // List of "title, url, thumbnail"
     private List<ExternalLinkEntry> externalLinkEntries;
@@ -112,12 +117,13 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
 
         long harvestStart = System.currentTimeMillis();
 
-        Set<String> usedThumbnails = new HashSet<String>();
+        Set<String> usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         if (this.externalLinkEntries != null && !this.externalLinkEntries.isEmpty()) {
             int total = this.externalLinkEntries.size();
             int current = 0;
 
-            ThreadGroup threadGroup = new ThreadGroup(this.getIndex());
+            ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+
             for (ExternalLinkEntry externalLinkEntry : this.externalLinkEntries) {
                 current++;
 
@@ -125,26 +131,17 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                 // NOTE: Download external URL can take a while, when the server is slow, far away (latency) or simply times out.
                 //     Threading here makes a huge difference.
                 String threadName = this.getIndex() + "_" + current + "/" + total;
-                ExternalLinkIndexerThread thread = new ExternalLinkIndexerThread(threadGroup, threadName, client, externalLinkEntry, current, total);
-                thread.start();
+                ExternalLinkIndexerThread thread = new ExternalLinkIndexerThread(client, externalLinkEntry, usedThumbnails, current, total);
+
+                threadPool.execute(thread);
             }
 
-            // Wait for the threads to finish
-            Thread[] threadArray = new Thread[total];
-            threadGroup.enumerate(threadArray);
-
-            // wait all runner to finish,
-            for (Thread thread : threadArray) {
-                try {
-                    thread.join();
-                } catch(InterruptedException ex) {
-                    LOGGER.error(String.format("Thread %s was interrupted",
-                            thread.getName()), ex);
-                }
-                String thumbnailFilename = ((ExternalLinkIndexerThread)thread).getThumbnailFilename();
-                usedThumbnails.add(thumbnailFilename);
+            threadPool.shutdown();
+            try {
+                threadPool.awaitTermination(1, TimeUnit.HOURS);
+            } catch(InterruptedException ex) {
+                LOGGER.error("The ExternalLink indexation was interrupted", ex);
             }
-
         }
 
         this.cleanUp(client, harvestStart, usedThumbnails, "external URL");
@@ -212,22 +209,16 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
     public class ExternalLinkIndexerThread extends Thread {
         private final ESClient client;
         private final ExternalLinkEntry externalLinkEntry;
+        private final Set<String> usedThumbnails;
         private final int current;
         private final int total;
-        private String thumbnailFilename;
 
-        public ExternalLinkIndexerThread(ThreadGroup threadGroup, String threadName, ESClient client, ExternalLinkEntry externalLinkEntry, int current, int total) {
-            super(threadGroup, threadName);
-
+        public ExternalLinkIndexerThread(ESClient client, ExternalLinkEntry externalLinkEntry, Set<String> usedThumbnails, int current, int total) {
             this.client = client;
             this.externalLinkEntry = externalLinkEntry;
+            this.usedThumbnails = usedThumbnails;
             this.current = current;
             this.total = total;
-            this.thumbnailFilename = null;
-        }
-
-        public String getThumbnailFilename() {
-            return this.thumbnailFilename;
         }
 
         @Override
@@ -265,7 +256,10 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
                     entity.useCachedThumbnail(oldEntity);
                 }
 
-                this.thumbnailFilename = entity.getCachedThumbnailFilename();
+                String thumbnailFilename = entity.getCachedThumbnailFilename();
+                if (thumbnailFilename != null) {
+                    this.usedThumbnails.add(thumbnailFilename);
+                }
 
                 String responseStr = null;
                 try {
