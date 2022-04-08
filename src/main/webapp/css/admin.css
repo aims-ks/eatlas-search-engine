@@ -1,0 +1,109 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  background-color: #FFFFFF;
+}
+
+.header,
+.footer {
+  background-color: #3366DD;
+  padding: 1em;
+  color: #FFFFFF;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header .user-menu {
+  display: flex;
+
+  list-style-type: none;
+
+  margin: 0;
+}
+.header .user-menu li span,
+.header .user-menu li a {
+  display: block;
+  padding: 0.5em 1.5em;
+  text-decoration: none;
+  color: #FFFFFF;
+}
+.header .user-menu li a:hover {
+  background-color: #3377EE;
+}
+
+.main {
+  display: flex;
+}
+
+.main .menu {
+  display: flex;
+  flex-direction: column;
+
+  list-style-type: none;
+
+  margin: 0;
+  padding: 1em 0;
+
+  background-color: #FFFFFF;
+}
+.main .menu li a {
+  display: block;
+  padding: 0.5em 1.5em;
+  text-decoration: none;
+  color: #000000;
+}
+.main .menu li a:hover {
+  background-color: #EEEEEE;
+}
+
+.main .content {
+  background-color: #EEFFFF;
+  padding: 1em;
+  flex-grow: 1;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.main .content .box {
+  background-color: #FFFFFF;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  margin: 1em;
+  padding: 0.5em 1em;
+}
+
+.main .content .box table {
+  margin: 0.5em 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.main .content .box table,
+.main .content .box table tr.odd td {
+  border: 1px solid #EEEEEE;
+}
+.main .content .box table tr.even td {
+  border: 1px solid #DDDDDD;
+}
+
+.main .content .box table th {
+  border: 1px solid #3377EE;
+  color: #FFFFFF;
+}
+
+.main .content .box table td,
+.main .content .box table th {
+  padding: 0.5em 1em;
+}
+
+.main .content .box table tr.table-header {
+  background-color: #3366DD;
+}
+
+.main .content .box table tr.odd {
+  background-color: #FFFFFF;
+}
+
+.main .content .box table tr.even {
+  background-color: #EEEEEE;
+}

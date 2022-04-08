@@ -44,12 +44,12 @@
             <artifactId>jaxb-api</artifactId>
             <version>2.3.0</version>
         </dependency>
+        -->
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
         </dependency>
-        -->
 
         <!-- REST API framework -->
         <dependency>
@@ -64,13 +64,19 @@
             <version>${glassfish.version}</version>
         </dependency>
 
+        <!-- Used to render the admin interface -->
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-mvc-jsp</artifactId>
+            <version>${glassfish.version}</version>
+        </dependency>
 
         <!-- Docs -->
         <!-- https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/ -->
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.1.1</version>
+            <version>8.1.2</version>
         </dependency>
 
         <dependency>
@@ -140,12 +146,12 @@
             <version>4.13.2</version>
         </dependency>
 
-        <!-- TODO Find a replacement for this -->
+        <!-- The elasticsearch test class is broken. Java throws error: "cannot access org.elasticsearch..." -->
         <!--
         <dependency>
             <groupId>org.elasticsearch.test</groupId>
             <artifactId>framework</artifactId>
-            <version>7.16.2</version>
+            <version>8.1.2</version>
             <scope>test</scope>
         </dependency>
         -->

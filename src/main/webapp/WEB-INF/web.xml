@@ -27,7 +27,7 @@
 
     <display-name>eAtlas search engine</display-name>
 
-    <!-- Jersey framework 2.x - REST API -->
+    <!-- Jersey framework - REST API -->
     <servlet>
         <servlet-name>Jersey REST Service</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -46,11 +46,29 @@
 
         <load-on-startup>1</load-on-startup>
     </servlet>
+
+    <servlet>
+        <servlet-name>Jersey admin REST Service</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>au.gov.aims.eatlas.searchengine.admin.AppConfig</param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <!-- TODO Add "index" to manage indexation (require authentication) -->
+    <!-- TODO Add "test" to help develop search clients -->
     <servlet-mapping>
         <servlet-name>Jersey REST Service</servlet-name>
         <url-pattern>/public/*</url-pattern>
-        <!-- TODO Add "index" to manage indexation (require authentication) -->
-        <!-- TODO Add "test" to help develop search clients -->
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>Jersey admin REST Service</servlet-name>
+        <url-pattern>/admin/*</url-pattern>
     </servlet-mapping>
 
 </web-app>

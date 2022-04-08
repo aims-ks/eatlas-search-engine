@@ -67,6 +67,11 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   $ docker-compose up
   ```
 
+- Control panel
+  ```
+  http://localhost:8080/eatlas-search-engine/admin
+  ```
+
 - Testing search engine:  
   ```
   http://localhost:8080/eatlas-search-engine/public/search/v1?q=lorem&idx=eatlas_article
