@@ -107,3 +107,17 @@ body {
 .main .content .box table tr.even {
   background-color: #EEEEEE;
 }
+
+.main .content .box .info,
+.main .content .box .warning,
+.main .content .box .error {
+  padding: 0.2em;
+}
+
+.main .content .box .error {
+  background-color: #FFDDDD;
+  font-weight: bold;
+}
+.main .content .box .warning {
+  background-color: #FFFFDD;
+}
