@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.ws.rs.GET;
@@ -33,9 +34,12 @@ public class Dashboard {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Viewable dashboard() {
-        Map<String, String> model = new HashMap<>();
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+
+        Map<String, Object> model = new HashMap<>();
         model.put("hello", "Hello");
         model.put("world", "World");
+        model.put("config", config);
         return new Viewable("/dashboard", model);
     }
 }

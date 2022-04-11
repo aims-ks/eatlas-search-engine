@@ -4,10 +4,6 @@ TODO:
 
 - Fix tests
 
-- Upgrade libs in POM
-
-- Fix missing index bug
-
 - Put config in Drupal module config
 
 ## What is the eAtlasSearchEngine

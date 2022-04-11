@@ -108,6 +108,44 @@ body {
   background-color: #EEEEEE;
 }
 
+.main .content .box table tr td.number,
+.main .content .box table tr td.date,
+.main .content .box table tr td.buttons {
+  text-align: right;
+}
+
+button.edit,
+button.index,
+button.delete {
+  width: 26px;
+  height: 26px;
+  font-size: 0; /* Hide button label */
+
+  background-color: #FFFFFF;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+button.edit {
+  background-image: url("../img/pencil.png");
+}
+button.index {
+  background-image: url("../img/cog.png");
+}
+button.delete {
+  background-image: url("../img/delete.png");
+}
+
+button.add {
+  height: 26px;
+  padding-left: 26px;
+
+  background-color: #FFFFFF;
+  background-repeat: no-repeat;
+  background-position: 5px center ;
+  background-image: url("../img/add.png");
+}
+
 .main .content .box .info,
 .main .content .box .warning,
 .main .content .box .error {

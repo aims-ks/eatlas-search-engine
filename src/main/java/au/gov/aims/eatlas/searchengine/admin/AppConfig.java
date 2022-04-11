@@ -21,9 +21,19 @@ package au.gov.aims.eatlas.searchengine.admin;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.jsp.JspMvcFeature;
 
+import javax.servlet.ServletContext;
+import javax.ws.rs.core.Context;
+import java.io.IOException;
+
 public class AppConfig extends ResourceConfig {
 
-    public AppConfig() {
+    public AppConfig(@Context ServletContext servletContext) {
+        try {
+            SearchEngineConfig.createInstance(servletContext);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         this.packages("au.gov.aims.eatlas.searchengine.admin.rest");
         this.property(JspMvcFeature.TEMPLATE_BASE_PATH, "/WEB-INF/jsp");
         this.register(JspMvcFeature.class);

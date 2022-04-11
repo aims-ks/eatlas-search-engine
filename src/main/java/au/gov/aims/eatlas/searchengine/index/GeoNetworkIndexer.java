@@ -53,13 +53,13 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     private String geoNetworkUrl;
     private String geoNetworkVersion;
 
-    public static GeoNetworkIndexer fromJSON(String index, JSONObject json) {
+    public static GeoNetworkIndexer fromJSON(String index, IndexerState state, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new GeoNetworkIndexer(
-            index,
+            index, state,
             json.optString("geoNetworkUrl", null),
             json.optString("geoNetworkVersion", null));
     }
@@ -79,14 +79,14 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
      * geoNetworkUrl: https://eatlas.org.au/geonetwork
      * geoNetworkVersion: 3.6.0 ?
      */
-    public GeoNetworkIndexer(String index, String geoNetworkUrl, String geoNetworkVersion) {
-        super(index);
+    public GeoNetworkIndexer(String index, IndexerState state, String geoNetworkUrl, String geoNetworkVersion) {
+        super(index, state);
         this.geoNetworkUrl = geoNetworkUrl;
         this.geoNetworkVersion = geoNetworkVersion;
     }
 
     @Override
-    protected void internalHarvest(ESClient client, Long lastHarvested) {
+    protected Long internalHarvest(ESClient client, Long lastHarvested) {
         String lastHarvestedISODateStr = null;
         if (lastHarvested != null) {
             // NOTE: GeoNetwork last modified date (aka dateFrom) are rounded to second,
@@ -122,7 +122,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         } catch(Exception ex) {
             LOGGER.error(String.format("Exception occurred while harvesting GeoNetwork record list: %s",
                     url), ex);
-            return;
+            return null;
         }
 
         if (responseStr != null && !responseStr.isEmpty()) {
@@ -141,7 +141,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     // Should not happen
                     LOGGER.error(String.format("Exception occurred while creating XML document builder for index: %s",
                             this.getIndex()), ex);
-                    return;
+                    return null;
                 }
                 Document document = builder.parse(input);
 
@@ -217,12 +217,15 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 // Only cleanup when we are doing a full harvest
                 if (fullHarvest) {
                     this.cleanUp(client, harvestStart, usedThumbnails, "GeoNetwork metadata record");
+                    return (long)total;
                 }
             } catch (Exception ex) {
                 LOGGER.error(String.format("Exception occurred while parsing the GeoNetwork record list: %s",
                         url), ex);
             }
         }
+
+        return null;
     }
 
     public String getGeoNetworkUrl() {

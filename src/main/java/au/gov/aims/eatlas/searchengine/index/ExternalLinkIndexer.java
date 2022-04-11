@@ -45,12 +45,12 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
     // List of "title, url, thumbnail"
     private List<ExternalLinkEntry> externalLinkEntries;
 
-    public static ExternalLinkIndexer fromJSON(String index, JSONObject json) {
+    public static ExternalLinkIndexer fromJSON(String index, IndexerState state, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
-        ExternalLinkIndexer indexer = new ExternalLinkIndexer(index);
+        ExternalLinkIndexer indexer = new ExternalLinkIndexer(index, state);
 
         JSONArray jsonExternalLinkEntries = json.optJSONArray("externalLinkEntries");
         if (jsonExternalLinkEntries != null && !jsonExternalLinkEntries.isEmpty()) {
@@ -86,8 +86,8 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
      * index: eatlas_extlink
      * url: http://www.csiro.au/connie2/
      */
-    public ExternalLinkIndexer(String index) {
-        super(index);
+    public ExternalLinkIndexer(String index, IndexerState state) {
+        super(index, state);
     }
 
     public void addExternalLink(String url, String thumbnail, String title) {
@@ -110,16 +110,17 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
      *   since there is always only one entity to harvest.
      */
     @Override
-    protected void internalHarvest(ESClient client, Long lastHarvested) {
+    protected Long internalHarvest(ESClient client, Long lastHarvested) {
         // There is no reliable way to know if a website was modified since last indexation.
         // Therefore, the lastHarvested parameter is ignored.
         // Always perform a full harvest.
 
         long harvestStart = System.currentTimeMillis();
 
+        int total = 0;
         Set<String> usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         if (this.externalLinkEntries != null && !this.externalLinkEntries.isEmpty()) {
-            int total = this.externalLinkEntries.size();
+            total = this.externalLinkEntries.size();
             int current = 0;
 
             ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
@@ -145,6 +146,8 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
         }
 
         this.cleanUp(client, harvestStart, usedThumbnails, "external URL");
+
+        return (long)total;
     }
 
     public static class ExternalLinkEntry {

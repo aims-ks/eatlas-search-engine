@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <%@page contentType="text/html"%>
 <%@page pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
 <html lang="en">
 <head>
@@ -26,7 +28,6 @@
                 <li><a href="#">Manage</a></li> <!-- Create, edit, delete index -->
                 <li><a href="#">Reindex</a></li> <!-- Re-index an index or all indexes, with progress bar -->
                 <li><a href="#">Search</a></li> <!-- Test the search. Checkbox to choose which index to search from. -->
-                <li><a href="#">Log-out</a></li>
             </ul>
         </nav>
 
@@ -43,37 +44,30 @@
                 <table>
                     <tr class="table-header">
                         <th>Index</th>
-                        <th>Class</th>
+                        <th>Type</th>
                         <th>Documents</th>
+                        <th>Last indexed</th>
+                        <th>Last runtime</th>
                         <th>Actions</th>
                     </tr>
-                    <tr class="odd">
-                        <td>eatlas_article</td>
-                        <td>DrupalNodeIndexer</td>
-                        <td>11</td>
-                        <td>[E] [I] [X]</td>
-                    </tr>
-                    <tr class="even">
-                        <td>eatlas_extlink</td>
-                        <td>ExternalLinkIndexer</td>
-                        <td>6</td>
-                        <td>[E] [I] [X]</td>
-                    </tr>
-                    <tr class="odd">
-                        <td>eatlas_metadata</td>
-                        <td>GeoNetworkIndexer</td>
-                        <td>383</td>
-                        <td>[E] [I] [X]</td>
-                    </tr>
-                    <tr class="even">
-                        <td>eatlas_layer</td>
-                        <td>AtlasMapperIndexer</td>
-                        <td>5000</td>
-                        <td>[E] [I] [X]</td>
-                    </tr>
+
+                    <c:forEach items="${it.config.indexers}" var="indexer" varStatus="loopStatus">
+                        <tr class="${(loopStatus.index+1) % 2 == 0 ? 'even' : 'odd'}">
+                            <td>${indexer.index}</td>
+                            <td>${indexer.type}</td>
+                            <td class="number">${indexer.state.count}</td>
+                            <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
+                            <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
+                            <td class="buttons">
+                                <button class="edit" title="Edit">Edit</button>
+                                <button class="index" title="Re-index">Re-index</button>
+                                <button class="delete" title="Delete">Delete</button>
+                            </td>
+                        </tr>
+                    </c:forEach>
                 </table>
 
-                <button>Add an index</button>
+                <button class="add" title="Add an index">Add an index</button>
                 <p>Content of the page</p>
             </div>
 

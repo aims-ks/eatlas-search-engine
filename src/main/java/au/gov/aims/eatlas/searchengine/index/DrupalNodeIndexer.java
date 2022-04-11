@@ -49,13 +49,13 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     private String drupalNodeType;
     private String drupalPreviewImageField;
 
-    public static DrupalNodeIndexer fromJSON(String index, JSONObject json) {
+    public static DrupalNodeIndexer fromJSON(String index, IndexerState state, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalNodeIndexer(
-            index,
+            index, state,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
@@ -80,8 +80,8 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
      * drupalVersion: 9.0
      * drupalNodeType: article
      */
-    public DrupalNodeIndexer(String index, String drupalUrl, String drupalVersion, String drupalNodeType, String drupalPreviewImageField) {
-        super(index);
+    public DrupalNodeIndexer(String index, IndexerState state, String drupalUrl, String drupalVersion, String drupalNodeType, String drupalPreviewImageField) {
+        super(index, state);
         this.drupalUrl = drupalUrl;
         this.drupalVersion = drupalVersion;
         this.drupalNodeType = drupalNodeType;
@@ -89,7 +89,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     }
 
     @Override
-    protected void internalHarvest(ESClient client, Long lastHarvested) {
+    protected Long internalHarvest(ESClient client, Long lastHarvested) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -101,6 +101,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
         int nodeFound, page = 0;
+        long count = 0;
         boolean stop = false;
         do {
             // Ordered by lastModified (changed).
@@ -126,6 +127,8 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                 nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
 
                 for (int i=0; i<nodeFound; i++) {
+                    count++;
+
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
                     DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode);
 
@@ -156,7 +159,10 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         // Only cleanup when we are doing a full harvest
         if (fullHarvest) {
             this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal node of type %s", this.drupalNodeType));
+            return count;
         }
+
+        return null;
     }
 
     private static String getPreviewImageUUID(JSONObject jsonApiNode, String previewImageField) {

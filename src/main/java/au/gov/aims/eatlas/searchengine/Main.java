@@ -21,12 +21,8 @@ package au.gov.aims.eatlas.searchengine;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
-import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
-import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
-import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
-import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndexer;
@@ -62,7 +58,7 @@ public class Main {
         SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json");
 
         // Re-index everything
-        //Index.internalReindex(config, fullHarvest);
+        //Index.internalReindex(fullHarvest);
 
 
         // Re-index individual indexes
@@ -73,16 +69,16 @@ public class Main {
         // TODO Implement UI - Configure, re-index button, try search
 
         DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
-        Index.internalReindex(config, drupalNodeIndexer, fullHarvest);
+        Index.internalReindex(drupalNodeIndexer, fullHarvest);
 
         ExternalLinkIndexer externalLinkIndexer = (ExternalLinkIndexer)config.getIndexer("eatlas_extlink");
-        Index.internalReindex(config, externalLinkIndexer, fullHarvest);
+        //Index.internalReindex(externalLinkIndexer, fullHarvest);
 
         GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
-        Index.internalReindex(config, geoNetworkIndexer, fullHarvest);
+        //Index.internalReindex(geoNetworkIndexer, fullHarvest);
 
         AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-        Index.internalReindex(config, atlasMapperIndexer, fullHarvest);
+        //Index.internalReindex(atlasMapperIndexer, fullHarvest);
 
 
         // Create a bunch of dummy external links

@@ -52,13 +52,13 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private String atlasMapperClientUrl;
     private String atlasMapperVersion;
 
-    public static AtlasMapperIndexer fromJSON(String index, JSONObject json) {
+    public static AtlasMapperIndexer fromJSON(String index, IndexerState state, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new AtlasMapperIndexer(
-            index,
+            index, state,
             json.optString("atlasMapperClientUrl", null),
             json.optString("atlasMapperVersion", null));
     }
@@ -78,14 +78,14 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
      * atlasMapperClientUrl: https://maps.eatlas.org.au
      * atlasMapperVersion: 2.2.0
      */
-    public AtlasMapperIndexer(String index, String atlasMapperClientUrl, String atlasMapperVersion) {
-        super(index);
+    public AtlasMapperIndexer(String index, IndexerState state, String atlasMapperClientUrl, String atlasMapperVersion) {
+        super(index, state);
         this.atlasMapperClientUrl = atlasMapperClientUrl;
         this.atlasMapperVersion = atlasMapperVersion;
     }
 
     @Override
-    protected void internalHarvest(ESClient client, Long lastHarvested) {
+    protected Long internalHarvest(ESClient client, Long lastHarvested) {
         // There is no way to get last modified layers from AtlasMapper.
         // Therefore, we only perform an harvest if the JSON files are more recent than lastHarvested.
 
@@ -99,7 +99,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         } catch(Exception ex) {
             LOGGER.error(String.format("Exception occurred while downloading the AtlasMapper main configuration file: %s",
                     mainUrlStr), ex);
-            return;
+            return null;
         }
         Long mainLastModified = IndexUtils.parseHttpLastModifiedHeader(mainResponse);
 
@@ -113,7 +113,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         } catch(Exception ex) {
             LOGGER.error(String.format("Exception occurred while downloading the AtlasMapper layers file: %s",
                     layersUrlStr), ex);
-            return;
+            return null;
         }
         Long layersLastModified = IndexUtils.parseHttpLastModifiedHeader(layersResponse);
 
@@ -133,20 +133,20 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 // We can skip the harvest.
                 if (!indexOutDated) {
                     LOGGER.info(String.format("Index %s is up to date.", this.getIndex()));
-                    return;
+                    return null;
                 }
             }
         }
 
         String mainResponseStr = mainResponse.body();
         if (mainResponseStr == null || mainResponseStr.isEmpty()) {
-            return;
+            return null;
         }
         JSONObject jsonMainConfig = new JSONObject(mainResponseStr);
 
         String layersResponseStr = layersResponse.body();
         if (layersResponseStr == null || layersResponseStr.isEmpty()) {
-            return;
+            return null;
         }
         JSONObject jsonLayersConfig = new JSONObject(layersResponseStr);
 
@@ -178,6 +178,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         // Delete old thumbnails older than the TTL (1 month old)
         this.cleanUp(client, harvestStart, usedThumbnails, "AtlasMapper layer");
+
+        return (long)total;
     }
 
     public String getAtlasMapperClientUrl() {

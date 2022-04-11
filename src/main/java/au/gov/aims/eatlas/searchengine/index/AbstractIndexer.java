@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
@@ -27,6 +28,8 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Conflicts;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.CountRequest;
+import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
 import co.elastic.clients.elasticsearch.core.GetRequest;
@@ -52,18 +55,23 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     private boolean enabled;
     private final String index;
-    private Long lastIndexed;
-    private Long lastIndexRuntime;
     private Long thumbnailTTL; // TTL, in days
     private Long brokenThumbnailTTL; // TTL, in days
 
-    public AbstractIndexer(String index) {
+    private final IndexerState state;
+
+    public AbstractIndexer(String index, IndexerState state) {
         this.index = index;
+        this.state = state;
     }
 
-    protected abstract void internalHarvest(ESClient client, Long lastIndexed);
+    protected abstract Long internalHarvest(ESClient client, Long lastIndexed);
     public abstract Entity load(JSONObject json);
     public abstract JSONObject toJSON();
+
+    public IndexerState getState() {
+        return this.state;
+    }
 
     // If full is true, re-index everything.
     // If not, only index what have changed since last indexation.
@@ -88,21 +96,25 @@ public abstract class AbstractIndexer<E extends Entity> {
             //System.out.println("DELETE INDEX [" + this.getIndex() + "]: " + ((ESRestHighLevelClient)client).deleteIndex(this.getIndex()));
 
             client.createIndex(this.getIndex());
-            this.internalHarvest(client, full ? null : this.lastIndexed);
+            Long count = this.internalHarvest(client, full ? null : this.state.getLastIndexed());
+            if (count == null) {
+                CountRequest countRequest = new CountRequest.Builder().index(this.getIndex()).build();
+                CountResponse countResponse = client.count(countRequest);
+                count = countResponse.count();
+            }
+            this.state.setCount(count);
         }
 
         long lastIndexedEnds = System.currentTimeMillis();
-        this.lastIndexed = lastIndexedStarts;
-        this.lastIndexRuntime = lastIndexedEnds - lastIndexedStarts;
+        this.state.setLastIndexed(lastIndexedStarts);
+        this.state.setLastIndexRuntime(lastIndexedEnds - lastIndexedStarts);
     }
 
     protected JSONObject getJsonBase() {
         return new JSONObject()
-            .put("class", this.getClass().getSimpleName())
+            .put("type", this.getType())
             .put("enabled", this.isEnabled())
             .put("index", this.index)
-            .put("lastIndexed", this.lastIndexed)
-            .put("lastIndexRuntime", this.lastIndexRuntime)
             .put("thumbnailTTL", this.thumbnailTTL)
             .put("brokenThumbnailTTL", this.brokenThumbnailTTL);
     }
@@ -112,9 +124,9 @@ public abstract class AbstractIndexer<E extends Entity> {
             return null;
         }
 
-        String className = json.optString("class");
-        if (className == null) {
-            LOGGER.warn(String.format("Invalid indexer JSON Object. Property \"class\" missing.%n%s", json.toString(2)));
+        String type = json.optString("type");
+        if (type == null) {
+            LOGGER.warn(String.format("Invalid indexer JSON Object. Property \"type\" missing.%n%s", json.toString(2)));
             return null;
         }
 
@@ -124,27 +136,34 @@ public abstract class AbstractIndexer<E extends Entity> {
             return null;
         }
 
+        SearchEngineState searchEngineState = SearchEngineState.getInstance();
+
         // TODO Use annotation to find indexer
+        IndexerState state = null;
         AbstractIndexer indexer = null;
-        switch(className) {
+        switch(type) {
             case "AtlasMapperIndexer":
-                indexer = AtlasMapperIndexer.fromJSON(index, json);
+                state = searchEngineState.getOrAddIndexerState(index);
+                indexer = AtlasMapperIndexer.fromJSON(index, state, json);
                 break;
 
             case "DrupalNodeIndexer":
-                indexer = DrupalNodeIndexer.fromJSON(index, json);
+                state = searchEngineState.getOrAddIndexerState(index);
+                indexer = DrupalNodeIndexer.fromJSON(index, state, json);
                 break;
 
             case "ExternalLinkIndexer":
-                indexer = ExternalLinkIndexer.fromJSON(index, json);
+                state = searchEngineState.getOrAddIndexerState(index);
+                indexer = ExternalLinkIndexer.fromJSON(index, state, json);
                 break;
 
             case "GeoNetworkIndexer":
-                indexer = GeoNetworkIndexer.fromJSON(index, json);
+                state = searchEngineState.getOrAddIndexerState(index);
+                indexer = GeoNetworkIndexer.fromJSON(index, state, json);
                 break;
 
             default:
-                LOGGER.warn(String.format("Unsupported indexer class: %s%n%s", className, json.toString(2)));
+                LOGGER.warn(String.format("Unsupported indexer type: %s%n%s", type, json.toString(2)));
                 return null;
         }
 
@@ -153,18 +172,6 @@ public abstract class AbstractIndexer<E extends Entity> {
         }
 
         indexer.enabled = json.optBoolean("enabled", true);
-
-        Long lastIndexed = null;
-        if (json.has("lastIndexed")) {
-            lastIndexed = json.optLong("lastIndexed", -1);
-        }
-        indexer.lastIndexed = lastIndexed;
-
-        Long lastIndexRuntime = null;
-        if (json.has("lastIndexElapse")) {
-            lastIndexRuntime = json.optLong("lastIndexRuntime", -1);
-        }
-        indexer.lastIndexRuntime = lastIndexRuntime;
 
         Long thumbnailTTL = null;
         if (json.has("thumbnailTTL")) {
@@ -185,20 +192,12 @@ public abstract class AbstractIndexer<E extends Entity> {
         return this.index;
     }
 
+    public String getType() {
+        return this.getClass().getSimpleName();
+    }
+
     public boolean isEnabled() {
         return this.enabled;
-    }
-
-    public void setLastIndexed(Long lastIndexed) {
-        this.lastIndexed = lastIndexed;
-    }
-
-    public Long getLastIndexed() {
-        return this.lastIndexed;
-    }
-
-    public Long getLastIndexRuntime() {
-        return this.lastIndexRuntime;
     }
 
     public long getThumbnailTTL() {
