@@ -18,7 +18,6 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
-import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.ws.rs.GET;
@@ -28,24 +27,14 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/")
-public class Dashboard {
+@Path("/reindex")
+public class ReindexPage {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Viewable dashboard() {
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
-
-// TODO DELETE
-Messages.getInstance().addMessages(Messages.Level.INFO, "Test info level");
-Messages.getInstance().addMessages(Messages.Level.WARNING, "Warning message");
-Messages.getInstance().addMessages(Messages.Level.ERROR, "Something went wrong!");
-
+    public Viewable reindexPage() {
         Map<String, Object> model = new HashMap<>();
-        model.put("hello", "Hello");
-        model.put("world", "World");
-        model.put("config", config);
         model.put("messages", Messages.getInstance());
-        return new Viewable("/dashboard", model);
+        return new Viewable("/reindex", model);
     }
 }

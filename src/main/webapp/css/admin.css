@@ -58,6 +58,10 @@ body {
   background-color: #EEEEEE;
 }
 
+.main .menu li.active {
+  font-weight: bold;
+}
+
 .main .content {
   background-color: #EEFFFF;
   padding: 1em;

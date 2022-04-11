@@ -93,9 +93,9 @@ public class Main {
         String searchQuery = "shark";
 
         List<String> idx = new ArrayList<String>();
-        //idx.add("eatlas_article");
+        idx.add("eatlas_article");
         //idx.add("eatlas_extlink");
-        idx.add("eatlas_metadata");
+        //idx.add("eatlas_metadata");
         //idx.add("eatlas_layer");
 
         SearchResults results = Search.paginationSearch(searchQuery, 0, 100, idx, null);
