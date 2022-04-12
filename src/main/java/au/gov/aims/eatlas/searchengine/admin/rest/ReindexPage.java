@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.ws.rs.GET;
@@ -33,8 +34,11 @@ public class ReindexPage {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Viewable reindexPage() {
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+
         Map<String, Object> model = new HashMap<>();
         model.put("messages", Messages.getInstance());
+        model.put("config", config);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/reindex.jsp
         return new Viewable("/reindex", model);

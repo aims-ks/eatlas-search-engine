@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.ws.rs.GET;
@@ -33,10 +34,12 @@ public class SettingsPage {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Viewable settingsPage() {
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
         // NOTE: Heavily restrict characters for index name [a-z0-9\-_]
 
         Map<String, Object> model = new HashMap<>();
         model.put("messages", Messages.getInstance());
+        model.put("config", config);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/settings.jsp
         return new Viewable("/settings", model);

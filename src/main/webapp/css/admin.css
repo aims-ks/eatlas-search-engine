@@ -152,7 +152,12 @@ button.refresh {
   background-color: #FFFFFF;
   background-repeat: no-repeat;
   background-position: 5px center ;
+}
+button.add {
   background-image: url("../img/add.png");
+}
+button.refresh {
+  background-image: url("../img/cog.png");
 }
 
 .main .content .box .info,

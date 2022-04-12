@@ -2,11 +2,23 @@ TODO:
 - Upgrade deprecated class in:
   au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient.RestHighLevelClient
 
+- Authentication (KeyCloak)
+
 - Fix tests
 
 - Admin UI to edit config
 
 - BUG: Search with no index = all indexes. Make summary match that
+
+- Messages
+  - Add "Clear messages" button
+  - Make messages session based (if that's not too hard)
+
+- Implement pages
+  - [ ] Dashboard
+  - [X] Search page
+  - [ ] Index page
+  - [ ] Settings page
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}
 

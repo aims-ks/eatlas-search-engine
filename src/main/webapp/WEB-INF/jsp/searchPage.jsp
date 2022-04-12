@@ -48,7 +48,7 @@
 
 
     <c:choose>
-        <c:when test="${not empty it.results}">
+        <c:when test="${not empty it.results && it.results.summary.hits > 0}">
             <div class="box">
                 <h3>Result summary</h3>
 
@@ -191,7 +191,7 @@
         <c:otherwise>
             <div class="box">
                 <h3>Results</h3>
-                <p>No search results</p>
+                <p>No results found</p>
             </div>
         </c:otherwise>
     </c:choose>
