@@ -12,20 +12,24 @@
 <html lang="en">
 <head>
     <title>eAtlas Search Engine - ${title}</title>
-    <link rel="stylesheet" href="${pageContext.servletContext.contextPath}/css/admin.css">
+    <link rel="stylesheet" href="<c:url value="/css/admin.css" />">
 </head>
 
 <body>
     <c:import url="include/header.jsp"/>
 
     <div class="box">
+        <h2>Search engine</h2>
+
+        <p>TODO Show search engine status (active, down, unreachable, etc)</p>
+
         <h2>Indexes</h2>
 
         <table>
             <tr class="table-header">
                 <th>Index</th>
                 <th>Type</th>
-                <th>Documents</th>
+                <th>Document count</th>
                 <th>Last indexed</th>
                 <th>Last runtime</th>
                 <th>Actions</th>
@@ -48,7 +52,8 @@
         </table>
 
         <button class="add" title="Add an index">Add an index</button>
-        <p>Content of the page</p>
+
+        <button class="refresh" title="Refresh count">Refresh indexes document count</button>
     </div>
 
     <jsp:include page="include/footer.jsp" />

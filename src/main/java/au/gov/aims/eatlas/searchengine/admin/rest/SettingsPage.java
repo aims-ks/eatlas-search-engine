@@ -27,14 +27,18 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/manage")
-public class ManagePage {
+@Path("/settings")
+public class SettingsPage {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Viewable managePage() {
+    public Viewable settingsPage() {
+        // NOTE: Heavily restrict characters for index name [a-z0-9\-_]
+
         Map<String, Object> model = new HashMap<>();
         model.put("messages", Messages.getInstance());
-        return new Viewable("/manage", model);
+
+        // Load the template: src/main/webapp/WEB-INF/jsp/settings.jsp
+        return new Viewable("/settings", model);
     }
 }

@@ -11,7 +11,7 @@
 <html lang="en">
 <head>
     <title>eAtlas Search Engine - ${title}</title>
-    <link rel="stylesheet" href="${pageContext.servletContext.contextPath}/css/admin.css">
+    <link rel="stylesheet" href="<c:url value="/css/admin.css" />">
 </head>
 
 <body>

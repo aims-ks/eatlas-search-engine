@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,11 +38,15 @@ public class Messages {
     }
 
     public void addMessages(Level level, String message) {
+        this.addMessages(level, message, null);
+    }
+
+    public void addMessages(Level level, String message, Throwable exception) {
         if (this.messages == null) {
-            this.messages = new ArrayList<>();
+            this.messages = Collections.synchronizedList(new ArrayList<>());
         }
 
-        this.messages.add(new Message(level, message));
+        this.messages.add(new Message(level, message, exception));
     }
 
     public List<Message> getMessages() {
@@ -68,15 +73,17 @@ public class Messages {
         }
     }
 
-    public class Message {
+    public static class Message {
         private long timestamp;
         private Level level;
         private String message;
+        private Throwable exception;
 
-        public Message(Level level, String message) {
+        public Message(Level level, String message, Throwable exception) {
             this.timestamp = System.currentTimeMillis();
             this.level = level;
             this.message = message;
+            this.exception = exception;
         }
 
         public long getTimestamp() {
@@ -101,6 +108,14 @@ public class Messages {
 
         public void setMessage(String message) {
             this.message = message;
+        }
+
+        public Throwable getException() {
+            return this.exception;
+        }
+
+        public void setException(Throwable exception) {
+            this.exception = exception;
         }
     }
 }

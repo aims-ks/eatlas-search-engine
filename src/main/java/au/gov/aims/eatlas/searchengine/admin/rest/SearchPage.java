@@ -18,13 +18,18 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.rest.Search;
+import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Path("/search")
@@ -32,9 +37,49 @@ public class SearchPage {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Viewable searchPage() {
+    public Viewable searchPage(
+        @QueryParam("query") String query,
+        @QueryParam("indexes") List<String> indexes,
+        @QueryParam("hitsPerPage") Integer hitsPerPage,
+        @QueryParam("page") Integer page
+    ) {
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+
+        if (hitsPerPage == null || hitsPerPage <= 0) {
+            hitsPerPage = 10;
+        }
+        if (page == null || page <= 0) {
+            page = 1;
+        }
+
+        SearchResults results = null;
+        if (query != null && !query.isEmpty()) {
+            try {
+                int start = (page-1) * hitsPerPage;
+                results = Search.paginationSearch(query, start, hitsPerPage, indexes, indexes);
+            } catch(Exception ex) {
+                Messages.getInstance().addMessages(Messages.Level.ERROR,
+                    "An exception occurred during the search.", ex);
+            }
+        }
+
+        int nbPage = 0;
+        if (results != null) {
+            nbPage = (int)Math.ceil(((double)results.getSummary().getHits()) / hitsPerPage);
+        }
+
         Map<String, Object> model = new HashMap<>();
         model.put("messages", Messages.getInstance());
+        model.put("config", config);
+        model.put("query", query);
+        model.put("page", page);
+        model.put("hitsPerPage", hitsPerPage);
+        model.put("nbPage", nbPage);
+
+        model.put("indexes", indexes);
+        model.put("results", results);
+
+        // Load the template: src/main/webapp/WEB-INF/jsp/searchPage.jsp
         return new Viewable("/searchPage", model);
     }
 

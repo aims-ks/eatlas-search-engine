@@ -35,6 +35,8 @@ public class ReindexPage {
     public Viewable reindexPage() {
         Map<String, Object> model = new HashMap<>();
         model.put("messages", Messages.getInstance());
+
+        // Load the template: src/main/webapp/WEB-INF/jsp/reindex.jsp
         return new Viewable("/reindex", model);
     }
 }

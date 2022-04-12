@@ -27,6 +27,7 @@ public class Summary {
     // Total number of search results returned by the search query
     private Long hits;
 
+    // Key = index
     private Map<String, IndexSummary> indexSummaries;
 
     public Long getHits() {

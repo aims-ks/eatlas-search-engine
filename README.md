@@ -4,7 +4,11 @@ TODO:
 
 - Fix tests
 
-- Put config in Drupal module config
+- Admin UI to edit config
+
+- BUG: Search with no index = all indexes. Make summary match that
+
+NOTE: Application name: ${pageContext.servletContext.contextPath}
 
 ## What is the eAtlasSearchEngine
 

@@ -36,16 +36,11 @@ public class Dashboard {
     public Viewable dashboard() {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-// TODO DELETE
-Messages.getInstance().addMessages(Messages.Level.INFO, "Test info level");
-Messages.getInstance().addMessages(Messages.Level.WARNING, "Warning message");
-Messages.getInstance().addMessages(Messages.Level.ERROR, "Something went wrong!");
-
         Map<String, Object> model = new HashMap<>();
-        model.put("hello", "Hello");
-        model.put("world", "World");
-        model.put("config", config);
         model.put("messages", Messages.getInstance());
+        model.put("config", config);
+
+        // Load the template: src/main/webapp/WEB-INF/jsp/dashboard.jsp
         return new Viewable("/dashboard", model);
     }
 }
