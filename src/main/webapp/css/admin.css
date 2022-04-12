@@ -206,7 +206,30 @@ button.refresh {
   overflow: auto;
 }
 
+.main .content .pager ul {
+  list-style-type: none;
+  display: flex;
+  justify-content: center;
+  gap: 1em;
 
+  margin: 0;
+  padding: 1em;
+}
+.main .content .pager li span,
+.main .content .pager li a {
+  display: block;
+  padding: 0.5em 1em;
+  text-decoration: none;
+  font-weight: bold;
+  color: #FFFFFF;
+  background-color: #3366DD;
+}
+.main .content .pager li span {
+  background-color: #999999;
+}
+.main .content .pager li a:hover {
+  background-color: #3377EE;
+}
 
 /*
  * Simple way to make the element hidden and appear on mouse over, when JS is disabled.

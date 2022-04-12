@@ -6,9 +6,6 @@ TODO:
 
 - Admin UI to edit config
 
-- Search page
-  - Fix pager
-
 - BUG: Search with no index = all indexes. Make summary match that
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}

@@ -109,17 +109,80 @@
                 <%-- Pager --%>
                 <div class="box pager">
                     <ul>
-                        <c:forEach begin="1" end="${it.nbPage}" varStatus="page">
+                        <c:if test="${it.page > 1}">
                             <c:url value="/admin/search" var="url">
                                 <c:param name="query" value="${it.query}" />
                                 <c:forEach items="${it.indexes}" var="index">
                                     <c:param name="indexes" value="${index}" />
                                 </c:forEach>
                                 <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
-                                <c:param name="page" value="${page.index}" />
+                                <c:param name="page" value="1" />
                             </c:url>
-                            <li><a href="${url}">${page.index}</a></li>
+                            <li><a href="${url}" title="First">«</a></li>
+
+                            <c:url value="/admin/search" var="url">
+                                <c:param name="query" value="${it.query}" />
+                                <c:forEach items="${it.indexes}" var="index">
+                                    <c:param name="indexes" value="${index}" />
+                                </c:forEach>
+                                <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
+                                <c:param name="page" value="${it.page - 1}" />
+                            </c:url>
+                            <li><a href="${url}" title="Previous">‹</a></li>
+                        </c:if>
+
+                        <c:set var="pagerBegin" value="${it.page - 1}" />
+                        <c:if test="${pagerBegin < 1}">
+                            <c:set var="pagerBegin" value="1" />
+                        </c:if>
+                        <c:set var="pagerEnd" value="${it.page + 3}" />
+                        <c:if test="${pagerEnd > it.nbPage}">
+                            <c:set var="pagerEnd" value="${it.nbPage}" />
+                        </c:if>
+
+                        <c:forEach begin="${pagerBegin}" end="${pagerEnd}" varStatus="page">
+                            <c:choose>
+                                <%-- Image downloaded, cached and served by the search engine --%>
+                                <c:when test="${page.index == it.page}">
+                                    <li><span>${page.index}</span></li>
+                                </c:when>
+
+                                <c:otherwise>
+                                    <c:url value="/admin/search" var="url">
+                                        <c:param name="query" value="${it.query}" />
+                                        <c:forEach items="${it.indexes}" var="index">
+                                            <c:param name="indexes" value="${index}" />
+                                        </c:forEach>
+                                        <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
+                                        <c:param name="page" value="${page.index}" />
+                                    </c:url>
+
+                                    <li><a href="${url}">${page.index}</a></li>
+                                </c:otherwise>
+                            </c:choose>
                         </c:forEach>
+
+                        <c:if test="${it.page < it.nbPage}">
+                            <c:url value="/admin/search" var="url">
+                                <c:param name="query" value="${it.query}" />
+                                <c:forEach items="${it.indexes}" var="index">
+                                    <c:param name="indexes" value="${index}" />
+                                </c:forEach>
+                                <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
+                                <c:param name="page" value="${it.page + 1}" />
+                            </c:url>
+                            <li><a href="${url}" title="Next">›</a></li>
+
+                            <c:url value="/admin/search" var="url">
+                                <c:param name="query" value="${it.query}" />
+                                <c:forEach items="${it.indexes}" var="index">
+                                    <c:param name="indexes" value="${index}" />
+                                </c:forEach>
+                                <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
+                                <c:param name="page" value="${it.nbPage}" />
+                            </c:url>
+                            <li><a href="${url}" title="Last">»</a></li>
+                        </c:if>
                     </ul>
                 </div>
             </div>
