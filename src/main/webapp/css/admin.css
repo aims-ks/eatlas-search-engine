@@ -174,13 +174,8 @@ button.refresh {
   font-weight: normal;
 }
 
-/* Simple way to make the stacktrace hidden by default */
 .main .content .box .error .exception .stacktrace {
-  display: none;
   overflow: auto;
-}
-.main .content .box .error .exception:hover .stacktrace {
-  display: block;
 }
 
 .main .content .result .preview {
@@ -208,9 +203,21 @@ button.refresh {
 }
 
 .main .content .result .jsonResult .json {
-  display: none;
   overflow: auto;
 }
-.main .content .result .jsonResult:hover .json {
+
+
+
+/*
+ * Simple way to make the element hidden and appear on mouse over, when JS is disabled.
+ * NOTE: JavaScript removes the "hover" class, so don't use it for anything else.
+ */
+.main .clickable {
+  cursor: pointer;
+}
+.main .hover .collapsible {
+  display: none;
+}
+.main .hover:hover .collapsible {
   display: block;
 }

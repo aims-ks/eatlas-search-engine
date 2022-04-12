@@ -11,6 +11,7 @@
 <html lang="en">
 <head>
     <title>eAtlas Search Engine - ${title}</title>
+    <script src="<c:url value="/js/admin.js" />"></script>
     <link rel="stylesheet" href="<c:url value="/css/admin.css" />">
 </head>
 
@@ -98,8 +99,9 @@
                             <div class="index">${searchResult.entity.index}</div>
                         </div>
 
-                        <div class="jsonResult">View JSON Result
-                            <pre class="json"><c:out value="${searchResult.toJSON().toString(2)}"/></pre>
+                        <div class="jsonResult hover">
+                            <span class="clickable">View JSON Result</span>
+                            <pre class="json collapsible"><c:out value="${searchResult.toJSON().toString(2)}"/></pre>
                         </div>
                     </div>
                 </c:forEach>
