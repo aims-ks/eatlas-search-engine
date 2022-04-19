@@ -244,7 +244,7 @@ public class ExternalLinkIndexer extends AbstractIndexer<ExternalLink> {
 
                 // Create the thumbnail if it's missing or outdated
                 ExternalLink oldEntity = ExternalLinkIndexer.this.safeGet(this.client, ExternalLink.class, entity.getId());
-                if (entity.isThumbnailOutdated(oldEntity, ExternalLinkIndexer.this.getThumbnailTTL(), ExternalLinkIndexer.this.getBrokenThumbnailTTL())) {
+                if (entity.isThumbnailOutdated(oldEntity, ExternalLinkIndexer.this.getSafeThumbnailTTL(), ExternalLinkIndexer.this.getSafeBrokenThumbnailTTL())) {
                     try {
                         File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, ExternalLinkIndexer.this.getIndex(), null);
                         if (cachedThumbnailFile != null) {

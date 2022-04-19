@@ -107,20 +107,27 @@ public class SearchEngineConfig {
     }
 
     public void save() throws IOException {
-        if (this.configFile != null && this.configFile.canWrite()) {
-            // If config file was modified since last load, throw java.util.ConcurrentModificationException
-            if (this.configFile.lastModified() > this.lastModified) {
-                throw new ConcurrentModificationException(
-                    String.format("Configuration file %s was externally modified since last load.", this.configFile));
-            }
-
-            // Save config in config file
-            JSONObject json = this.toJSON();
-            FileUtils.write(this.configFile, json.toString(2), StandardCharsets.UTF_8);
-
-            // Set this.lastModified to config file last modified
-            this.lastModified = this.configFile.lastModified();
+        if (this.configFile == null) {
+            // This should not happen
+            throw new IllegalStateException("The configuration file is null.");
         }
+        if (!this.configFile.canWrite()) {
+            throw new IllegalStateException(String.format("The configuration file is not writable: %s",
+                    this.configFile.getAbsolutePath()));
+        }
+
+        // If config file was modified since last load, throw java.util.ConcurrentModificationException
+        if (this.configFile.lastModified() > this.lastModified) {
+            throw new ConcurrentModificationException(
+                String.format("Configuration file %s was externally modified since last load.", this.configFile));
+        }
+
+        // Save config in config file
+        JSONObject json = this.toJSON();
+        FileUtils.write(this.configFile, json.toString(2), StandardCharsets.UTF_8);
+
+        // Set this.lastModified to config file last modified
+        this.lastModified = this.configFile.lastModified();
     }
 
     public List<AbstractIndexer> getIndexers() {

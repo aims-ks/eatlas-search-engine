@@ -14,11 +14,13 @@ TODO:
   - Add "Clear messages" button
   - Make messages session based (if that's not too hard)
 
+- Implements DrupalMediaIndexer
+
 - Implement pages
   - [ ] Dashboard
-  - [X] Search page
-  - [ ] Index page
   - [ ] Settings page
+  - [ ] Index page
+  - [X] Search page
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}
 

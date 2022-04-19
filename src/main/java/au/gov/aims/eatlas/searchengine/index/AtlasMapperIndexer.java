@@ -396,7 +396,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
             // Create the thumbnail if it's missing or outdated
             AtlasMapperLayer oldLayer = AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId);
-            if (layerEntity.isThumbnailOutdated(oldLayer, AtlasMapperIndexer.this.getThumbnailTTL(), AtlasMapperIndexer.this.getBrokenThumbnailTTL())) {
+            if (layerEntity.isThumbnailOutdated(oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(), AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL())) {
                 try {
                     File cachedThumbnailFile = this.createLayerThumbnail(jsonLayer);
                     if (cachedThumbnailFile != null) {

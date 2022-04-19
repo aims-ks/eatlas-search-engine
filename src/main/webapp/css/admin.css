@@ -145,6 +145,7 @@ button.delete {
 }
 
 button.add,
+button.save,
 button.refresh {
   height: 26px;
   padding-left: 26px;
@@ -155,6 +156,9 @@ button.refresh {
 }
 button.add {
   background-image: url("../img/add.png");
+}
+button.save {
+  background-image: url("../img/disk.png");
 }
 button.refresh {
   background-image: url("../img/cog.png");

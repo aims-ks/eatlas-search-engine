@@ -39,8 +39,8 @@
 
             <c:forEach items="${it.config.indexers}" var="indexer" varStatus="loopStatus">
                 <tr class="${(loopStatus.index+1) % 2 == 0 ? 'even' : 'odd'}">
-                    <td>${indexer.index}</td>
-                    <td>${indexer.type}</td>
+                    <td><c:out value="${indexer.index}" /></td>
+                    <td><c:out value="${indexer.type}" /></td>
                     <td class="number">${indexer.state.count}</td>
                     <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
                     <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>

@@ -255,7 +255,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
                         // Create the thumbnail if it's missing or outdated
                         DrupalNode oldNode = DrupalNodeIndexer.this.safeGet(this.client, DrupalNode.class, this.drupalNode.getId());
-                        if (this.drupalNode.isThumbnailOutdated(oldNode, DrupalNodeIndexer.this.getThumbnailTTL(), DrupalNodeIndexer.this.getBrokenThumbnailTTL())) {
+                        if (this.drupalNode.isThumbnailOutdated(oldNode, DrupalNodeIndexer.this.getSafeThumbnailTTL(), DrupalNodeIndexer.this.getSafeBrokenThumbnailTTL())) {
                             try {
                                 File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalNodeIndexer.this.getIndex(), this.drupalNode.getId());
                                 if (cachedThumbnailFile != null) {

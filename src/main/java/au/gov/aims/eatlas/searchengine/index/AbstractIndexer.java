@@ -200,11 +200,17 @@ public abstract class AbstractIndexer<E extends Entity> {
         return this.enabled;
     }
 
-    public long getThumbnailTTL() {
+    public Long getThumbnailTTL() {
+        return this.thumbnailTTL;
+    }
+    public long getSafeThumbnailTTL() {
         return this.thumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalThumbnailTTL() : this.thumbnailTTL;
     }
 
-    public long getBrokenThumbnailTTL() {
+    public Long getBrokenThumbnailTTL() {
+        return this.brokenThumbnailTTL;
+    }
+    public long getSafeBrokenThumbnailTTL() {
         return this.brokenThumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalBrokenThumbnailTTL() : this.brokenThumbnailTTL;
     }
 

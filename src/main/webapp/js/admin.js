@@ -22,6 +22,31 @@ docReady(function() {
       }
     });
   }
+
+  // Toggle index edit forms
+  const editFormButtonEls = document.getElementsByClassName("editFormButton");
+  for (let i=0; i<editFormButtonEls.length; i++) {
+    let editFormButtonEl = editFormButtonEls[i];
+
+    let editFormButtonId = editFormButtonEl.id;
+    let editFormRowId = "formRow_" + editFormButtonId;
+
+    let editFormRowEl = document.getElementById(editFormRowId);
+    editFormRowEl.style.display = "none";
+
+    editFormButtonEl.addEventListener("click", function(event) {
+      let editFormButtonId = this.id;
+      let editFormRowId = "formRow_" + editFormButtonId;
+      let editFormRowEl = document.getElementById(editFormRowId);
+
+      if (editFormRowEl.style.display === "none") {
+        editFormRowEl.style.display = "table-row";
+      } else {
+        editFormRowEl.style.display = "none";
+      }
+    });
+  }
+
 });
 
 // Equivalent to JQuery.ready().

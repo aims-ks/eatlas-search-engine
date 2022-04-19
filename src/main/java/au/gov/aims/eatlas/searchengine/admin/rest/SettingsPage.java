@@ -21,10 +21,14 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import org.glassfish.jersey.server.mvc.Viewable;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +39,6 @@ public class SettingsPage {
     @Produces(MediaType.TEXT_HTML)
     public Viewable settingsPage() {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
-        // NOTE: Heavily restrict characters for index name [a-z0-9\-_]
 
         Map<String, Object> model = new HashMap<>();
         model.put("messages", Messages.getInstance());
@@ -43,5 +46,57 @@ public class SettingsPage {
 
         // Load the template: src/main/webapp/WEB-INF/jsp/settings.jsp
         return new Viewable("/settings", model);
+    }
+
+    /**
+     * Edit the settings.
+     * NOTE: This method should expect a PUT request, but HTML Standards for form submission only support GET and POST:
+     *   https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#attributes-for-form-submission
+     * @param form
+     * @return
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    public Viewable saveSettings(
+        MultivaluedMap<String, String> form
+    ) {
+        // TODO DELETE
+        System.out.println("Form size: " + form.size());
+        for(String key : form.keySet()) {
+            System.out.println("Form key: " + key);
+        }
+
+        String imageCacheDirectory = form.getFirst("imageCacheDirectory");
+        System.out.println("imageCacheDirectory: " + imageCacheDirectory);
+
+        String globalThumbnailTTL = form.getFirst("globalThumbnailTTL");
+        System.out.println("globalThumbnailTTL: " + globalThumbnailTTL);
+        // TODO END DELETE
+
+
+        // NOTE: Heavily restrict characters for index name [a-z0-9\-_]
+        String formType = form.getFirst("formType");
+
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+
+        if ("global".equals(formType)) {
+            config.setImageCacheDirectory(form.getFirst("imageCacheDirectory"));
+            config.setGlobalThumbnailTTL(Long.parseLong(form.getFirst("globalThumbnailTTL")));
+            config.setGlobalBrokenThumbnailTTL(Long.parseLong(form.getFirst("globalBrokenThumbnailTTL")));
+        } else if ("indexes".equals(formType)) {
+        } else {
+            Messages.getInstance().addMessages(Messages.Level.ERROR,
+                String.format("Unexpected form type: %s", formType));
+        }
+
+        try {
+            config.save();
+        } catch (IOException ex) {
+            Messages.getInstance().addMessages(Messages.Level.ERROR,
+                "An exception occurred while saving the search engine settings.", ex);
+        }
+
+        return settingsPage();
     }
 }
