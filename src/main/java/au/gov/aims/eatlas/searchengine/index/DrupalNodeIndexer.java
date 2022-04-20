@@ -166,6 +166,9 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     }
 
     private static String getPreviewImageUUID(JSONObject jsonApiNode, String previewImageField) {
+        if (previewImageField == null || previewImageField.isEmpty()) {
+            return null;
+        }
         JSONObject jsonRelationships = jsonApiNode == null ? null : jsonApiNode.optJSONObject("relationships");
         JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
         JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
@@ -224,7 +227,15 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         private final int current;
         private final int total;
 
-        public DrupalNodeIndexerThread(ESClient client, DrupalNode drupalNode, JSONObject jsonApiNode, JSONArray jsonIncluded, Set<String> usedThumbnails, int page, int current, int total) {
+        public DrupalNodeIndexerThread(
+                ESClient client,
+                DrupalNode drupalNode,
+                JSONObject jsonApiNode,
+                JSONArray jsonIncluded,
+                Set<String> usedThumbnails,
+                int page, int current, int total
+        ) {
+
             this.client = client;
             this.drupalNode = drupalNode;
             this.jsonApiNode = jsonApiNode;
@@ -283,7 +294,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
             try {
                 IndexResponse indexResponse = DrupalNodeIndexer.this.index(this.client, this.drupalNode);
 
-                // NOTE: We don't know how many nodes (or pages or nodes) there is.
+                // NOTE: We don't know how many nodes (or pages of nodes) there is.
                 //     We index until we reach the bottom of the barrel...
                 LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal node ID: %s, index response status: %s",
                         this.page, this.current, this.total,

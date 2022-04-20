@@ -152,9 +152,14 @@ public abstract class AbstractIndexer<E extends Entity> {
                 indexer = DrupalNodeIndexer.fromJSON(index, state, json);
                 break;
 
-            case "ExternalLinkIndexer":
+            case "DrupalExternalLinkNodeIndexer":
                 state = searchEngineState.getOrAddIndexerState(index);
-                indexer = ExternalLinkIndexer.fromJSON(index, state, json);
+                indexer = DrupalExternalLinkNodeIndexer.fromJSON(index, state, json);
+                break;
+
+            case "DrupalMediaIndexer":
+                state = searchEngineState.getOrAddIndexerState(index);
+                indexer = DrupalMediaIndexer.fromJSON(index, state, json);
                 break;
 
             case "GeoNetworkIndexer":

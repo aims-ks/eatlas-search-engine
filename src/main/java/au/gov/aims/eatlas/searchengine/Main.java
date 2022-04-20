@@ -19,21 +19,15 @@
 package au.gov.aims.eatlas.searchengine;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
-import au.gov.aims.eatlas.searchengine.entity.Entity;
-import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
+import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
+import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
-import au.gov.aims.eatlas.searchengine.index.ExternalLinkIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Index;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.CountResponse;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
-import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -43,7 +37,6 @@ import org.elasticsearch.client.RestClient;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,10 +62,13 @@ public class Main {
         // TODO Implement UI - Configure, re-index button, try search
 
         DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
-        Index.internalReindex(drupalNodeIndexer, fullHarvest);
+        //Index.internalReindex(drupalNodeIndexer, fullHarvest);
 
-        ExternalLinkIndexer externalLinkIndexer = (ExternalLinkIndexer)config.getIndexer("eatlas_extlink");
-        //Index.internalReindex(externalLinkIndexer, fullHarvest);
+        DrupalMediaIndexer drupalMediaIndexer = (DrupalMediaIndexer)config.getIndexer("eatlas_image");
+        Index.internalReindex(drupalMediaIndexer, fullHarvest);
+
+        DrupalExternalLinkNodeIndexer drupalExternalLinkNodeIndexer = (DrupalExternalLinkNodeIndexer)config.getIndexer("eatlas_external_link");
+        //Index.internalReindex(drupalExternalLinkNodeIndexer, fullHarvest);
 
         GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
         //Index.internalReindex(geoNetworkIndexer, fullHarvest);
@@ -81,20 +77,17 @@ public class Main {
         //Index.internalReindex(atlasMapperIndexer, fullHarvest);
 
 
-        // Create a bunch of dummy external links
-
-        //Main.loadDummyExternalLinks(15000);
-
-        //Main.doNothing();
+        //Main.testElasticsearchClient();
 
 
         // Test search
 
-        String searchQuery = "shark";
+        String searchQuery = "reef";
 
         List<String> idx = new ArrayList<String>();
-        idx.add("eatlas_article");
-        //idx.add("eatlas_extlink");
+        //idx.add("eatlas_article");
+        idx.add("eatlas_image");
+        //idx.add("eatlas_external_link");
         //idx.add("eatlas_metadata");
         //idx.add("eatlas_layer");
 
@@ -103,7 +96,7 @@ public class Main {
 
     }
 
-    private static void doNothing() throws IOException {
+    private static void testElasticsearchClient() throws IOException {
         // Create the low-level client
         RestClient restClient = RestClient.builder(
                 new HttpHost("localhost", 9200, "http"),
@@ -120,53 +113,5 @@ public class Main {
         restClient.close();
         transport.close();
         rawClient.shutdown();
-    }
-
-    private static void loadDummyExternalLinks(int count) throws IOException {
-        String index = "eatlas_dummy";
-
-        try(
-            // Create the low-level client
-            RestClient restClient = RestClient.builder(
-                    new HttpHost("localhost", 9200, "http"),
-                    new HttpHost("localhost", 9300, "http")
-                ).build();
-
-            // Create the transport with a Jackson mapper
-            ElasticsearchTransport transport = new RestClientTransport(
-                restClient, new JacksonJsonpMapper());
-
-            // And create the API client
-            ESClient client = new ESRestHighLevelClient(new ElasticsearchClient(transport))
-        ) {
-
-            CountResponse countResponseBefore = client.count(Search.getSearchSummaryRequest("Lorem", index));
-            System.out.println("Count before: " + countResponseBefore.count());
-
-            for (int i=0; i<count; i++) {
-                ExternalLink externalLink = new ExternalLink(
-                    index,
-                    String.format("http://www.domain.com/result/%d", i),
-                    String.format("Dummy link number: %d", i)
-                );
-                externalLink.setThumbnailUrl(new URL("https://www.google.com/logos/doodles/2020/december-holidays-days-2-30-6753651837108830.3-law.gif"));
-                externalLink.setDocument(
-                    "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" +
-                    "<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>");
-
-                IndexRequest<Entity> indexRequest = new IndexRequest.Builder<Entity>()
-                        .index(index)
-                        .id(externalLink.getId())
-                        .document(externalLink)
-                        .build();
-
-                IndexResponse indexResponse = client.index(indexRequest);
-
-                System.out.println(String.format("Indexing dummy URL: %s, status: %s", externalLink.getId(), indexResponse.result()));
-            }
-
-            CountResponse countResponseAfter = client.count(Search.getSearchSummaryRequest("Lorem", index));
-            System.out.println("Count after: " + countResponseAfter.count());
-        }
     }
 }

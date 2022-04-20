@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020 Australian Institute of Marine Science
+ *  Copyright (C) 2022 Australian Institute of Marine Science
  *
  *  Contact: Gael Lafond <g.lafond@aims.gov.au>
  *
@@ -26,30 +26,27 @@ import org.json.JSONObject;
 
 import java.net.URL;
 
-public class DrupalNode extends Entity {
-    private static final Logger LOGGER = Logger.getLogger(DrupalNode.class.getName());
+public class DrupalMedia extends Entity {
+    private static final Logger LOGGER = Logger.getLogger(DrupalMedia.class.getName());
 
-    private Integer nid;
+    private Integer mid;
 
-    protected DrupalNode() {}
+    private DrupalMedia() {}
 
     // Load from Drupal JSON:API output
-    public DrupalNode(String index, JSONObject jsonApiNode) {
+    public DrupalMedia(String index, JSONObject jsonApiMedia) {
         this.setIndex(index);
 
-        if (jsonApiNode != null) {
-            URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
+        if (jsonApiMedia != null) {
+            URL baseUrl = DrupalMedia.getDrupalBaseUrl(jsonApiMedia);
 
             // UUID
-            this.setId(jsonApiNode.optString("id", null));
+            this.setId(jsonApiMedia.optString("id", null));
 
-            // Node ID
-            JSONObject jsonAttributes = jsonApiNode.optJSONObject("attributes");
-            String nidStr = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__nid", null);
-            this.nid = nidStr == null ? null : Integer.parseInt(nidStr);
-
-            // Title
-            this.setTitle(jsonAttributes == null ? null : jsonAttributes.optString("title", null));
+            // Media ID
+            JSONObject jsonAttributes = jsonApiMedia.optJSONObject("attributes");
+            String midStr = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__mid", null);
+            this.mid = midStr == null ? null : Integer.parseInt(midStr);
 
             // Last modified
             String changedDateStr = jsonAttributes == null ? null : jsonAttributes.optString("changed", null);
@@ -61,28 +58,23 @@ public class DrupalNode extends Entity {
                 }
             }
 
-            // Node URL
-            String nodeRelativePath = DrupalNode.getNodeRelativeUrl(jsonApiNode);
-            if (baseUrl != null && nodeRelativePath != null) {
+            // Media URL
+            String mediaRelativePath = DrupalMedia.getMediaRelativeUrl(jsonApiMedia);
+            if (baseUrl != null && mediaRelativePath != null) {
                 try {
-                    this.setLink(new URL(baseUrl, nodeRelativePath));
+                    this.setLink(new URL(baseUrl, mediaRelativePath));
                 } catch(Exception ex) {
-                    LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+                    LOGGER.error(String.format("Can not craft media URL from Drupal base URL: %s", baseUrl), ex);
                 }
             }
 
             // Lang code
             this.setLangcode(jsonAttributes == null ? null : jsonAttributes.optString("langcode", null));
-
-            // Body
-            JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
-            this.setDocument(jsonBody == null ? null :
-                EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
         }
     }
 
-    public static URL getDrupalBaseUrl(JSONObject jsonApiNode) {
-        JSONObject jsonLinks = jsonApiNode == null ? null : jsonApiNode.optJSONObject("links");
+    public static URL getDrupalBaseUrl(JSONObject jsonApiMedia) {
+        JSONObject jsonLinks = jsonApiMedia == null ? null : jsonApiMedia.optJSONObject("links");
         JSONObject jsonLinksSelf = jsonLinks == null ? null : jsonLinks.optJSONObject("self");
         String linksSelfHref = jsonLinksSelf == null ? null : jsonLinksSelf.optString("href", null);
 
@@ -106,46 +98,42 @@ public class DrupalNode extends Entity {
         return null;
     }
 
-    private static String getNodeRelativeUrl(JSONObject jsonApiNode) {
+    private static String getMediaRelativeUrl(JSONObject jsonApiMedia) {
         // First, look if there is a path alias
-        JSONObject jsonAttributes = jsonApiNode == null ? null : jsonApiNode.optJSONObject("attributes");
+        JSONObject jsonAttributes = jsonApiMedia == null ? null : jsonApiMedia.optJSONObject("attributes");
         JSONObject jsonAttributesPath = jsonAttributes == null ? null : jsonAttributes.optJSONObject("path");
         String pathAlias = jsonAttributesPath == null ? null : jsonAttributesPath.optString("alias", null);
         if (pathAlias != null) {
             return pathAlias;
         }
 
-        // Otherwise, return "/node/[NODE ID]"
-        String nid = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__nid", null);
-        if (nid != null) {
-            return "/node/" + nid;
+        // Otherwise, return "/media/[MEDIA ID]"
+        String mid = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__mid", null);
+        if (mid != null) {
+            return "/media/" + mid;
         }
 
         return null;
     }
 
-    public Integer getNid() {
-        return this.nid;
+    public Integer getMid() {
+        return this.mid;
     }
 
-    protected void setNid(Integer nid) {
-        this.nid = nid;
-    }
-
-    public static DrupalNode load(JSONObject json) {
-        DrupalNode node = new DrupalNode();
-        node.loadJSON(json);
-        String nidStr = json.optString("nid", null);
-        if (nidStr != null && !nidStr.isEmpty()) {
-            node.nid = Integer.parseInt(nidStr);
+    public static DrupalMedia load(JSONObject json) {
+        DrupalMedia media = new DrupalMedia();
+        media.loadJSON(json);
+        String midStr = json.optString("mid", null);
+        if (midStr != null && !midStr.isEmpty()) {
+            media.mid = Integer.parseInt(midStr);
         }
 
-        return node;
+        return media;
     }
 
     @Override
     public JSONObject toJSON() {
         return super.toJSON()
-            .put("nid", this.nid);
+            .put("mid", this.mid);
     }
 }

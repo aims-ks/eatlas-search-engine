@@ -264,13 +264,17 @@ public class Search {
         for (Hit<Entity> hit : hits.hits()) {
             Entity entity = hit.source();
 
-            results.add(new SearchResult()
-                .setId(entity.getId())
-                .setIndex(entity.getIndex())
-                .setScore(hit.score())
-                .addHighlights(hit.highlight())
-                .setEntity(entity)
-            );
+            if (entity != null) {
+                results.add(new SearchResult()
+                    .setId(entity.getId())
+                    .setIndex(entity.getIndex())
+                    .setScore(hit.score())
+                    .addHighlights(hit.highlight())
+                    .setEntity(entity)
+                );
+            } else {
+                LOGGER.error(String.format("Search entity is null: %s", hit));
+            }
         }
 
         return results;

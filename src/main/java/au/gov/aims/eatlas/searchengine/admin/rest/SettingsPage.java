@@ -76,19 +76,12 @@ public class SettingsPage {
 
 
         // NOTE: Heavily restrict characters for index name [a-z0-9\-_]
-        String formType = form.getFirst("formType");
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-        if ("global".equals(formType)) {
-            config.setImageCacheDirectory(form.getFirst("imageCacheDirectory"));
-            config.setGlobalThumbnailTTL(Long.parseLong(form.getFirst("globalThumbnailTTL")));
-            config.setGlobalBrokenThumbnailTTL(Long.parseLong(form.getFirst("globalBrokenThumbnailTTL")));
-        } else if ("indexes".equals(formType)) {
-        } else {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
-                String.format("Unexpected form type: %s", formType));
-        }
+        config.setImageCacheDirectory(form.getFirst("imageCacheDirectory"));
+        config.setGlobalThumbnailTTL(Long.parseLong(form.getFirst("globalThumbnailTTL")));
+        config.setGlobalBrokenThumbnailTTL(Long.parseLong(form.getFirst("globalBrokenThumbnailTTL")));
 
         try {
             config.save();

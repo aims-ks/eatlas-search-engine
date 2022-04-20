@@ -19,7 +19,6 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
-import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.search.ErrorMessage;
@@ -245,6 +244,7 @@ public class DummySearch {
     private List<SearchResult> getAllFakeSearchResults() throws MalformedURLException {
         List<SearchResult> results = new ArrayList<SearchResult>();
 
+        /*
         ExternalLink brokenLink = new ExternalLink(
             "eatlas_broken",
             "https://broken.bad/should/not/appear/in/search/results/",
@@ -258,6 +258,7 @@ public class DummySearch {
             .setIndex("eatlas_broken")
             .setScore(23.0)
         );
+        */
 
         DrupalNode drupalNode = new DrupalNode("eatlas_article", null);
         drupalNode.setLink(new URL("http://localhost:9090/node/4"));
@@ -824,6 +825,7 @@ public class DummySearch {
             .setScore(23.0)
         );
 
+        /*
         ExternalLink googleLink = new ExternalLink(
             "eatlas_extlink",
             "https://google.com",
@@ -837,6 +839,7 @@ public class DummySearch {
             .setIndex("eatlas_extlink")
             .setScore(12.0)
         );
+        */
 
         for (int i=0; i<200; i++) {
             results.add(this.getRandomGoogleSearchResult(i+1));
@@ -857,6 +860,7 @@ public class DummySearch {
         Random random = new Random(91 + index);
         String randomSearchTerm = this.getRandomWord(random);
 
+        /*
         ExternalLink googleSearchLink = new ExternalLink(
             "eatlas_extlink",
             String.format("https://www.google.com/search?q=%s", randomSearchTerm),
@@ -873,6 +877,9 @@ public class DummySearch {
             .setEntity(googleSearchLink)
             .setIndex("eatlas_extlink")
             .setScore(12.0);
+        */
+
+        return null;
     }
 
     private SearchResult getRandomLayerSearchResult(int index) throws MalformedURLException {

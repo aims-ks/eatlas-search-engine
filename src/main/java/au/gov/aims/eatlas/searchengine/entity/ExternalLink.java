@@ -18,33 +18,27 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
-import java.net.URL;
+/**
+ * This class is the same as DrupalNode, but it shows as "ExternalLink" in the JSON search results.
+ */
+public class ExternalLink extends DrupalNode {
+    private ExternalLink() {
+        super();
+    }
 
-public class ExternalLink extends Entity {
-    private static final Logger LOGGER = Logger.getLogger(ExternalLink.class.getName());
-
-    private ExternalLink() {}
-
-    public ExternalLink(String index, String urlStr, String title) {
-        this.setId(urlStr);
-        this.setIndex(index);
-        this.setTitle(title);
-
-        if (urlStr != null) {
-            try {
-                this.setLink(new URL(urlStr));
-            } catch(Exception ex) {
-                LOGGER.error(String.format("Invalid external URL found: %s", urlStr), ex);
-            }
-        }
+    public ExternalLink(String index, JSONObject jsonApiNode) {
+        super(index, jsonApiNode);
     }
 
     public static ExternalLink load(JSONObject json) {
         ExternalLink externalLink = new ExternalLink();
         externalLink.loadJSON(json);
+        String nidStr = json.optString("nid", null);
+        if (nidStr != null && !nidStr.isEmpty()) {
+            externalLink.setNid(Integer.parseInt(nidStr));
+        }
 
         return externalLink;
     }

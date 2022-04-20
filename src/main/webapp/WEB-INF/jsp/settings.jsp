@@ -19,11 +19,10 @@
 <body>
     <c:import url="include/header.jsp"/>
 
-    <div class="box">
-        <h2>ElasticSearch settings</h2>
+    <form method="post">
+        <div class="box">
+            <h2>ElasticSearch settings</h2>
 
-        <form method="post">
-            <input type="hidden" name="formType" value="global" />
             <div>
                 <label for="imageCacheDirectory">
                     Image cache directory:
@@ -57,20 +56,12 @@
             </div>
 
             <p>TODO Server settings: ElasticSearch URL, port, etc</p>
+        </div>
 
-            <div class="submit">
-                <button class="save" title="save">Save</button>
-            </div>
-        </form>
-    </div>
+        <div class="box">
+            <h2>Indexes settings</h2>
 
-    <div class="box">
-        <h2>Indexes settings</h2>
-
-        <p>TODO Index settings: List all indexes, with all fields in text boxes. Hide / Show with CSS hover, add JS to show on click</p>
-
-        <form method="post">
-            <input type="hidden" name="formType" value="indexes" />
+            <p>TODO Index settings: List all indexes, with all fields in text boxes. Hide / Show with CSS hover, add JS to show on click</p>
 
             <table>
                 <tr class="table-header">
@@ -159,11 +150,15 @@
                                     </div>
                                 </c:when>
 
-                                <c:when test="${indexer.type == 'ExternalLinkIndexer'}">
-                                    <h3>ExternalLinkIndexer fields</h3>
+                                <c:when test="${indexer.type == 'DrupalExternalLinkNodeIndexer'}">
+                                    <h3>DrupalExternalLinkNodeIndexer fields</h3>
 
-                                    <div class="ExternalLinkIndexer_form">
-                                        private List[ExternalLinkEntry] externalLinkEntries;
+                                    <div class="DrupalExternalLinkNodeIndexer_form">
+                                        private String drupalUrl;
+                                        private String drupalVersion;
+                                        private String drupalNodeType;
+                                        private String drupalExternalUrlField;
+                                        private String drupalPreviewImageField;
                                     </div>
                                 </c:when>
 
@@ -193,12 +188,20 @@
             <div>
                 <button type="button" class="add" title="Add an index">Add an index</button>
             </div>
+        </div>
 
+        <div class="box">
             <div class="submit">
-                <button class="save" title="save">Save</button>
+                <%--
+                    TODO Trigger a modal dialog asking for a commit message (buttons: [Cancel], [Commit]).
+                        If [Commit] is pressed, config is saved and committed.
+                        If [Cancel] is pressed, changes are not saved (Warning message saying "Changes not saved").
+                --%>
+                <button class="save" title="save">Commit changes</button>
             </div>
-        </form>
-    </div>
+        </div>
+
+    </form>
 
     <jsp:include page="include/footer.jsp" />
 </body>

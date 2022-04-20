@@ -14,7 +14,10 @@ TODO:
   - Add "Clear messages" button
   - Make messages session based (if that's not too hard)
 
-- Implements DrupalMediaIndexer
+- Save config
+  - Commit to Git repo (repo dedicated for the search engine config)
+
+- Index GIS polygons / points
 
 - Implement pages
   - [ ] Dashboard
@@ -23,6 +26,8 @@ TODO:
   - [X] Search page
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}
+
+Example of URL that can't be harvested: https://doi.org/10.1002/aqc.3115
 
 ## What is the eAtlasSearchEngine
 
