@@ -34,6 +34,7 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ESTestClient implements ESClient {
     // https://github.com/elastic/elasticsearch-java/blob/main/java-client/src/test/java/co/elastic/clients/elasticsearch/end_to_end/RequestTest.java
@@ -41,6 +42,16 @@ public class ESTestClient implements ESClient {
 
     public ESTestClient(ElasticsearchClient client) {
         this.client = client;
+    }
+
+    @Override
+    public List<String> listIndexes() throws IOException {
+        return null; // TODO
+    }
+
+    @Override
+    public void deleteOrphanIndexes(List<String> activeIndexes) throws IOException {
+        // TODO
     }
 
     @Override

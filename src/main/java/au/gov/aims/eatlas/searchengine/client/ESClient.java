@@ -33,6 +33,7 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Simple interface to unify RestHighLevelClient with ESSingleNodeTestCase.
@@ -44,6 +45,9 @@ import java.io.IOException;
 public interface ESClient extends AutoCloseable {
     boolean indexExists(String indexName) throws IOException;
     CreateIndexResponse createIndex(String indexName) throws IOException;
+
+    List<String> listIndexes() throws IOException;
+    void deleteOrphanIndexes(List<String> activeIndexes) throws IOException;
 
     <E extends Entity> IndexResponse index(IndexRequest<E> indexRequest) throws IOException;
     <E extends Entity> GetResponse<E> get(GetRequest getRequest, Class<E> entityClass) throws IOException;

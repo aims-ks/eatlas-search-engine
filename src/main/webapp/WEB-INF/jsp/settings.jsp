@@ -68,6 +68,9 @@
         <div class="box">
             <h2>Indexes settings</h2>
 
+            <!-- Hidden field used when deleting an index. The field is filled by JavaScript before submitting the form. -->
+            <input type="hidden" name="deleteIndex" />
+
             <table>
                 <tr class="table-header">
                     <th>Index</th>
@@ -86,9 +89,9 @@
                         <td class="number">${indexer.state.count}</td>
                         <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
                         <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
-                        <td class="buttons">
-                            <button type="button" class="edit editFormButton" id="${indexer.index}" title="Edit">Edit</button>
-                            <button type="button" class="delete" title="Delete">Delete</button>
+                        <td class="buttons" id="${indexer.index}">
+                            <button type="button" class="edit editFormButton" title="Edit">Edit</button>
+                            <button type="button" class="delete deleteButton" title="Delete">Delete</button>
                         </td>
                     </tr>
                     <tr id="formRow_${indexer.index}" class="${cssClass}">
@@ -394,19 +397,35 @@
                 </c:forEach>
             </table>
 
+            <!-- Dummy button used for form submission using the Enter button -->
+            <button class="hiddenSubmitButton" name="submitButton" value="save" title="save">Save</button>
+
             <div>
-                <button type="button" class="add" title="Add an index">Add an index</button>
+                <label for="newIndexType">
+                    <select id="newIndexType" name="newIndexType">
+                        <option value="">-- Choose an index type --</option>
+                        <option value="DrupalNodeIndexer">DrupalNodeIndexer</option>
+                        <option value="DrupalMediaIndexer">DrupalMediaIndexer</option>
+                        <option value="DrupalExternalLinkNodeIndexer">DrupalExternalLinkNodeIndexer</option>
+                        <option value="GeoNetworkIndexer">GeoNetworkIndexer</option>
+                        <option value="AtlasMapperIndexer">AtlasMapperIndexer</option>
+                    </select>
+
+                    <button class="add" name="submitButton" value="addIndex" title="Add an index" onClick="return validateNotEmpty('newIndexType', 'Index type')">Add</button>
+                </label>
             </div>
         </div>
 
         <div class="box">
             <div class="submit">
+                <button class="save" name="submitButton" value="save" title="save">Save</button>
+
                 <%--
                     TODO Trigger a modal dialog asking for a commit message (buttons: [Cancel], [Commit]).
                         If [Commit] is pressed, config is saved and committed.
                         If [Cancel] is pressed, changes are not saved (Warning message saying "Changes not saved").
                 --%>
-                <button class="save" title="save">Commit changes</button>
+                <button class="save" name="submitButton" value="commit" title="commit">Commit to GitHub</button>
             </div>
         </div>
 

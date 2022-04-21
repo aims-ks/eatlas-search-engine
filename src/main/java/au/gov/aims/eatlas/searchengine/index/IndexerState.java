@@ -42,7 +42,7 @@ public class IndexerState {
     }
 
     public Date getLastIndexedDate() {
-        return new Date(this.lastIndexed);
+        return this.lastIndexed == null ? null : new Date(this.lastIndexed);
     }
 
     public void setLastIndexRuntime(Long lastIndexRuntime) {
@@ -54,6 +54,10 @@ public class IndexerState {
     }
 
     public String getLastIndexRuntimeFormatted() {
+        if (this.lastIndexRuntime == null) {
+            return null;
+        }
+
         long seconds = this.lastIndexRuntime / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;

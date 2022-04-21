@@ -28,15 +28,15 @@ docReady(function() {
   for (let i=0; i<editFormButtonEls.length; i++) {
     let editFormButtonEl = editFormButtonEls[i];
 
-    let editFormButtonId = editFormButtonEl.id;
-    let editFormRowId = "formRow_" + editFormButtonId;
+    let index = editFormButtonEl.parentNode.id;
+    let editFormRowId = "formRow_" + index;
 
     let editFormRowEl = document.getElementById(editFormRowId);
     editFormRowEl.style.display = "none";
 
     editFormButtonEl.addEventListener("click", function(event) {
-      let editFormButtonId = this.id;
-      let editFormRowId = "formRow_" + editFormButtonId;
+      let index = this.parentNode.id;
+      let editFormRowId = "formRow_" + index;
       let editFormRowEl = document.getElementById(editFormRowId);
 
       if (editFormRowEl.style.display === "none") {
@@ -44,6 +44,29 @@ docReady(function() {
       } else {
         editFormRowEl.style.display = "none";
       }
+    });
+  }
+
+  // Delete index button
+  const deleteButtonEls = document.getElementsByClassName("deleteButton");
+  for (let i=0; i<deleteButtonEls.length; i++) {
+    let deleteButtonEl = deleteButtonEls[i];
+
+    deleteButtonEl.addEventListener("click", function(event) {
+      let index = this.parentNode.id;
+      let form = this.form;
+
+      if (window.confirm("Are you sure you want to delete the index: " + index + "?")) {
+        // Set index ID in hidden form field
+        form.deleteIndex.value = index;
+
+        // Submit the form
+        form.submit();
+
+        return true;
+      }
+
+      return false;
     });
   }
 
@@ -60,4 +83,19 @@ function docReady(fn) {
     } else {
         document.addEventListener("DOMContentLoaded", fn);
     }
+}
+
+function validateNotEmpty(elementId, humanReadableFieldName) {
+  const element = document.getElementById(elementId);
+  if (element == null) {
+    alert("Validation failed. Element " + elementId + " does not exists.");
+    return false;
+  }
+
+  if (!element.value) {
+    alert("Validation failed. You must enter a value for: " + humanReadableFieldName);
+    return false;
+  }
+
+  return true;
 }

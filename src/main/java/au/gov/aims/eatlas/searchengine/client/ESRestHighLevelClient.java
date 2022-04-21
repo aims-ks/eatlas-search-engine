@@ -25,6 +25,8 @@ import co.elastic.clients.elasticsearch._types.analysis.CustomAnalyzer;
 import co.elastic.clients.elasticsearch._types.mapping.Property;
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty;
 import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
+import co.elastic.clients.elasticsearch.cat.IndicesResponse;
+import co.elastic.clients.elasticsearch.cat.indices.IndicesRecord;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
@@ -47,7 +49,9 @@ import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ESRestHighLevelClient implements ESClient {
     private final ElasticsearchClient client;
@@ -63,7 +67,36 @@ public class ESRestHighLevelClient implements ESClient {
         return existsResponse.value();
     }
 
-    // Temporary method, to allow me to reset the index.
+    @Override
+    public List<String> listIndexes() throws IOException {
+        IndicesResponse indicesResponse = this.client.cat().indices();
+
+        List<String> indexes = new ArrayList<>();
+        if (indicesResponse != null) {
+            for (IndicesRecord indicesRecord : indicesResponse.valueBody()) {
+                String index = indicesRecord.index();
+                if (index != null && !index.isEmpty()) {
+                    indexes.add(index);
+                }
+            }
+        }
+
+        return indexes;
+    }
+
+    @Override
+    public void deleteOrphanIndexes(List<String> activeIndexes) throws IOException {
+        boolean noActiveIndexes = activeIndexes == null || activeIndexes.isEmpty();
+        List<String> indexes = this.listIndexes();
+        if (indexes != null && !indexes.isEmpty()) {
+            for (String index : indexes) {
+                if (noActiveIndexes || !activeIndexes.contains(index)) {
+                    this.deleteIndex(index);
+                }
+            }
+        }
+    }
+
     public DeleteIndexResponse deleteIndex(String indexName) throws IOException {
         if (this.indexExists(indexName)) {
             DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(indexName).build();
