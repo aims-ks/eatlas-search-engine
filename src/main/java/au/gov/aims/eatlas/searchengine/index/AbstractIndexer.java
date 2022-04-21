@@ -54,7 +54,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     private static final Logger LOGGER = Logger.getLogger(AbstractIndexer.class.getName());
 
     private boolean enabled;
-    private final String index;
+    private String index;
     private Long thumbnailTTL; // TTL, in days
     private Long brokenThumbnailTTL; // TTL, in days
 
@@ -197,12 +197,20 @@ public abstract class AbstractIndexer<E extends Entity> {
         return this.index;
     }
 
+    public void setIndex(String index) {
+        this.index = index;
+    }
+
     public String getType() {
         return this.getClass().getSimpleName();
     }
 
     public boolean isEnabled() {
         return this.enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Long getThumbnailTTL() {
@@ -212,11 +220,19 @@ public abstract class AbstractIndexer<E extends Entity> {
         return this.thumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalThumbnailTTL() : this.thumbnailTTL;
     }
 
+    public void setThumbnailTTL(Long thumbnailTTL) {
+        this.thumbnailTTL = thumbnailTTL;
+    }
+
     public Long getBrokenThumbnailTTL() {
         return this.brokenThumbnailTTL;
     }
     public long getSafeBrokenThumbnailTTL() {
         return this.brokenThumbnailTTL == null ? SearchEngineConfig.getInstance().getGlobalBrokenThumbnailTTL() : this.brokenThumbnailTTL;
+    }
+
+    public void setBrokenThumbnailTTL(Long brokenThumbnailTTL) {
+        this.brokenThumbnailTTL = brokenThumbnailTTL;
     }
 
     public IndexResponse index(ESClient client, E entity) throws IOException {

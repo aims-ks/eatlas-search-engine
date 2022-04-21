@@ -2,7 +2,7 @@
   "imageCacheDirectory": "/home/glafond/Desktop/TMP_INPUT/imageCache/",
   "indexers": [
     {
-      "class": "DrupalNodeIndexer",
+      "type": "DrupalNodeIndexer",
       "index": "eatlas_article",
       "lastIndexed": 1613531540111,
 
@@ -12,7 +12,7 @@
       "drupalPreviewImageField": "field_image"
 
     }, {
-      "class": "ExternalLinkIndexer",
+      "type": "ExternalLinkIndexer",
       "index": "eatlas_extlink",
       "lastIndexed": 1613531541220,
 
@@ -45,7 +45,7 @@
       ]
 
     }, {
-      "class": "GeoNetworkIndexer",
+      "type": "GeoNetworkIndexer",
       "index": "eatlas_metadata",
       "lastIndexed": 1613531568221,
 
@@ -53,7 +53,7 @@
       "geoNetworkVersion": "3.0"
 
     }, {
-      "class": "AtlasMapperIndexer",
+      "type": "AtlasMapperIndexer",
       "index": "eatlas_layer",
       "lastIndexed": 1613532056978,
 

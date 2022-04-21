@@ -65,7 +65,7 @@ public class Main {
         //Index.internalReindex(drupalNodeIndexer, fullHarvest);
 
         DrupalMediaIndexer drupalMediaIndexer = (DrupalMediaIndexer)config.getIndexer("eatlas_image");
-        Index.internalReindex(drupalMediaIndexer, fullHarvest);
+        //Index.internalReindex(drupalMediaIndexer, fullHarvest);
 
         DrupalExternalLinkNodeIndexer drupalExternalLinkNodeIndexer = (DrupalExternalLinkNodeIndexer)config.getIndexer("eatlas_external_link");
         //Index.internalReindex(drupalExternalLinkNodeIndexer, fullHarvest);
@@ -74,7 +74,7 @@ public class Main {
         //Index.internalReindex(geoNetworkIndexer, fullHarvest);
 
         AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-        //Index.internalReindex(atlasMapperIndexer, fullHarvest);
+        Index.internalReindex(atlasMapperIndexer, fullHarvest);
 
 
         //Main.testElasticsearchClient();

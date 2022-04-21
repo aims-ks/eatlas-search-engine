@@ -217,6 +217,14 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         this.drupalNodeType = drupalNodeType;
     }
 
+    public String getDrupalPreviewImageField() {
+        return this.drupalPreviewImageField;
+    }
+
+    public void setDrupalPreviewImageField(String drupalPreviewImageField) {
+        this.drupalPreviewImageField = drupalPreviewImageField;
+    }
+
     public class DrupalNodeIndexerThread extends Thread {
         private final ESClient client;
         private final DrupalNode drupalNode;

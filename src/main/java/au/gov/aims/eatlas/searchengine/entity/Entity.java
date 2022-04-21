@@ -247,7 +247,7 @@ public abstract class Entity {
             .put("lastIndexed", this.getLastIndexed())
             .put("lastModified", this.getLastModified())
             .put("thumbnailLastIndexed", this.getThumbnailLastIndexed())
-            .put("class", this.getClass().getSimpleName())
+            .put("type", this.getClass().getSimpleName())
             .put("link", linkUrl == null ? null : linkUrl.toString())
             .put("title", this.getTitle())
             // Encode HTML from the document, to allow the search to all highlights as HTML tags

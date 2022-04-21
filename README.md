@@ -17,6 +17,10 @@ TODO:
 - Save config
   - Commit to Git repo (repo dedicated for the search engine config)
 
+- Image
+  - Create public page, with metadata (with option to make image private; no public page)
+  - Do not index private image
+
 - Index GIS polygons / points
 
 - Implement pages

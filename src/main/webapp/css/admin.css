@@ -122,6 +122,29 @@ body {
   text-align: right;
 }
 
+/* Settings page */
+.main .content .box .field {
+  margin: 1.5em 0;
+}
+
+.main .content .box .field label {
+  display: flex;
+  align-items: flex-start;
+}
+
+.main .content .box .field label .label {
+  width: 20em;
+}
+.main .content .box .field label input[type=text] {
+  flex-grow: 1;
+}
+
+.main .content .box .field .desc {
+  margin: 0.5em;
+  font-size: 0.8em;
+  color: #999999;
+}
+
 button.edit,
 button.index,
 button.delete {

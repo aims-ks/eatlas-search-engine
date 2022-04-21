@@ -251,6 +251,30 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
         this.drupalNodeType = drupalNodeType;
     }
 
+    public String getDrupalPreviewImageField() {
+        return this.drupalPreviewImageField;
+    }
+
+    public void setDrupalPreviewImageField(String drupalPreviewImageField) {
+        this.drupalPreviewImageField = drupalPreviewImageField;
+    }
+
+    public String getDrupalExternalUrlField() {
+        return this.drupalExternalUrlField;
+    }
+
+    public void setDrupalExternalUrlField(String drupalExternalUrlField) {
+        this.drupalExternalUrlField = drupalExternalUrlField;
+    }
+
+    public String getDrupalContentOverwriteField() {
+        return this.drupalContentOverwriteField;
+    }
+
+    public void setDrupalContentOverwriteField(String drupalContentOverwriteField) {
+        this.drupalContentOverwriteField = drupalContentOverwriteField;
+    }
+
     public class DrupalExternalLinkNodeIndexerThread extends Thread {
         private final ESClient client;
         private final ExternalLink externalLink;

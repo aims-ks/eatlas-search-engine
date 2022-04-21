@@ -253,8 +253,31 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         this.drupalMediaType = drupalMediaType;
     }
 
-    private String getSafeDrupalPreviewImageField() {
+    public String getDrupalPreviewImageField() {
+        return this.drupalPreviewImageField;
+    }
+    public String getSafeDrupalPreviewImageField() {
         return this.drupalPreviewImageField == null ? "thumbnail" : this.drupalPreviewImageField;
+    }
+
+    public void setDrupalPreviewImageField(String drupalPreviewImageField) {
+        this.drupalPreviewImageField = drupalPreviewImageField;
+    }
+
+    public String getDrupalTitleField() {
+        return this.drupalTitleField;
+    }
+
+    public void setDrupalTitleField(String drupalTitleField) {
+        this.drupalTitleField = drupalTitleField;
+    }
+
+    public String getDrupalDescriptionField() {
+        return this.drupalDescriptionField;
+    }
+
+    public void setDrupalDescriptionField(String drupalDescriptionField) {
+        this.drupalDescriptionField = drupalDescriptionField;
     }
 
     public class DrupalMediaIndexerThread extends Thread {
