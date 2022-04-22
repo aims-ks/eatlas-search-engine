@@ -68,40 +68,19 @@ public class SettingsPage {
     public Viewable saveSettings(
         MultivaluedMap<String, String> form
     ) {
-        String submitButton = FormUtils.getFormStringValue(form, "submitButton");
-        String deleteIndex = FormUtils.getFormStringValue(form, "deleteIndex");
-
-        // Default value when the user press enter in a text field, or when the form is submitted by JavaScript.
-        // Most modern browser used the next submit button in the DOM tree,
-        // but some browser submits the form without "clicking" a submit button.
-        if (submitButton == null) {
-            if (deleteIndex != null) {
-                submitButton = "deleteIndex";
-            } else {
-                submitButton = "save";
-            }
-        }
-
-        switch (submitButton) {
-            case "addIndex":
-                this.addIndex(form);
-                break;
-
-            case "deleteIndex":
-                this.deleteIndex(deleteIndex);
-                break;
-
-            case "save":
-                this.save(form);
-                break;
-
-            case "commit":
-                this.commit(form);
-                break;
-
-            default:
-                Messages.getInstance().addMessages(Messages.Level.ERROR,
-                    String.format("Invalid form submission: %s", submitButton));
+        if (form.containsKey("save-button")) {
+            this.save(form);
+        } else if (form.containsKey("commit-button")) {
+            this.commit(form);
+        } else if (form.containsKey("add-index-button")) {
+            this.addIndex(form);
+        } else if (form.containsKey("delete-button")) {
+            this.deleteIndex(FormUtils.getFormStringValue(form, "delete-button"));
+        } else {
+            // Default value when the user press enter in a text field, or when the form is submitted by JavaScript.
+            // Most modern browser used the next submit button in the DOM tree (which is why we have a hidden save button),
+            // but some browser submits the form without "clicking" a submit button.
+            this.save(form);
         }
 
         return settingsPage();

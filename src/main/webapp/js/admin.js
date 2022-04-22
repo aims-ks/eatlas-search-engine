@@ -46,30 +46,6 @@ docReady(function() {
       }
     });
   }
-
-  // Delete index button
-  const deleteButtonEls = document.getElementsByClassName("deleteButton");
-  for (let i=0; i<deleteButtonEls.length; i++) {
-    let deleteButtonEl = deleteButtonEls[i];
-
-    deleteButtonEl.addEventListener("click", function(event) {
-      let index = this.parentNode.id;
-      let form = this.form;
-
-      if (window.confirm("Are you sure you want to delete the index: " + index + "?")) {
-        // Set index ID in hidden form field
-        form.deleteIndex.value = index;
-
-        // Submit the form
-        form.submit();
-
-        return true;
-      }
-
-      return false;
-    });
-  }
-
 });
 
 // Equivalent to JQuery.ready().

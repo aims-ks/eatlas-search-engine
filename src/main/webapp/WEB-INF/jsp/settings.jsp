@@ -85,9 +85,6 @@
         <div class="box">
             <h2>Indexes settings</h2>
 
-            <!-- Hidden field used when deleting an index. The field is filled by JavaScript before submitting the form. -->
-            <input type="hidden" name="deleteIndex" />
-
             <table>
                 <tr class="table-header">
                     <th>Index</th>
@@ -108,7 +105,12 @@
                         <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
                         <td class="buttons" id="${indexer.index}">
                             <button type="button" class="edit editFormButton" title="Edit">Edit</button>
-                            <button type="button" class="delete deleteButton" title="Delete">Delete</button>
+                            <button type="submit"
+                                class="delete"
+                                name="delete-button"
+                                value="${indexer.index}"
+                                onClick="return window.confirm('Are you sure you want to delete the index: <c:out value="${indexer.index}" />?')"
+                                title="Delete">Delete</button>
                         </td>
                     </tr>
                     <tr id="formRow_${indexer.index}" class="${cssClass}">
@@ -463,7 +465,7 @@
             </table>
 
             <!-- Dummy button used for form submission using the Enter button -->
-            <button class="hiddenSubmitButton" name="submitButton" value="save" title="save">Save</button>
+            <button class="hiddenSubmitButton" name="save-button" value="save" title="save">Save</button>
 
             <div>
                 <label for="newIndexType">
@@ -476,21 +478,26 @@
                         <option value="AtlasMapperIndexer">AtlasMapperIndexer</option>
                     </select>
 
-                    <button class="add" name="submitButton" value="addIndex" title="Add an index" onClick="return validateNotEmpty('newIndexType', 'Index type')">Add</button>
+                    <button type="submit"
+                        class="add"
+                        name="add-index-button"
+                        value="addIndex"
+                        onClick="return validateNotEmpty('newIndexType', 'Index type')"
+                        title="Add an index">Add</button>
                 </label>
             </div>
         </div>
 
         <div class="box">
             <div class="submit">
-                <button class="save" name="submitButton" value="save" title="save">Save</button>
+                <button class="save" name="save-button" value="save" title="save">Save</button>
 
                 <%--
                     TODO Trigger a modal dialog asking for a commit message (buttons: [Cancel], [Commit]).
                         If [Commit] is pressed, config is saved and committed.
                         If [Cancel] is pressed, changes are not saved (Warning message saying "Changes not saved").
                 --%>
-                <button class="save" name="submitButton" value="commit" title="commit">Commit to GitHub</button>
+                <button class="commit" name="commit-button" value="commit" title="commit">Commit to GitHub</button>
             </div>
         </div>
 

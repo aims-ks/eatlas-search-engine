@@ -220,6 +220,7 @@ button.delete {
 
 button.add,
 button.save,
+button.commit,
 button.index-all,
 button.index-latest-all,
 button.refresh {
@@ -232,6 +233,9 @@ button.add {
   background-image: url("../img/add.png");
 }
 button.save {
+  background-image: url("../img/disk.png");
+}
+button.commit {
   background-image: url("../img/disk.png");
 }
 button.index-all {

@@ -41,17 +41,17 @@
                         <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
                         <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
                         <td class="buttons">
-                            <button class="index" name="reindex" value="${indexer.index}" title="Re-index">Re-index</button>
-                            <button class="index-latest" name="index-latest" value="${indexer.index}" title="Index latest" <c:if test="${not indexer.supportsIndexLatest()}">disabled="disabled"</c:if>>Index latest</button>
+                            <button class="index" name="reindex-button" value="${indexer.index}" title="Re-index">Re-index</button>
+                            <button class="index-latest" name="index-latest-button" value="${indexer.index}" title="Index latest" <c:if test="${not indexer.supportsIndexLatest()}">disabled="disabled"</c:if>>Index latest</button>
                         </td>
                     </tr>
                 </c:forEach>
             </table>
 
-            <button class="index-all" name="reindex-all" title="Re-index all">Re-index all</button>
-            <button class="index-latest-all" name="index-latest-all" title="Index latest all">Index latest all</button>
+            <button class="index-all" name="reindex-all-button" value="reindex" title="Re-index all">Re-index all</button>
+            <button class="index-latest-all" name="index-latest-all-button" value="index-latest" title="Index latest all">Index latest all</button>
 
-            <button class="refresh" name="refresh-count" title="Refresh count">Refresh indexes document count</button>
+            <button class="refresh" name="refresh-count-button" value="refresh-count" title="Refresh count">Refresh indexes document count</button>
         </form>
     </div>
 
