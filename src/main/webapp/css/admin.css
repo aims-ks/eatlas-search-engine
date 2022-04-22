@@ -19,6 +19,11 @@ button:hover {
 button:active {
   box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
 }
+button:disabled {
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+  background-color: #FFFFFF;
+  opacity: 0.5;
+}
 select {
   box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
 }
@@ -178,6 +183,7 @@ button.hiddenSubmitButton {
 
 button.edit,
 button.index,
+button.index-latest,
 button.delete {
   width: 26px;
   font-size: 0; /* Hide button label */
@@ -192,12 +198,17 @@ button.edit {
 button.index {
   background-image: url("../img/cog.png");
 }
+button.index-latest {
+  background-image: url("../img/time.png");
+}
 button.delete {
   background-image: url("../img/delete.png");
 }
 
 button.add,
 button.save,
+button.index-all,
+button.index-latest-all,
 button.refresh {
   padding-left: 26px;
 
@@ -209,6 +220,12 @@ button.add {
 }
 button.save {
   background-image: url("../img/disk.png");
+}
+button.index-all {
+  background-image: url("../img/cog.png");
+}
+button.index-latest-all {
+  background-image: url("../img/time.png");
 }
 button.refresh {
   background-image: url("../img/cog.png");

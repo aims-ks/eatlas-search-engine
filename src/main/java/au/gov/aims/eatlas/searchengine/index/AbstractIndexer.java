@@ -69,6 +69,10 @@ public abstract class AbstractIndexer<E extends Entity> {
     public abstract Entity load(JSONObject json);
     public abstract JSONObject toJSON();
 
+    public boolean supportsIndexLatest() {
+        return false;
+    }
+
     public IndexerState getState() {
         return this.state;
     }

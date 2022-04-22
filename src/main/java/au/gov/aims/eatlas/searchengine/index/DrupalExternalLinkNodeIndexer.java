@@ -106,6 +106,11 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
     }
 
     @Override
+    public boolean supportsIndexLatest() {
+        return true;
+    }
+
+    @Override
     protected Long internalHarvest(ESClient client, Long lastHarvested) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();

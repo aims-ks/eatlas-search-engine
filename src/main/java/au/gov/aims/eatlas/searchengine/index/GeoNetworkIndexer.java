@@ -86,6 +86,11 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
+    public boolean supportsIndexLatest() {
+        return true;
+    }
+
+    @Override
     protected Long internalHarvest(ESClient client, Long lastHarvested) {
         String lastHarvestedISODateStr = null;
         if (lastHarvested != null) {

@@ -41,12 +41,14 @@
                     <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
                     <td class="buttons">
                         <button class="index" title="Re-index">Re-index</button>
+                        <button class="index-latest" title="Index latest" <c:if test="${not indexer.supportsIndexLatest()}">disabled="disabled"</c:if>>Index latest</button>
                     </td>
                 </tr>
             </c:forEach>
         </table>
 
-        <button class="refresh" title="Re-index all">Re-index all</button>
+        <button class="index-all" title="Re-index all">Re-index all</button>
+        <button class="index-latest-all" title="Index latest all">Index latest all</button>
 
         <button class="refresh" title="Refresh count">Refresh indexes document count</button>
     </div>

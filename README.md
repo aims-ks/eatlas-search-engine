@@ -1,4 +1,5 @@
 TODO:
+
 - Upgrade deprecated class in:
   au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient.RestHighLevelClient
 
@@ -16,6 +17,8 @@ TODO:
 
 - Save config
   - Commit to Git repo (repo dedicated for the search engine config)
+
+- Make search utils for everything that needs client (config.deleteOrphanIndexes)
 
 - Image
   - Create public page, with metadata (with option to make image private; no public page)
