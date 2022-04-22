@@ -18,7 +18,7 @@ TODO:
 - Save config
   - Commit to Git repo (repo dedicated for the search engine config)
 
-- Make search utils for everything that needs client (config.deleteOrphanIndexes)
+- Show index "enable" in index table
 
 - Image
   - Create public page, with metadata (with option to make image private; no public page)

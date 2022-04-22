@@ -248,6 +248,7 @@ button.refresh {
 .main .content .box .warning,
 .main .content .box .error {
   padding: 0.2em;
+  margin: 0.5em 0;
 }
 
 .main .content .box .warning {

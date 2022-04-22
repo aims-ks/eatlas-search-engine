@@ -44,14 +44,6 @@ public class FormUtils {
         return values;
     }
 
-    public static String sanitiseString(String str) {
-        if (str == null) {
-            return null;
-        }
-        str = str.trim();
-        return str.isEmpty() ? null : str;
-    }
-
     public static Long getFormLongValue(MultivaluedMap<String, String> form, String key) {
         String value = FormUtils.getFormStringValue(form, key);
         return value == null ? null : Long.parseLong(value);
@@ -60,5 +52,13 @@ public class FormUtils {
     public static boolean getFormBooleanValue(MultivaluedMap<String, String> form, String key) {
         String value = FormUtils.getFormStringValue(form, key);
         return value != null;
+    }
+
+    public static String sanitiseString(String str) {
+        if (str == null) {
+            return null;
+        }
+        str = str.trim();
+        return str.isEmpty() ? null : str;
     }
 }

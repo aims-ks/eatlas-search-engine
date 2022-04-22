@@ -53,7 +53,40 @@ public class ReindexPage {
     public Viewable reindex(
         MultivaluedMap<String, String> form
     ) {
+        if (form.containsKey("reindex-all")) {
+            this.reindexAll();
+        } else if (form.containsKey("index-latest-all")) {
+            this.indexLatestAll();
+        } else if (form.containsKey("refresh-count")) {
+            this.refreshCount();
+
+        } else if (form.containsKey("reindex")) {
+            this.reindex(FormUtils.getFormStringValue(form, "reindex"));
+        } else if (form.containsKey("index-latest")) {
+            this.indexLatest(FormUtils.getFormStringValue(form, "index-latest"));
+        }
 
         return this.reindexPage();
+    }
+
+    private void reindexAll() {
+        System.out.println("reindexAll");
+    }
+
+    private void indexLatestAll() {
+        System.out.println("indexLatestAll");
+    }
+
+    private void refreshCount() {
+        System.out.println("refreshCount");
+    }
+
+
+    private void reindex(String index) {
+        System.out.println("reindex: " + index);
+    }
+
+    private void indexLatest(String index) {
+        System.out.println("indexLatest: " + index);
     }
 }
