@@ -20,7 +20,16 @@ TODO:
 
 - Show index "enable" in index table
 
-- Add "Reload config" button
+- Implement "Reload config" button
+
+- Delete orphan state
+
+- Settings page
+  - Commit button
+
+- Index page
+  - Reload count button
+  - Implement progress bar
 
 - Image
   - Create public page, with metadata (with option to make image private; no public page)
@@ -30,8 +39,8 @@ TODO:
 
 - Implement pages
   - [ ] Dashboard
-  - [X] Settings page
-  - [ ] Index page
+  - [X] Settings page (TODO Git commit)
+  - [X] Index page (TODO reload count)
   - [X] Search page
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}

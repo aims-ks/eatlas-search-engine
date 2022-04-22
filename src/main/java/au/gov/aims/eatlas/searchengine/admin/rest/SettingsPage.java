@@ -227,6 +227,8 @@ public class SettingsPage {
     }
 
     private void commit(MultivaluedMap<String, String> form) {
+        // TODO Implement
+
         Messages.getInstance().addMessages(Messages.Level.ERROR,
             "Not implemented.");
     }

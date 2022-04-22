@@ -223,7 +223,8 @@ button.save,
 button.commit,
 button.index-all,
 button.index-latest-all,
-button.refresh {
+button.refresh,
+button.reload-config {
   padding-left: 26px;
 
   background-repeat: no-repeat;
@@ -245,6 +246,9 @@ button.index-latest-all {
   background-image: url("../img/time.png");
 }
 button.refresh {
+  background-image: url("../img/cog.png");
+}
+button.reload-config {
   background-image: url("../img/cog.png");
 }
 

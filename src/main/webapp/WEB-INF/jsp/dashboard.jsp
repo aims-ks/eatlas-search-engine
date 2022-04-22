@@ -22,7 +22,13 @@
     <div class="box">
         <h2>Search engine</h2>
 
-        <p>TODO Show search engine status (active, down, unreachable, etc)</p>
+        <ul>
+            <li>Show search engine status (active, down, unreachable, etc)</li>
+            <li>Show config file location and status (readable / writable)</li>
+            <li>Show state file location and status (readable / writable)</li>
+        </ul>
+
+        <button class="reload-config" name="reload-config" value="reload-config" title="Reload config">Reload config</button>
     </div>
 
     <div class="box">

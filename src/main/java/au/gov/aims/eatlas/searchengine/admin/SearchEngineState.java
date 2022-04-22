@@ -66,7 +66,11 @@ public class SearchEngineState {
     }
 
     public void save() throws IOException {
-        if (this.stateFile != null && this.stateFile.canWrite()) {
+        if (this.stateFile == null) {
+            throw new IOException("State file is not defined.");
+        } else if (!this.stateFile.canWrite()) {
+            throw new IOException(String.format("State file is not writable: %s", stateFile.getAbsolutePath()));
+        } else {
             // If config file was modified since last load, throw java.util.ConcurrentModificationException
             if (this.stateFile.lastModified() > this.lastModified) {
                 throw new ConcurrentModificationException(

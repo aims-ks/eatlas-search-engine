@@ -19,6 +19,8 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import au.gov.aims.eatlas.searchengine.rest.Index;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.ws.rs.Consumes;
@@ -54,39 +56,53 @@ public class ReindexPage {
         MultivaluedMap<String, String> form
     ) {
         if (form.containsKey("reindex-all-button")) {
-            this.reindexAll();
+            this.reindexAll(true);
         } else if (form.containsKey("index-latest-all-button")) {
-            this.indexLatestAll();
+            this.reindexAll(false);
         } else if (form.containsKey("refresh-count-button")) {
             this.refreshCount();
 
         } else if (form.containsKey("reindex-button")) {
-            this.reindex(FormUtils.getFormStringValue(form, "reindex-button"));
+            this.reindex(FormUtils.getFormStringValue(form, "reindex-button"), true);
         } else if (form.containsKey("index-latest-button")) {
-            this.indexLatest(FormUtils.getFormStringValue(form, "index-latest-button"));
+            this.reindex(FormUtils.getFormStringValue(form, "index-latest-button"), false);
         }
 
         return this.reindexPage();
     }
 
-    private void reindexAll() {
-        System.out.println("reindexAll");
-    }
-
-    private void indexLatestAll() {
-        System.out.println("indexLatestAll");
+    private void reindexAll(boolean fullHarvest) {
+        try {
+            Index.internalReindex(fullHarvest);
+        } catch (Exception ex) {
+            Messages.getInstance().addMessages(Messages.Level.ERROR,
+                "An exception occurred during the indexation.", ex);
+        }
     }
 
     private void refreshCount() {
-        System.out.println("refreshCount");
+        // TODO Implement
+
+        Messages.getInstance().addMessages(Messages.Level.ERROR,
+            "Not implemented.");
     }
 
 
-    private void reindex(String index) {
-        System.out.println("reindex: " + index);
-    }
+    private void reindex(String index, boolean fullHarvest) {
+        if (index == null || index.isEmpty()) {
+            Messages.getInstance().addMessages(Messages.Level.ERROR,
+                "No index provided for indexation.");
 
-    private void indexLatest(String index) {
-        System.out.println("indexLatest: " + index);
+        } else {
+            SearchEngineConfig config = SearchEngineConfig.getInstance();
+            AbstractIndexer indexer = config.getIndexer(index);
+
+            try {
+                Index.internalReindex(indexer, fullHarvest);
+            } catch (Exception ex) {
+                Messages.getInstance().addMessages(Messages.Level.ERROR,
+                    String.format("An exception occurred during the indexation of index: %s", index), ex);
+            }
+        }
     }
 }
