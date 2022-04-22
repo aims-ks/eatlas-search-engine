@@ -20,6 +20,8 @@ TODO:
 
 - Show index "enable" in index table
 
+- Add "Reload config" button
+
 - Image
   - Create public page, with metadata (with option to make image private; no public page)
   - Do not index private image

@@ -105,6 +105,10 @@
                         <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
                         <td class="buttons" id="${indexer.index}">
                             <button type="button" class="edit editFormButton" title="Edit">Edit</button>
+
+                            <!-- Dummy button used for form submission using the Enter button -->
+                            <button class="hiddenSubmitButton" name="save-button" value="save" title="save">Save</button>
+
                             <button type="submit"
                                 class="delete"
                                 name="delete-button"

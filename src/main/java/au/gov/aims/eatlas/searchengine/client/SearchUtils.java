@@ -53,7 +53,10 @@ public class SearchUtils {
 
         List<HttpHost> hosts = new ArrayList<>();
         for (String elasticSearchUrl : elasticSearchUrls) {
-            hosts.add(SearchUtils.toHttpHost(elasticSearchUrl));
+            HttpHost host = SearchUtils.toHttpHost(elasticSearchUrl);
+            if (host != null) {
+                hosts.add(host);
+            }
         }
 
         return RestClient.builder(
@@ -62,6 +65,10 @@ public class SearchUtils {
     }
 
     private static HttpHost toHttpHost(String urlStr) throws MalformedURLException {
+        if (urlStr == null || urlStr.isEmpty()) {
+            return null;
+        }
+
         URL url = new URL(urlStr);
         return new HttpHost(
             url.getHost(),
@@ -92,7 +99,9 @@ public class SearchUtils {
     }
 
     public static String generateUniqueIndexName(String index) {
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        if (index == null || index.isEmpty()) {
+            index = "index";
+        }
 
         if (!SearchUtils.indexExists(index)) {
             return index;
@@ -110,6 +119,10 @@ public class SearchUtils {
     //     to make sure the list of index found in the config
     //     is in sync with the list of index in ElasticSearch.
     public static boolean indexExists(String index) {
+        if (index == null || index.isEmpty()) {
+            return false;
+        }
+
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         AbstractIndexer foundIndexer = config.getIndexer(index);
@@ -117,6 +130,10 @@ public class SearchUtils {
     }
 
     public static AbstractIndexer addIndex(String newIndexType) throws IOException {
+        if (newIndexType == null || newIndexType.isEmpty()) {
+            return null;
+        }
+
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         SearchEngineState searchEngineState = SearchEngineState.getInstance();
