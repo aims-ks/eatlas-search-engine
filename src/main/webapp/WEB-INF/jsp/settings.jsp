@@ -24,8 +24,27 @@
             <h2>ElasticSearch settings</h2>
 
             <div class="field">
+                <label for="elasticSearchUrls">
+                    <span class="label required">Elastic Search URLs</span>
+                    <div id="elasticSearchUrls" class="multiple-text">
+                        <c:forEach items="${it.config.elasticSearchUrls}" var="elasticSearchUrl" varStatus="loopStatus">
+                            <input type="text"
+                                name="elasticSearchUrl"
+                                value="<c:out value="${elasticSearchUrl}" />" />
+                        </c:forEach>
+                        <!-- To add a URL -->
+                        <input type="text"
+                            name="elasticSearchUrl"
+                            value="" />
+                    </div>
+                </label>
+                <div class="desc">URLs to the Elastic Search server.</div>
+                <div class="desc">Example: http://localhost:9200, http://localhost:9300</div>
+            </div>
+
+            <div class="field">
                 <label for="imageCacheDirectory">
-                    <span class="label">Image cache directory</span>
+                    <span class="label required">Image cache directory</span>
                     <input type="text"
                         id="imageCacheDirectory"
                         name="imageCacheDirectory"
@@ -61,8 +80,6 @@
                 <div class="desc">Time to wait before re-attempting to download thumbnail which previously failed. Can be overwritten in indexer settings.</div>
                 <div class="desc">Default: 0 days</div>
             </div>
-
-            <p>TODO Server settings: ElasticSearch URL, port, etc</p>
         </div>
 
         <div class="box">
@@ -111,7 +128,7 @@
 
                             <div class="field">
                                 <label for="${indexer.index}_index">
-                                    <span class="label">Index</span>
+                                    <span class="label required">Index</span>
                                     <input type="text"
                                         id="${indexer.index}_index"
                                         name="${indexer.index}_index"
@@ -134,6 +151,7 @@
                                         value="<c:out value="${indexer.thumbnailTTL}" />" />
                                 </label>
                                 <div class="desc">Time to wait before re-downloading the thumbnail.</div>
+                                <div class="desc">Default: Default thumbnail TTL, defined above</div>
                             </div>
 
                             <div class="field">
@@ -146,6 +164,7 @@
                                         value="<c:out value="${indexer.brokenThumbnailTTL}" default="" />" />
                                 </label>
                                 <div class="desc">Time to wait before re-attempting to download thumbnail which previously failed.</div>
+                                <div class="desc">Default: Default broken thumbnail TTL, defined above</div>
                             </div>
 
                             <!--
@@ -160,13 +179,15 @@
                                     <div class="DrupalNodeIndexer_form">
                                         <div class="field">
                                             <label for="${indexer.index}_drupalUrl">
-                                                <span class="label">Drupal URL</span>
+                                                <span class="label required">Drupal URL</span>
                                                 <input type="text"
                                                     id="${indexer.index}_drupalUrl"
                                                     name="${indexer.index}_drupalUrl"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
+                                            <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc">Example: https://eatlas.org.au</div>
                                         </div>
 
                                         <div class="field">
@@ -177,17 +198,20 @@
                                                     name="${indexer.index}_drupalVersion"
                                                     value="<c:out value="${indexer.drupalVersion}" />" />
                                             </label>
+                                            <div class="desc">Version of Drupal, to use the proper API version.</div>
                                         </div>
 
                                         <div class="field">
                                             <label for="${indexer.index}_drupalNodeType">
-                                                <span class="label">Drupal node type</span>
+                                                <span class="label required">Drupal node type</span>
                                                 <input type="text"
                                                     id="${indexer.index}_drupalNodeType"
                                                     name="${indexer.index}_drupalNodeType"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalNodeType}" />" />
                                             </label>
+                                            <div class="desc">Type of node indexed by this indexer.</div>
+                                            <div class="desc">Example: article</div>
                                         </div>
 
                                         <div class="field">
@@ -198,6 +222,9 @@
                                                     name="${indexer.index}_drupalPreviewImageField"
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
+                                            <div class="desc">Drupal internal field ID for the preview image.</div>
+                                            <div class="desc">Drupal field type: Image</div>
+                                            <div class="desc">Example: field_image</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -208,13 +235,15 @@
                                     <div class="DrupalMediaIndexer_form">
                                         <div class="field">
                                             <label for="${indexer.index}_drupalUrl">
-                                                <span class="label">Drupal URL</span>
+                                                <span class="label required">Drupal URL</span>
                                                 <input type="text"
                                                     id="${indexer.index}_drupalUrl"
                                                     name="${indexer.index}_drupalUrl"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
+                                            <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc">Example: https://eatlas.org.au</div>
                                         </div>
 
                                         <div class="field">
@@ -225,17 +254,20 @@
                                                     name="${indexer.index}_drupalVersion"
                                                     value="<c:out value="${indexer.drupalVersion}" />" />
                                             </label>
+                                            <div class="desc">Version of Drupal, to use the proper API version.</div>
                                         </div>
 
                                         <div class="field">
                                             <label for="${indexer.index}_drupalMediaType">
-                                                <span class="label">Drupal media type</span>
+                                                <span class="label required">Drupal media type</span>
                                                 <input type="text"
                                                     id="${indexer.index}_drupalMediaType"
                                                     name="${indexer.index}_drupalMediaType"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalMediaType}" />" />
                                             </label>
+                                            <div class="desc">Type of media indexed by this indexer.</div>
+                                            <div class="desc">Example: image</div>
                                         </div>
 
                                         <div class="field">
@@ -246,6 +278,9 @@
                                                     name="${indexer.index}_drupalPreviewImageField"
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
+                                            <div class="desc">Drupal internal field ID for the preview image.</div>
+                                            <div class="desc">Drupal field type: Image</div>
+                                            <div class="desc">Example: thumbnail</div>
                                         </div>
 
                                         <div class="field">
@@ -256,6 +291,9 @@
                                                     name="${indexer.index}_drupalTitleField"
                                                     value="<c:out value="${indexer.drupalTitleField}" />" />
                                             </label>
+                                            <div class="desc">Drupal internal field ID for the media's title.</div>
+                                            <div class="desc">Drupal field type: Text (plain)</div>
+                                            <div class="desc">Example: field_title</div>
                                         </div>
 
                                         <div class="field">
@@ -266,6 +304,9 @@
                                                     name="${indexer.index}_drupalDescriptionField"
                                                     value="<c:out value="${indexer.drupalDescriptionField}" />" />
                                             </label>
+                                            <div class="desc">Drupal internal field ID for the media's description.</div>
+                                            <div class="desc">Drupal field type: Text (formatted, long)</div>
+                                            <div class="desc">Example: field_description</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -276,13 +317,15 @@
                                     <div class="DrupalExternalLinkNodeIndexer_form">
                                         <div class="field">
                                             <label for="${indexer.index}_drupalUrl">
-                                                <span class="label">Drupal URL</span>
+                                                <span class="label required">Drupal URL</span>
                                                 <input type="text"
                                                     id="${indexer.index}_drupalUrl"
                                                     name="${indexer.index}_drupalUrl"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
+                                            <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc">Example: https://eatlas.org.au</div>
                                         </div>
 
                                         <div class="field">
@@ -293,17 +336,20 @@
                                                     name="${indexer.index}_drupalVersion"
                                                     value="<c:out value="${indexer.drupalVersion}" />" />
                                             </label>
+                                            <div class="desc">Version of Drupal, to use the proper API version.</div>
                                         </div>
 
                                         <div class="field">
                                             <label for="${indexer.index}_drupalNodeType">
-                                                <span class="label">Drupal node type</span>
+                                                <span class="label required">Drupal node type</span>
                                                 <input type="text"
                                                     id="${indexer.index}_drupalNodeType"
                                                     name="${indexer.index}_drupalNodeType"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalNodeType}" />" />
                                             </label>
+                                            <div class="desc">Type of node indexed by this indexer.</div>
+                                            <div class="desc">Example: external_link</div>
                                         </div>
 
                                         <div class="field">
@@ -314,6 +360,9 @@
                                                     name="${indexer.index}_drupalPreviewImageField"
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
+                                            <div class="desc">Drupal internal field ID for the preview image.</div>
+                                            <div class="desc">Drupal field type: Image</div>
+                                            <div class="desc">Example: field_image</div>
                                         </div>
 
                                         <div class="field">
@@ -324,6 +373,9 @@
                                                     name="${indexer.index}_drupalExternalUrlField"
                                                     value="<c:out value="${indexer.drupalExternalUrlField}" />" />
                                             </label>
+                                            <div class="desc">Drupal internal field ID for the external page's URL.</div>
+                                            <div class="desc">Drupal field type: Link</div>
+                                            <div class="desc">Example: field_external_link</div>
                                         </div>
 
                                         <div class="field">
@@ -334,6 +386,11 @@
                                                     name="${indexer.index}_drupalContentOverwriteField"
                                                     value="<c:out value="${indexer.drupalContentOverwriteField}" />" />
                                             </label>
+                                            <div class="desc">Drupal internal field ID for the field used to overwrite the page content.</div>
+                                            <div class="desc">This field should only be used when the search engine is unable to download the page content;
+                                                because it's created by JavaScript, hidden behind a disclaimer page, requires authentication, etc.</div>
+                                            <div class="desc">Drupal field type: Text (plain, long)</div>
+                                            <div class="desc">Example: field_content_overwrite</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -344,13 +401,15 @@
                                     <div class="GeoNetworkIndexer_form">
                                         <div class="field">
                                             <label for="${indexer.index}_geoNetworkUrl">
-                                                <span class="label">GeoNetwork URL</span>
+                                                <span class="label required">GeoNetwork URL</span>
                                                 <input type="text"
                                                     id="${indexer.index}_geoNetworkUrl"
                                                     name="${indexer.index}_geoNetworkUrl"
                                                     required="required"
                                                     value="<c:out value="${indexer.geoNetworkUrl}" />" />
                                             </label>
+                                            <div class="desc">GeoNetwork base URL, used for API calls.</div>
+                                            <div class="desc">Example: https://eatlas.org.au/geonetwork</div>
                                         </div>
 
                                         <div class="field">
@@ -361,6 +420,7 @@
                                                     name="${indexer.index}_geoNetworkVersion"
                                                     value="<c:out value="${indexer.geoNetworkVersion}" />" />
                                             </label>
+                                            <div class="desc">Version of GeoNetwork, to use the proper API version.</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -371,13 +431,16 @@
                                     <div class="AtlasMapperIndexer_form">
                                         <div class="field">
                                             <label for="${indexer.index}_atlasMapperClientUrl">
-                                                <span class="label">AtlasMapper client URL</span>
+                                                <span class="label required">AtlasMapper client URL</span>
                                                 <input type="text"
                                                     id="${indexer.index}_atlasMapperClientUrl"
                                                     name="${indexer.index}_atlasMapperClientUrl"
                                                     required="required"
                                                     value="<c:out value="${indexer.atlasMapperClientUrl}" />" />
                                             </label>
+                                            <div class="desc">AtlasMapper base URL, used to request the list of layer.</div>
+                                            <div class="desc">The list of layer must be available at "[atlasMapperClientUrl]/config/main.json"</div>
+                                            <div class="desc">Example: https://maps.eatlas.org.au</div>
                                         </div>
 
                                         <div class="field">
@@ -388,6 +451,8 @@
                                                     name="${indexer.index}_atlasMapperVersion"
                                                     value="<c:out value="${indexer.atlasMapperVersion}" />" />
                                             </label>
+                                            <div class="desc">Version of AtlasMapper.</div>
+                                            <div class="desc">Used to properly parse the configuration.</div>
                                         </div>
                                     </div>
                                 </c:when>

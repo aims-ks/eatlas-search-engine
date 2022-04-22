@@ -37,16 +37,36 @@ import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SearchUtils {
 
-    public static RestClient buildRestClient() {
+    public static RestClient buildRestClient() throws MalformedURLException {
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        List<String> elasticSearchUrls = config.getElasticSearchUrls();
+        if (elasticSearchUrls == null || elasticSearchUrls.isEmpty()) {
+            throw new IllegalArgumentException("The Elastic Search configuration do not specify any Elastic Search URL.");
+        }
+
+        List<HttpHost> hosts = new ArrayList<>();
+        for (String elasticSearchUrl : elasticSearchUrls) {
+            hosts.add(SearchUtils.toHttpHost(elasticSearchUrl));
+        }
+
         return RestClient.builder(
-                new HttpHost("localhost", 9200, "http"),
-                new HttpHost("localhost", 9300, "http")
+                hosts.toArray(new HttpHost[0])
             ).build();
+    }
+
+    private static HttpHost toHttpHost(String urlStr) throws MalformedURLException {
+        URL url = new URL(urlStr);
+        return new HttpHost(
+            url.getHost(),
+            url.getPort(),
+            url.getProtocol());
     }
 
     public static void deleteOrphanIndexes() throws IOException {

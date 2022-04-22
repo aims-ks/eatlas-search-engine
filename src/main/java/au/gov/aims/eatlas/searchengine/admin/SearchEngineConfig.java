@@ -56,6 +56,8 @@ public class SearchEngineConfig {
     private final File configFile;
 
     // Values saved in the config file
+    private List<String> elasticSearchUrls; // http://localhost:9200, http://localhost:9300
+
     private long globalThumbnailTTL = DEFAULT_GLOBAL_THUMBNAIL_TTL; // TTL, in days
     private long globalBrokenThumbnailTTL = DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL; // TTL, in days
     private String imageCacheDirectory;
@@ -167,6 +169,21 @@ public class SearchEngineConfig {
             return this.indexers.remove(indexer);
         }
         return false;
+    }
+
+    public List<String> getElasticSearchUrls() {
+        return this.elasticSearchUrls;
+    }
+
+    public void setElasticSearchUrls(List<String> elasticSearchUrls) {
+        this.elasticSearchUrls = elasticSearchUrls;
+    }
+
+    public void addElasticSearchUrl(String elasticSearchUrl) {
+        if (this.elasticSearchUrls == null) {
+            this.elasticSearchUrls = new ArrayList<>();
+        }
+        this.elasticSearchUrls.add(elasticSearchUrl);
     }
 
     public String getImageCacheDirectory() {
@@ -352,6 +369,13 @@ public class SearchEngineConfig {
     }
 
     public JSONObject toJSON() {
+        JSONArray jsonElasticSearchUrls = new JSONArray();
+        if (this.elasticSearchUrls != null && !this.elasticSearchUrls.isEmpty()) {
+            for (String elasticSearchUrl : this.elasticSearchUrls) {
+                jsonElasticSearchUrls.put(elasticSearchUrl);
+            }
+        }
+
         JSONArray jsonIndexers = new JSONArray();
         if (this.indexers != null && !this.indexers.isEmpty()) {
             for (AbstractIndexer indexer : this.indexers) {
@@ -360,6 +384,7 @@ public class SearchEngineConfig {
         }
 
         return new JSONObject()
+            .put("elasticSearchUrls", jsonElasticSearchUrls)
             .put("globalThumbnailTTL", this.globalThumbnailTTL)
             .put("globalBrokenThumbnailTTL", this.globalBrokenThumbnailTTL)
             .put("imageCacheDirectory", this.imageCacheDirectory)
@@ -370,6 +395,16 @@ public class SearchEngineConfig {
         this.globalThumbnailTTL = json.optLong("globalThumbnailTTL", DEFAULT_GLOBAL_THUMBNAIL_TTL);
         this.globalBrokenThumbnailTTL = json.optLong("globalBrokenThumbnailTTL", DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL);
         this.imageCacheDirectory = json.optString("imageCacheDirectory", null);
+
+        JSONArray jsonElasticSearchUrls = json.optJSONArray("elasticSearchUrls");
+        if (jsonElasticSearchUrls != null) {
+            for (int i=0; i<jsonElasticSearchUrls.length(); i++) {
+                String elasticSearchUrl = jsonElasticSearchUrls.optString(i, null);
+                if (elasticSearchUrl != null) {
+                    this.addElasticSearchUrl(elasticSearchUrl);
+                }
+            }
+        }
 
         JSONArray jsonIndexers = json.optJSONArray("indexers");
         if (jsonIndexers != null) {

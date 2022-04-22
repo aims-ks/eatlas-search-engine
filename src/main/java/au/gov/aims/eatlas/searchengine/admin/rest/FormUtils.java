@@ -19,15 +19,37 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FormUtils {
     public static String getFormStringValue(MultivaluedMap<String, String> form, String key) {
-        String value = form.getFirst(key);
-        if (value == null) {
+        return FormUtils.sanitiseString(form.getFirst(key));
+    }
+
+    public static List<String> getFormStringValues(MultivaluedMap<String, String> form, String key) {
+        List<String> rawValues = form.get(key);
+        if (rawValues == null || rawValues.isEmpty()) {
             return null;
         }
-        value = value.trim();
-        return value.isEmpty() ? null : value;
+
+        List<String> values = new ArrayList<>();
+        for (String rwaValue : rawValues) {
+            String value = FormUtils.sanitiseString(rwaValue);
+            if (value != null) {
+                values.add(value);
+            }
+        }
+
+        return values;
+    }
+
+    public static String sanitiseString(String str) {
+        if (str == null) {
+            return null;
+        }
+        str = str.trim();
+        return str.isEmpty() ? null : str;
     }
 
     public static Long getFormLongValue(MultivaluedMap<String, String> form, String key) {

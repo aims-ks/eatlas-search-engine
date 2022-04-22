@@ -28,7 +28,7 @@ TODO:
 
 - Implement pages
   - [ ] Dashboard
-  - [ ] Settings page
+  - [X] Settings page
   - [ ] Index page
   - [X] Search page
 

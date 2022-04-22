@@ -26,7 +26,6 @@ import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
-import au.gov.aims.eatlas.searchengine.index.IndexerState;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.ws.rs.Consumes;
@@ -167,6 +166,7 @@ public class SettingsPage {
         config.setImageCacheDirectory(FormUtils.getFormStringValue(form, "imageCacheDirectory"));
         config.setGlobalThumbnailTTL(FormUtils.getFormLongValue(form, "globalThumbnailTTL"));
         config.setGlobalBrokenThumbnailTTL(FormUtils.getFormLongValue(form, "globalBrokenThumbnailTTL"));
+        config.setElasticSearchUrls(FormUtils.getFormStringValues(form, "elasticSearchUrl"));
 
         for (AbstractIndexer indexer : config.getIndexers()) {
             String index = indexer.getIndex();

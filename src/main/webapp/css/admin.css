@@ -175,6 +175,19 @@ button.hiddenSubmitButton {
   width: 5em;
 }
 
+/* Add a red asterisk next to the label of mandatory fields. */
+.main .content .box .field label .required::after {
+  color: #FF0000;
+  content: ' *';
+}
+
+.main .content .box .field label .multiple-text {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
 .main .content .box .field .desc {
   margin: 0.5em;
   font-size: 0.8em;
