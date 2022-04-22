@@ -19,7 +19,7 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
+import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
@@ -69,8 +69,8 @@ public class SettingsPage {
     public Viewable saveSettings(
         MultivaluedMap<String, String> form
     ) {
-        String submitButton = SettingsPage.getFormStringValue(form, "submitButton");
-        String deleteIndex = SettingsPage.getFormStringValue(form, "deleteIndex");
+        String submitButton = FormUtils.getFormStringValue(form, "submitButton");
+        String deleteIndex = FormUtils.getFormStringValue(form, "deleteIndex");
 
         // Default value when the user press enter in a text field, or when the form is submitted by JavaScript.
         // Most modern browser used the next submit button in the DOM tree,
@@ -109,60 +109,20 @@ public class SettingsPage {
     }
 
     private void addIndex(MultivaluedMap<String, String> form) {
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
-
-        String newIndexType = SettingsPage.getFormStringValue(form, "newIndexType");
-
-        SearchEngineState searchEngineState = SearchEngineState.getInstance();
-
-        String newIndex = null;
-        IndexerState state = null;
-        AbstractIndexer newIndexer = null;
-        switch (newIndexType) {
-            case "DrupalNodeIndexer":
-                newIndex = generateUniqueIndexName(config, "drupal-node");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new DrupalNodeIndexer(newIndex, state, null, null, null, null);
-                break;
-
-            case "DrupalMediaIndexer":
-                newIndex = generateUniqueIndexName(config, "drupal-media");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new DrupalMediaIndexer(newIndex, state, null, null, null, null, null, null);
-                break;
-
-            case "DrupalExternalLinkNodeIndexer":
-                newIndex = generateUniqueIndexName(config, "drupal-extlink");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, state, null, null, null, null, null, null);
-                break;
-
-            case "GeoNetworkIndexer":
-                newIndex = generateUniqueIndexName(config, "geonetwork");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new GeoNetworkIndexer(newIndex, state, null, null);
-                break;
-
-            case "AtlasMapperIndexer":
-                newIndex = generateUniqueIndexName(config, "atlasmapper");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new AtlasMapperIndexer(newIndex, state, null, null);
-                break;
-
-            default:
-                Messages.getInstance().addMessages(Messages.Level.ERROR,
-                    String.format("Unsupported index type: %s", newIndexType));
+        String newIndexType = FormUtils.getFormStringValue(form, "newIndexType");
+        // Call delete orphan indexes
+        try {
+            SearchUtils.deleteOrphanIndexes();
+        } catch (IOException ex) {
+            Messages.getInstance().addMessages(Messages.Level.ERROR,
+                "An exception occurred deleting orphan search indexes.", ex);
         }
 
-        if (newIndexer != null) {
-            config.addIndexer(newIndexer);
-
-            try {
-                config.save();
-            } catch (IOException ex) {
-                Messages.getInstance().addMessages(Messages.Level.ERROR,
-                    "An exception occurred while saving the search engine settings.", ex);
-            }
+        try {
+            SearchUtils.addIndex(newIndexType);
+        } catch (IOException ex) {
+            Messages.getInstance().addMessages(Messages.Level.ERROR,
+                String.format("An exception occurred while adding the new index: %s", newIndexType), ex);
         }
     }
 
@@ -188,7 +148,7 @@ public class SettingsPage {
 
                 // Call delete orphan indexes
                 try {
-                    config.deleteOrphanIndexes();
+                    SearchUtils.deleteOrphanIndexes();
                 } catch (IOException ex) {
                     Messages.getInstance().addMessages(Messages.Level.ERROR,
                         "An exception occurred deleting orphan search indexes.", ex);
@@ -204,19 +164,19 @@ public class SettingsPage {
     private void save(MultivaluedMap<String, String> form) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-        config.setImageCacheDirectory(SettingsPage.getFormStringValue(form, "imageCacheDirectory"));
-        config.setGlobalThumbnailTTL(SettingsPage.getFormLongValue(form, "globalThumbnailTTL"));
-        config.setGlobalBrokenThumbnailTTL(SettingsPage.getFormLongValue(form, "globalBrokenThumbnailTTL"));
+        config.setImageCacheDirectory(FormUtils.getFormStringValue(form, "imageCacheDirectory"));
+        config.setGlobalThumbnailTTL(FormUtils.getFormLongValue(form, "globalThumbnailTTL"));
+        config.setGlobalBrokenThumbnailTTL(FormUtils.getFormLongValue(form, "globalBrokenThumbnailTTL"));
 
         for (AbstractIndexer indexer : config.getIndexers()) {
             String index = indexer.getIndex();
 
-            String newIndex = SettingsPage.getFormStringValue(form, index + "_index");
+            String newIndex = FormUtils.getFormStringValue(form, index + "_index");
             if (newIndex != null && !newIndex.equals(index)) {
                 if (!newIndex.matches("[a-zA-Z0-9_-]+")) {
                     Messages.getInstance().addMessages(Messages.Level.WARNING,
                         String.format("Invalid index supplied: %s. Invalid characters in the index. Rolled back to previous index: %s", newIndex, index));
-                } else if (SettingsPage.indexExists(config, newIndex)) {
+                } else if (SearchUtils.indexExists(newIndex)) {
                     Messages.getInstance().addMessages(Messages.Level.WARNING,
                         String.format("Invalid index supplied: %s. Index already exists. Rolled back to previous index: %s", newIndex, index));
                 } else {
@@ -224,54 +184,54 @@ public class SettingsPage {
                 }
             }
 
-            indexer.setEnabled(SettingsPage.getFormBooleanValue(form, index + "_enabled"));
-            indexer.setThumbnailTTL(SettingsPage.getFormLongValue(form, index + "_thumbnailTTL"));
-            indexer.setBrokenThumbnailTTL(SettingsPage.getFormLongValue(form, index + "_brokenThumbnailTTL"));
+            indexer.setEnabled(FormUtils.getFormBooleanValue(form, index + "_enabled"));
+            indexer.setThumbnailTTL(FormUtils.getFormLongValue(form, index + "_thumbnailTTL"));
+            indexer.setBrokenThumbnailTTL(FormUtils.getFormLongValue(form, index + "_brokenThumbnailTTL"));
 
             if (indexer instanceof DrupalNodeIndexer) {
                 // DrupalNodeIndexer
                 DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)indexer;
 
-                drupalNodeIndexer.setDrupalUrl(SettingsPage.getFormStringValue(form, index + "_drupalUrl"));
-                drupalNodeIndexer.setDrupalVersion(SettingsPage.getFormStringValue(form, index + "_drupalVersion"));
-                drupalNodeIndexer.setDrupalNodeType(SettingsPage.getFormStringValue(form, index + "_drupalNodeType"));
-                drupalNodeIndexer.setDrupalPreviewImageField(SettingsPage.getFormStringValue(form, index + "_drupalPreviewImageField"));
+                drupalNodeIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
+                drupalNodeIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
+                drupalNodeIndexer.setDrupalNodeType(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
+                drupalNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
 
             } else if (indexer instanceof DrupalMediaIndexer) {
                 // DrupalMediaIndexer
                 DrupalMediaIndexer drupalMediaIndexer = (DrupalMediaIndexer)indexer;
 
-                drupalMediaIndexer.setDrupalUrl(SettingsPage.getFormStringValue(form, index + "_drupalUrl"));
-                drupalMediaIndexer.setDrupalVersion(SettingsPage.getFormStringValue(form, index + "_drupalVersion"));
-                drupalMediaIndexer.setDrupalMediaType(SettingsPage.getFormStringValue(form, index + "_drupalMediaType"));
-                drupalMediaIndexer.setDrupalPreviewImageField(SettingsPage.getFormStringValue(form, index + "_drupalPreviewImageField"));
-                drupalMediaIndexer.setDrupalTitleField(SettingsPage.getFormStringValue(form, index + "_drupalTitleField"));
-                drupalMediaIndexer.setDrupalDescriptionField(SettingsPage.getFormStringValue(form, index + "_drupalDescriptionField"));
+                drupalMediaIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
+                drupalMediaIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
+                drupalMediaIndexer.setDrupalMediaType(FormUtils.getFormStringValue(form, index + "_drupalMediaType"));
+                drupalMediaIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
+                drupalMediaIndexer.setDrupalTitleField(FormUtils.getFormStringValue(form, index + "_drupalTitleField"));
+                drupalMediaIndexer.setDrupalDescriptionField(FormUtils.getFormStringValue(form, index + "_drupalDescriptionField"));
 
             } else if (indexer instanceof DrupalExternalLinkNodeIndexer) {
                 // DrupalExternalLinkNodeIndexer
                 DrupalExternalLinkNodeIndexer drupalExternalLinkNodeIndexer = (DrupalExternalLinkNodeIndexer)indexer;
 
-                drupalExternalLinkNodeIndexer.setDrupalUrl(SettingsPage.getFormStringValue(form, index + "_drupalUrl"));
-                drupalExternalLinkNodeIndexer.setDrupalVersion(SettingsPage.getFormStringValue(form, index + "_drupalVersion"));
-                drupalExternalLinkNodeIndexer.setDrupalNodeType(SettingsPage.getFormStringValue(form, index + "_drupalNodeType"));
-                drupalExternalLinkNodeIndexer.setDrupalPreviewImageField(SettingsPage.getFormStringValue(form, index + "_drupalPreviewImageField"));
-                drupalExternalLinkNodeIndexer.setDrupalExternalUrlField(SettingsPage.getFormStringValue(form, index + "_drupalExternalUrlField"));
-                drupalExternalLinkNodeIndexer.setDrupalContentOverwriteField(SettingsPage.getFormStringValue(form, index + "_drupalContentOverwriteField"));
+                drupalExternalLinkNodeIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
+                drupalExternalLinkNodeIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
+                drupalExternalLinkNodeIndexer.setDrupalNodeType(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
+                drupalExternalLinkNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
+                drupalExternalLinkNodeIndexer.setDrupalExternalUrlField(FormUtils.getFormStringValue(form, index + "_drupalExternalUrlField"));
+                drupalExternalLinkNodeIndexer.setDrupalContentOverwriteField(FormUtils.getFormStringValue(form, index + "_drupalContentOverwriteField"));
 
             } else if (indexer instanceof GeoNetworkIndexer) {
                 // GeoNetworkIndexer
                 GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)indexer;
 
-                geoNetworkIndexer.setGeoNetworkUrl(SettingsPage.getFormStringValue(form, index + "_geoNetworkUrl"));
-                geoNetworkIndexer.setGeoNetworkVersion(SettingsPage.getFormStringValue(form, index + "_geoNetworkVersion"));
+                geoNetworkIndexer.setGeoNetworkUrl(FormUtils.getFormStringValue(form, index + "_geoNetworkUrl"));
+                geoNetworkIndexer.setGeoNetworkVersion(FormUtils.getFormStringValue(form, index + "_geoNetworkVersion"));
 
             } else if (indexer instanceof AtlasMapperIndexer) {
                 // AtlasMapperIndexer
                 AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)indexer;
 
-                atlasMapperIndexer.setAtlasMapperClientUrl(SettingsPage.getFormStringValue(form, index + "_atlasMapperClientUrl"));
-                atlasMapperIndexer.setAtlasMapperVersion(SettingsPage.getFormStringValue(form, index + "_atlasMapperVersion"));
+                atlasMapperIndexer.setAtlasMapperClientUrl(FormUtils.getFormStringValue(form, index + "_atlasMapperClientUrl"));
+                atlasMapperIndexer.setAtlasMapperVersion(FormUtils.getFormStringValue(form, index + "_atlasMapperVersion"));
 
             } else {
                 Messages.getInstance().addMessages(Messages.Level.WARNING,
@@ -290,43 +250,5 @@ public class SettingsPage {
     private void commit(MultivaluedMap<String, String> form) {
         Messages.getInstance().addMessages(Messages.Level.ERROR,
             "Not implemented.");
-    }
-
-
-    private static String generateUniqueIndexName(SearchEngineConfig config, String index) {
-        if (!SettingsPage.indexExists(config, index)) {
-            return index;
-        }
-
-        int suffix = 1;
-        while (SettingsPage.indexExists(config, index + "_" + suffix)) {
-            suffix++;
-        }
-
-        return index + "_" + suffix;
-    }
-
-    private static boolean indexExists(SearchEngineConfig config, String index) {
-        AbstractIndexer foundIndexer = config.getIndexer(index);
-        return foundIndexer != null;
-    }
-
-    private static String getFormStringValue(MultivaluedMap<String, String> form, String key) {
-        String value = form.getFirst(key);
-        if (value == null) {
-            return null;
-        }
-        value = value.trim();
-        return value.isEmpty() ? null : value;
-    }
-
-    private static Long getFormLongValue(MultivaluedMap<String, String> form, String key) {
-        String value = SettingsPage.getFormStringValue(form, key);
-        return value == null ? null : Long.parseLong(value);
-    }
-
-    private static boolean getFormBooleanValue(MultivaluedMap<String, String> form, String key) {
-        String value = SettingsPage.getFormStringValue(form, key);
-        return value != null;
     }
 }

@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
-import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
@@ -111,7 +111,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
     }
 
     @Override
-    protected Long internalHarvest(ESClient client, Long lastHarvested) {
+    protected Long internalIndex(SearchClient client, Long lastHarvested) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -281,7 +281,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
     }
 
     public class DrupalExternalLinkNodeIndexerThread extends Thread {
-        private final ESClient client;
+        private final SearchClient client;
         private final ExternalLink externalLink;
         private final JSONObject jsonApiNode;
         private final JSONArray jsonIncluded;
@@ -292,7 +292,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
         private final int total;
 
         public DrupalExternalLinkNodeIndexerThread(
-                ESClient client,
+                SearchClient client,
                 ExternalLink externalLink,
                 JSONObject jsonApiNode,
                 JSONArray jsonIncluded,

@@ -147,7 +147,7 @@ public class Index {
         LOGGER.info(String.format("Reindexing %s class %s",
                 indexer.getIndex(), indexer.getClass().getSimpleName()));
 
-        indexer.harvest(full);
+        indexer.index(full);
 
         SearchEngineState.getInstance().save();
 

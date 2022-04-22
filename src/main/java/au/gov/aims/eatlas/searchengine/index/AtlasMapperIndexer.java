@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
-import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
@@ -85,7 +85,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    protected Long internalHarvest(ESClient client, Long lastHarvested) {
+    protected Long internalIndex(SearchClient client, Long lastHarvested) {
         // There is no way to get last modified layers from AtlasMapper.
         // Therefore, we only perform an harvest if the JSON files are more recent than lastHarvested.
 
@@ -359,7 +359,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     public class AtlasMapperIndexerThread extends Thread {
-        private final ESClient client;
+        private final SearchClient client;
         private final String atlasMapperLayerId;
         private final JSONObject jsonMainConfig;
         private final JSONObject jsonLayersConfig;
@@ -369,7 +369,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         private final int total;
 
         public AtlasMapperIndexerThread(
-                ESClient client,
+                SearchClient client,
                 String atlasMapperLayerId,
                 JSONObject jsonMainConfig,
                 JSONObject jsonLayersConfig,

@@ -20,8 +20,9 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
+import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -40,7 +41,6 @@ import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
 import org.elasticsearch.client.RestClient;
 import org.json.JSONObject;
@@ -65,7 +65,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         this.state = state;
     }
 
-    protected abstract Long internalHarvest(ESClient client, Long lastIndexed);
+    protected abstract Long internalIndex(SearchClient client, Long lastIndexed);
     public abstract Entity load(JSONObject json);
     public abstract JSONObject toJSON();
 
@@ -79,28 +79,21 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     // If full is true, re-index everything.
     // If not, only index what have changed since last indexation.
-    public void harvest(boolean full) throws Exception {
+    public void index(boolean full) throws Exception {
         long lastIndexedStarts = System.currentTimeMillis();
 
         try(
-            // Create the low-level client
-            RestClient restClient = RestClient.builder(
-                    new HttpHost("localhost", 9200, "http"),
-                    new HttpHost("localhost", 9300, "http")
-                ).build();
+                RestClient restClient = SearchUtils.buildRestClient();
 
-            // Create the transport with a Jackson mapper
-            ElasticsearchTransport transport = new RestClientTransport(
-                restClient, new JacksonJsonpMapper());
+                // Create the transport with a Jackson mapper
+                ElasticsearchTransport transport = new RestClientTransport(
+                        restClient, new JacksonJsonpMapper());
 
-            // And create the API client
-            ESClient client = new ESRestHighLevelClient(new ElasticsearchClient(transport))
+                // And create the API client
+                SearchClient client = new ESClient(new ElasticsearchClient(transport))
         ) {
-            // TODO - DELETE
-            //System.out.println("DELETE INDEX [" + this.getIndex() + "]: " + ((ESRestHighLevelClient)client).deleteIndex(this.getIndex()));
-
             client.createIndex(this.getIndex());
-            Long count = this.internalHarvest(client, full ? null : this.state.getLastIndexed());
+            Long count = this.internalIndex(client, full ? null : this.state.getLastIndexed());
             if (count == null) {
                 CountRequest countRequest = new CountRequest.Builder().index(this.getIndex()).build();
                 CountResponse countResponse = client.count(countRequest);
@@ -239,13 +232,13 @@ public abstract class AbstractIndexer<E extends Entity> {
         this.brokenThumbnailTTL = brokenThumbnailTTL;
     }
 
-    public IndexResponse index(ESClient client, E entity) throws IOException {
+    public IndexResponse index(SearchClient client, E entity) throws IOException {
         entity.setLastIndexed(System.currentTimeMillis());
         return client.index(this.getIndexRequest(entity));
     }
 
     // Only called with complete re-index
-    public void cleanUp(ESClient client, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName) {
+    public void cleanUp(SearchClient client, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName) {
         long deletedIndexedItems = this.deleteOldIndexedItems(client, lastIndexed);
         if (deletedIndexedItems > 0) {
             LOGGER.info(String.format("Deleted %d indexed %s",
@@ -270,7 +263,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         }
     }
 
-    private long deleteOldIndexedItems(ESClient client, long lastIndexed) {
+    private long deleteOldIndexedItems(SearchClient client, long lastIndexed) {
         DeleteByQueryRequest deleteRequest = this.getDeleteOldItemsRequest(lastIndexed);
 
         // Delete old records
@@ -322,11 +315,11 @@ public abstract class AbstractIndexer<E extends Entity> {
         return deleted;
     }
 
-    public E get(ESClient client, Class<E> entityClass, String id) throws IOException {
+    public E get(SearchClient client, Class<E> entityClass, String id) throws IOException {
         return AbstractIndexer.get(client, entityClass, this.index, id);
     }
 
-    public E safeGet(ESClient client, Class<E> entityClass, String id) {
+    public E safeGet(SearchClient client, Class<E> entityClass, String id) {
         try {
             return this.get(client, entityClass, id);
         } catch(Exception ex) {
@@ -338,7 +331,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         return null;
     }
 
-    public static <E extends Entity> E get(ESClient client, Class<E> entityClass, String index, String id) throws IOException {
+    public static <E extends Entity> E get(SearchClient client, Class<E> entityClass, String index, String id) throws IOException {
         // TODO: Entity is abstract! Jackson can't instantiate it! Use Generics
         GetResponse<E> response = client.get(AbstractIndexer.getGetRequest(index, id), entityClass);
         if (response == null) {

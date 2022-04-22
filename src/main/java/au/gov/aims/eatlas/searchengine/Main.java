@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
@@ -97,15 +98,11 @@ public class Main {
     }
 
     private static void testElasticsearchClient() throws IOException {
-        // Create the low-level client
-        RestClient restClient = RestClient.builder(
-                new HttpHost("localhost", 9200, "http"),
-                new HttpHost("localhost", 9300, "http")
-            ).build();
+        RestClient restClient = SearchUtils.buildRestClient();
 
         // Create the transport with a Jackson mapper
         ElasticsearchTransport transport = new RestClientTransport(
-            restClient, new JacksonJsonpMapper());
+                restClient, new JacksonJsonpMapper());
 
         // And create the API client
         ElasticsearchClient rawClient = new ElasticsearchClient(transport);

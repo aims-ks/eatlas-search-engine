@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
-import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
@@ -112,7 +112,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
     }
 
     @Override
-    protected Long internalHarvest(ESClient client, Long lastHarvested) {
+    protected Long internalIndex(SearchClient client, Long lastHarvested) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -286,7 +286,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
     }
 
     public class DrupalMediaIndexerThread extends Thread {
-        private final ESClient client;
+        private final SearchClient client;
         private final DrupalMedia drupalMedia;
         private final JSONObject jsonApiMedia;
         private final JSONArray jsonIncluded;
@@ -296,7 +296,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         private final int total;
 
         public DrupalMediaIndexerThread(
-                ESClient client,
+                SearchClient client,
                 DrupalMedia drupalMedia,
                 JSONObject jsonApiMedia,
                 JSONArray jsonIncluded,

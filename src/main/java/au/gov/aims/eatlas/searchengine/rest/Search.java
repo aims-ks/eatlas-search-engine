@@ -18,8 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
+import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.search.ErrorMessage;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
@@ -150,18 +151,14 @@ public class Search {
         SearchResults results = new SearchResults();
 
         try(
-            // Create the low-level client
-            RestClient restClient = RestClient.builder(
-                    new HttpHost("localhost", 9200, "http"),
-                    new HttpHost("localhost", 9300, "http")
-                ).build();
+                RestClient restClient = SearchUtils.buildRestClient();
 
-            // Create the transport with a Jackson mapper
-            ElasticsearchTransport transport = new RestClientTransport(
-                restClient, new JacksonJsonpMapper());
+                // Create the transport with a Jackson mapper
+                ElasticsearchTransport transport = new RestClientTransport(
+                        restClient, new JacksonJsonpMapper());
 
-            // And create the API client
-            ESClient client = new ESRestHighLevelClient(new ElasticsearchClient(transport))
+                // And create the API client
+                SearchClient client = new ESClient(new ElasticsearchClient(transport))
         ) {
             String[] idxArray = idx.toArray(new String[0]);
 
@@ -191,7 +188,7 @@ public class Search {
      *   result in many more search requests than one
      *   count request per index.
      */
-    public static Summary searchSummary(ESClient client, String needle, String ... indexes)
+    public static Summary searchSummary(SearchClient client, String needle, String ... indexes)
             throws IOException {
 
         Summary summary = new Summary();
@@ -250,7 +247,7 @@ public class Search {
      *
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
-    public static List<SearchResult> search(ESClient client, String needle, int from, int size, String ... indexes)
+    public static List<SearchResult> search(SearchClient client, String needle, int from, int size, String ... indexes)
             throws IOException {
 
         SearchResponse<Entity> response = client.search(Search.getSearchRequest(needle, from, size, indexes));

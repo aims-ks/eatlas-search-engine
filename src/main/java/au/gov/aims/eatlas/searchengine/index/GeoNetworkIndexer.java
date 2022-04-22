@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
-import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
@@ -91,7 +91,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
-    protected Long internalHarvest(ESClient client, Long lastHarvested) {
+    protected Long internalIndex(SearchClient client, Long lastHarvested) {
         String lastHarvestedISODateStr = null;
         if (lastHarvested != null) {
             // NOTE: GeoNetwork last modified date (aka dateFrom) are rounded to second,
@@ -251,7 +251,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
 
     public class GeoNetworkIndexerThread extends Thread {
-        private final ESClient client;
+        private final SearchClient client;
         private final DocumentBuilderFactory documentBuilderFactory;
         private final String metadataRecordUUID;
         private final List<String> orphanMetadataRecordList;
@@ -259,7 +259,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         private final int current;
         private final int total;
 
-        public GeoNetworkIndexerThread(ESClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, List<String> orphanMetadataRecordList, Set<String> usedThumbnails, int current, int total) {
+        public GeoNetworkIndexerThread(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, List<String> orphanMetadataRecordList, Set<String> usedThumbnails, int current, int total) {
             this.client = client;
             this.documentBuilderFactory = documentBuilderFactory;
             this.metadataRecordUUID = metadataRecordUUID;
@@ -300,7 +300,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             }
         }
 
-        private GeoNetworkRecord loadGeoNetworkRecord(ESClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID) {
+        private GeoNetworkRecord loadGeoNetworkRecord(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID) {
             String url;
             String geoNetworkUrl = GeoNetworkIndexer.this.getGeoNetworkUrl();
             String urlBase = String.format("%s/srv/eng/xml.metadata.get", geoNetworkUrl);

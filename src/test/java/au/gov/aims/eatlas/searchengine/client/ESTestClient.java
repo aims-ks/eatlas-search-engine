@@ -36,7 +36,7 @@ import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 import java.io.IOException;
 import java.util.List;
 
-public class ESTestClient implements ESClient {
+public class ESTestClient implements SearchClient {
     // https://github.com/elastic/elasticsearch-java/blob/main/java-client/src/test/java/co/elastic/clients/elasticsearch/end_to_end/RequestTest.java
     private ElasticsearchClient client;
 

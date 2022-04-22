@@ -18,18 +18,10 @@
  */
 package au.gov.aims.eatlas.searchengine.admin;
 
-import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
-import org.elasticsearch.client.RestClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -81,7 +73,7 @@ public class SearchEngineConfig {
                 "eatlas_search_engine_default.json");
     }
 
-    // For internal use (tests)
+    // For internal use (unit tests)
     public static SearchEngineConfig createInstance(
             File configFile, String configFileResourcePath) throws IOException {
 
@@ -175,30 +167,6 @@ public class SearchEngineConfig {
             return this.indexers.remove(indexer);
         }
         return false;
-    }
-
-    public void deleteOrphanIndexes() throws IOException {
-        List<String> activeIndexes = new ArrayList();
-        for (AbstractIndexer indexer : this.indexers) {
-            activeIndexes.add(indexer.getIndex());
-        }
-
-        try(
-                // Create the low-level client
-                RestClient restClient = RestClient.builder(
-                    new HttpHost("localhost", 9200, "http"),
-                    new HttpHost("localhost", 9300, "http")
-                ).build();
-
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                ESClient client = new ESRestHighLevelClient(new ElasticsearchClient(transport))
-        ) {
-            client.deleteOrphanIndexes(activeIndexes);
-        }
     }
 
     public String getImageCacheDirectory() {

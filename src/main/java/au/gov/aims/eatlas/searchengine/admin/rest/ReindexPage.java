@@ -21,10 +21,13 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import org.glassfish.jersey.server.mvc.Viewable;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,5 +45,15 @@ public class ReindexPage {
 
         // Load the template: src/main/webapp/WEB-INF/jsp/reindex.jsp
         return new Viewable("/reindex", model);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    public Viewable reindex(
+        MultivaluedMap<String, String> form
+    ) {
+
+        return this.reindexPage();
     }
 }
