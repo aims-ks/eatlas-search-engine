@@ -19,6 +19,8 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.client.SearchUtils;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Application;
@@ -26,12 +28,19 @@ import javax.ws.rs.core.Context;
 import java.io.IOException;
 
 public class WebApplication extends Application {
+    private static final Logger LOGGER = Logger.getLogger(WebApplication.class.getName());
 
     public WebApplication(@Context ServletContext servletContext) {
         try {
             SearchEngineConfig.createInstance(servletContext);
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                SearchUtils.deleteOrphanIndexes();
+            } catch (IOException ex) {
+                LOGGER.error(
+                    "An exception occurred while deleting orphan search indexes.", ex);
+            }
+        } catch (IOException ex) {
+            LOGGER.error("The eAtlas search engine could not load its configuration.", ex);
         }
     }
 }

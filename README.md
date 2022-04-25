@@ -7,33 +7,26 @@ TODO:
 
 - Fix tests
 
-- Admin UI to edit config
-
-- BUG: Search with no index = all indexes. Make summary match that
-
 - Messages
   - Add "Clear messages" button
   - Make messages session based (if that's not too hard)
-
-- Save config
-  - Commit to Git repo (repo dedicated for the search engine config)
 
 - Show index "enable" in index table
 
 - Implement "Reload config" button
 
-- Delete orphan state
+- Delete orphan for state file
 
 - Settings page
-  - Commit button
+  - Commit to Git repo (repo dedicated for the search engine config)
 
 - Index page
-  - Reload count button
+  - Implement Reload count button
   - Implement progress bar
 
 - Image
-  - Create public page, with metadata (with option to make image private; no public page)
-  - Do not index private image
+  - Drupal: Create public page, with metadata (with option to make image private; no public page)
+  - Indexer: Do not index private image
 
 - Index GIS polygons / points
 

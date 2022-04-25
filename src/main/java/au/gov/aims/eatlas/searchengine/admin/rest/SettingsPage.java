@@ -93,7 +93,7 @@ public class SettingsPage {
             SearchUtils.deleteOrphanIndexes();
         } catch (IOException ex) {
             Messages.getInstance().addMessages(Messages.Level.ERROR,
-                "An exception occurred deleting orphan search indexes.", ex);
+                "An exception occurred while deleting orphan search indexes.", ex);
         }
 
         try {

@@ -137,7 +137,10 @@ public class Search {
             }
         }
 
-        if (q == null || idx == null) {
+        if (
+            q == null || q.isEmpty() ||
+            idx == null || idx.isEmpty()
+        ) {
             return null;
         }
 
