@@ -175,6 +175,14 @@ button.hiddenSubmitButton {
   background-color: #FFDDDD;
 }
 
+.file-status .label {
+  display: inline-block;
+  width: 8em;
+}
+.file-status .label::after {
+  content: ":";
+}
+
 /* Settings page */
 .main .content .box .field {
   margin: 1.5em 0;
@@ -272,31 +280,31 @@ button.reload {
   background-image: url("../img/cog.png");
 }
 
-.main .content .box .info,
-.main .content .box .warning,
-.main .content .box .error {
+.main .content .message .info,
+.main .content .message .warning,
+.main .content .message .error {
   padding: 0.2em;
   margin: 0.5em 0;
 }
 
-.main .content .box .info {
+.main .content .message .info {
   background-color: #DDFFDD;
 }
 
-.main .content .box .warning {
+.main .content .message .warning {
   background-color: #FFFFDD;
 }
 
-.main .content .box .error {
+.main .content .message .error {
   background-color: #FFDDDD;
   font-weight: bold;
 }
 
-.main .content .box .error .exception {
+.main .content .message .error .exception {
   font-weight: normal;
 }
 
-.main .content .box .error .exception .stacktrace {
+.main .content .message .error .exception .stacktrace {
   overflow: auto;
 }
 

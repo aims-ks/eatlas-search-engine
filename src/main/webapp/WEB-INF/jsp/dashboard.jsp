@@ -23,9 +23,9 @@
         <div class="box">
             <h2>Search engine</h2>
 
+            <h3>Status</h3>
             <div>
                 <p>
-                    Status:
                     <span class="${it.status.reachable ? "ok" : "error"}">
                         ${it.status.reachable ? "Online" : "Offline"}
                     </span>
@@ -33,8 +33,8 @@
             </div>
 
             <c:if test="${not empty it.status.indexes}">
+                <h3>List of available indexes</h3>
                 <div>
-                    <p>List of available indexes:</p>
                     <ul>
                         <c:forEach items="${it.status.indexes}" var="index" varStatus="loopStatus">
                             <li><c:out value="${index}" /></li>
@@ -44,11 +44,24 @@
             </c:if>
 
             <c:if test="${not empty it.status.exception}">
+                <h3>Error</h3>
                 <div>
-                    <p>
-                        Error:
-                        <c:out value="${it.status.exception.message}" />
-                    </p>
+                    <div class="exception hover">
+                        <span class="clickable">
+                            <%-- Display the exception class name and message (not all exception have a "message") --%>
+                            <c:out value="${it.status.exception.getClass().name}"/>
+                            <c:if test="${not empty it.status.exception.message}">
+                                - <c:out value="${it.status.exception.message}"/>
+                            </c:if>
+                        </span>
+                        <ul class="stacktrace collapsible">
+                            <c:forEach var="stacktraceElement" items="${it.status.exception.stackTrace}">
+                                <li>
+                                    <c:out value="${stacktraceElement}"/>
+                                </li>
+                            </c:forEach>
+                        </ul>
+                    </div>
 
                     <p>
                         Check that the <i>Elastic Search URLs</i> are set properly in the <a href="<c:url value="/admin/settings" />">settings</a> page.
@@ -56,28 +69,31 @@
                 </div>
             </c:if>
 
-            <div>
-                <p>Configuration file: <c:out value="${it.configFile.absolutePath}" /></p>
+            <h3>Configuration file</h3>
+            <div class="file-status">
+                <p><c:out value="${it.configFile.absolutePath}" /></p>
                 <ul>
-                    <li>Readable: <span class="${it.configFile.canRead() ? "ok" : "error"}">${it.configFile.canRead() ? "Yes" : "No"}</span></li>
-                    <li>Writable: <span class="${it.configFile.canWrite() ? "ok" : "error"}">${it.configFile.canWrite() ? "Yes" : "No"}</span></li>
-                    <li>Last modified: <fmt:formatDate value="${it.configFileLastModifiedDate}" pattern="dd/MM/yyyy HH:mm:ss"/></li>
+                    <li><span class="label">Exists</span> <span class="${it.configFile.exists() ? "ok" : "error"}">${it.configFile.exists() ? "Yes" : "No"}</span></li>
+                    <li><span class="label">Readable</span> <span class="${it.configFile.canRead() ? "ok" : "error"}">${it.configFile.canRead() ? "Yes" : "No"}</span></li>
+                    <li><span class="label">Writable</span> <span class="${it.configFile.canWrite() ? "ok" : "error"}">${it.configFile.canWrite() ? "Yes" : "No"}</span></li>
+                    <li><span class="label">Last modified</span> <fmt:formatDate value="${it.configFileLastModifiedDate}" pattern="dd/MM/yyyy HH:mm:ss"/></li>
                 </ul>
 
                 <button class="reload" name="reload-config-button" value="reload-button" title="Reload configuration">Reload configuration file</button>
             </div>
 
-            <div>
-                <p>State file: <c:out value="${it.stateFile.absolutePath}" /></p>
+            <h3>State file</h3>
+            <div class="file-status">
+                <p><c:out value="${it.stateFile.absolutePath}" /></p>
                 <ul>
-                    <li>Readable: <span class="${it.stateFile.canRead() ? "ok" : "error"}">${it.stateFile.canRead() ? "Yes" : "No"}</span></li>
-                    <li>Writable: <span class="${it.stateFile.canWrite() ? "ok" : "error"}">${it.stateFile.canWrite() ? "Yes" : "No"}</span></li>
-                    <li>Last modified: <fmt:formatDate value="${it.stateFileLastModifiedDate}" pattern="dd/MM/yyyy HH:mm:ss"/></li>
+                    <li><span class="label">Exists</span> <span class="${it.stateFile.exists() ? "ok" : "error"}">${it.stateFile.exists() ? "Yes" : "No"}</span></li>
+                    <li><span class="label">Readable</span> <span class="${it.stateFile.canRead() ? "ok" : "error"}">${it.stateFile.canRead() ? "Yes" : "No"}</span></li>
+                    <li><span class="label">Writable</span> <span class="${it.stateFile.canWrite() ? "ok" : "error"}">${it.stateFile.canWrite() ? "Yes" : "No"}</span></li>
+                    <li><span class="label">Last modified</span> <fmt:formatDate value="${it.stateFileLastModifiedDate}" pattern="dd/MM/yyyy HH:mm:ss"/></li>
                 </ul>
 
                 <button class="reload" name="reload-state-button" value="reload-button" title="Reload state">Reload state file</button>
             </div>
-
         </div>
 
         <div class="box">
