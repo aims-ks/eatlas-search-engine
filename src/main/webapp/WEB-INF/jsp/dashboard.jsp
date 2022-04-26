@@ -28,7 +28,9 @@
             <li>Show state file location and status (readable / writable)</li>
         </ul>
 
-        <button class="reload-config" name="reload-config" value="reload-config" title="Reload config">Reload config</button>
+        <form method="post">
+            <button class="reload" name="reload-button" value="reload-button" title="Reload config">Reload config</button>
+        </form>
     </div>
 
     <div class="box">

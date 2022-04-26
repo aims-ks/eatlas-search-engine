@@ -27,7 +27,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class SearchEngineState {
 
@@ -54,6 +56,7 @@ public class SearchEngineState {
     }
 
     public void reload() throws IOException {
+        this.indexerStates = null;
         if (this.stateFile != null && this.stateFile.canRead()) {
             // Reload config from config file
             String jsonStr = FileUtils.readFileToString(this.stateFile, StandardCharsets.UTF_8);
@@ -62,6 +65,29 @@ public class SearchEngineState {
 
             // Set lastModified to config file last modified
             this.lastModified = this.stateFile.lastModified();
+
+            this.deleteOrphanStates();
+        }
+    }
+
+    public void deleteOrphanStates() throws IOException {
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+
+        if (config != null && this.indexerStates != null) {
+            boolean modified = false;
+
+            // Create a copy of the list of index, to prevent "concurrent modification exception".
+            Set<String> indexes = new HashSet<>(this.indexerStates.keySet());
+            for (String index : indexes) {
+                if (config.getIndexer(index) == null) {
+                    this.indexerStates.remove(index);
+                    modified = true;
+                }
+            }
+
+            if (modified) {
+                this.save();
+            }
         }
     }
 
@@ -109,11 +135,19 @@ public class SearchEngineState {
     }
 
     public IndexerState removeIndexerState(String index) throws IOException {
+        if (this.indexerStates == null) {
+            return null;
+        }
+
         IndexerState removed = this.indexerStates.remove(index);
         if (removed != null) {
             this.save();
         }
         return removed;
+    }
+
+    public File getStateFile() {
+        return this.stateFile;
     }
 
     public JSONObject toJSON() {

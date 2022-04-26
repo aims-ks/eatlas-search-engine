@@ -224,7 +224,7 @@ button.commit,
 button.index-all,
 button.index-latest-all,
 button.refresh,
-button.reload-config {
+button.reload {
   padding-left: 26px;
 
   background-repeat: no-repeat;
@@ -248,7 +248,7 @@ button.index-latest-all {
 button.refresh {
   background-image: url("../img/cog.png");
 }
-button.reload-config {
+button.reload {
   background-image: url("../img/cog.png");
 }
 
@@ -257,6 +257,10 @@ button.reload-config {
 .main .content .box .error {
   padding: 0.2em;
   margin: 0.5em 0;
+}
+
+.main .content .box .info {
+  background-color: #DDFFDD;
 }
 
 .main .content .box .warning {

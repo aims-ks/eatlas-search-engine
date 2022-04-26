@@ -71,7 +71,7 @@ public class SearchEngineConfig {
     // For internal use (rest.WebApplication)
     public static SearchEngineConfig createInstance(ServletContext context) throws IOException {
         return createInstance(
-                SearchEngineConfig.getConfigFile(context),
+                SearchEngineConfig.findConfigFile(context),
                 "eatlas_search_engine_default.json");
     }
 
@@ -79,7 +79,7 @@ public class SearchEngineConfig {
     public static SearchEngineConfig createInstance(
             File configFile, String configFileResourcePath) throws IOException {
 
-        File stateFile = SearchEngineConfig.getStateFile(configFile);
+        File stateFile = SearchEngineConfig.findStateFile(configFile);
         if (SearchEngineConfig.checkStateFile(stateFile, true)) {
             SearchEngineState.createInstance(stateFile);
         }
@@ -97,6 +97,8 @@ public class SearchEngineConfig {
     }
 
     public void reload() throws IOException {
+        this.indexers = null;
+        this.elasticSearchUrls = null;
         if (this.configFile != null && this.configFile.canRead()) {
             // Reload config from config file
             String jsonStr = FileUtils.readFileToString(this.configFile, StandardCharsets.UTF_8);
@@ -210,8 +212,12 @@ public class SearchEngineConfig {
         this.globalBrokenThumbnailTTL = globalBrokenThumbnailTTL == null ? DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL : globalBrokenThumbnailTTL;
     }
 
+    public File getConfigFile() {
+        return this.configFile;
+    }
+
     // Find config file
-    public static File getConfigFile(ServletContext context) {
+    public static File findConfigFile(ServletContext context) {
         if (context == null) {
             return null;
         }
@@ -226,7 +232,7 @@ public class SearchEngineConfig {
     }
 
     // Find state file
-    public static File getStateFile(File configFile) {
+    public static File findStateFile(File configFile) {
         String configFilepathWithoutExtension = FilenameUtils.removeExtension(configFile.getAbsolutePath());
         String stateFilepath = configFilepathWithoutExtension + "_state.json";
 

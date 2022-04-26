@@ -13,10 +13,6 @@ TODO:
 
 - Show index "enable" in index table
 
-- Implement "Reload config" button
-
-- Delete orphan for state file
-
 - Settings page
   - Commit to Git repo (repo dedicated for the search engine config)
 
