@@ -58,14 +58,11 @@ public abstract class AbstractIndexer<E extends Entity> {
     private Long thumbnailTTL; // TTL, in days
     private Long brokenThumbnailTTL; // TTL, in days
 
-    private final IndexerState state;
-
-    public AbstractIndexer(String index, IndexerState state) {
+    public AbstractIndexer(String index) {
         this.index = index;
-        this.state = state;
     }
 
-    protected abstract Long internalIndex(SearchClient client, Long lastIndexed);
+    protected abstract void internalIndex(SearchClient client, Long lastIndexed);
     public abstract Entity load(JSONObject json);
     public abstract JSONObject toJSON();
 
@@ -74,13 +71,15 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     public IndexerState getState() {
-        return this.state;
+        SearchEngineState searchEngineState = SearchEngineState.getInstance();
+        return searchEngineState.getOrAddIndexerState(this.index);
     }
 
     // If full is true, re-index everything.
     // If not, only index what have changed since last indexation.
-    public void index(boolean full) throws Exception {
+    public void index(boolean full) throws IOException {
         long lastIndexedStarts = System.currentTimeMillis();
+        IndexerState state = this.getState();
 
         try(
                 RestClient restClient = SearchUtils.buildRestClient();
@@ -93,18 +92,21 @@ public abstract class AbstractIndexer<E extends Entity> {
                 SearchClient client = new ESClient(new ElasticsearchClient(transport))
         ) {
             client.createIndex(this.getIndex());
-            Long count = this.internalIndex(client, full ? null : this.state.getLastIndexed());
-            if (count == null) {
-                CountRequest countRequest = new CountRequest.Builder().index(this.getIndex()).build();
-                CountResponse countResponse = client.count(countRequest);
-                count = countResponse.count();
-            }
-            this.state.setCount(count);
+            this.internalIndex(client, full ? null : state.getLastIndexed());
+            this.refreshCount(client);
         }
 
         long lastIndexedEnds = System.currentTimeMillis();
-        this.state.setLastIndexed(lastIndexedStarts);
-        this.state.setLastIndexRuntime(lastIndexedEnds - lastIndexedStarts);
+        state.setLastIndexed(lastIndexedStarts);
+        state.setLastIndexRuntime(lastIndexedEnds - lastIndexedStarts);
+    }
+
+    public void refreshCount(SearchClient client) throws IOException {
+        IndexerState state = this.getState();
+
+        CountRequest countRequest = new CountRequest.Builder().index(this.getIndex()).build();
+        CountResponse countResponse = client.count(countRequest);
+        state.setCount(countResponse.count());
     }
 
     protected JSONObject getJsonBase() {
@@ -136,32 +138,26 @@ public abstract class AbstractIndexer<E extends Entity> {
         SearchEngineState searchEngineState = SearchEngineState.getInstance();
 
         // TODO Use annotation to find indexer
-        IndexerState state = null;
         AbstractIndexer indexer = null;
         switch(type) {
             case "AtlasMapperIndexer":
-                state = searchEngineState.getOrAddIndexerState(index);
-                indexer = AtlasMapperIndexer.fromJSON(index, state, json);
+                indexer = AtlasMapperIndexer.fromJSON(index, json);
                 break;
 
             case "DrupalNodeIndexer":
-                state = searchEngineState.getOrAddIndexerState(index);
-                indexer = DrupalNodeIndexer.fromJSON(index, state, json);
+                indexer = DrupalNodeIndexer.fromJSON(index, json);
                 break;
 
             case "DrupalExternalLinkNodeIndexer":
-                state = searchEngineState.getOrAddIndexerState(index);
-                indexer = DrupalExternalLinkNodeIndexer.fromJSON(index, state, json);
+                indexer = DrupalExternalLinkNodeIndexer.fromJSON(index, json);
                 break;
 
             case "DrupalMediaIndexer":
-                state = searchEngineState.getOrAddIndexerState(index);
-                indexer = DrupalMediaIndexer.fromJSON(index, state, json);
+                indexer = DrupalMediaIndexer.fromJSON(index, json);
                 break;
 
             case "GeoNetworkIndexer":
-                state = searchEngineState.getOrAddIndexerState(index);
-                indexer = GeoNetworkIndexer.fromJSON(index, state, json);
+                indexer = GeoNetworkIndexer.fromJSON(index, json);
                 break;
 
             default:

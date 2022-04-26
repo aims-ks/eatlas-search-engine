@@ -35,6 +35,7 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.List;
 
 @Path("/index/v1")
@@ -121,7 +122,7 @@ public class Index {
         }
     }
 
-    public static JSONObject internalReindex(boolean full) throws Exception {
+    public static JSONObject internalReindex(boolean full) throws IOException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         // Re-index
@@ -143,7 +144,7 @@ public class Index {
             .put("elapseTime", jsonElapseTime);
     }
 
-    public static long internalReindex(AbstractIndexer indexer, boolean full) throws Exception {
+    public static long internalReindex(AbstractIndexer indexer, boolean full) throws IOException {
         LOGGER.info(String.format("Reindexing %s class %s",
                 indexer.getIndex(), indexer.getClass().getSimpleName()));
 

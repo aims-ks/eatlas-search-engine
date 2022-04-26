@@ -49,13 +49,13 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     private String drupalNodeType;
     private String drupalPreviewImageField;
 
-    public static DrupalNodeIndexer fromJSON(String index, IndexerState state, JSONObject json) {
+    public static DrupalNodeIndexer fromJSON(String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalNodeIndexer(
-            index, state,
+            index,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
@@ -80,8 +80,8 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
      * drupalVersion: 9.0
      * drupalNodeType: article
      */
-    public DrupalNodeIndexer(String index, IndexerState state, String drupalUrl, String drupalVersion, String drupalNodeType, String drupalPreviewImageField) {
-        super(index, state);
+    public DrupalNodeIndexer(String index, String drupalUrl, String drupalVersion, String drupalNodeType, String drupalPreviewImageField) {
+        super(index);
         this.drupalUrl = drupalUrl;
         this.drupalVersion = drupalVersion;
         this.drupalNodeType = drupalNodeType;
@@ -94,7 +94,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     }
 
     @Override
-    protected Long internalIndex(SearchClient client, Long lastHarvested) {
+    protected void internalIndex(SearchClient client, Long lastHarvested) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -164,10 +164,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         // Only cleanup when we are doing a full harvest
         if (fullHarvest) {
             this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal node of type %s", this.drupalNodeType));
-            return count;
         }
-
-        return null;
     }
 
     private static String getPreviewImageUUID(JSONObject jsonApiNode, String previewImageField) {

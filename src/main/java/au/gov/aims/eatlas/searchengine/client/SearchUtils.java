@@ -28,8 +28,6 @@ import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.index.IndexerState;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.CountRequest;
-import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -98,6 +96,28 @@ public class SearchUtils {
         }
     }
 
+    public static void refreshIndexesCount() throws IOException {
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEngineState searchEngineState = SearchEngineState.getInstance();
+
+        try(
+                RestClient restClient = SearchUtils.buildRestClient();
+
+                // Create the transport with a Jackson mapper
+                ElasticsearchTransport transport = new RestClientTransport(
+                        restClient, new JacksonJsonpMapper());
+
+                // And create the API client
+                SearchClient client = new ESClient(new ElasticsearchClient(transport))
+        ) {
+            for (AbstractIndexer indexer : config.getIndexers()) {
+                indexer.refreshCount(client);
+            }
+        }
+
+        searchEngineState.save();
+    }
+
     public static String generateUniqueIndexName(String index) {
         if (index == null || index.isEmpty()) {
             index = "index";
@@ -136,40 +156,33 @@ public class SearchUtils {
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-        SearchEngineState searchEngineState = SearchEngineState.getInstance();
-
         String newIndex = null;
         IndexerState state = null;
         AbstractIndexer newIndexer = null;
         switch (newIndexType) {
             case "DrupalNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-node");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new DrupalNodeIndexer(newIndex, state, null, null, null, null);
+                newIndexer = new DrupalNodeIndexer(newIndex, null, null, null, null);
                 break;
 
             case "DrupalMediaIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-media");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new DrupalMediaIndexer(newIndex, state, null, null, null, null, null, null);
+                newIndexer = new DrupalMediaIndexer(newIndex, null, null, null, null, null, null);
                 break;
 
             case "DrupalExternalLinkNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-extlink");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, state, null, null, null, null, null, null);
+                newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, null, null, null, null, null, null);
                 break;
 
             case "GeoNetworkIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("geonetwork");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new GeoNetworkIndexer(newIndex, state, null, null);
+                newIndexer = new GeoNetworkIndexer(newIndex, null, null);
                 break;
 
             case "AtlasMapperIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("atlasmapper");
-                state = searchEngineState.getOrAddIndexerState(newIndex);
-                newIndexer = new AtlasMapperIndexer(newIndex, state, null, null);
+                newIndexer = new AtlasMapperIndexer(newIndex, null, null);
                 break;
 
             default:

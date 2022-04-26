@@ -51,13 +51,13 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
     private String drupalTitleField;
     private String drupalDescriptionField;
 
-    public static DrupalMediaIndexer fromJSON(String index, IndexerState state, JSONObject json) {
+    public static DrupalMediaIndexer fromJSON(String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalMediaIndexer(
-            index, state,
+            index,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalMediaType", null),
@@ -88,7 +88,6 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
      */
     public DrupalMediaIndexer(
             String index,
-            IndexerState state,
             String drupalUrl,
             String drupalVersion,
             String drupalMediaType,
@@ -97,7 +96,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
             String drupalDescriptionField
     ) {
 
-        super(index, state);
+        super(index);
         this.drupalUrl = drupalUrl;
         this.drupalVersion = drupalVersion;
         this.drupalMediaType = drupalMediaType;
@@ -112,7 +111,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
     }
 
     @Override
-    protected Long internalIndex(SearchClient client, Long lastHarvested) {
+    protected void internalIndex(SearchClient client, Long lastHarvested) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -185,10 +184,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         // Only cleanup when we are doing a full harvest
         if (fullHarvest) {
             this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal media of type %s", this.drupalMediaType));
-            return count;
         }
-
-        return null;
     }
 
     private static String getDrupalTitle(JSONObject jsonApiMedia, String drupalTitleField) {

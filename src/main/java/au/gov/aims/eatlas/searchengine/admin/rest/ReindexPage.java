@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Index;
 import org.glassfish.jersey.server.mvc.Viewable;
@@ -81,10 +82,12 @@ public class ReindexPage {
     }
 
     private void refreshCount() {
-        // TODO Implement
-
-        Messages.getInstance().addMessages(Messages.Level.ERROR,
-            "Not implemented.");
+        try {
+            SearchUtils.refreshIndexesCount();
+        } catch (Exception ex) {
+            Messages.getInstance().addMessages(Messages.Level.ERROR,
+                "An exception occurred while refreshing the indexes count.", ex);
+        }
     }
 
 

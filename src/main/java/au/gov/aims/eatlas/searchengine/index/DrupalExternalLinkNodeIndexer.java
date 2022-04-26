@@ -51,13 +51,13 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
     private String drupalExternalUrlField;
     private String drupalContentOverwriteField;
 
-    public static DrupalExternalLinkNodeIndexer fromJSON(String index, IndexerState state, JSONObject json) {
+    public static DrupalExternalLinkNodeIndexer fromJSON(String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalExternalLinkNodeIndexer(
-            index, state,
+            index,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
@@ -88,7 +88,6 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
      */
     public DrupalExternalLinkNodeIndexer(
             String index,
-            IndexerState state,
             String drupalUrl,
             String drupalVersion,
             String drupalNodeType,
@@ -96,7 +95,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
             String drupalExternalUrlField,
             String drupalContentOverwriteField
     ) {
-        super(index, state);
+        super(index);
         this.drupalUrl = drupalUrl;
         this.drupalVersion = drupalVersion;
         this.drupalNodeType = drupalNodeType;
@@ -111,7 +110,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
     }
 
     @Override
-    protected Long internalIndex(SearchClient client, Long lastHarvested) {
+    protected void internalIndex(SearchClient client, Long lastHarvested) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -181,10 +180,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
         // Only cleanup when we are doing a full harvest
         if (fullHarvest) {
             this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal external link node of type %s", this.drupalNodeType));
-            return count;
         }
-
-        return null;
     }
 
     private static String getExternalLink(JSONObject jsonApiNode, String externalLinkField) {
