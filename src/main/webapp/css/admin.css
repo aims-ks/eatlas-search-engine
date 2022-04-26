@@ -168,6 +168,13 @@ button.hiddenSubmitButton {
   background-color: #EECCCC;
 }
 
+.ok {
+  background-color: #DDFFDD;
+}
+.error {
+  background-color: #FFDDDD;
+}
+
 /* Settings page */
 .main .content .box .field {
   margin: 1.5em 0;

@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
+import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.ws.rs.Consumes;
@@ -29,6 +30,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import java.io.File;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,10 +42,21 @@ public class Dashboard {
     @Produces(MediaType.TEXT_HTML)
     public Viewable dashboard() {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEngineState state = SearchEngineState.getInstance();
 
         Map<String, Object> model = new HashMap<>();
         model.put("messages", Messages.getInstance());
         model.put("config", config);
+
+        model.put("status", SearchUtils.getElasticSearchStatus());
+
+        File configFile = config.getConfigFile();
+        model.put("configFile", configFile);
+        model.put("configFileLastModifiedDate", configFile == null ? null : new Date(configFile.lastModified()));
+
+        File stateFile = state.getStateFile();
+        model.put("stateFile", stateFile);
+        model.put("stateFileLastModifiedDate", stateFile == null ? null : new Date(stateFile.lastModified()));
 
         // Load the template: src/main/webapp/WEB-INF/jsp/dashboard.jsp
         return new Viewable("/dashboard", model);
@@ -54,14 +68,18 @@ public class Dashboard {
     public Viewable submit(
         MultivaluedMap<String, String> form
     ) {
-        if (form.containsKey("reload-button")) {
-            this.reload();
+        if (form.containsKey("reload-config-button")) {
+            this.reloadConfigFile();
+        }
+
+        if (form.containsKey("reload-state-button")) {
+            this.reloadStateFile();
         }
 
         return this.dashboard();
     }
 
-    private void reload() {
+    private void reloadConfigFile() {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         try {
             config.reload();
@@ -71,7 +89,9 @@ public class Dashboard {
             Messages.getInstance().addMessages(Messages.Level.ERROR,
                 String.format("An exception occurred while reloading the configuration file: %s", config.getConfigFile()), ex);
         }
+    }
 
+    private void reloadStateFile() {
         SearchEngineState state = SearchEngineState.getInstance();
         try {
             state.reload();

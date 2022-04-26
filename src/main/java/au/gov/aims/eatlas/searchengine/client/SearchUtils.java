@@ -96,6 +96,32 @@ public class SearchUtils {
         }
     }
 
+    public static ElasticSearchStatus getElasticSearchStatus() {
+        ElasticSearchStatus status = null;
+
+        try(
+                RestClient restClient = SearchUtils.buildRestClient();
+
+                // Create the transport with a Jackson mapper
+                ElasticsearchTransport transport = new RestClientTransport(
+                        restClient, new JacksonJsonpMapper());
+
+                // And create the API client
+                SearchClient client = new ESClient(new ElasticsearchClient(transport))
+        ) {
+            // This should give the list of indexes, if the Elastic Search engine is reachable.
+            List<String> indexes = client.listIndexes();
+
+            status = new ElasticSearchStatus(true);
+            status.setIndexes(indexes);
+        } catch(Exception ex) {
+            status = new ElasticSearchStatus(false);
+            status.setException(ex);
+        }
+
+        return status;
+    }
+
     public static void refreshIndexesCount() throws IOException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         SearchEngineState searchEngineState = SearchEngineState.getInstance();

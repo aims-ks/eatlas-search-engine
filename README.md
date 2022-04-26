@@ -15,7 +15,6 @@ TODO:
   - Commit to Git repo (repo dedicated for the search engine config)
 
 - Index page
-  - Implement Reload count button
   - Implement progress bar
 
 - Image
@@ -25,7 +24,7 @@ TODO:
 - Index GIS polygons / points
 
 - Implement pages
-  - [ ] Dashboard
+  - [X] Dashboard
   - [X] Settings page (TODO Git commit)
   - [X] Index page (TODO reload count)
   - [X] Search page
