@@ -11,8 +11,6 @@ TODO:
   - Add "Clear messages" button
   - Make messages session based (if that's not too hard)
 
-- Show index "enable" in index table
-
 - Settings page
   - Commit to Git repo (repo dedicated for the search engine config)
 

@@ -44,6 +44,12 @@
             </param-value>
         </init-param>
 
+        <!-- Disable WADL, to prevent Java warning -->
+        <init-param>
+            <param-name>jersey.config.server.wadl.disableWadl</param-name>
+            <param-value>true</param-value>
+        </init-param>
+
         <load-on-startup>1</load-on-startup>
     </servlet>
 
@@ -54,6 +60,12 @@
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>au.gov.aims.eatlas.searchengine.admin.AppConfig</param-value>
+        </init-param>
+
+        <!-- Disable WADL, to prevent Java warning -->
+        <init-param>
+            <param-name>jersey.config.server.wadl.disableWadl</param-name>
+            <param-value>true</param-value>
         </init-param>
 
         <load-on-startup>1</load-on-startup>

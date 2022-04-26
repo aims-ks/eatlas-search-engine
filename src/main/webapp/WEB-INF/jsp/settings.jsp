@@ -88,6 +88,7 @@
             <table>
                 <tr class="table-header">
                     <th>Index</th>
+                    <th>Status</th>
                     <th>Type</th>
                     <th>Document count</th>
                     <th>Last indexed</th>
@@ -99,6 +100,9 @@
                     <c:set var="cssClass" value="${(loopStatus.index+1) % 2 == 0 ? 'even' : 'odd'}"/>
                     <tr class="${cssClass}">
                         <td><c:out value="${indexer.index}" /></td>
+                        <td class="${indexer.enabled ? "enabled" : "disabled"}">
+                            ${indexer.enabled ? "Enabled" : "Disabled"}
+                        </td>
                         <td><c:out value="${indexer.type}" /></td>
                         <td class="number">${indexer.state.count}</td>
                         <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>

@@ -155,6 +155,19 @@ button.hiddenSubmitButton {
   text-align: right;
 }
 
+.main .content .box table tr.odd td.enabled {
+  background-color: #DDFFDD;
+}
+.main .content .box table tr.even td.enabled {
+  background-color: #CCEECC;
+}
+.main .content .box table tr.odd td.disabled {
+  background-color: #FFDDDD;
+}
+.main .content .box table tr.even td.disabled {
+  background-color: #EECCCC;
+}
+
 /* Settings page */
 .main .content .box .field {
   margin: 1.5em 0;
