@@ -29,10 +29,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 @Path("/reindex")
 public class ReindexPage {
@@ -48,6 +50,38 @@ public class ReindexPage {
 
         // Load the template: src/main/webapp/WEB-INF/jsp/reindex.jsp
         return new Viewable("/reindex", model);
+    }
+
+
+    @GET
+    @Path("/progress")
+    @Produces({ MediaType.TEXT_PLAIN })
+    public String reindexProgress(
+        @QueryParam("index") String index
+    ) {
+        float progress = getFakeProgress(index);
+        return String.format("%.2f", progress);
+    }
+
+    static Map<String, Float> progressMap;
+    private float getFakeProgress(String index) {
+        if (progressMap == null) {
+            progressMap = new HashMap<>();
+        }
+
+        Random random = new Random();
+        Float progress = progressMap.get(index);
+        if (progress == null || progress >= 1) {
+            progress = 0f;
+        } else {
+            progress += (random.nextFloat() / 5);
+        }
+        if (progress > 1) {
+            progress = 1f;
+        }
+        progressMap.put(index, progress);
+
+        return progress;
     }
 
     @POST

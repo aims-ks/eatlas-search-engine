@@ -5,12 +5,13 @@ body {
   background-color: #FFFFFF;
 }
 
-select, button {
+select, button, .progressbar {
   background-color: #FFFFFF;
   border: 1px solid #CCCCCC;
   height: 26px;
+  line-height: 26px;
 }
-button {
+button, .progressbar {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
 }
 button:hover {
@@ -26,6 +27,12 @@ button:disabled {
 }
 select {
   box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+.progressbar {
+  display: inline-block;
+  width: 200px;
+  text-align: center;
 }
 
 /**
@@ -154,6 +161,9 @@ button.hiddenSubmitButton {
 .main .content .box table tr td.buttons {
   text-align: right;
 }
+.main .content .box table tr td.progress {
+  text-align: center;
+}
 
 .main .content .box table tr.odd td.enabled {
   background-color: #DDFFDD;
@@ -220,6 +230,11 @@ button.hiddenSubmitButton {
   margin: 0.5em;
   font-size: 0.8em;
   color: #999999;
+}
+
+.main .content .box .new-index {
+  display: flex;
+  gap: 0.5em;
 }
 
 button.edit,

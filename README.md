@@ -16,6 +16,8 @@ TODO:
 
 - Index page
   - Implement progress bar
+    - Trigger indexation in another process, to not hold main process.
+    - Find a way to request info from the process. Maybe Indexer can have a "progress" attribute that the process update. (and running attribute)
 
 - Image
   - Drupal: Create public page, with metadata (with option to make image private; no public page)

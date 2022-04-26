@@ -31,6 +31,7 @@
                     <th>Document count</th>
                     <th>Last indexed</th>
                     <th>Last runtime</th>
+                    <th>Progress</th>
                     <th>Actions</th>
                 </tr>
 
@@ -44,6 +45,7 @@
                         <td class="number">${indexer.state.count}</td>
                         <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
                         <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
+                        <td class="progress"><span class="progressbar" data-progress-url="<c:url value="/admin/reindex/progress"><c:param name="index" value="${indexer.index}" /></c:url>"></span></td>
                         <td class="buttons">
                             <button class="index" name="reindex-button" value="${indexer.index}" title="Re-index">Re-index</button>
                             <button class="index-latest" name="index-latest-button" value="${indexer.index}" title="Index latest" <c:if test="${not indexer.supportsIndexLatest()}">disabled="disabled"</c:if>>Index latest</button>

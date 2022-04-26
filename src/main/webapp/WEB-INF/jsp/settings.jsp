@@ -476,7 +476,7 @@
             <button class="hiddenSubmitButton" name="save-button" value="save" title="save">Save</button>
 
             <div>
-                <label for="newIndexType">
+                <label for="newIndexType" class="new-index">
                     <select id="newIndexType" name="newIndexType">
                         <option value="">-- Choose an index type --</option>
                         <option value="DrupalNodeIndexer">DrupalNodeIndexer</option>
