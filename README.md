@@ -1,35 +1,21 @@
 TODO:
 
-- Upgrade deprecated class in:
-  au.gov.aims.eatlas.searchengine.client.ESRestHighLevelClient.RestHighLevelClient
+- Messages **PRIORITY**
+  - Add "Clear messages" button
+  - Make messages session based (if that's not too hard)
 
 - Authentication (KeyCloak)
 
 - Fix tests
 
-- Messages
-  - Add "Clear messages" button
-  - Make messages session based (if that's not too hard)
-
 - Settings page
   - Commit to Git repo (repo dedicated for the search engine config)
-
-- Index page
-  - Implement progress bar
-    - Trigger indexation in another process, to not hold main process.
-    - Find a way to request info from the process. Maybe Indexer can have a "progress" attribute that the process update. (and running attribute)
 
 - Image
   - Drupal: Create public page, with metadata (with option to make image private; no public page)
   - Indexer: Do not index private image
 
 - Index GIS polygons / points
-
-- Implement pages
-  - [X] Dashboard
-  - [X] Settings page (TODO Git commit)
-  - [X] Index page (TODO reload count)
-  - [X] Search page
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}
 
