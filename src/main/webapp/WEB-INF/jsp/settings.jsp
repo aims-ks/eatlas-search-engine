@@ -28,13 +28,16 @@
                     <span class="label required">Elastic Search URLs</span>
                     <div id="elasticSearchUrls" class="multiple-text">
                         <c:forEach items="${it.config.elasticSearchUrls}" var="elasticSearchUrl" varStatus="loopStatus">
+                            <%-- "data-lpignore" is used to prevent LastPass filling the field. --%>
                             <input type="text"
                                 name="elasticSearchUrl"
+                                data-lpignore="true"
                                 value="<c:out value="${elasticSearchUrl}" />" />
                         </c:forEach>
                         <!-- To add a URL -->
                         <input type="text"
                             name="elasticSearchUrl"
+                            data-lpignore="true"
                             value="" />
                     </div>
                 </label>
@@ -48,6 +51,7 @@
                     <input type="text"
                         id="imageCacheDirectory"
                         name="imageCacheDirectory"
+                        data-lpignore="true"
                         required="required"
                         value="<c:out value="${it.config.imageCacheDirectory}" />" />
                 </label>
@@ -61,6 +65,7 @@
                     <input type="number"
                         id="globalThumbnailTTL"
                         name="globalThumbnailTTL"
+                        data-lpignore="true"
                         min="0"
                         value="<c:out value="${it.config.globalThumbnailTTL}" />" />
                 </label>
@@ -74,6 +79,7 @@
                     <input type="number"
                         id="globalBrokenThumbnailTTL"
                         name="globalBrokenThumbnailTTL"
+                        data-lpignore="true"
                         min="0"
                         value="<c:out value="${it.config.globalBrokenThumbnailTTL}" />" />
                 </label>
@@ -122,7 +128,7 @@
                         </td>
                     </tr>
                     <tr id="formRow_${indexer.index}" class="${cssClass}">
-                        <td colspan="6">
+                        <td colspan="7">
                             <h3>Generic fields</h3>
 
                             <div class="field">
@@ -142,6 +148,7 @@
                                     <input type="text"
                                         id="${indexer.index}_index"
                                         name="${indexer.index}_index"
+                                        data-lpignore="true"
                                         pattern="[a-zA-Z0-9_-]+"
                                         required="required"
                                         value="<c:out value="${indexer.index}" />" />
@@ -157,6 +164,7 @@
                                     <input type="number"
                                         id="${indexer.index}_thumbnailTTL"
                                         name="${indexer.index}_thumbnailTTL"
+                                        data-lpignore="true"
                                         min="0"
                                         value="<c:out value="${indexer.thumbnailTTL}" />" />
                                 </label>
@@ -170,6 +178,7 @@
                                     <input type="number"
                                         id="${indexer.index}_brokenThumbnailTTL"
                                         name="${indexer.index}_brokenThumbnailTTL"
+                                        data-lpignore="true"
                                         min="0"
                                         value="<c:out value="${indexer.brokenThumbnailTTL}" default="" />" />
                                 </label>
@@ -193,6 +202,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalUrl"
                                                     name="${indexer.index}_drupalUrl"
+                                                    data-lpignore="true"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
@@ -206,6 +216,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalVersion"
                                                     name="${indexer.index}_drupalVersion"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalVersion}" />" />
                                             </label>
                                             <div class="desc">Version of Drupal, to use the proper API version.</div>
@@ -217,6 +228,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalNodeType"
                                                     name="${indexer.index}_drupalNodeType"
+                                                    data-lpignore="true"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalNodeType}" />" />
                                             </label>
@@ -230,6 +242,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalPreviewImageField"
                                                     name="${indexer.index}_drupalPreviewImageField"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
@@ -249,6 +262,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalUrl"
                                                     name="${indexer.index}_drupalUrl"
+                                                    data-lpignore="true"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
@@ -262,6 +276,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalVersion"
                                                     name="${indexer.index}_drupalVersion"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalVersion}" />" />
                                             </label>
                                             <div class="desc">Version of Drupal, to use the proper API version.</div>
@@ -273,6 +288,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalMediaType"
                                                     name="${indexer.index}_drupalMediaType"
+                                                    data-lpignore="true"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalMediaType}" />" />
                                             </label>
@@ -286,6 +302,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalPreviewImageField"
                                                     name="${indexer.index}_drupalPreviewImageField"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
@@ -299,6 +316,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalTitleField"
                                                     name="${indexer.index}_drupalTitleField"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalTitleField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the media's title.</div>
@@ -312,6 +330,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalDescriptionField"
                                                     name="${indexer.index}_drupalDescriptionField"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalDescriptionField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the media's description.</div>
@@ -331,6 +350,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalUrl"
                                                     name="${indexer.index}_drupalUrl"
+                                                    data-lpignore="true"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
@@ -344,6 +364,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalVersion"
                                                     name="${indexer.index}_drupalVersion"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalVersion}" />" />
                                             </label>
                                             <div class="desc">Version of Drupal, to use the proper API version.</div>
@@ -355,6 +376,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalNodeType"
                                                     name="${indexer.index}_drupalNodeType"
+                                                    data-lpignore="true"
                                                     required="required"
                                                     value="<c:out value="${indexer.drupalNodeType}" />" />
                                             </label>
@@ -368,6 +390,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalPreviewImageField"
                                                     name="${indexer.index}_drupalPreviewImageField"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
@@ -381,6 +404,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalExternalUrlField"
                                                     name="${indexer.index}_drupalExternalUrlField"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalExternalUrlField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the external page's URL.</div>
@@ -394,6 +418,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_drupalContentOverwriteField"
                                                     name="${indexer.index}_drupalContentOverwriteField"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalContentOverwriteField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the field used to overwrite the page content.</div>
@@ -415,6 +440,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_geoNetworkUrl"
                                                     name="${indexer.index}_geoNetworkUrl"
+                                                    data-lpignore="true"
                                                     required="required"
                                                     value="<c:out value="${indexer.geoNetworkUrl}" />" />
                                             </label>
@@ -428,6 +454,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_geoNetworkVersion"
                                                     name="${indexer.index}_geoNetworkVersion"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.geoNetworkVersion}" />" />
                                             </label>
                                             <div class="desc">Version of GeoNetwork, to use the proper API version.</div>
@@ -445,6 +472,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_atlasMapperClientUrl"
                                                     name="${indexer.index}_atlasMapperClientUrl"
+                                                    data-lpignore="true"
                                                     required="required"
                                                     value="<c:out value="${indexer.atlasMapperClientUrl}" />" />
                                             </label>
@@ -459,6 +487,7 @@
                                                 <input type="text"
                                                     id="${indexer.index}_atlasMapperVersion"
                                                     name="${indexer.index}_atlasMapperVersion"
+                                                    data-lpignore="true"
                                                     value="<c:out value="${indexer.atlasMapperVersion}" />" />
                                             </label>
                                             <div class="desc">Version of AtlasMapper.</div>

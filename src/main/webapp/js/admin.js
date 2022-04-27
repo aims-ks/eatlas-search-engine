@@ -48,7 +48,7 @@ docReady(function() {
   }
 
   // Progress bars
-  const progressBarEls = document.getElementsByClassName("progressbar");
+  const progressBarEls = document.getElementsByClassName("index-progress");
   for (let i=0; i<progressBarEls.length; i++) {
     refreshProgressBar(progressBarEls[i]);
   }
@@ -86,14 +86,8 @@ function refreshProgressBar(progressBarEl) {
 
 function setProgressBar(progressBarEl, progress) {
   const percent = Math.floor(progress * 100);
-  if (progress >= 1) {
-    // Set the progress bar background to be all green. Works with every browser
-    progressBarEl.style.background = "#00FF00";
-  } else {
-    // Set the progress bar background to use 2 colours. Only works with modern browser.
-    // Old browsers will see a white bar that turns green when it reaches 100%
-    progressBarEl.style.background = "linear-gradient(90deg, #00FF00 " + percent + "%, #FFFFFF " + percent + "%)";
-  }
+  progressBarEl.value = percent;
+  progressBarEl.title = percent + "%";
   progressBarEl.innerHTML = percent + "%";
 }
 

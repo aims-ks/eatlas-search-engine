@@ -5,13 +5,13 @@ body {
   background-color: #FFFFFF;
 }
 
-select, button, .progressbar {
+select, button {
   background-color: #FFFFFF;
   border: 1px solid #CCCCCC;
-  height: 26px;
-  line-height: 26px;
+  height: 27px;
+  line-height: 25px;
 }
-button, .progressbar {
+button {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
 }
 button:hover {
@@ -27,12 +27,6 @@ button:disabled {
 }
 select {
   box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
-}
-
-.progressbar {
-  display: inline-block;
-  width: 200px;
-  text-align: center;
 }
 
 /**
