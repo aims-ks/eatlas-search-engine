@@ -39,6 +39,10 @@ button.hiddenSubmitButton {
   left: -1000px;
 }
 
+progress.disabled {
+  opacity: 0.3;
+}
+
 .header,
 .footer {
   background-color: #3366DD;

@@ -58,7 +58,7 @@ function refreshProgressBar(progressBarEl) {
   const Http = new XMLHttpRequest();
   const apiUrl = progressBarEl.getAttribute("data-progress-url");
 
-  // 1. Request indexation progress for that index
+  // 1. Request indexation progress for that index.
 
   Http.open("GET", apiUrl);
   Http.send();
@@ -66,19 +66,21 @@ function refreshProgressBar(progressBarEl) {
   Http.onreadystatechange = function(progressBarEl) {
     return function(e) {
       if (this.readyState == 4 && this.status == 200) {
+        let jsonResponse = JSON.parse(Http.responseText);
+        if (jsonResponse !== null) {
 
-        // 2. Set progress bar with progress info
+          // 2. Set progress bar with progress info.
 
-        let response = Http.responseText.trim();
-        let progress = null;
-        if (response.toLowerCase() !== "null") {
-          progress = parseFloat(Http.responseText);
-        }
-        setProgressBar(progressBarEl, progress);
+          let index = jsonResponse.index;
+          let running = jsonResponse.running;
+          let progress = jsonResponse.progress;
+          setProgressBar(progressBarEl, progress, running);
 
-        // 3. If progress is less than 100%, call this function again in 1 second.
 
-        if (progress === null || progress < 1) {
+          // 3. Call this function again in 1 second.
+          // NOTE: Check every seconds even when it is not running,
+          //     in case someone else starts the indexation.
+
           window.setTimeout(function() {
             refreshProgressBar(progressBarEl);
           }, 1000);
@@ -88,16 +90,26 @@ function refreshProgressBar(progressBarEl) {
   }(progressBarEl);
 }
 
-function setProgressBar(progressBarEl, progress) {
-  if (progress === null) {
+function setProgressBar(progressBarEl, progress, running) {
+  if (progress === null || progress === undefined) {
     progressBarEl.removeAttribute('value');
-    progressBarEl.title = "Running...";
-    progressBarEl.innerHTML = "Running...";
+    progressBarEl.title = "Processing...";
+    progressBarEl.innerHTML = "Processing...";
   } else {
     const percent = Math.floor(progress * 100);
     progressBarEl.value = percent;
     progressBarEl.title = percent + "%";
     progressBarEl.innerHTML = percent + "%";
+  }
+
+  if (running) {
+    if (progressBarEl.classList.contains("disabled")) {
+      progressBarEl.classList.remove("disabled");
+    }
+  } else {
+    if (!progressBarEl.classList.contains("disabled")) {
+      progressBarEl.classList.add("disabled");
+    }
   }
 }
 

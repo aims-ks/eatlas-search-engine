@@ -23,6 +23,7 @@ import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Index;
 import org.glassfish.jersey.server.mvc.Viewable;
+import org.json.JSONObject;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -55,7 +56,7 @@ public class ReindexPage {
 
     @GET
     @Path("/progress")
-    @Produces({ MediaType.TEXT_PLAIN })
+    @Produces({ MediaType.APPLICATION_JSON })
     public String reindexProgress(
         @QueryParam("index") String index
     ) {
@@ -63,8 +64,10 @@ public class ReindexPage {
 
         // If it's not running, show 100%
         Double progress = 1.0;
+        boolean running = false;
         AbstractIndexer indexer = config.getIndexer(index);
         if (indexer != null && indexer.isRunning()) {
+            running = true;
             progress = indexer.getProgress();
             if (progress != null) {
                 // Progress, floored to 2 decimal places.
@@ -73,7 +76,12 @@ public class ReindexPage {
             }
         }
 
-        return progress == null ? "null" : String.format("%.2f", progress);
+        JSONObject jsonResponse = new JSONObject()
+                .put("index", index)
+                .put("progress", progress)
+                .put("running", running);
+
+        return jsonResponse.toString();
     }
 
     static Map<String, Float> progressMap;

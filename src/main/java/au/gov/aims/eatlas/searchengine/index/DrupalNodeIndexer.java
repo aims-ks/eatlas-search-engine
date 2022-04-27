@@ -101,19 +101,20 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         Set<String> usedThumbnails = null;
         if (fullHarvest) {
             usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
-        }
 
-        // There is no easy way to know how many nodes needs indexing.
-        // Use the total number of nodes we have in the index, by looking at the number in the state.
-        IndexerState state = this.getState();
-        Long total = null;
-        if (state != null) {
-            total = state.getCount();
+            // There is no easy way to know how many nodes needs indexing.
+            // Use the total number of nodes we have in the index, by looking at the number in the state.
+            IndexerState state = this.getState();
+            Long total = null;
+            if (state != null) {
+                total = state.getCount();
+            }
+            this.setTotal(total);
         }
-        this.setTotal(total);
 
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
+        long totalFound = 0;
         int nodeFound, page = 0;
         boolean stop = false;
         do {
@@ -138,6 +139,14 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                 JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
 
                 nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
+                totalFound += nodeFound;
+                if (fullHarvest) {
+                    if (this.getTotal() != null && this.getTotal() < totalFound) {
+                        this.setTotal(totalFound);
+                    }
+                } else {
+                    this.setTotal(totalFound);
+                }
 
                 for (int i=0; i<nodeFound; i++) {
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
