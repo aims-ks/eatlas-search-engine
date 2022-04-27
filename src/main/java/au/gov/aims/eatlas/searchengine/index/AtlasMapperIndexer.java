@@ -156,7 +156,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         String baseLayerId = AtlasMapperLayer.getWMSBaseLayer(jsonMainConfig, jsonLayersConfig);
 
         Set<String> usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
-        int total = jsonLayersConfig.length();
+        this.setTotal((long)jsonLayersConfig.length());
         int current = 0;
 
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
@@ -164,7 +164,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             current++;
 
             Thread thread = new AtlasMapperIndexerThread(
-                    client, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig, baseLayerId, usedThumbnails, current, total);
+                    client, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig, baseLayerId, usedThumbnails, current);
 
             threadPool.execute(thread);
         }
@@ -364,7 +364,6 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         private final String baseLayerId;
         private final Set<String> usedThumbnails;
         private final int current;
-        private final int total;
 
         public AtlasMapperIndexerThread(
                 SearchClient client,
@@ -373,7 +372,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 JSONObject jsonLayersConfig,
                 String baseLayerId,
                 Set<String> usedThumbnails,
-                int current, int total
+                int current
         ) {
             this.client = client;
             this.atlasMapperLayerId = atlasMapperLayerId;
@@ -382,7 +381,6 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             this.baseLayerId = baseLayerId;
             this.usedThumbnails = usedThumbnails;
             this.current = current;
-            this.total = total;
         }
 
         @Override
@@ -418,12 +416,14 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 IndexResponse indexResponse = AtlasMapperIndexer.this.index(this.client, layerEntity);
 
                 LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, index response status: %s",
-                        this.current, this.total,
+                        this.current, AtlasMapperIndexer.this.getTotal(),
                         this.atlasMapperLayerId,
                         indexResponse.result()));
             } catch(Exception ex) {
                 LOGGER.warn(String.format("Exception occurred while indexing an AtlasMapper layer: %s", this.atlasMapperLayerId), ex);
             }
+
+            AtlasMapperIndexer.this.incrementCompleted();
         }
 
         private File createLayerThumbnail(JSONObject jsonLayer) throws Exception {

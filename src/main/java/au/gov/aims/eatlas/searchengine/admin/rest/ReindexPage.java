@@ -59,8 +59,21 @@ public class ReindexPage {
     public String reindexProgress(
         @QueryParam("index") String index
     ) {
-        float progress = getFakeProgress(index);
-        return String.format("%.2f", progress);
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+
+        // If it's not running, show 100%
+        Double progress = 1.0;
+        AbstractIndexer indexer = config.getIndexer(index);
+        if (indexer != null && indexer.isRunning()) {
+            progress = indexer.getProgress();
+            if (progress != null) {
+                // Progress, floored to 2 decimal places.
+                // We want 99.9999% to be 99%, to avoid getting 100% before the process is truly done.
+                progress = Math.floor(progress * 100) / 100;
+            }
+        }
+
+        return progress == null ? "null" : String.format("%.2f", progress);
     }
 
     static Map<String, Float> progressMap;

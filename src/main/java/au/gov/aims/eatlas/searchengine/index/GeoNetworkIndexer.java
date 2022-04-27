@@ -161,7 +161,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
                 // List of metadata records which needs its parent title to be set
                 List<String> orphanMetadataRecordList = Collections.synchronizedList(new ArrayList<>());
-                int total = metadataRecordList.size();
+                this.setTotal((long)metadataRecordList.size());
                 int current = 0;
 
                 ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
@@ -174,7 +174,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                         String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
 
                         GeoNetworkIndexerThread thread = new GeoNetworkIndexerThread(
-                                client, factory, metadataRecordUUID, orphanMetadataRecordList, usedThumbnails, current, total);
+                                client, factory, metadataRecordUUID, orphanMetadataRecordList, usedThumbnails, current);
 
                         threadPool.execute(thread);
                     }
@@ -254,16 +254,14 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         private final List<String> orphanMetadataRecordList;
         private final Set<String> usedThumbnails;
         private final int current;
-        private final int total;
 
-        public GeoNetworkIndexerThread(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, List<String> orphanMetadataRecordList, Set<String> usedThumbnails, int current, int total) {
+        public GeoNetworkIndexerThread(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, List<String> orphanMetadataRecordList, Set<String> usedThumbnails, int current) {
             this.client = client;
             this.documentBuilderFactory = documentBuilderFactory;
             this.metadataRecordUUID = metadataRecordUUID;
             this.orphanMetadataRecordList = orphanMetadataRecordList;
             this.usedThumbnails = usedThumbnails;
             this.current = current;
-            this.total = total;
         }
 
         @Override
@@ -281,7 +279,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     IndexResponse indexResponse = GeoNetworkIndexer.this.index(this.client, geoNetworkRecord);
 
                     LOGGER.debug(String.format("[%d/%d] Indexing GeoNetwork metadata record: %s, index response status: %s",
-                            this.current, this.total,
+                            this.current, GeoNetworkIndexer.this.getTotal(),
                             this.metadataRecordUUID,
                             indexResponse.result()));
                 } catch(Exception ex) {
@@ -295,6 +293,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     }
                 }
             }
+
+            GeoNetworkIndexer.this.incrementCompleted();
         }
 
         private GeoNetworkRecord loadGeoNetworkRecord(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID) {

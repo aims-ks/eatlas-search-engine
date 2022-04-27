@@ -119,10 +119,18 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
             usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         }
 
+        // There is no easy way to know how many nodes needs indexing.
+        // Use the total number of nodes we have in the index, by looking at the number in the state.
+        IndexerState state = this.getState();
+        Long total = null;
+        if (state != null) {
+            total = state.getCount();
+        }
+        this.setTotal(total);
+
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
         int nodeFound, page = 0;
-        long count = 0;
         boolean stop = false;
         do {
             // Ordered by lastModified (changed).
@@ -148,8 +156,6 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                 nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
 
                 for (int i=0; i<nodeFound; i++) {
-                    count++;
-
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
                     ExternalLink externalLink = new ExternalLink(this.getIndex(), jsonApiNode);
 
@@ -285,7 +291,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
         private final Set<String> usedThumbnails;
         private final int page;
         private final int current;
-        private final int total;
+        private final int pageTotal;
 
         public DrupalExternalLinkNodeIndexerThread(
                 SearchClient client,
@@ -293,7 +299,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                 JSONObject jsonApiNode,
                 JSONArray jsonIncluded,
                 Set<String> usedThumbnails,
-                int page, int current, int total
+                int page, int current, int pageTotal
         ) {
             this.client = client;
             this.externalLink = externalLink;
@@ -303,7 +309,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
             this.usedThumbnails = usedThumbnails;
             this.page = page;
             this.current = current;
-            this.total = total;
+            this.pageTotal = pageTotal;
         }
 
         @Override
@@ -390,7 +396,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                             IndexResponse indexResponse = DrupalExternalLinkNodeIndexer.this.index(client, this.externalLink);
 
                             LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal external link node ID: %s, URL: %s, index response status: %s",
-                                    this.page, this.current, this.total,
+                                    this.page, this.current, this.pageTotal,
                                     this.externalLink.getNid(),
                                     externalLinkStr,
                                     indexResponse.result()));
@@ -401,6 +407,8 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                     }
                 }
             }
+
+            DrupalExternalLinkNodeIndexer.this.incrementCompleted();
         }
     }
 }

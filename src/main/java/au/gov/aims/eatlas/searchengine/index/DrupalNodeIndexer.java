@@ -103,10 +103,18 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
             usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         }
 
+        // There is no easy way to know how many nodes needs indexing.
+        // Use the total number of nodes we have in the index, by looking at the number in the state.
+        IndexerState state = this.getState();
+        Long total = null;
+        if (state != null) {
+            total = state.getCount();
+        }
+        this.setTotal(total);
+
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
         int nodeFound, page = 0;
-        long count = 0;
         boolean stop = false;
         do {
             // Ordered by lastModified (changed).
@@ -132,8 +140,6 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                 nodeFound = jsonNodes == null ? 0 : jsonNodes.length();
 
                 for (int i=0; i<nodeFound; i++) {
-                    count++;
-
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
                     DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode);
 
@@ -235,7 +241,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         private final Set<String> usedThumbnails;
         private final int page;
         private final int current;
-        private final int total;
+        private final int pageTotal;
 
         public DrupalNodeIndexerThread(
                 SearchClient client,
@@ -243,7 +249,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                 JSONObject jsonApiNode,
                 JSONArray jsonIncluded,
                 Set<String> usedThumbnails,
-                int page, int current, int total
+                int page, int current, int pageTotal
         ) {
 
             this.client = client;
@@ -253,7 +259,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
             this.usedThumbnails = usedThumbnails;
             this.page = page;
             this.current = current;
-            this.total = total;
+            this.pageTotal = pageTotal;
         }
 
         @Override
@@ -307,13 +313,14 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                 // NOTE: We don't know how many nodes (or pages of nodes) there is.
                 //     We index until we reach the bottom of the barrel...
                 LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal node ID: %s, index response status: %s",
-                        this.page, this.current, this.total,
+                        this.page, this.current, this.pageTotal,
                         this.drupalNode.getNid(),
                         indexResponse.result()));
             } catch(Exception ex) {
                 LOGGER.warn(String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
             }
 
+            DrupalNodeIndexer.this.incrementCompleted();
         }
     }
 }

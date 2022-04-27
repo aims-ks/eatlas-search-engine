@@ -58,6 +58,11 @@ public abstract class AbstractIndexer<E extends Entity> {
     private Long thumbnailTTL; // TTL, in days
     private Long brokenThumbnailTTL; // TTL, in days
 
+    // Variable related to running threads
+    private IndexerThread indexerThread;
+    private Long total;
+    private long completed;
+
     public AbstractIndexer(String index) {
         this.index = index;
     }
@@ -70,6 +75,33 @@ public abstract class AbstractIndexer<E extends Entity> {
         return false;
     }
 
+    public boolean isRunning() {
+        return this.indexerThread != null && this.indexerThread.isAlive();
+    }
+
+    public Double getProgress() {
+        if (!this.isRunning()) {
+            return 1.0;
+        }
+        if (this.total == null || this.total == 0) {
+            return null;
+        }
+        return ((double)this.completed) / this.total;
+    }
+
+    public Long getTotal() {
+        return this.total;
+    }
+
+    public void setTotal(Long total) {
+        this.total = total;
+    }
+
+    // Called when an indexation thread completes, to update the indexation progress.
+    protected synchronized void incrementCompleted() {
+        this.completed++;
+    }
+
     public IndexerState getState() {
         SearchEngineState searchEngineState = SearchEngineState.getInstance();
         return searchEngineState.getOrAddIndexerState(this.index);
@@ -77,28 +109,12 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     // If full is true, re-index everything.
     // If not, only index what have changed since last indexation.
-    public void index(boolean full) throws IOException {
-        long lastIndexedStarts = System.currentTimeMillis();
-        IndexerState state = this.getState();
-
-        try(
-                RestClient restClient = SearchUtils.buildRestClient();
-
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            client.createIndex(this.getIndex());
-            this.internalIndex(client, full ? null : state.getLastIndexed());
-            this.refreshCount(client);
+    public synchronized void index(boolean full) throws IOException {
+        if (!this.isRunning()) {
+            this.completed = 0;
+            this.indexerThread = new IndexerThread(full);
+            this.indexerThread.start();
         }
-
-        long lastIndexedEnds = System.currentTimeMillis();
-        state.setLastIndexed(lastIndexedStarts);
-        state.setLastIndexRuntime(lastIndexedEnds - lastIndexedStarts);
     }
 
     public void refreshCount(SearchClient client) throws IOException {
@@ -374,5 +390,50 @@ public abstract class AbstractIndexer<E extends Entity> {
     @Override
     public String toString() {
         return this.toJSON().toString(2);
+    }
+
+    public class IndexerThread extends Thread {
+        private final boolean fullIndex;
+        private Exception exception;
+
+        public IndexerThread(boolean fullIndex) {
+            this.fullIndex = fullIndex;
+            this.exception = null;
+        }
+
+        @Override
+        public void run() {
+            long lastIndexedStarts = System.currentTimeMillis();
+            IndexerState state = AbstractIndexer.this.getState();
+
+            try(
+                    RestClient restClient = SearchUtils.buildRestClient();
+
+                    // Create the transport with a Jackson mapper
+                    ElasticsearchTransport transport = new RestClientTransport(
+                            restClient, new JacksonJsonpMapper());
+
+                    // And create the API client
+                    SearchClient client = new ESClient(new ElasticsearchClient(transport))
+            ) {
+                client.createIndex(AbstractIndexer.this.getIndex());
+                AbstractIndexer.this.internalIndex(client, this.fullIndex ? null : state.getLastIndexed());
+                AbstractIndexer.this.refreshCount(client);
+                state.setLastIndexed(lastIndexedStarts);
+            } catch(Exception ex) {
+                this.exception = ex;
+            }
+
+            long lastIndexedEnds = System.currentTimeMillis();
+            state.setLastIndexRuntime(lastIndexedEnds - lastIndexedStarts);
+
+            try {
+                SearchEngineState.getInstance().save();
+            } catch(Exception ex) {
+                if (this.exception == null) {
+                    this.exception = ex;
+                }
+            }
+        }
     }
 }

@@ -120,10 +120,18 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
             usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         }
 
+        // There is no easy way to know how many nodes needs indexing.
+        // Use the total number of nodes we have in the index, by looking at the number in the state.
+        IndexerState state = this.getState();
+        Long total = null;
+        if (state != null) {
+            total = state.getCount();
+        }
+        this.setTotal(total);
+
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
         int mediaFound, page = 0;
-        long count = 0;
         boolean stop = false;
         do {
             // Ordered by lastModified (changed).
@@ -149,8 +157,6 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                 mediaFound = jsonMedias == null ? 0 : jsonMedias.length();
 
                 for (int i=0; i<mediaFound; i++) {
-                    count++;
-
                     JSONObject jsonApiMedia = jsonMedias.optJSONObject(i);
                     DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia);
 
@@ -289,7 +295,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         private final Set<String> usedThumbnails;
         private final int page;
         private final int current;
-        private final int total;
+        private final int pageTotal;
 
         public DrupalMediaIndexerThread(
                 SearchClient client,
@@ -297,7 +303,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                 JSONObject jsonApiMedia,
                 JSONArray jsonIncluded,
                 Set<String> usedThumbnails,
-                int page, int current, int total
+                int page, int current, int pageTotal
         ) {
 
             this.client = client;
@@ -307,7 +313,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
             this.usedThumbnails = usedThumbnails;
             this.page = page;
             this.current = current;
-            this.total = total;
+            this.pageTotal = pageTotal;
         }
 
         @Override
@@ -362,13 +368,14 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                 // NOTE: We don't know how many medias (or pages of medias) there is.
                 //     We index until we reach the bottom of the barrel...
                 LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal media ID: %s, index response status: %s",
-                        this.page, this.current, this.total,
+                        this.page, this.current, this.pageTotal,
                         this.drupalMedia.getMid(),
                         indexResponse.result()));
             } catch(Exception ex) {
                 LOGGER.warn(String.format("Exception occurred while indexing a Drupal media: %s, media type: %s", this.drupalMedia.getId(), DrupalMediaIndexer.this.drupalMediaType), ex);
             }
 
+            DrupalMediaIndexer.this.incrementCompleted();
         }
     }
 }

@@ -69,12 +69,16 @@ function refreshProgressBar(progressBarEl) {
 
         // 2. Set progress bar with progress info
 
-        let progress = parseFloat(Http.responseText);
+        let response = Http.responseText.trim();
+        let progress = null;
+        if (response.toLowerCase() !== "null") {
+          progress = parseFloat(Http.responseText);
+        }
         setProgressBar(progressBarEl, progress);
 
         // 3. If progress is less than 100%, call this function again in 1 second.
 
-        if (progress < 1) {
+        if (progress === null || progress < 1) {
           window.setTimeout(function() {
             refreshProgressBar(progressBarEl);
           }, 1000);
@@ -85,10 +89,16 @@ function refreshProgressBar(progressBarEl) {
 }
 
 function setProgressBar(progressBarEl, progress) {
-  const percent = Math.floor(progress * 100);
-  progressBarEl.value = percent;
-  progressBarEl.title = percent + "%";
-  progressBarEl.innerHTML = percent + "%";
+  if (progress === null) {
+    progressBarEl.removeAttribute('value');
+    progressBarEl.title = "Running...";
+    progressBarEl.innerHTML = "Running...";
+  } else {
+    const percent = Math.floor(progress * 100);
+    progressBarEl.value = percent;
+    progressBarEl.title = percent + "%";
+    progressBarEl.innerHTML = percent + "%";
+  }
 }
 
 // Equivalent to JQuery.ready().
