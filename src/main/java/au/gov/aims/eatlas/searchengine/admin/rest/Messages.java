@@ -34,6 +34,10 @@ public class Messages {
     }
 
     public static Messages getInstance(HttpSession session) {
+        if (session == null) {
+            return new Messages(null);
+        }
+
         Messages messagesInstance = (Messages)session.getAttribute("messages");
         if (messagesInstance == null) {
             messagesInstance = new Messages(session);

@@ -18,8 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,8 +33,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class GeoNetworkRecord extends Entity {
-    private static final Logger LOGGER = Logger.getLogger(GeoNetworkRecord.class.getName());
-
     // New line used to separate lines in the indexed document.
     // It doesn't really matter which new line scheme is used, as long as it's supported by ElasticSearch.
     private static final String NL = "\n";
@@ -77,7 +75,7 @@ public class GeoNetworkRecord extends Entity {
 
     // geonetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
-    public GeoNetworkRecord(String index, String metadataRecordUUID, String geonetworkUrlStr, Document xmlMetadataRecord) {
+    public GeoNetworkRecord(String index, String metadataRecordUUID, String geonetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
         this.setIndex(index);
         String pointOfTruthUrlStr = null;
         if (xmlMetadataRecord != null) {
@@ -184,7 +182,7 @@ public class GeoNetworkRecord extends Entity {
                             this.setThumbnailUrl(thumbnailUrl);
                         } catch(Exception ex) {
                             this.setThumbnailUrl(null);
-                            LOGGER.error(String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
+                            messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
                         }
                     }
                 }
@@ -224,12 +222,12 @@ public class GeoNetworkRecord extends Entity {
                         if ("WWW:LINK-1.0-http--metadata-URL".equals(onlineResource.protocol) && safeLabel.contains("point of truth")) {
                             if (onlineResource.linkage != null) {
                                 if (pointOfTruthUrlStr != null) {
-                                    LOGGER.warn(String.format("Metadata record UUID %s have multiple point of truth",
+                                    messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
                                         this.getId()));
                                 }
                                 pointOfTruthUrlStr = onlineResource.linkage;
                                 if (!pointOfTruthUrlStr.contains(this.getId())) {
-                                    LOGGER.warn(String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
+                                    messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
                                         this.getId(), pointOfTruthUrlStr));
                                 }
                             }
@@ -298,7 +296,7 @@ public class GeoNetworkRecord extends Entity {
                     try {
                         metadataRecordUrl = new URL(pointOfTruthUrlStr);
                     } catch(Exception ex) {
-                        LOGGER.error(String.format("Invalid metadata record URL found in Point Of Truth of record %s: %s", this.getId(), pointOfTruthUrlStr), ex);
+                        messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL found in Point Of Truth of record %s: %s", this.getId(), pointOfTruthUrlStr), ex);
                     }
                 }
 
@@ -307,7 +305,7 @@ public class GeoNetworkRecord extends Entity {
                     try {
                         metadataRecordUrl = new URL(geonetworkMetadataUrlStr);
                     } catch(Exception ex) {
-                        LOGGER.error(String.format("Invalid metadata record URL for record %s: %s", this.getId(), geonetworkMetadataUrlStr), ex);
+                        messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", this.getId(), geonetworkMetadataUrlStr), ex);
                     }
                 }
 

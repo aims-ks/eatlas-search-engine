@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
@@ -85,7 +86,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    protected void internalIndex(SearchClient client, Long lastHarvested) {
+    protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
         // There is no way to get last modified layers from AtlasMapper.
         // Therefore, we only perform an harvest if the JSON files are more recent than lastHarvested.
 
@@ -95,9 +96,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         Connection.Response mainResponse = null;
         try {
-            mainResponse = EntityUtils.jsoupExecuteWithRetry(mainUrlStr);
+            mainResponse = EntityUtils.jsoupExecuteWithRetry(mainUrlStr, messages);
         } catch(Exception ex) {
-            LOGGER.error(String.format("Exception occurred while downloading the AtlasMapper main configuration file: %s",
+            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper main configuration file: %s",
                     mainUrlStr), ex);
             return;
         }
@@ -109,9 +110,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         Connection.Response layersResponse = null;
         try {
-            layersResponse = EntityUtils.jsoupExecuteWithRetry(layersUrlStr);
+            layersResponse = EntityUtils.jsoupExecuteWithRetry(layersUrlStr, messages);
         } catch(Exception ex) {
-            LOGGER.error(String.format("Exception occurred while downloading the AtlasMapper layers file: %s",
+            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper layers file: %s",
                     layersUrlStr), ex);
             return;
         }
@@ -132,7 +133,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 // The index is more recent than both files.
                 // We can skip the harvest.
                 if (!indexOutDated) {
-                    LOGGER.info(String.format("Index %s is up to date.", this.getIndex()));
+                    messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
                     return;
                 }
             }
@@ -164,7 +165,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             current++;
 
             Thread thread = new AtlasMapperIndexerThread(
-                    client, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig, baseLayerId, usedThumbnails, current);
+                    client, messages, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig, baseLayerId, usedThumbnails, current);
 
             threadPool.execute(thread);
         }
@@ -173,11 +174,11 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         try {
             threadPool.awaitTermination(1, TimeUnit.HOURS);
         } catch(InterruptedException ex) {
-            LOGGER.error("The AtlasMapper layers indexation was interrupted", ex);
+            messages.addMessage(Messages.Level.ERROR, "The AtlasMapper layers indexation was interrupted", ex);
         }
 
         // Delete old thumbnails older than the TTL (1 month old)
-        this.cleanUp(client, harvestStart, usedThumbnails, "AtlasMapper layer");
+        this.cleanUp(client, harvestStart, usedThumbnails, "AtlasMapper layer", messages);
     }
 
     public String getAtlasMapperClientUrl() {
@@ -358,6 +359,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
     public class AtlasMapperIndexerThread extends Thread {
         private final SearchClient client;
+        private final Messages messages;
         private final String atlasMapperLayerId;
         private final JSONObject jsonMainConfig;
         private final JSONObject jsonLayersConfig;
@@ -367,6 +369,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         public AtlasMapperIndexerThread(
                 SearchClient client,
+                Messages messages,
                 String atlasMapperLayerId,
                 JSONObject jsonMainConfig,
                 JSONObject jsonLayersConfig,
@@ -375,6 +378,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 int current
         ) {
             this.client = client;
+            this.messages = messages;
             this.atlasMapperLayerId = atlasMapperLayerId;
             this.jsonMainConfig = jsonMainConfig;
             this.jsonLayersConfig = jsonLayersConfig;
@@ -392,14 +396,15 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
             // Create the thumbnail if it's missing or outdated
             AtlasMapperLayer oldLayer = AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId);
-            if (layerEntity.isThumbnailOutdated(oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(), AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL())) {
+            if (layerEntity.isThumbnailOutdated(oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(), AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
                 try {
                     File cachedThumbnailFile = this.createLayerThumbnail(jsonLayer);
                     if (cachedThumbnailFile != null) {
                         layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                     }
                 } catch(Exception ex) {
-                    LOGGER.warn(String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s",
+                    messages.addMessage(Messages.Level.WARNING,
+                            String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s",
                             this.atlasMapperLayerId), ex);
                 }
                 layerEntity.setThumbnailLastIndexed(System.currentTimeMillis());
@@ -420,7 +425,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                         this.atlasMapperLayerId,
                         indexResponse.result()));
             } catch(Exception ex) {
-                LOGGER.warn(String.format("Exception occurred while indexing an AtlasMapper layer: %s", this.atlasMapperLayerId), ex);
+                messages.addMessage(Messages.Level.WARNING,
+                        String.format("Exception occurred while indexing an AtlasMapper layer: %s", this.atlasMapperLayerId), ex);
             }
 
             AtlasMapperIndexer.this.incrementCompleted();
@@ -461,11 +467,11 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
             // If layer is a base layer (or can't find a WMS base layer), simply call cache with the layer URL.
             if (baseLayerUrl == null) {
-                return ImageCache.cache(layerUrl, AtlasMapperIndexer.this.getIndex(), this.atlasMapperLayerId);
+                return ImageCache.cache(layerUrl, AtlasMapperIndexer.this.getIndex(), this.atlasMapperLayerId, this.messages);
             }
 
             // Combine layers and cache them.
-            return ImageCache.cacheLayer(baseLayerUrl, layerUrl, AtlasMapperIndexer.this.getIndex(), this.atlasMapperLayerId);
+            return ImageCache.cacheLayer(baseLayerUrl, layerUrl, AtlasMapperIndexer.this.getIndex(), this.atlasMapperLayerId, this.messages);
         }
     }
 }

@@ -4,6 +4,9 @@ TODO:
 
 - Fix tests
 
+- Fix GeoNetwork indexer
+  - Make it work with GN3 (paging)
+
 - cron API
   - Implement public API to allow cron to trigger daily re-indexation.
   - Show cron URL in dashboard and reindex page.

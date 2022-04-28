@@ -53,38 +53,6 @@ public class Index {
     // NOTE:
     //   The search engine will need to do a complete re-harvest once in a while to remove deleted nodes
 
-    // TODO: The "status" API in unused and should be deleted
-    @GET
-    @Path("status")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response status(
-            @Context HttpServletRequest servletRequest,
-            @QueryParam("idx") List<String> idx // List of indexes to query
-    ) {
-
-        for (int i=0; i<idx.size(); i++) {
-            LOGGER.log(Level.WARN, "idx["+i+"]: " + idx.get(i));
-        }
-
-        // TODO Implement
-        int remaining = 5;
-        int total = 1024;
-
-        JSONObject jsonStatus = new JSONObject()
-            .put("remaining", remaining)
-            .put("total", total);
-
-        String responseTxt = jsonStatus.toString();
-        LOGGER.log(Level.DEBUG, responseTxt);
-
-        // Disable cache DURING DEVELOPMENT!
-        CacheControl noCache = new CacheControl();
-        noCache.setNoCache(true);
-
-        // Return the JSON array with a OK status.
-        return Response.ok(responseTxt).cacheControl(noCache).build();
-    }
-
     // TODO Needs to be logged in? Post username password? I still need to figure out a safe way to do this
     @POST
     @Path("reindex")
@@ -144,7 +112,7 @@ public class Index {
     }
 
     public static void internalReindex(AbstractIndexer indexer, boolean full, Messages messages) throws IOException {
-        LOGGER.info(String.format("Reindexing %s class %s",
+        LOGGER.debug(String.format("Reindexing %s class %s",
                 indexer.getIndex(), indexer.getClass().getSimpleName()));
 
         indexer.index(full, messages);

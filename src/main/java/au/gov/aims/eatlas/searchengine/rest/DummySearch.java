@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
@@ -905,6 +906,7 @@ public class DummySearch {
     }
 
     private SearchResult getRandomMetadataSearchResult(int index) throws MalformedURLException {
+        Messages messages = Messages.getInstance(null);
         String searchIndex = "eatlas_metadata";
 
         Random random = new Random(11 + index);
@@ -915,7 +917,8 @@ public class DummySearch {
                 searchIndex,
                 uuid,
                 "https://eatlas.org.au/geonetwork",
-                null);
+                null,
+                messages);
 
         geoNetworkRecord.setLink(new URL(String.format("https://eatlas.org.au/data/faces/view.xhtml?uuid=%s", uuid)));
 

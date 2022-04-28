@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -28,6 +29,7 @@ import org.jsoup.Connection;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -66,17 +68,20 @@ public class ImageCache {
     @Path("{index}/{filename}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCachedImage(
-            @Context HttpServletRequest servletRequest,
+            @Context HttpServletRequest httpRequest,
             @PathParam("index") String index,
             @PathParam("filename") String filename
     ) {
-        File cachedFile = getCachedFile(index, filename);
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
+        File cachedFile = getCachedFile(index, filename, messages);
         if (cachedFile == null) {
-            LOGGER.warn(String.format("Cached image not found: %s/%s", index, filename));
+            messages.addMessage(Messages.Level.WARNING, String.format("Cached image not found: %s/%s", index, filename));
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         if (!cachedFile.canRead()) {
-            LOGGER.warn(String.format("Cached image not found: %s", cachedFile.toString()));
+            messages.addMessage(Messages.Level.WARNING, String.format("Cached image not found: %s", cachedFile.toString()));
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -92,13 +97,13 @@ public class ImageCache {
             // Return the JSON array with a OK status.
             return Response.ok(responseBytes, contentType.toString()).cacheControl(noCache).build();
         } catch(Exception ex) {
-            LOGGER.error(String.format("Server error: %s", ex.getMessage()), ex);
+            messages.addMessage(Messages.Level.ERROR, String.format("Server error: %s", ex.getMessage()), ex);
             return Response.serverError().entity(String.format("Server error: %s", ex.getMessage())).build();
         }
     }
 
-    public static File getCachedFile(String index, String filename) {
-        File cacheDir = getCacheDirectory(index);
+    public static File getCachedFile(String index, String filename, Messages messages) {
+        File cacheDir = getCacheDirectory(index, messages);
         if (cacheDir == null) {
             return null;
         }
@@ -106,7 +111,7 @@ public class ImageCache {
         return new File(cacheDir, filename);
     }
 
-    public static File getCacheDirectory(String index) {
+    public static File getCacheDirectory(String index, Messages messages) {
         if (index == null || index.isEmpty()) {
             return null;
         }
@@ -121,7 +126,7 @@ public class ImageCache {
                 }
             }
             if (imageCacheDir == null) {
-                LOGGER.warn(String.format("Missing configuration property \"imageCacheDirectory\". Using default image cache directory: %s",
+                messages.addMessage(Messages.Level.WARNING, String.format("Missing configuration property \"imageCacheDirectory\". Using default image cache directory: %s",
                         DEFAULT_IMAGE_CACHE_DIR));
                 imageCacheDir = new File(DEFAULT_IMAGE_CACHE_DIR);
             }
@@ -129,46 +134,46 @@ public class ImageCache {
         File indexCacheDir = new File(imageCacheDir, safeIndex);
         indexCacheDir.mkdirs();
         if (!indexCacheDir.isDirectory()) {
-            LOGGER.error(String.format("The image cache directory %s doesn't exist and can not be created.", indexCacheDir));
+            messages.addMessage(Messages.Level.ERROR, String.format("The image cache directory %s doesn't exist and can not be created.", indexCacheDir));
             return null;
         }
         if (!indexCacheDir.canRead()) {
-            LOGGER.error(String.format("The image cache directory %s exists but is not readable.", indexCacheDir));
+            messages.addMessage(Messages.Level.ERROR, String.format("The image cache directory %s exists but is not readable.", indexCacheDir));
             return null;
         }
         return indexCacheDir;
     }
 
-    public static File cache(URL imageUrl, String index, String filenamePrefix) throws IOException, InterruptedException {
+    public static File cache(URL imageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
         if (imageUrl == null || index == null) {
             return null;
         }
 
-        File cacheDir = getCacheDirectory(index);
+        File cacheDir = getCacheDirectory(index, messages);
         if (cacheDir == null) {
             return null;
         }
         if (!cacheDir.canWrite()) {
-            LOGGER.error(String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
+            messages.addMessage(Messages.Level.ERROR, String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
             return null;
         }
 
         String urlStr = imageUrl.toString();
-        Connection.Response imageResponse = EntityUtils.jsoupExecuteWithRetry(urlStr);
+        Connection.Response imageResponse = EntityUtils.jsoupExecuteWithRetry(urlStr, messages);
         if (imageResponse == null) {
             return null;
         }
         int statusCode = imageResponse.statusCode();
         if (statusCode < 200 || statusCode >= 300) {
-            LOGGER.warn(String.format("Invalid image URL: %s status code: %d", urlStr, statusCode));
+            messages.addMessage(Messages.Level.WARNING, String.format("Invalid image URL: %s status code: %d", urlStr, statusCode));
             return null;
         }
 
         String contentTypeStr = imageResponse.contentType();
         if (contentTypeStr == null || contentTypeStr.isEmpty()) {
-            LOGGER.warn(String.format("Image content type is null: %s", urlStr));
+            messages.addMessage(Messages.Level.WARNING, String.format("Image content type is null: %s", urlStr));
         }
-        String extension = getFileExtension(contentTypeStr);
+        String extension = getFileExtension(contentTypeStr, messages);
         File cacheFile = getUniqueFile(cacheDir, imageUrl, filenamePrefix, extension);
 
         byte[] imageBytes = imageResponse.bodyAsBytes();
@@ -177,47 +182,47 @@ public class ImageCache {
         }
 
         // Cache image to disk
-        LOGGER.info(String.format("Caching preview image %s to %s", urlStr, cacheFile));
+        LOGGER.debug(String.format("Caching preview image %s to %s", urlStr, cacheFile));
         FileUtils.writeByteArrayToFile(cacheFile, imageBytes);
 
         return cacheFile;
     }
 
-    public static File cacheLayer(URL baseLayerImageUrl, URL layerImageUrl, String index, String filenamePrefix) throws IOException, InterruptedException {
+    public static File cacheLayer(URL baseLayerImageUrl, URL layerImageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
         if (baseLayerImageUrl == null || layerImageUrl == null || index == null) {
             return null;
         }
 
-        File cacheDir = getCacheDirectory(index);
+        File cacheDir = getCacheDirectory(index, messages);
         if (cacheDir == null) {
             return null;
         }
         if (!cacheDir.canWrite()) {
-            LOGGER.error(String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
+            messages.addMessage(Messages.Level.ERROR, String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
             return null;
         }
 
         // Get layer image (using JSoup to benefit from the retry feature)
         String layerUrlStr = layerImageUrl.toString();
-        Connection.Response layerImageResponse = EntityUtils.jsoupExecuteWithRetry(layerUrlStr);
+        Connection.Response layerImageResponse = EntityUtils.jsoupExecuteWithRetry(layerUrlStr, messages);
         if (layerImageResponse == null) {
             return null;
         }
         int layerStatusCode = layerImageResponse.statusCode();
         if (layerStatusCode < 200 || layerStatusCode >= 300) {
-            LOGGER.warn(String.format("Invalid layer URL: %s status code: %d", layerUrlStr, layerStatusCode));
+            messages.addMessage(Messages.Level.WARNING, String.format("Invalid layer URL: %s status code: %d", layerUrlStr, layerStatusCode));
             return null;
         }
 
         // Get base layer image (using JSoup to benefit from the retry feature)
         String baseLayerUrlStr = baseLayerImageUrl.toString();
-        Connection.Response baseLayerImageResponse = EntityUtils.jsoupExecuteWithRetry(baseLayerUrlStr);
+        Connection.Response baseLayerImageResponse = EntityUtils.jsoupExecuteWithRetry(baseLayerUrlStr, messages);
         if (baseLayerImageResponse == null) {
             return null;
         }
         int baseLayerStatusCode = baseLayerImageResponse.statusCode();
         if (baseLayerStatusCode < 200 || baseLayerStatusCode >= 300) {
-            LOGGER.warn(String.format("Invalid base layer URL: %s status code: %d", baseLayerUrlStr, baseLayerStatusCode));
+            messages.addMessage(Messages.Level.WARNING, String.format("Invalid base layer URL: %s status code: %d", baseLayerUrlStr, baseLayerStatusCode));
             return null;
         }
 
@@ -243,7 +248,7 @@ public class ImageCache {
         graphics.drawImage(layerImage, 0, 0, null);
 
         // Saved image to disk
-        LOGGER.info(String.format("Caching layer preview image %s to %s", layerImageUrl, cacheFile));
+        LOGGER.debug(String.format("Caching layer preview image %s to %s", layerImageUrl, cacheFile));
         ImageIO.write(combined, "jpg", cacheFile);
 
         return cacheFile;
@@ -255,13 +260,13 @@ public class ImageCache {
         }
     }
 
-    private static String getFileExtension(String contentTypeStr) throws IOException {
+    private static String getFileExtension(String contentTypeStr, Messages messages) {
         ContentType contentType = null;
         if (contentTypeStr != null && !contentTypeStr.isEmpty()) {
             try {
                 contentType = ContentType.parse(contentTypeStr);
             } catch (Exception ex) {
-                LOGGER.warn(String.format("Unsupported image content type: %s", contentTypeStr), ex);
+                messages.addMessage(Messages.Level.WARNING, String.format("Unsupported image content type: %s", contentTypeStr), ex);
             }
         }
         return EntityUtils.getExtension(contentType, "bin");

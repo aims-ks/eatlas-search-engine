@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.text.StringEscapeUtils;
@@ -155,7 +156,7 @@ public abstract class Entity {
     }
 
     // Make sure thumbnailUrl is set before calling this.
-    public boolean isThumbnailOutdated(Entity oldEntity, Long thumbnailTTL, Long brokenThumbnailTTL) {
+    public boolean isThumbnailOutdated(Entity oldEntity, Long thumbnailTTL, Long brokenThumbnailTTL, Messages messages) {
         if (oldEntity == null) {
             // No old entity, assume it's a new entry, the thumbnail was never downloaded
             return true;
@@ -201,7 +202,7 @@ public abstract class Entity {
             }
         }
 
-        File thumbnailFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
+        File thumbnailFile = ImageCache.getCachedFile(index, cachedThumbnailFilename, messages);
         if (thumbnailFile == null) {
             // Unlikely, but if the thumbnail folder is manually deleted,
             // this is where it will be requested to re-download the thumbnail.
@@ -226,11 +227,11 @@ public abstract class Entity {
         this.setThumbnailLastIndexed(oldEntity == null ? System.currentTimeMillis() : oldEntity.getThumbnailLastIndexed());
     }
 
-    public void deleteThumbnail() {
+    public void deleteThumbnail(Messages messages) {
         String index = this.getIndex();
         String cachedThumbnailFilename = this.getCachedThumbnailFilename();
         if (index != null && cachedThumbnailFilename != null) {
-            File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename);
+            File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename, messages);
             if (cachedFile != null && cachedFile.exists() && !cachedFile.delete()) {
                 LOGGER.error(String.format("Cached image can not be deleted: %s", cachedFile.toString()));
             }

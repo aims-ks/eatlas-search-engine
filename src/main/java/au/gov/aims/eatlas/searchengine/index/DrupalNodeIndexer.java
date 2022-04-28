@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
@@ -94,7 +95,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
     }
 
     @Override
-    protected void internalIndex(SearchClient client, Long lastHarvested) {
+    protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -128,9 +129,9 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
             nodeFound = 0;
             String responseStr = null;
             try {
-                responseStr = EntityUtils.harvestGetURL(url);
+                responseStr = EntityUtils.harvestGetURL(url, messages);
             } catch(Exception ex) {
-                LOGGER.warn(String.format("Exception occurred while requesting a page of Drupal nodes. Node type: %s",  this.drupalNodeType), ex);
+                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting a page of Drupal nodes. Node type: %s",  this.drupalNodeType), ex);
             }
             if (responseStr != null && !responseStr.isEmpty()) {
                 JSONObject jsonResponse = new JSONObject(responseStr);
@@ -153,7 +154,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                     DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode);
 
                     DrupalNodeIndexer.DrupalNodeIndexerThread thread = new DrupalNodeIndexer.DrupalNodeIndexerThread(
-                        client, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
+                        client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
 
                     threadPool.execute(thread);
 
@@ -172,13 +173,13 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         try {
             threadPool.awaitTermination(1, TimeUnit.HOURS);
         } catch(InterruptedException ex) {
-            LOGGER.error(String.format("The DrupalNode indexation for node type %s was interrupted",
+            messages.addMessage(Messages.Level.ERROR, String.format("The DrupalNode indexation for node type %s was interrupted",
                     this.drupalNodeType), ex);
         }
 
         // Only cleanup when we are doing a full harvest
         if (fullHarvest) {
-            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal node of type %s", this.drupalNodeType));
+            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal node of type %s", this.drupalNodeType), messages);
         }
     }
 
@@ -244,6 +245,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
     public class DrupalNodeIndexerThread extends Thread {
         private final SearchClient client;
+        private final Messages messages;
         private final DrupalNode drupalNode;
         private final JSONObject jsonApiNode;
         private final JSONArray jsonIncluded;
@@ -254,6 +256,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
         public DrupalNodeIndexerThread(
                 SearchClient client,
+                Messages messages,
                 DrupalNode drupalNode,
                 JSONObject jsonApiNode,
                 JSONArray jsonIncluded,
@@ -262,6 +265,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         ) {
 
             this.client = client;
+            this.messages = messages;
             this.drupalNode = drupalNode;
             this.jsonApiNode = jsonApiNode;
             this.jsonIncluded = jsonIncluded;
@@ -284,21 +288,21 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                         try {
                             thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
                         } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
+                            messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
                                     this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
                         }
                         this.drupalNode.setThumbnailUrl(thumbnailUrl);
 
                         // Create the thumbnail if it's missing or outdated
                         DrupalNode oldNode = DrupalNodeIndexer.this.safeGet(this.client, DrupalNode.class, this.drupalNode.getId());
-                        if (this.drupalNode.isThumbnailOutdated(oldNode, DrupalNodeIndexer.this.getSafeThumbnailTTL(), DrupalNodeIndexer.this.getSafeBrokenThumbnailTTL())) {
+                        if (this.drupalNode.isThumbnailOutdated(oldNode, DrupalNodeIndexer.this.getSafeThumbnailTTL(), DrupalNodeIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
                             try {
-                                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalNodeIndexer.this.getIndex(), this.drupalNode.getId());
+                                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalNodeIndexer.this.getIndex(), this.drupalNode.getId(), this.messages);
                                 if (cachedThumbnailFile != null) {
                                     this.drupalNode.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                                 }
                             } catch(Exception ex) {
-                                LOGGER.warn(String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
+                                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
                                         this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
                             }
                             this.drupalNode.setThumbnailLastIndexed(System.currentTimeMillis());
@@ -326,7 +330,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                         this.drupalNode.getNid(),
                         indexResponse.result()));
             } catch(Exception ex) {
-                LOGGER.warn(String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
+                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
             }
 
             DrupalNodeIndexer.this.incrementCompleted();

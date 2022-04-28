@@ -68,7 +68,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         this.index = index;
     }
 
-    protected abstract void internalIndex(SearchClient client, Long lastIndexed);
+    protected abstract void internalIndex(SearchClient client, Long lastIndexed, Messages messages);
     public abstract Entity load(JSONObject json);
     public abstract JSONObject toJSON();
 
@@ -112,6 +112,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     // If not, only index what have changed since last indexation.
     public synchronized void index(boolean full, Messages messages) throws IOException {
         if (!this.isRunning()) {
+            this.total = null;
             this.completed = 0;
             this.indexerThread = new IndexerThread(full, messages);
             this.indexerThread.start();
@@ -251,7 +252,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     // Only called with complete re-index
-    public void cleanUp(SearchClient client, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName) {
+    public void cleanUp(SearchClient client, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName, Messages messages) {
         long deletedIndexedItems = this.deleteOldIndexedItems(client, lastIndexed);
         if (deletedIndexedItems > 0) {
             LOGGER.info(String.format("Deleted %d indexed %s",
@@ -269,7 +270,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             LOGGER.error(String.format("Exception occurred while refreshing the search index: %s", this.index), ex);
         }
 
-        long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails);
+        long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails, messages);
         if (deletedThumbnails > 0) {
             LOGGER.info(String.format("Deleted %d cached thumbnail for %s",
                     deletedThumbnails, entityDisplayName));
@@ -294,8 +295,8 @@ public abstract class AbstractIndexer<E extends Entity> {
         return deleted == null ? 0L : deleted;
     }
 
-    private long deleteOldThumbnails(Set<String> usedThumbnails) {
-        File cacheDirectory = ImageCache.getCacheDirectory(this.getIndex());
+    private long deleteOldThumbnails(Set<String> usedThumbnails, Messages messages) {
+        File cacheDirectory = ImageCache.getCacheDirectory(this.getIndex(), messages);
 
         // Loop through each thumbnail files and delete the ones that are unused
         if (cacheDirectory != null && cacheDirectory.isDirectory()) {
@@ -418,14 +419,12 @@ public abstract class AbstractIndexer<E extends Entity> {
                     SearchClient client = new ESClient(new ElasticsearchClient(transport))
             ) {
                 client.createIndex(AbstractIndexer.this.getIndex());
-                AbstractIndexer.this.internalIndex(client, this.fullIndex ? null : state.getLastIndexed());
+                AbstractIndexer.this.internalIndex(client, this.fullIndex ? null : state.getLastIndexed(), this.messages);
                 AbstractIndexer.this.refreshCount(client);
                 state.setLastIndexed(lastIndexedStarts);
             } catch(Exception ex) {
-                if (this.messages != null) {
-                    messages.addMessage(Messages.Level.ERROR,
-                            String.format("An error occurred during the indexation of %s", AbstractIndexer.this.getIndex()), ex);
-                }
+                this.messages.addMessage(Messages.Level.ERROR,
+                        String.format("An error occurred during the indexation of %s", AbstractIndexer.this.getIndex()), ex);
             }
 
             long lastIndexedEnds = System.currentTimeMillis();
@@ -434,10 +433,8 @@ public abstract class AbstractIndexer<E extends Entity> {
             try {
                 SearchEngineState.getInstance().save();
             } catch(Exception ex) {
-                if (this.messages != null) {
-                    messages.addMessage(Messages.Level.ERROR,
-                            String.format("An error occurred while saving the index state for %s", AbstractIndexer.this.getIndex()), ex);
-                }
+                this.messages.addMessage(Messages.Level.ERROR,
+                        String.format("An error occurred while saving the index state for %s", AbstractIndexer.this.getIndex()), ex);
             }
         }
     }

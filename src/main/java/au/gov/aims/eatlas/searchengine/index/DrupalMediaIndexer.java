@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
@@ -111,7 +112,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
     }
 
     @Override
-    protected void internalIndex(SearchClient client, Long lastHarvested) {
+    protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -145,9 +146,9 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
             mediaFound = 0;
             String responseStr = null;
             try {
-                responseStr = EntityUtils.harvestGetURL(url);
+                responseStr = EntityUtils.harvestGetURL(url, messages);
             } catch(Exception ex) {
-                LOGGER.warn(String.format("Exception occurred while requesting a page of Drupal medias. Media type: %s",  this.drupalMediaType), ex);
+                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting a page of Drupal medias. Media type: %s",  this.drupalMediaType), ex);
             }
             if (responseStr != null && !responseStr.isEmpty()) {
                 JSONObject jsonResponse = new JSONObject(responseStr);
@@ -173,7 +174,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                     drupalMedia.setDocument(DrupalMediaIndexer.getDrupalDescription(jsonApiMedia, DrupalMediaIndexer.this.drupalDescriptionField));
 
                     DrupalMediaIndexerThread thread = new DrupalMediaIndexerThread(
-                        client, drupalMedia, jsonApiMedia, jsonIncluded, usedThumbnails, page+1, i+1, mediaFound);
+                        client, messages, drupalMedia, jsonApiMedia, jsonIncluded, usedThumbnails, page+1, i+1, mediaFound);
 
                     threadPool.execute(thread);
 
@@ -192,13 +193,13 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         try {
             threadPool.awaitTermination(1, TimeUnit.HOURS);
         } catch(InterruptedException ex) {
-            LOGGER.error(String.format("The DrupalMedia indexation for media type %s was interrupted",
+            messages.addMessage(Messages.Level.ERROR, String.format("The DrupalMedia indexation for media type %s was interrupted",
                     this.drupalMediaType), ex);
         }
 
         // Only cleanup when we are doing a full harvest
         if (fullHarvest) {
-            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal media of type %s", this.drupalMediaType));
+            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal media of type %s", this.drupalMediaType), messages);
         }
     }
 
@@ -298,6 +299,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
 
     public class DrupalMediaIndexerThread extends Thread {
         private final SearchClient client;
+        private final Messages messages;
         private final DrupalMedia drupalMedia;
         private final JSONObject jsonApiMedia;
         private final JSONArray jsonIncluded;
@@ -308,6 +310,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
 
         public DrupalMediaIndexerThread(
                 SearchClient client,
+                Messages messages,
                 DrupalMedia drupalMedia,
                 JSONObject jsonApiMedia,
                 JSONArray jsonIncluded,
@@ -316,6 +319,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         ) {
 
             this.client = client;
+            this.messages = messages;
             this.drupalMedia = drupalMedia;
             this.jsonApiMedia = jsonApiMedia;
             this.jsonIncluded = jsonIncluded;
@@ -339,21 +343,21 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                         try {
                             thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
                         } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while creating a thumbnail URL for Drupal media: %s, media type: %s",
+                            messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal media: %s, media type: %s",
                                     this.drupalMedia.getId(), DrupalMediaIndexer.this.drupalMediaType), ex);
                         }
                         this.drupalMedia.setThumbnailUrl(thumbnailUrl);
 
                         // Create the thumbnail if it's missing or outdated
                         DrupalMedia oldMedia = DrupalMediaIndexer.this.safeGet(this.client, DrupalMedia.class, this.drupalMedia.getId());
-                        if (this.drupalMedia.isThumbnailOutdated(oldMedia, DrupalMediaIndexer.this.getSafeThumbnailTTL(), DrupalMediaIndexer.this.getSafeBrokenThumbnailTTL())) {
+                        if (this.drupalMedia.isThumbnailOutdated(oldMedia, DrupalMediaIndexer.this.getSafeThumbnailTTL(), DrupalMediaIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
                             try {
-                                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalMediaIndexer.this.getIndex(), this.drupalMedia.getId());
+                                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalMediaIndexer.this.getIndex(), this.drupalMedia.getId(), this.messages);
                                 if (cachedThumbnailFile != null) {
                                     this.drupalMedia.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                                 }
                             } catch(Exception ex) {
-                                LOGGER.warn(String.format("Exception occurred while creating a thumbnail for Drupal media: %s, media type: %s",
+                                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal media: %s, media type: %s",
                                         this.drupalMedia.getId(), DrupalMediaIndexer.this.drupalMediaType), ex);
                             }
                             this.drupalMedia.setThumbnailLastIndexed(System.currentTimeMillis());
@@ -381,7 +385,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                         this.drupalMedia.getMid(),
                         indexResponse.result()));
             } catch(Exception ex) {
-                LOGGER.warn(String.format("Exception occurred while indexing a Drupal media: %s, media type: %s", this.drupalMedia.getId(), DrupalMediaIndexer.this.drupalMediaType), ex);
+                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a Drupal media: %s, media type: %s", this.drupalMedia.getId(), DrupalMediaIndexer.this.drupalMediaType), ex);
             }
 
             DrupalMediaIndexer.this.incrementCompleted();

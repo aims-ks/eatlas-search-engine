@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
@@ -110,7 +111,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
     }
 
     @Override
-    protected void internalIndex(SearchClient client, Long lastHarvested) {
+    protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -144,9 +145,9 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
             nodeFound = 0;
             String responseStr = null;
             try {
-                responseStr = EntityUtils.harvestGetURL(url);
+                responseStr = EntityUtils.harvestGetURL(url, messages);
             } catch(Exception ex) {
-                LOGGER.warn(String.format("Exception occurred while requesting a page of Drupal external link nodes. Node type: %s",  this.drupalNodeType), ex);
+                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting a page of Drupal external link nodes. Node type: %s",  this.drupalNodeType), ex);
             }
             if (responseStr != null && !responseStr.isEmpty()) {
                 JSONObject jsonResponse = new JSONObject(responseStr);
@@ -169,7 +170,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                     ExternalLink externalLink = new ExternalLink(this.getIndex(), jsonApiNode);
 
                     DrupalExternalLinkNodeIndexerThread thread = new DrupalExternalLinkNodeIndexerThread(
-                        client, externalLink, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
+                        client, messages, externalLink, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
 
                     threadPool.execute(thread);
 
@@ -188,13 +189,13 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
         try {
             threadPool.awaitTermination(1, TimeUnit.HOURS);
         } catch(InterruptedException ex) {
-            LOGGER.error(String.format("The DrupalNode indexation for external link node type %s was interrupted",
+            messages.addMessage(Messages.Level.ERROR, String.format("The DrupalNode indexation for external link node type %s was interrupted",
                     this.drupalNodeType), ex);
         }
 
         // Only cleanup when we are doing a full harvest
         if (fullHarvest) {
-            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal external link node of type %s", this.drupalNodeType));
+            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal external link node of type %s", this.drupalNodeType), messages);
         }
     }
 
@@ -293,6 +294,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
 
     public class DrupalExternalLinkNodeIndexerThread extends Thread {
         private final SearchClient client;
+        private final Messages messages;
         private final ExternalLink externalLink;
         private final JSONObject jsonApiNode;
         private final JSONArray jsonIncluded;
@@ -304,6 +306,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
 
         public DrupalExternalLinkNodeIndexerThread(
                 SearchClient client,
+                Messages messages,
                 ExternalLink externalLink,
                 JSONObject jsonApiNode,
                 JSONArray jsonIncluded,
@@ -311,6 +314,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                 int page, int current, int pageTotal
         ) {
             this.client = client;
+            this.messages = messages;
             this.externalLink = externalLink;
             this.jsonApiNode = jsonApiNode;
             this.jsonIncluded = jsonIncluded;
@@ -330,7 +334,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                     try {
                         externalLink = new URL(externalLinkStr);
                     } catch(Exception ex) {
-                        LOGGER.warn(String.format("Invalid URL found for Drupal external link node ID: %s, node type: %s",
+                        this.messages.addMessage(Messages.Level.WARNING, String.format("Invalid URL found for Drupal external link node ID: %s, node type: %s",
                                 this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.drupalNodeType), ex);
                     }
 
@@ -344,11 +348,10 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
 
                         // Download the text content of the URL
                         try {
-                            content = EntityUtils.harvestURLText(externalLinkStr);
+                            content = EntityUtils.harvestURLText(externalLinkStr, this.messages);
                         } catch (Exception ex) {
-                            LOGGER.error(String.format("Exception occurred while harvesting URL for Drupal external link node %s, node type: %s. URL %s. Error message: %s",
-                                    this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.drupalNodeType, externalLinkStr, ex.getMessage()));
-                            LOGGER.trace("Stacktrace", ex);
+                            this.messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting URL for Drupal external link node %s, node type: %s. URL %s",
+                                    this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.drupalNodeType, externalLinkStr), ex);
                         }
                     }
 
@@ -369,21 +372,21 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                                     try {
                                         thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
                                     } catch(Exception ex) {
-                                        LOGGER.warn(String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
+                                        this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
                                                 this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.drupalNodeType), ex);
                                     }
                                     this.externalLink.setThumbnailUrl(thumbnailUrl);
 
                                     // Create the thumbnail if it's missing or outdated
                                     ExternalLink oldExternalLink = DrupalExternalLinkNodeIndexer.this.safeGet(this.client, ExternalLink.class, this.externalLink.getId());
-                                    if (this.externalLink.isThumbnailOutdated(oldExternalLink, DrupalExternalLinkNodeIndexer.this.getSafeThumbnailTTL(), DrupalExternalLinkNodeIndexer.this.getSafeBrokenThumbnailTTL())) {
+                                    if (this.externalLink.isThumbnailOutdated(oldExternalLink, DrupalExternalLinkNodeIndexer.this.getSafeThumbnailTTL(), DrupalExternalLinkNodeIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
                                         try {
-                                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalExternalLinkNodeIndexer.this.getIndex(), this.externalLink.getId());
+                                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalExternalLinkNodeIndexer.this.getIndex(), this.externalLink.getId(), this.messages);
                                             if (cachedThumbnailFile != null) {
                                                 this.externalLink.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                                             }
                                         } catch(Exception ex) {
-                                            LOGGER.warn(String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
+                                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
                                                     this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.drupalNodeType), ex);
                                         }
                                         this.externalLink.setThumbnailLastIndexed(System.currentTimeMillis());
@@ -410,7 +413,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                                     externalLinkStr,
                                     indexResponse.result()));
                         } catch(Exception ex) {
-                            LOGGER.warn(String.format("Exception occurred while indexing an external link Drupal node: %s, node type: %s, URL: %s",
+                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing an external link Drupal node: %s, node type: %s, URL: %s",
                                     this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.drupalNodeType, externalLinkStr), ex);
                         }
                     }

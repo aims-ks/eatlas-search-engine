@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
@@ -55,7 +56,7 @@ public class Main {
         //Index.internalReindex(fullHarvest);
 
 
-        // Re-index individual indexes
+        // Re-index individual index
 
         // TODO Implement LEMMATIZATION (mice => mouse, foot => feet, tooth => teeth, etc):
         //     https://apprize.best/data/elasticsearch_1/23.html
@@ -75,7 +76,7 @@ public class Main {
         //Index.internalReindex(geoNetworkIndexer, fullHarvest);
 
         AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-        Index.internalReindex(atlasMapperIndexer, fullHarvest, null);
+        Index.internalReindex(atlasMapperIndexer, fullHarvest, Messages.getInstance(null));
 
 
         //Main.testElasticsearchClient();

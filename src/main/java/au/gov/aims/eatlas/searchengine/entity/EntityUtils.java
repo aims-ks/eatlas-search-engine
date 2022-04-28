@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.Consts;
 import org.apache.http.entity.ContentType;
@@ -44,30 +45,30 @@ public class EntityUtils {
     // NOTE: The delay is incremental: 5, 10, 20, 40, 80...
     private static final int JSOUP_RETRY_INITIAL_DELAY = 5; // In seconds
 
-    public static String harvestGetURL(String url) throws IOException, InterruptedException {
+    public static String harvestGetURL(String url, Messages messages) throws IOException, InterruptedException {
         LOGGER.debug(String.format("Harvesting GET URL body: %s", url));
 
         // Get a HTTP document.
         // NOTE: Body in this case is the body of the response.
         //     It's the entire HTML document, not just the content
         //     of the HTML body element.
-        return jsoupExecuteWithRetry(url)
+        return jsoupExecuteWithRetry(url, messages)
                 .body();
     }
 
-    public static String harvestPostURL(String url, Map<String, String> dataMap) throws IOException, InterruptedException {
+    public static String harvestPostURL(String url, Map<String, String> dataMap, Messages messages) throws IOException, InterruptedException {
         LOGGER.debug(String.format("Harvesting POST URL body: %s%n%s", url, mapToString(dataMap)));
 
-        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url)
+        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages)
                     .data(dataMap)
-                    .method(Connection.Method.POST), url)
+                    .method(Connection.Method.POST), url, messages)
                 .body();
     }
 
-    public static String harvestURLText(String url) throws IOException, InterruptedException {
+    public static String harvestURLText(String url, Messages messages) throws IOException, InterruptedException {
         LOGGER.debug(String.format("Harvesting URL text: %s", url));
 
-        Connection.Response response = jsoupExecuteWithRetry(url);
+        Connection.Response response = jsoupExecuteWithRetry(url, messages);
 
         String contentTypeStr = response.contentType();
         if (contentTypeStr == null) {
@@ -84,20 +85,20 @@ public class EntityUtils {
             if ("pdf".equals(extension)) {
                 return EntityUtils.extractPDFTextContent(response.bodyAsBytes());
             }
-            LOGGER.warn(String.format("Unsupported mime type: %s", contentType.getMimeType()));
+            messages.addMessage(Messages.Level.WARNING, String.format("Unsupported mime type: %s", contentType.getMimeType()));
 
         } catch (Exception ex) {
-            LOGGER.warn(String.format("Unsupported content type: %s", contentTypeStr), ex);
+            messages.addMessage(Messages.Level.WARNING, String.format("Unsupported content type: %s", contentTypeStr), ex);
         }
 
         return response.body();
     }
 
-    public static Connection.Response jsoupExecuteWithRetry(String url) throws IOException, InterruptedException {
-        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url), url);
+    public static Connection.Response jsoupExecuteWithRetry(String url, Messages messages) throws IOException, InterruptedException {
+        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages), url, messages);
     }
 
-    private static Connection.Response jsoupExecuteWithRetry(Connection jsoupConnection, String url) throws IOException, InterruptedException {
+    private static Connection.Response jsoupExecuteWithRetry(Connection jsoupConnection, String url, Messages messages) throws IOException, InterruptedException {
         IOException lastException = null;
         int delay = JSOUP_RETRY_INITIAL_DELAY;
 
@@ -107,19 +108,19 @@ public class EntityUtils {
             } catch (IOException ex) {
                 // The following IOException (and maybe more) may occur when the computer lose network connection:
                 //     SocketTimeoutException, ConnectException, UnknownHostException
-                LOGGER.warn(String.format("Connection timed out while requesting URL: %s%nWait for %d seconds before re-trying [%d/%d].",
+                messages.addMessage(Messages.Level.WARNING, String.format("Connection timed out while requesting URL: %s%nWait for %d seconds before re-trying [%d/%d].",
                         url, delay, i+1, JSOUP_RETRY));
                 lastException = ex;
                 Thread.sleep(delay * 1000L);
                 delay *= 2;
             }
         }
-        LOGGER.error(String.format("Connection timed out %d times while requesting URL: %s", JSOUP_RETRY, url));
+        messages.addMessage(Messages.Level.ERROR, String.format("Connection timed out %d times while requesting URL: %s", JSOUP_RETRY, url));
 
         throw lastException;
     }
 
-    private static Connection getJsoupConnection(String url) {
+    private static Connection getJsoupConnection(String url, Messages messages) {
         // JSoup takes care of following redirections.
         //     IOUtils.toString(URL, Charset) does not.
         //
@@ -145,10 +146,10 @@ public class EntityUtils {
                 .ignoreHttpErrors(true)
                 .ignoreContentType(true)
                 .maxBodySize(0)
-                .sslSocketFactory(EntityUtils.socketFactory());
+                .sslSocketFactory(EntityUtils.socketFactory(messages));
     }
 
-    private static SSLSocketFactory socketFactory() {
+    private static SSLSocketFactory socketFactory(Messages messages) {
         TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {
                 return new X509Certificate[0];
@@ -162,7 +163,7 @@ public class EntityUtils {
             sslContext.init(null, trustAllCerts, new SecureRandom());
             return sslContext.getSocketFactory();
         } catch (Exception ex) {
-            LOGGER.error("Failed to create a SSL socket factory.", ex);
+            messages.addMessage(Messages.Level.ERROR, "Failed to create a SSL socket factory.", ex);
             return null;
         }
     }
