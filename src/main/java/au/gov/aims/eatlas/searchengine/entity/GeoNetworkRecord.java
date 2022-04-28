@@ -73,16 +73,35 @@ public class GeoNetworkRecord extends Entity {
 
     private GeoNetworkRecord() {}
 
-    // geonetworkUrlStr: https://eatlas.org.au/geonetwork
+    // geoNetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
-    public GeoNetworkRecord(String index, String metadataRecordUUID, String geonetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
+    // TODO Write parser for GeoNetwork 3.x
+    public GeoNetworkRecord(String index, String geoNetworkVersion, String metadataRecordUUID, String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
         this.setIndex(index);
+
+        if (geoNetworkVersion.startsWith("2.")) {
+            this.parseGeoNetwork2Record(index, metadataRecordUUID, geoNetworkUrlStr, xmlMetadataRecord, messages);
+        } else {
+            this.parseGeoNetwork3Record(index, metadataRecordUUID, geoNetworkUrlStr, xmlMetadataRecord, messages);
+        }
+    }
+
+    /**
+     * GeoNetwork 3.x
+     */
+
+    private void parseGeoNetwork3Record(String index, String metadataRecordUUID, String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
+        // TODO Implement!
+    }
+
+
+    /**
+     * GeoNetwork 2.x
+     */
+
+    private void parseGeoNetwork2Record(String index, String metadataRecordUUID, String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
         String pointOfTruthUrlStr = null;
         if (xmlMetadataRecord != null) {
-            // TODO Parse the record!
-            // Example:
-            //   https://eatlas.org.au/geonetwork/srv/eng/xml_iso19139.mcp-1.4?uuid=ffa396f7-11fd-4be0-858d-2e4bc72a7ed7&styleSheet=xml_iso19139.mcp-1.4.xsl
-
 
             // Fix the document, if needed
             xmlMetadataRecord.getDocumentElement().normalize();
@@ -174,7 +193,7 @@ public class GeoNetworkRecord extends Entity {
                             previewUrlStr = fileName;
                         } else {
                             previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
-                                    geonetworkUrlStr, this.getId(), fileName);
+                                    geoNetworkUrlStr, this.getId(), fileName);
                         }
 
                         try {
@@ -301,7 +320,7 @@ public class GeoNetworkRecord extends Entity {
                 }
 
                 if (metadataRecordUrl == null) {
-                    String geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geonetworkUrlStr, this.getId());
+                    String geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrlStr, this.getId());
                     try {
                         metadataRecordUrl = new URL(geonetworkMetadataUrlStr);
                     } catch(Exception ex) {
