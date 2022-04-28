@@ -28,11 +28,14 @@ import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import org.glassfish.jersey.server.mvc.Viewable;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
@@ -44,11 +47,16 @@ public class SettingsPage {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Viewable settingsPage() {
+    public Viewable settingsPage(
+        @Context HttpServletRequest httpRequest
+    ) {
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
-        model.put("messages", Messages.getInstance());
+        model.put("messages", messages);
         model.put("config", config);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/settings.jsp
@@ -66,45 +74,49 @@ public class SettingsPage {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     public Viewable saveSettings(
+        @Context HttpServletRequest httpRequest,
         MultivaluedMap<String, String> form
     ) {
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
         if (form.containsKey("save-button")) {
-            this.save(form);
+            this.save(form, messages);
         } else if (form.containsKey("commit-button")) {
-            this.commit(form);
+            this.commit(form, messages);
         } else if (form.containsKey("add-index-button")) {
-            this.addIndex(form);
+            this.addIndex(form, messages);
         } else if (form.containsKey("delete-button")) {
-            this.deleteIndex(FormUtils.getFormStringValue(form, "delete-button"));
+            this.deleteIndex(FormUtils.getFormStringValue(form, "delete-button"), messages);
         } else {
             // Default value when the user press enter in a text field, or when the form is submitted by JavaScript.
             // Most modern browser used the next submit button in the DOM tree (which is why we have a hidden save button),
             // but some browser submits the form without "clicking" a submit button.
-            this.save(form);
+            this.save(form, messages);
         }
 
-        return settingsPage();
+        return settingsPage(httpRequest);
     }
 
-    private void addIndex(MultivaluedMap<String, String> form) {
+    private void addIndex(MultivaluedMap<String, String> form, Messages messages) {
         String newIndexType = FormUtils.getFormStringValue(form, "newIndexType");
         // Call delete orphan indexes
         try {
             SearchUtils.deleteOrphanIndexes();
         } catch (IOException ex) {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
+            messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred while deleting orphan search indexes.", ex);
         }
 
         try {
             SearchUtils.addIndex(newIndexType);
         } catch (IOException ex) {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
+            messages.addMessage(Messages.Level.ERROR,
                 String.format("An exception occurred while adding the new index: %s", newIndexType), ex);
         }
     }
 
-    private void deleteIndex(String deleteIndex) {
+    private void deleteIndex(String deleteIndex, Messages messages) {
         if (deleteIndex != null) {
             SearchEngineConfig config = SearchEngineConfig.getInstance();
 
@@ -112,7 +124,7 @@ public class SettingsPage {
             try {
                 deletedIndexer = config.removeIndexer(deleteIndex);
             } catch (IOException ex) {
-                Messages.getInstance().addMessages(Messages.Level.ERROR,
+                messages.addMessage(Messages.Level.ERROR,
                     String.format("An exception occurred while deleting the search index: %s", deleteIndex), ex);
             }
 
@@ -120,7 +132,7 @@ public class SettingsPage {
                 try {
                     config.save();
                 } catch (IOException ex) {
-                    Messages.getInstance().addMessages(Messages.Level.ERROR,
+                    messages.addMessage(Messages.Level.ERROR,
                         "An exception occurred while saving the search engine settings.", ex);
                 }
 
@@ -128,18 +140,18 @@ public class SettingsPage {
                 try {
                     SearchUtils.deleteOrphanIndexes();
                 } catch (IOException ex) {
-                    Messages.getInstance().addMessages(Messages.Level.ERROR,
+                    messages.addMessage(Messages.Level.ERROR,
                         "An exception occurred deleting orphan search indexes.", ex);
                 }
 
             } else {
-                Messages.getInstance().addMessages(Messages.Level.ERROR,
+                messages.addMessage(Messages.Level.ERROR,
                         String.format("Can not delete the index %s. The index does not exist.", deleteIndex));
             }
         }
     }
 
-    private void save(MultivaluedMap<String, String> form) {
+    private void save(MultivaluedMap<String, String> form, Messages messages) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         config.setImageCacheDirectory(FormUtils.getFormStringValue(form, "imageCacheDirectory"));
@@ -153,10 +165,10 @@ public class SettingsPage {
             String newIndex = FormUtils.getFormStringValue(form, index + "_index");
             if (newIndex != null && !newIndex.equals(index)) {
                 if (!newIndex.matches("[a-zA-Z0-9_-]+")) {
-                    Messages.getInstance().addMessages(Messages.Level.WARNING,
+                    messages.addMessage(Messages.Level.WARNING,
                         String.format("Invalid index supplied: %s. Invalid characters in the index. Rolled back to previous index: %s", newIndex, index));
                 } else if (SearchUtils.indexExists(newIndex)) {
-                    Messages.getInstance().addMessages(Messages.Level.WARNING,
+                    messages.addMessage(Messages.Level.WARNING,
                         String.format("Invalid index supplied: %s. Index already exists. Rolled back to previous index: %s", newIndex, index));
                 } else {
                     indexer.setIndex(newIndex);
@@ -213,7 +225,7 @@ public class SettingsPage {
                 atlasMapperIndexer.setAtlasMapperVersion(FormUtils.getFormStringValue(form, index + "_atlasMapperVersion"));
 
             } else {
-                Messages.getInstance().addMessages(Messages.Level.WARNING,
+                messages.addMessage(Messages.Level.WARNING,
                     String.format("Unsupported settings sent to the server. Unknown indexer type: %s", indexer.getClass().getSimpleName()));
             }
         }
@@ -221,15 +233,15 @@ public class SettingsPage {
         try {
             config.save();
         } catch (IOException ex) {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
+            messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred while saving the search engine settings.", ex);
         }
     }
 
-    private void commit(MultivaluedMap<String, String> form) {
+    private void commit(MultivaluedMap<String, String> form, Messages messages) {
         // TODO Implement
 
-        Messages.getInstance().addMessages(Messages.Level.ERROR,
+        messages.addMessage(Messages.Level.ERROR,
             "Not implemented.");
     }
 }

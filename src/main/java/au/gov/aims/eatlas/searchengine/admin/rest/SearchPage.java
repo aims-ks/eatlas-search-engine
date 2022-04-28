@@ -23,10 +23,13 @@ import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import org.glassfish.jersey.server.mvc.Viewable;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.List;
@@ -38,11 +41,15 @@ public class SearchPage {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Viewable searchPage(
+        @Context HttpServletRequest httpRequest,
         @QueryParam("query") String query,
         @QueryParam("indexes") List<String> indexes,
         @QueryParam("hitsPerPage") Integer hitsPerPage,
         @QueryParam("page") Integer page
     ) {
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         if (hitsPerPage == null || hitsPerPage <= 0) {
@@ -58,7 +65,7 @@ public class SearchPage {
                 int start = (page-1) * hitsPerPage;
                 results = Search.paginationSearch(query, start, hitsPerPage, indexes, indexes);
             } catch(Exception ex) {
-                Messages.getInstance().addMessages(Messages.Level.ERROR,
+                messages.addMessage(Messages.Level.ERROR,
                     "An exception occurred during the search.", ex);
             }
         }
@@ -69,7 +76,7 @@ public class SearchPage {
         }
 
         Map<String, Object> model = new HashMap<>();
-        model.put("messages", Messages.getInstance());
+        model.put("messages", messages);
         model.put("config", config);
         model.put("query", query);
         model.put("page", page);

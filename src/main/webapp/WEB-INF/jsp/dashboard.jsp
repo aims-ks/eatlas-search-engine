@@ -64,7 +64,8 @@
                     </div>
 
                     <p>
-                        Check that the <i>Elastic Search URLs</i> are set properly in the <a href="<c:url value="/admin/settings" />">settings</a> page.
+                        Check that the <i>Elastic Search</i> service is running and the <i>Elastic Search URLs</i>
+                        are set properly in the <a href="<c:url value="/admin/settings" />">settings</a> page.
                     </p>
                 </div>
             </c:if>

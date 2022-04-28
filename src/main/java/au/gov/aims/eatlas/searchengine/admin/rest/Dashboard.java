@@ -23,11 +23,14 @@ import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import org.glassfish.jersey.server.mvc.Viewable;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.File;
@@ -40,12 +43,18 @@ public class Dashboard {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Viewable dashboard() {
+    public Viewable dashboard(
+        @Context HttpServletRequest httpRequest
+        //@Context SecurityContext securityContext
+    ) {
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         SearchEngineState state = SearchEngineState.getInstance();
 
         Map<String, Object> model = new HashMap<>();
-        model.put("messages", Messages.getInstance());
+        model.put("messages", messages);
         model.put("config", config);
 
         model.put("status", SearchUtils.getElasticSearchStatus());
@@ -66,39 +75,43 @@ public class Dashboard {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     public Viewable submit(
+        @Context HttpServletRequest httpRequest,
         MultivaluedMap<String, String> form
     ) {
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
         if (form.containsKey("reload-config-button")) {
-            this.reloadConfigFile();
+            this.reloadConfigFile(messages);
         }
 
         if (form.containsKey("reload-state-button")) {
-            this.reloadStateFile();
+            this.reloadStateFile(messages);
         }
 
-        return this.dashboard();
+        return this.dashboard(httpRequest);
     }
 
-    private void reloadConfigFile() {
+    private void reloadConfigFile(Messages messages) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         try {
             config.reload();
-            Messages.getInstance().addMessages(Messages.Level.INFO,
+            messages.addMessage(Messages.Level.INFO,
                     String.format("Application configuration file reloaded: %s", config.getConfigFile()));
         } catch (Exception ex) {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
+            messages.addMessage(Messages.Level.ERROR,
                 String.format("An exception occurred while reloading the configuration file: %s", config.getConfigFile()), ex);
         }
     }
 
-    private void reloadStateFile() {
+    private void reloadStateFile(Messages messages) {
         SearchEngineState state = SearchEngineState.getInstance();
         try {
             state.reload();
-            Messages.getInstance().addMessages(Messages.Level.INFO,
+            messages.addMessage(Messages.Level.INFO,
                     String.format("Application state file reloaded: %s", state.getStateFile()));
         } catch (Exception ex) {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
+            messages.addMessage(Messages.Level.ERROR,
                 String.format("An exception occurred while reloading the application state file: %s", state.getStateFile()), ex);
         }
     }

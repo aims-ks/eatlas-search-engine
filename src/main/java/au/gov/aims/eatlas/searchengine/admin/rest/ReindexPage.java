@@ -25,28 +25,35 @@ import au.gov.aims.eatlas.searchengine.rest.Index;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.json.JSONObject;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 @Path("/reindex")
 public class ReindexPage {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Viewable reindexPage() {
+    public Viewable reindexPage(
+        @Context HttpServletRequest httpRequest
+    ) {
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
-        model.put("messages", Messages.getInstance());
+        model.put("messages", messages);
         model.put("config", config);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/reindex.jsp
@@ -58,6 +65,7 @@ public class ReindexPage {
     @Path("/progress")
     @Produces({ MediaType.APPLICATION_JSON })
     public String reindexProgress(
+        @Context HttpServletRequest httpRequest,
         @QueryParam("index") String index
     ) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
@@ -84,71 +92,54 @@ public class ReindexPage {
         return jsonResponse.toString();
     }
 
-    static Map<String, Float> progressMap;
-    private float getFakeProgress(String index) {
-        if (progressMap == null) {
-            progressMap = new HashMap<>();
-        }
-
-        Random random = new Random();
-        Float progress = progressMap.get(index);
-        if (progress == null || progress >= 1) {
-            progress = 0f;
-        } else {
-            progress += (random.nextFloat() / 5);
-        }
-        if (progress > 1) {
-            progress = 1f;
-        }
-        progressMap.put(index, progress);
-
-        return progress;
-    }
-
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     public Viewable reindex(
+        @Context HttpServletRequest httpRequest,
         MultivaluedMap<String, String> form
     ) {
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
         if (form.containsKey("reindex-all-button")) {
-            this.reindexAll(true);
+            this.reindexAll(true, messages);
         } else if (form.containsKey("index-latest-all-button")) {
-            this.reindexAll(false);
+            this.reindexAll(false, messages);
         } else if (form.containsKey("refresh-count-button")) {
-            this.refreshCount();
+            this.refreshCount(messages);
 
         } else if (form.containsKey("reindex-button")) {
-            this.reindex(FormUtils.getFormStringValue(form, "reindex-button"), true);
+            this.reindex(FormUtils.getFormStringValue(form, "reindex-button"), true, messages);
         } else if (form.containsKey("index-latest-button")) {
-            this.reindex(FormUtils.getFormStringValue(form, "index-latest-button"), false);
+            this.reindex(FormUtils.getFormStringValue(form, "index-latest-button"), false, messages);
         }
 
-        return this.reindexPage();
+        return this.reindexPage(httpRequest);
     }
 
-    private void reindexAll(boolean fullHarvest) {
+    private void reindexAll(boolean fullHarvest, Messages messages) {
         try {
             Index.internalReindex(fullHarvest);
         } catch (Exception ex) {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
+            messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred during the indexation.", ex);
         }
     }
 
-    private void refreshCount() {
+    private void refreshCount(Messages messages) {
         try {
             SearchUtils.refreshIndexesCount();
         } catch (Exception ex) {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
+            messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred while refreshing the indexes count.", ex);
         }
     }
 
 
-    private void reindex(String index, boolean fullHarvest) {
+    private void reindex(String index, boolean fullHarvest, Messages messages) {
         if (index == null || index.isEmpty()) {
-            Messages.getInstance().addMessages(Messages.Level.ERROR,
+            messages.addMessage(Messages.Level.ERROR,
                 "No index provided for indexation.");
 
         } else {
@@ -158,7 +149,7 @@ public class ReindexPage {
             try {
                 Index.internalReindex(indexer, fullHarvest);
             } catch (Exception ex) {
-                Messages.getInstance().addMessages(Messages.Level.ERROR,
+                messages.addMessage(Messages.Level.ERROR,
                     String.format("An exception occurred during the indexation of index: %s", index), ex);
             }
         }

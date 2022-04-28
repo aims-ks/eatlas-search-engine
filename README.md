@@ -2,7 +2,6 @@ TODO:
 
 - Messages **PRIORITY**
   - Add "Clear messages" button
-  - Make messages session based (if that's not too hard)
 
 - Authentication (KeyCloak)
 

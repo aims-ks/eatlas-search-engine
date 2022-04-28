@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -26,27 +27,39 @@ import java.util.List;
 public class Messages {
     private List<Message> messages;
 
-    private static Messages instance;
+    private HttpSession session;
 
-    private Messages() {}
+    private Messages(HttpSession session) {
+        this.session = session;
+    }
 
-    public static Messages getInstance() {
-        if (instance == null) {
-            instance = new Messages();
+    public static Messages getInstance(HttpSession session) {
+        Messages messagesInstance = (Messages)session.getAttribute("messages");
+        if (messagesInstance == null) {
+            messagesInstance = new Messages(session);
+            session.setAttribute("messages", messagesInstance);
         }
-        return instance;
+
+        return messagesInstance;
     }
 
-    public void addMessages(Level level, String message) {
-        this.addMessages(level, message, null);
+    private void save() {
+        if (this.session != null) {
+            this.session.setAttribute("messages", this);
+        }
     }
 
-    public void addMessages(Level level, String message, Throwable exception) {
+    public void addMessage(Level level, String message) {
+        this.addMessage(level, message, null);
+    }
+
+    public void addMessage(Level level, String message, Throwable exception) {
         if (this.messages == null) {
             this.messages = Collections.synchronizedList(new ArrayList<>());
         }
 
         this.messages.add(new Message(level, message, exception));
+        this.save();
     }
 
     public List<Message> getMessages() {
