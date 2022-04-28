@@ -1,8 +1,5 @@
 TODO:
 
-- Messages **PRIORITY**
-  - Add "Clear messages" button
-
 - Authentication (KeyCloak)
 
 - Fix tests

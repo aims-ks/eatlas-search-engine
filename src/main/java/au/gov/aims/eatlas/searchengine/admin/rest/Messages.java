@@ -66,8 +66,11 @@ public class Messages {
         return this.messages;
     }
 
-    public void clear() {
+    public List<Message> clear() {
+        List<Message> deletedMessages = this.messages;
         this.messages = null;
+        this.save();
+        return deletedMessages;
     }
 
     public enum Level {
