@@ -77,8 +77,8 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
             .put("drupalDescriptionField", this.drupalDescriptionField);
     }
 
-    public DrupalMedia load(JSONObject json) {
-        return DrupalMedia.load(json);
+    public DrupalMedia load(JSONObject json, Messages messages) {
+        return DrupalMedia.load(json, messages);
     }
 
     /**
@@ -168,7 +168,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
 
                 for (int i=0; i<mediaFound; i++) {
                     JSONObject jsonApiMedia = jsonMedias.optJSONObject(i);
-                    DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia);
+                    DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia, messages);
 
                     drupalMedia.setTitle(DrupalMediaIndexer.getDrupalTitle(jsonApiMedia, DrupalMediaIndexer.this.drupalTitleField));
                     drupalMedia.setDocument(DrupalMediaIndexer.getDrupalDescription(jsonApiMedia, DrupalMediaIndexer.this.drupalDescriptionField));
@@ -332,7 +332,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         @Override
         public void run() {
             // Thumbnail (aka preview image)
-            URL baseUrl = DrupalMedia.getDrupalBaseUrl(this.jsonApiMedia);
+            URL baseUrl = DrupalMedia.getDrupalBaseUrl(this.jsonApiMedia, this.messages);
             String previewImageField = DrupalMediaIndexer.this.getSafeDrupalPreviewImageField();
             if (baseUrl != null && previewImageField != null) {
                 String previewImageUUID = DrupalMediaIndexer.getPreviewImageUUID(this.jsonApiMedia, previewImageField);
@@ -349,7 +349,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                         this.drupalMedia.setThumbnailUrl(thumbnailUrl);
 
                         // Create the thumbnail if it's missing or outdated
-                        DrupalMedia oldMedia = DrupalMediaIndexer.this.safeGet(this.client, DrupalMedia.class, this.drupalMedia.getId());
+                        DrupalMedia oldMedia = DrupalMediaIndexer.this.safeGet(this.client, DrupalMedia.class, this.drupalMedia.getId(), this.messages);
                         if (this.drupalMedia.isThumbnailOutdated(oldMedia, DrupalMediaIndexer.this.getSafeThumbnailTTL(), DrupalMediaIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
                             try {
                                 File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalMediaIndexer.this.getIndex(), this.drupalMedia.getId(), this.messages);

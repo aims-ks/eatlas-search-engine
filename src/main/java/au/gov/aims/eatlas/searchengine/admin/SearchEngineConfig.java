@@ -18,10 +18,10 @@
  */
 package au.gov.aims.eatlas.searchengine.admin;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -35,8 +35,6 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 
 public class SearchEngineConfig {
-    private static final Logger LOGGER = Logger.getLogger(SearchEngineConfig.class.getName());
-
     private static final long DEFAULT_GLOBAL_THUMBNAIL_TTL = 30; // TTL, in days
     private static final long DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL = 1; // TTL, in days
 
@@ -63,30 +61,30 @@ public class SearchEngineConfig {
     private String imageCacheDirectory;
     private List<AbstractIndexer> indexers;
 
-    private SearchEngineConfig(File configFile) throws IOException {
+    private SearchEngineConfig(File configFile, Messages messages) throws IOException {
         this.configFile = configFile;
-        this.reload();
+        this.reload(messages);
     }
 
     // For internal use (rest.WebApplication)
-    public static SearchEngineConfig createInstance(ServletContext context) throws IOException {
+    public static SearchEngineConfig createInstance(ServletContext context, Messages messages) throws IOException {
         return createInstance(
-                SearchEngineConfig.findConfigFile(context),
-                "eatlas_search_engine_default.json");
+                SearchEngineConfig.findConfigFile(context, messages),
+                "eatlas_search_engine_default.json", messages);
     }
 
     // For internal use (unit tests)
     public static SearchEngineConfig createInstance(
-            File configFile, String configFileResourcePath) throws IOException {
+            File configFile, String configFileResourcePath, Messages messages) throws IOException {
 
         File stateFile = SearchEngineConfig.findStateFile(configFile);
-        if (SearchEngineConfig.checkStateFile(stateFile, true)) {
+        if (SearchEngineConfig.checkStateFile(stateFile, true, messages)) {
             SearchEngineState.createInstance(stateFile);
         }
 
         instance = null;
-        if (SearchEngineConfig.checkConfigFile(configFile, configFileResourcePath, true)) {
-            instance = new SearchEngineConfig(configFile);
+        if (SearchEngineConfig.checkConfigFile(configFile, configFileResourcePath, true, messages)) {
+            instance = new SearchEngineConfig(configFile, messages);
         }
 
         return instance;
@@ -96,14 +94,14 @@ public class SearchEngineConfig {
         return instance;
     }
 
-    public void reload() throws IOException {
+    public void reload(Messages messages) throws IOException {
         this.indexers = null;
         this.elasticSearchUrls = null;
         if (this.configFile != null && this.configFile.canRead()) {
             // Reload config from config file
             String jsonStr = FileUtils.readFileToString(this.configFile, StandardCharsets.UTF_8);
             JSONObject json = (jsonStr == null || jsonStr.isEmpty()) ? new JSONObject() : new JSONObject(jsonStr);
-            this.loadJSON(json);
+            this.loadJSON(json, messages);
 
             // Set lastModified to config file last modified
             this.lastModified = this.configFile.lastModified();
@@ -217,14 +215,15 @@ public class SearchEngineConfig {
     }
 
     // Find config file
-    public static File findConfigFile(ServletContext context) {
+    public static File findConfigFile(ServletContext context, Messages messages) {
         if (context == null) {
             return null;
         }
 
         String configFilePathStr = SearchEngineConfig.getConfigFilePropertyValue(context);
         if (configFilePathStr == null) {
-            LOGGER.error(String.format("Configuration file not found. Setup the parameter: %s", getConfigFileProperty(context)));
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("Configuration file not found. Setup the parameter: %s", getConfigFileProperty(context)));
             return null;
         }
 
@@ -239,31 +238,34 @@ public class SearchEngineConfig {
         return new File(stateFilepath);
     }
 
-    private static boolean checkConfigFile(File configFile, String resourcePath, boolean create) {
-        return checkFile(configFile, resourcePath, create, "Configuration");
+    private static boolean checkConfigFile(File configFile, String resourcePath, boolean create, Messages messages) {
+        return checkFile(configFile, resourcePath, create, "Configuration", messages);
     }
-    private static boolean checkStateFile(File stateFile, boolean create) {
-        return checkFile(stateFile, null, create, "State");
+    private static boolean checkStateFile(File stateFile, boolean create, Messages messages) {
+        return checkFile(stateFile, null, create, "State", messages);
     }
-    private static boolean checkFile(File file, String resourcePath, boolean create, String fileType) {
+    private static boolean checkFile(File file, String resourcePath, boolean create, String fileType, Messages messages) {
         if (!file.exists()) {
             if (create) {
                 File parentDir = file.getParentFile();
                 if (!parentDir.exists() && !parentDir.mkdirs()) {
-                    LOGGER.error(String.format("%s file not found, parent directory does not exist and can not be created: %s",
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("%s file not found, parent directory does not exist and can not be created: %s",
                             fileType,
                             parentDir));
                     return false;
                 }
                 if (!parentDir.exists()) {
                     // Should not happen
-                    LOGGER.error(String.format("%s file not found, parent directory does not exist and can not be created: %s",
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("%s file not found, parent directory does not exist and can not be created: %s",
                             fileType,
                             parentDir));
                     return false;
                 }
                 if (!parentDir.isDirectory()) {
-                    LOGGER.error(String.format("%s file not found, parent directory exists but is not a directory: %s",
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("%s file not found, parent directory exists but is not a directory: %s",
                             fileType,
                             parentDir));
                     return false;
@@ -271,13 +273,15 @@ public class SearchEngineConfig {
                 if (resourcePath != null) {
                     try {
                         if (!createDefaultFile(file, resourcePath)) {
-                            LOGGER.error(String.format("%s file not found %s, default %s resource not found: %s",
+                            messages.addMessage(Messages.Level.ERROR,
+                                    String.format("%s file not found %s, default %s resource not found: %s",
                                     fileType, fileType,
                                     file, resourcePath));
                             return false;
                         }
                     } catch(Exception ex) {
-                        LOGGER.error(String.format("Error occurred while creating default %s file: %s",
+                        messages.addMessage(Messages.Level.ERROR,
+                                String.format("Error occurred while creating default %s file: %s",
                                 fileType,
                                 file), ex);
                         return false;
@@ -286,14 +290,16 @@ public class SearchEngineConfig {
                     try {
                         file.createNewFile();
                     } catch(Exception ex) {
-                        LOGGER.error(String.format("Error occurred while creating empty %s file: %s",
+                        messages.addMessage(Messages.Level.ERROR,
+                                String.format("Error occurred while creating empty %s file: %s",
                                 fileType,
                                 file), ex);
                         return false;
                     }
                 }
             } else {
-                LOGGER.error(String.format("%s file not found: %s",
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("%s file not found: %s",
                         fileType,
                         file));
                 return false;
@@ -301,33 +307,38 @@ public class SearchEngineConfig {
         }
 
         if (!file.exists()) {
-            LOGGER.error(String.format("%s file not found and can't be created: %s",
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("%s file not found and can't be created: %s",
                     fileType,
                     file));
             return false;
         }
 
         if (file.isDirectory()) {
-            LOGGER.error(String.format("%s file exists but it's a directory: %s",
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("%s file exists but it's a directory: %s",
                     fileType,
                     file));
             return false;
         }
         if (!file.isFile()) {
-            LOGGER.error(String.format("%s file exists but it's not a regular file: %s",
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("%s file exists but it's not a regular file: %s",
                     fileType,
                     file));
             return false;
         }
         if (!file.canRead()) {
-            LOGGER.error(String.format("%s file exists but it's not readable: %s",
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("%s file exists but it's not readable: %s",
                     fileType,
                     file));
             return false;
         }
         if (!file.canWrite()) {
             // Not writable? Throw a warning and let the add run in read only mode.
-            LOGGER.warn(String.format("%s file exists but it's not writable: %s",
+            messages.addMessage(Messages.Level.WARNING,
+                    String.format("%s file exists but it's not writable: %s",
                     fileType,
                     file));
         }
@@ -397,7 +408,7 @@ public class SearchEngineConfig {
             .put("indexers", jsonIndexers);
     }
 
-    private void loadJSON(JSONObject json) {
+    private void loadJSON(JSONObject json, Messages messages) {
         this.globalThumbnailTTL = json.optLong("globalThumbnailTTL", DEFAULT_GLOBAL_THUMBNAIL_TTL);
         this.globalBrokenThumbnailTTL = json.optLong("globalBrokenThumbnailTTL", DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL);
         this.imageCacheDirectory = json.optString("imageCacheDirectory", null);
@@ -416,7 +427,7 @@ public class SearchEngineConfig {
         if (jsonIndexers != null) {
             for (int i=0; i<jsonIndexers.length(); i++) {
                 JSONObject jsonIndexer = jsonIndexers.optJSONObject(i);
-                AbstractIndexer indexer = AbstractIndexer.fromJSON(jsonIndexer);
+                AbstractIndexer indexer = AbstractIndexer.fromJSON(jsonIndexer, messages);
                 if (indexer != null) {
                     this.addIndexer(indexer);
                 }

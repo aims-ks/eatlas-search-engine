@@ -42,7 +42,6 @@ import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.apache.log4j.Logger;
 import org.elasticsearch.client.RestClient;
 import org.json.JSONObject;
 
@@ -50,10 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
-// TODO Move search outside. Search should be allowed to be run against any number of indexes at once
 public abstract class AbstractIndexer<E extends Entity> {
-    private static final Logger LOGGER = Logger.getLogger(AbstractIndexer.class.getName());
-
     private boolean enabled;
     private String index;
     private Long thumbnailTTL; // TTL, in days
@@ -69,7 +65,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     protected abstract void internalIndex(SearchClient client, Long lastIndexed, Messages messages);
-    public abstract Entity load(JSONObject json);
+    public abstract Entity load(JSONObject json, Messages messages);
     public abstract JSONObject toJSON();
 
     public boolean supportsIndexLatest() {
@@ -136,20 +132,22 @@ public abstract class AbstractIndexer<E extends Entity> {
             .put("brokenThumbnailTTL", this.brokenThumbnailTTL);
     }
 
-    public static AbstractIndexer fromJSON(JSONObject json) {
+    public static AbstractIndexer fromJSON(JSONObject json, Messages messages) {
         if (json == null) {
             return null;
         }
 
         String type = json.optString("type");
         if (type == null) {
-            LOGGER.warn(String.format("Invalid indexer JSON Object. Property \"type\" missing.%n%s", json.toString(2)));
+            messages.addMessage(Messages.Level.WARNING,
+                    String.format("Invalid indexer JSON Object. Property \"type\" missing.%n%s", json.toString(2)));
             return null;
         }
 
         String index = json.optString("index", null);
         if (index == null) {
-            LOGGER.warn(String.format("Invalid indexer JSON Object. Property \"index\" missing.%n%s", json.toString(2)));
+            messages.addMessage(Messages.Level.WARNING,
+                    String.format("Invalid indexer JSON Object. Property \"index\" missing.%n%s", json.toString(2)));
             return null;
         }
 
@@ -179,7 +177,8 @@ public abstract class AbstractIndexer<E extends Entity> {
                 break;
 
             default:
-                LOGGER.warn(String.format("Unsupported indexer type: %s%n%s", type, json.toString(2)));
+                messages.addMessage(Messages.Level.WARNING,
+                        String.format("Unsupported indexer type: %s%n%s", type, json.toString(2)));
                 return null;
         }
 
@@ -253,9 +252,10 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     // Only called with complete re-index
     public void cleanUp(SearchClient client, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName, Messages messages) {
-        long deletedIndexedItems = this.deleteOldIndexedItems(client, lastIndexed);
+        long deletedIndexedItems = this.deleteOldIndexedItems(client, lastIndexed, messages);
         if (deletedIndexedItems > 0) {
-            LOGGER.info(String.format("Deleted %d indexed %s",
+            messages.addMessage(Messages.Level.INFO,
+                    String.format("Deleted %d indexed %s",
                     deletedIndexedItems, entityDisplayName));
         }
 
@@ -267,17 +267,19 @@ public abstract class AbstractIndexer<E extends Entity> {
         try {
             client.refresh(this.index);
         } catch(Exception ex) {
-            LOGGER.error(String.format("Exception occurred while refreshing the search index: %s", this.index), ex);
+            messages.addMessage(Messages.Level.WARNING,
+                    String.format("Exception occurred while refreshing the search index: %s", this.index), ex);
         }
 
         long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails, messages);
         if (deletedThumbnails > 0) {
-            LOGGER.info(String.format("Deleted %d cached thumbnail for %s",
+            messages.addMessage(Messages.Level.INFO,
+                    String.format("Deleted %d cached thumbnail for %s",
                     deletedThumbnails, entityDisplayName));
         }
     }
 
-    private long deleteOldIndexedItems(SearchClient client, long lastIndexed) {
+    private long deleteOldIndexedItems(SearchClient client, long lastIndexed, Messages messages) {
         DeleteByQueryRequest deleteRequest = this.getDeleteOldItemsRequest(lastIndexed);
 
         // Delete old records
@@ -289,7 +291,8 @@ public abstract class AbstractIndexer<E extends Entity> {
                 deleted = response.deleted();
             }
         } catch(Exception ex) {
-            LOGGER.error(String.format("Exception occurred while deleting old indexed entities in search index: %s", this.index), ex);
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("Exception occurred while deleting old indexed entities in search index: %s", this.index), ex);
         }
 
         return deleted == null ? 0L : deleted;
@@ -300,25 +303,26 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         // Loop through each thumbnail files and delete the ones that are unused
         if (cacheDirectory != null && cacheDirectory.isDirectory()) {
-            return this.deleteOldThumbnailsRecursive(cacheDirectory, usedThumbnails);
+            return this.deleteOldThumbnailsRecursive(cacheDirectory, usedThumbnails, messages);
         }
 
         return 0;
     }
-    private long deleteOldThumbnailsRecursive(File dir, Set<String> usedThumbnails) {
+    private long deleteOldThumbnailsRecursive(File dir, Set<String> usedThumbnails, Messages messages) {
         long deleted = 0;
         File[] files = dir.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    deleted += deleteOldThumbnailsRecursive(file, usedThumbnails);
+                    deleted += deleteOldThumbnailsRecursive(file, usedThumbnails, messages);
                 } else if (file.isFile()) {
                     String thumbnailName = file.getName();
                     if (!usedThumbnails.contains(thumbnailName)) {
                         if (file.delete()) {
                             deleted++;
                         } else {
-                            LOGGER.error(String.format("Can't delete old thumbnail: %s",
+                            messages.addMessage(Messages.Level.ERROR,
+                                    String.format("Can't delete old thumbnail: %s",
                                     file.toString()));
                         }
                     }
@@ -333,12 +337,13 @@ public abstract class AbstractIndexer<E extends Entity> {
         return AbstractIndexer.get(client, entityClass, this.index, id);
     }
 
-    public E safeGet(SearchClient client, Class<E> entityClass, String id) {
+    public E safeGet(SearchClient client, Class<E> entityClass, String id, Messages messages) {
         try {
             return this.get(client, entityClass, id);
         } catch(Exception ex) {
             // Should not happen
-            LOGGER.warn(String.format("Exception occurred while looking for item ID \"%s\" in the search index.",
+            messages.addMessage(Messages.Level.WARNING,
+                    String.format("Exception occurred while looking for item ID \"%s\" in the search index.",
                     id), ex);
         }
 

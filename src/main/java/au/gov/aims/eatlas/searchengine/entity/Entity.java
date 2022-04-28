@@ -22,7 +22,6 @@ import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -35,7 +34,6 @@ import java.net.URL;
 
 @JsonDeserialize(using = EntityDeserializer.class)
 public abstract class Entity {
-    private static final Logger LOGGER = Logger.getLogger(DrupalNode.class.getName());
     private static final long DAY_MS = 24 * 60 * 60 * 1000;
 
     private String index;
@@ -233,7 +231,8 @@ public abstract class Entity {
         if (index != null && cachedThumbnailFilename != null) {
             File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename, messages);
             if (cachedFile != null && cachedFile.exists() && !cachedFile.delete()) {
-                LOGGER.error(String.format("Cached image can not be deleted: %s", cachedFile.toString()));
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Cached image can not be deleted: %s", cachedFile.toString()));
             }
         }
     }
@@ -258,7 +257,7 @@ public abstract class Entity {
             .put("langcode", this.getLangcode());
     }
 
-    protected void loadJSON(JSONObject json) {
+    protected void loadJSON(JSONObject json, Messages messages) {
         if (json != null) {
             this.setId(json.optString("id", null));
             this.setIndex(json.optString("index", null));
@@ -288,7 +287,8 @@ public abstract class Entity {
                 try {
                     this.setLink(new URL(linkStr));
                 } catch(Exception ex) {
-                    LOGGER.error(String.format("Invalid index entity URL found: %s", linkStr), ex);
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("Invalid index entity URL found: %s", linkStr), ex);
                 }
             }
 
@@ -297,7 +297,8 @@ public abstract class Entity {
                 try {
                     this.setThumbnailUrl(new URL(thumbnailUrlStr));
                 } catch(Exception ex) {
-                    LOGGER.error(String.format("Invalid index entity thumbnail URL found: %s", thumbnailUrlStr), ex);
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("Invalid index entity thumbnail URL found: %s", thumbnailUrlStr), ex);
                 }
             }
         }

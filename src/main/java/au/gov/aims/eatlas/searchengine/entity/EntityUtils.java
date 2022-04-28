@@ -61,7 +61,7 @@ public class EntityUtils {
 
         return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages)
                     .data(dataMap)
-                    .method(Connection.Method.POST), url, messages)
+                    .method(Connection.Method.POST), url)
                 .body();
     }
 
@@ -95,10 +95,10 @@ public class EntityUtils {
     }
 
     public static Connection.Response jsoupExecuteWithRetry(String url, Messages messages) throws IOException, InterruptedException {
-        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages), url, messages);
+        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages), url);
     }
 
-    private static Connection.Response jsoupExecuteWithRetry(Connection jsoupConnection, String url, Messages messages) throws IOException, InterruptedException {
+    private static Connection.Response jsoupExecuteWithRetry(Connection jsoupConnection, String url) throws IOException, InterruptedException {
         IOException lastException = null;
         int delay = JSOUP_RETRY_INITIAL_DELAY;
 
@@ -108,14 +108,14 @@ public class EntityUtils {
             } catch (IOException ex) {
                 // The following IOException (and maybe more) may occur when the computer lose network connection:
                 //     SocketTimeoutException, ConnectException, UnknownHostException
-                messages.addMessage(Messages.Level.WARNING, String.format("Connection timed out while requesting URL: %s%nWait for %d seconds before re-trying [%d/%d].",
+                LOGGER.debug(String.format("Connection timed out while requesting URL: %s%nWait for %d seconds before re-trying [%d/%d].",
                         url, delay, i+1, JSOUP_RETRY));
                 lastException = ex;
                 Thread.sleep(delay * 1000L);
                 delay *= 2;
             }
         }
-        messages.addMessage(Messages.Level.ERROR, String.format("Connection timed out %d times while requesting URL: %s", JSOUP_RETRY, url));
+        LOGGER.debug(String.format("Connection timed out %d times while requesting URL: %s", JSOUP_RETRY, url));
 
         throw lastException;
     }

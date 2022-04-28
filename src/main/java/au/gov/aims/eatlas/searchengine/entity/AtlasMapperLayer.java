@@ -18,15 +18,13 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import org.apache.log4j.Logger;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.URL;
 
 public class AtlasMapperLayer extends Entity {
-    private static final Logger LOGGER = Logger.getLogger(AtlasMapperLayer.class.getName());
-
     private String dataSourceName;
 
     private AtlasMapperLayer() {}
@@ -96,7 +94,7 @@ public class AtlasMapperLayer extends Entity {
      *             "status": "OKAY"
      *         }
      */
-    public AtlasMapperLayer(String index, String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig) {
+    public AtlasMapperLayer(String index, String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig, Messages messages) {
         this.setId(atlasMapperLayerId);
         this.setIndex(index);
 
@@ -114,12 +112,12 @@ public class AtlasMapperLayer extends Entity {
 
             this.setTitle(jsonLayer.optString("title", null));
             this.setDocument(document);
-            this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig));
+            this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig, messages));
             this.setLangcode("en");
         }
     }
 
-    private URL getLayerMapUrl(String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig) {
+    private URL getLayerMapUrl(String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig, Messages messages) {
         // Get the background layer ID
 
         // URL to a preview map with the layer zoom to its bbox.
@@ -156,7 +154,8 @@ public class AtlasMapperLayer extends Entity {
         try {
             return new URL(linkStr);
         } catch(Exception ex) {
-            LOGGER.error(String.format("Invalid layer URL: %s", linkStr), ex);
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("Invalid layer URL: %s", linkStr), ex);
         }
 
         return null;
@@ -297,9 +296,9 @@ public class AtlasMapperLayer extends Entity {
         return null;
     }
 
-    public static AtlasMapperLayer load(JSONObject json) {
+    public static AtlasMapperLayer load(JSONObject json, Messages messages) {
         AtlasMapperLayer layer = new AtlasMapperLayer();
-        layer.loadJSON(json);
+        layer.loadJSON(json, messages);
         layer.dataSourceName = json.optString("datasource", null);
 
         return layer;

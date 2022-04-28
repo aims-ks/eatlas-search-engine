@@ -33,8 +33,6 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.apache.http.HttpHost;
-import org.apache.log4j.Logger;
 import org.elasticsearch.client.RestClient;
 
 import java.io.File;
@@ -43,14 +41,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
-
     public static void main(String... args) throws Exception {
         boolean fullHarvest = true;
 
+        Messages messages = Messages.getInstance(null);
+
         File configFile = new File("/var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/eatlas_search_engine.json");
 
-        SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json");
+        SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json", messages);
 
         // Re-index everything
         //Index.internalReindex(fullHarvest);
@@ -64,19 +62,19 @@ public class Main {
         // TODO Implement UI - Configure, re-index button, try search
 
         DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
-        //Index.internalReindex(drupalNodeIndexer, fullHarvest);
+        //Index.internalReindex(drupalNodeIndexer, fullHarvest, messages);
 
         DrupalMediaIndexer drupalMediaIndexer = (DrupalMediaIndexer)config.getIndexer("eatlas_image");
-        //Index.internalReindex(drupalMediaIndexer, fullHarvest);
+        //Index.internalReindex(drupalMediaIndexer, fullHarvest, messages);
 
         DrupalExternalLinkNodeIndexer drupalExternalLinkNodeIndexer = (DrupalExternalLinkNodeIndexer)config.getIndexer("eatlas_external_link");
-        //Index.internalReindex(drupalExternalLinkNodeIndexer, fullHarvest);
+        //Index.internalReindex(drupalExternalLinkNodeIndexer, fullHarvest, messages);
 
         GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
-        //Index.internalReindex(geoNetworkIndexer, fullHarvest);
+        //Index.internalReindex(geoNetworkIndexer, fullHarvest, messages);
 
         AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-        Index.internalReindex(atlasMapperIndexer, fullHarvest, Messages.getInstance(null));
+        Index.internalReindex(atlasMapperIndexer, fullHarvest, messages);
 
 
         //Main.testElasticsearchClient();
@@ -93,7 +91,7 @@ public class Main {
         //idx.add("eatlas_metadata");
         //idx.add("eatlas_layer");
 
-        SearchResults results = Search.paginationSearch(searchQuery, 0, 100, idx, null);
+        SearchResults results = Search.paginationSearch(searchQuery, 0, 100, idx, null, messages);
         System.out.println(results.toJSON().toString(2));
 
     }

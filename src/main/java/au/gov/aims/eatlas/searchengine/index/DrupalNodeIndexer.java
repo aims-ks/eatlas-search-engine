@@ -71,8 +71,8 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
             .put("drupalPreviewImageField", this.drupalPreviewImageField);
     }
 
-    public DrupalNode load(JSONObject json) {
-        return DrupalNode.load(json);
+    public DrupalNode load(JSONObject json, Messages messages) {
+        return DrupalNode.load(json, messages);
     }
 
     /**
@@ -151,7 +151,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
                 for (int i=0; i<nodeFound; i++) {
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
-                    DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode);
+                    DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode, messages);
 
                     DrupalNodeIndexer.DrupalNodeIndexerThread thread = new DrupalNodeIndexer.DrupalNodeIndexerThread(
                         client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
@@ -278,7 +278,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         @Override
         public void run() {
             // Thumbnail (aka preview image)
-            URL baseUrl = DrupalNode.getDrupalBaseUrl(this.jsonApiNode);
+            URL baseUrl = DrupalNode.getDrupalBaseUrl(this.jsonApiNode, this.messages);
             if (baseUrl != null && DrupalNodeIndexer.this.drupalPreviewImageField != null) {
                 String previewImageUUID = DrupalNodeIndexer.getPreviewImageUUID(this.jsonApiNode, DrupalNodeIndexer.this.drupalPreviewImageField);
                 if (previewImageUUID != null) {
@@ -288,13 +288,13 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                         try {
                             thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
                         } catch(Exception ex) {
-                            messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
+                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
                                     this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
                         }
                         this.drupalNode.setThumbnailUrl(thumbnailUrl);
 
                         // Create the thumbnail if it's missing or outdated
-                        DrupalNode oldNode = DrupalNodeIndexer.this.safeGet(this.client, DrupalNode.class, this.drupalNode.getId());
+                        DrupalNode oldNode = DrupalNodeIndexer.this.safeGet(this.client, DrupalNode.class, this.drupalNode.getId(), this.messages);
                         if (this.drupalNode.isThumbnailOutdated(oldNode, DrupalNodeIndexer.this.getSafeThumbnailTTL(), DrupalNodeIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
                             try {
                                 File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalNodeIndexer.this.getIndex(), this.drupalNode.getId(), this.messages);
@@ -302,7 +302,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                                     this.drupalNode.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                                 }
                             } catch(Exception ex) {
-                                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
+                                this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
                                         this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
                             }
                             this.drupalNode.setThumbnailLastIndexed(System.currentTimeMillis());
@@ -330,7 +330,8 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                         this.drupalNode.getNid(),
                         indexResponse.result()));
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
+                this.messages.addMessage(Messages.Level.WARNING,
+                        String.format("Exception occurred while indexing a Drupal node: %s, node type: %s", this.drupalNode.getId(), DrupalNodeIndexer.this.drupalNodeType), ex);
             }
 
             DrupalNodeIndexer.this.incrementCompleted();

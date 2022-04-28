@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import org.apache.log4j.Logger;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -27,18 +27,16 @@ import org.json.JSONObject;
 import java.net.URL;
 
 public class DrupalNode extends Entity {
-    private static final Logger LOGGER = Logger.getLogger(DrupalNode.class.getName());
-
     private Integer nid;
 
     protected DrupalNode() {}
 
     // Load from Drupal JSON:API output
-    public DrupalNode(String index, JSONObject jsonApiNode) {
+    public DrupalNode(String index, JSONObject jsonApiNode, Messages messages) {
         this.setIndex(index);
 
         if (jsonApiNode != null) {
-            URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode);
+            URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiNode, messages);
 
             // UUID
             this.setId(jsonApiNode.optString("id", null));
@@ -67,7 +65,8 @@ public class DrupalNode extends Entity {
                 try {
                     this.setLink(new URL(baseUrl, nodeRelativePath));
                 } catch(Exception ex) {
-                    LOGGER.error(String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
                 }
             }
 
@@ -81,7 +80,7 @@ public class DrupalNode extends Entity {
         }
     }
 
-    public static URL getDrupalBaseUrl(JSONObject jsonApiNode) {
+    public static URL getDrupalBaseUrl(JSONObject jsonApiNode, Messages messages) {
         JSONObject jsonLinks = jsonApiNode == null ? null : jsonApiNode.optJSONObject("links");
         JSONObject jsonLinksSelf = jsonLinks == null ? null : jsonLinks.optJSONObject("self");
         String linksSelfHref = jsonLinksSelf == null ? null : jsonLinksSelf.optString("href", null);
@@ -91,7 +90,8 @@ public class DrupalNode extends Entity {
             try {
                 linksSelfUrl = new URL(linksSelfHref);
             } catch(Exception ex) {
-                LOGGER.error(String.format("Invalid URL found in links.self.href: %s", linksSelfHref), ex);
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Invalid URL found in links.self.href: %s", linksSelfHref), ex);
             }
         }
 
@@ -99,7 +99,8 @@ public class DrupalNode extends Entity {
             try {
                 return new URL(linksSelfUrl.getProtocol(), linksSelfUrl.getHost(), linksSelfUrl.getPort(), "/");
             } catch(Exception ex) {
-                LOGGER.error(String.format("Can not get root URL from links.self.href: %s", linksSelfUrl), ex);
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Can not get root URL from links.self.href: %s", linksSelfUrl), ex);
             }
         }
 
@@ -132,9 +133,9 @@ public class DrupalNode extends Entity {
         this.nid = nid;
     }
 
-    public static DrupalNode load(JSONObject json) {
+    public static DrupalNode load(JSONObject json, Messages messages) {
         DrupalNode node = new DrupalNode();
-        node.loadJSON(json);
+        node.loadJSON(json, messages);
         String nidStr = json.optString("nid", null);
         if (nidStr != null && !nidStr.isEmpty()) {
             node.nid = Integer.parseInt(nidStr);

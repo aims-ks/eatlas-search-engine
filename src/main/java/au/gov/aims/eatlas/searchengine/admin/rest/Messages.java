@@ -18,6 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import org.apache.log4j.Logger;
+
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +27,8 @@ import java.util.Date;
 import java.util.List;
 
 public class Messages {
+    private static final Logger LOGGER = Logger.getLogger(Messages.class.getName());
+
     private List<Message> messages;
 
     private HttpSession session;
@@ -58,12 +62,30 @@ public class Messages {
     }
 
     public void addMessage(Level level, String message, Throwable exception) {
-        if (this.messages == null) {
-            this.messages = Collections.synchronizedList(new ArrayList<>());
-        }
+        if (this.session != null) {
+            if (this.messages == null) {
+                this.messages = Collections.synchronizedList(new ArrayList<>());
+            }
 
-        this.messages.add(new Message(level, message, exception));
-        this.save();
+            this.messages.add(new Message(level, message, exception));
+            this.save();
+        } else {
+            // There is no session. No one will ever see those messages. Better display them in the console.
+            switch (level) {
+                case INFO:
+                    LOGGER.info(message, exception);
+                    break;
+
+                case WARNING:
+                    LOGGER.warn(message, exception);
+                    break;
+
+                case ERROR:
+                default:
+                    LOGGER.error(message, exception);
+                    break;
+            }
+        }
     }
 
     public List<Message> getMessages() {

@@ -70,8 +70,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             .put("atlasMapperVersion", this.atlasMapperVersion);
     }
 
-    public AtlasMapperLayer load(JSONObject json) {
-        return AtlasMapperLayer.load(json);
+    public AtlasMapperLayer load(JSONObject json, Messages messages) {
+        return AtlasMapperLayer.load(json, messages);
     }
 
     /**
@@ -102,7 +102,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                     mainUrlStr), ex);
             return;
         }
-        Long mainLastModified = IndexUtils.parseHttpLastModifiedHeader(mainResponse);
+        Long mainLastModified = IndexUtils.parseHttpLastModifiedHeader(mainResponse, messages);
 
         // Get the list of layers
         // "https://maps.eatlas.org.au/config/layers.json"
@@ -116,7 +116,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                     layersUrlStr), ex);
             return;
         }
-        Long layersLastModified = IndexUtils.parseHttpLastModifiedHeader(layersResponse);
+        Long layersLastModified = IndexUtils.parseHttpLastModifiedHeader(layersResponse, messages);
 
         if (lastHarvested != null) {
             // If a file have no last modified in the header,
@@ -392,10 +392,10 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             JSONObject jsonLayer = this.jsonLayersConfig.optJSONObject(this.atlasMapperLayerId);
 
             AtlasMapperLayer layerEntity = new AtlasMapperLayer(
-                    AtlasMapperIndexer.this.getIndex(), AtlasMapperIndexer.this.atlasMapperClientUrl, this.atlasMapperLayerId, jsonLayer, this.jsonMainConfig);
+                    AtlasMapperIndexer.this.getIndex(), AtlasMapperIndexer.this.atlasMapperClientUrl, this.atlasMapperLayerId, jsonLayer, this.jsonMainConfig, this.messages);
 
             // Create the thumbnail if it's missing or outdated
-            AtlasMapperLayer oldLayer = AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId);
+            AtlasMapperLayer oldLayer = AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId, this.messages);
             if (layerEntity.isThumbnailOutdated(oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(), AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
                 try {
                     File cachedThumbnailFile = this.createLayerThumbnail(jsonLayer);

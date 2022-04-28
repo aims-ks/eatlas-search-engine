@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import org.apache.log4j.Logger;
 
@@ -31,8 +32,10 @@ public class WebApplication extends Application {
     private static final Logger LOGGER = Logger.getLogger(WebApplication.class.getName());
 
     public WebApplication(@Context ServletContext servletContext) {
+        Messages messages = Messages.getInstance(null);
+
         try {
-            SearchEngineConfig.createInstance(servletContext);
+            SearchEngineConfig.createInstance(servletContext, messages);
             try {
                 SearchUtils.deleteOrphanIndexes();
             } catch (IOException ex) {

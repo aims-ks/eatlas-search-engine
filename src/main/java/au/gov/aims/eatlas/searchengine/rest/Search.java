@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
@@ -40,12 +41,10 @@ import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.apache.http.HttpHost;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.elasticsearch.client.RestClient;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -61,23 +60,20 @@ import java.util.List;
 
 @Path("/search/v1")
 public class Search {
-    private static final Logger LOGGER = Logger.getLogger(Search.class.getName());
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response search(
-            @Context HttpServletRequest servletRequest,
+            @Context HttpServletRequest httpRequest,
             @QueryParam("q") String q,
             @QueryParam("start") Integer start,
             @QueryParam("hits") Integer hits,
             @QueryParam("idx") List<String> idx, // List of indexes used for the summary
             @QueryParam("fidx") List<String> fidx // List of indexes to filter the search results (optional)
     ) {
-        LOGGER.log(Level.WARN, "q: " + q);
-        LOGGER.log(Level.WARN, "start: " + start);
-        LOGGER.log(Level.WARN, "hits: " + hits);
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
 
-        // Disable cache DURING DEVELOPMENT!
         CacheControl noCache = new CacheControl();
         noCache.setNoCache(true);
 
@@ -99,11 +95,11 @@ public class Search {
 
         SearchResults results = null;
         try {
-            results = paginationSearch(q, start, hits, idx, fidx);
+            results = paginationSearch(q, start, hits, idx, fidx, messages);
 
         } catch(Exception ex) {
             String errorMessageStr = String.format("An exception occurred during the search: %s", ex.getMessage());
-            LOGGER.log(Level.ERROR, errorMessageStr, ex);
+            messages.addMessage(Messages.Level.ERROR, errorMessageStr, ex);
             Response.Status status = Response.Status.INTERNAL_SERVER_ERROR;
             ErrorMessage errorMessage = new ErrorMessage()
                 .setErrorMessage(errorMessageStr)
@@ -112,7 +108,6 @@ public class Search {
         }
 
         String responseTxt = results.toString();
-        LOGGER.log(Level.DEBUG, responseTxt);
 
         // Return the JSON array with a OK status.
         return Response.ok(responseTxt).cacheControl(noCache).build();
@@ -122,21 +117,10 @@ public class Search {
             String q,
             Integer start,
             Integer hits,
-            List<String> idx, // List of indexes used for the summary
-            List<String> fidx // List of indexes to filter the search results (optional)
+            List<String> idx,  // List of indexes used for the summary
+            List<String> fidx, // List of indexes to filter the search results (optional)
+            Messages messages
     ) throws IOException {
-
-        if (idx != null && !idx.isEmpty()) {
-            for (int i=0; i<idx.size(); i++) {
-                LOGGER.log(Level.WARN, "idx["+i+"]: " + idx.get(i));
-            }
-        }
-        if (fidx != null && !fidx.isEmpty()) {
-            for (int i=0; i<fidx.size(); i++) {
-                LOGGER.log(Level.WARN, "fidx["+i+"]: " + fidx.get(i));
-            }
-        }
-
         if (
             q == null || q.isEmpty() ||
             idx == null || idx.isEmpty()
@@ -170,9 +154,9 @@ public class Search {
 
             List<SearchResult> searchResults;
             if (fidx != null && !fidx.isEmpty()) {
-                searchResults = Search.search(client, q, start, hits, fidx.toArray(new String[0]));
+                searchResults = Search.search(client, messages, q, start, hits, fidx.toArray(new String[0]));
             } else {
-                searchResults = Search.search(client, q, start, hits, idxArray);
+                searchResults = Search.search(client, messages, q, start, hits, idxArray);
             }
 
             results.setSearchResults(searchResults);
@@ -250,7 +234,7 @@ public class Search {
      *
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
-    public static List<SearchResult> search(SearchClient client, String needle, int from, int size, String ... indexes)
+    public static List<SearchResult> search(SearchClient client, Messages messages, String needle, int from, int size, String ... indexes)
             throws IOException {
 
         SearchResponse<Entity> response = client.search(Search.getSearchRequest(needle, from, size, indexes));
@@ -273,7 +257,8 @@ public class Search {
                     .setEntity(entity)
                 );
             } else {
-                LOGGER.error(String.format("Search entity is null: %s", hit));
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Search entity is null: %s", hit));
             }
         }
 

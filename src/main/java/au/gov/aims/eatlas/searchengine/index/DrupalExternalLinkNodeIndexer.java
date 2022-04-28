@@ -77,8 +77,8 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
             .put("drupalContentOverwriteField", this.drupalContentOverwriteField);
     }
 
-    public ExternalLink load(JSONObject json) {
-        return ExternalLink.load(json);
+    public ExternalLink load(JSONObject json, Messages messages) {
+        return ExternalLink.load(json, messages);
     }
 
     /**
@@ -167,7 +167,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
 
                 for (int i=0; i<nodeFound; i++) {
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
-                    ExternalLink externalLink = new ExternalLink(this.getIndex(), jsonApiNode);
+                    ExternalLink externalLink = new ExternalLink(this.getIndex(), jsonApiNode, messages);
 
                     DrupalExternalLinkNodeIndexerThread thread = new DrupalExternalLinkNodeIndexerThread(
                         client, messages, externalLink, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
@@ -362,7 +362,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                         this.externalLink.setLink(externalLink);
 
                         // Thumbnail (aka preview image)
-                        URL baseUrl = ExternalLink.getDrupalBaseUrl(this.jsonApiNode);
+                        URL baseUrl = ExternalLink.getDrupalBaseUrl(this.jsonApiNode, this.messages);
                         if (baseUrl != null && DrupalExternalLinkNodeIndexer.this.drupalPreviewImageField != null) {
                             String previewImageUUID = DrupalExternalLinkNodeIndexer.getPreviewImageUUID(this.jsonApiNode, DrupalExternalLinkNodeIndexer.this.drupalPreviewImageField);
                             if (previewImageUUID != null) {
@@ -378,7 +378,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                                     this.externalLink.setThumbnailUrl(thumbnailUrl);
 
                                     // Create the thumbnail if it's missing or outdated
-                                    ExternalLink oldExternalLink = DrupalExternalLinkNodeIndexer.this.safeGet(this.client, ExternalLink.class, this.externalLink.getId());
+                                    ExternalLink oldExternalLink = DrupalExternalLinkNodeIndexer.this.safeGet(this.client, ExternalLink.class, this.externalLink.getId(), this.messages);
                                     if (this.externalLink.isThumbnailOutdated(oldExternalLink, DrupalExternalLinkNodeIndexer.this.getSafeThumbnailTTL(), DrupalExternalLinkNodeIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
                                         try {
                                             File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalExternalLinkNodeIndexer.this.getIndex(), this.externalLink.getId(), this.messages);

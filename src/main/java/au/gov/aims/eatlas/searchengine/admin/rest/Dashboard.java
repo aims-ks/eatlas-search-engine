@@ -95,7 +95,7 @@ public class Dashboard {
     private void reloadConfigFile(Messages messages) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         try {
-            config.reload();
+            config.reload(messages);
             messages.addMessage(Messages.Level.INFO,
                     String.format("Application configuration file reloaded: %s", config.getConfigFile()));
         } catch (Exception ex) {

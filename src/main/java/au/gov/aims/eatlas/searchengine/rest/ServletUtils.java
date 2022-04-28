@@ -21,7 +21,6 @@
 
 package au.gov.aims.eatlas.searchengine.rest;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -62,7 +61,7 @@ public class ServletUtils {
                 try {
                     responseStream.close();
                 } catch (Exception ex) {
-                    LOGGER.log(Level.WARN, String.format("Cant close the FileInputStream: %s", ServletUtils.getExceptionMessage(ex)), ex);
+                    LOGGER.debug(String.format("Cant close the FileInputStream: %s", ServletUtils.getExceptionMessage(ex)), ex);
                 }
             }
         }
@@ -85,7 +84,7 @@ public class ServletUtils {
                 try {
                     responseStream.close();
                 } catch (Exception ex) {
-                    LOGGER.log(Level.WARN, String.format("Cant close the ByteArrayInputStream: %s", ServletUtils.getExceptionMessage(ex)), ex);
+                    LOGGER.debug(String.format("Cant close the ByteArrayInputStream: %s", ServletUtils.getExceptionMessage(ex)), ex);
                 }
             }
         }
@@ -110,7 +109,7 @@ public class ServletUtils {
                 try {
                     out.close();
                 } catch(Exception e) {
-                    LOGGER.log(Level.ERROR, String.format("Cant close the output: %s", ServletUtils.getExceptionMessage(e)), e);
+                    LOGGER.debug(String.format("Cant close the output: %s", ServletUtils.getExceptionMessage(e)), e);
                 }
             }
         }
@@ -216,7 +215,7 @@ public class ServletUtils {
             try {
                 out.flush();
             } catch (Exception ex) {
-                LOGGER.log(Level.ERROR, String.format("Cant flush the output: %s", ServletUtils.getExceptionMessage(ex)), ex);
+                LOGGER.debug(String.format("Cant flush the output: %s", ServletUtils.getExceptionMessage(ex)), ex);
             }
         }
     }

@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.jsp.JspMvcFeature;
 
@@ -28,8 +29,10 @@ import java.io.IOException;
 public class AppConfig extends ResourceConfig {
 
     public AppConfig(@Context ServletContext servletContext) {
+        Messages messages = Messages.getInstance(null);
+
         try {
-            SearchEngineConfig.createInstance(servletContext);
+            SearchEngineConfig.createInstance(servletContext, messages);
         } catch (IOException e) {
             e.printStackTrace();
         }

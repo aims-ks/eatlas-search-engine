@@ -354,9 +354,9 @@ public class GeoNetworkRecord extends Entity {
         return document;
     }
 
-    public static GeoNetworkRecord load(JSONObject json) {
+    public static GeoNetworkRecord load(JSONObject json, Messages messages) {
         GeoNetworkRecord record = new GeoNetworkRecord();
-        record.loadJSON(json);
+        record.loadJSON(json, messages);
         record.parentUUID = json.optString("parentUUID", null);
         record.parentTitle = json.optString("parent", null);
 

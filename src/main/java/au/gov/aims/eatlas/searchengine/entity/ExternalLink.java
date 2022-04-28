@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.json.JSONObject;
 
 /**
@@ -28,13 +29,13 @@ public class ExternalLink extends DrupalNode {
         super();
     }
 
-    public ExternalLink(String index, JSONObject jsonApiNode) {
-        super(index, jsonApiNode);
+    public ExternalLink(String index, JSONObject jsonApiNode, Messages messages) {
+        super(index, jsonApiNode, messages);
     }
 
-    public static ExternalLink load(JSONObject json) {
+    public static ExternalLink load(JSONObject json, Messages messages) {
         ExternalLink externalLink = new ExternalLink();
-        externalLink.loadJSON(json);
+        externalLink.loadJSON(json, messages);
         String nidStr = json.optString("nid", null);
         if (nidStr != null && !nidStr.isEmpty()) {
             externalLink.setNid(Integer.parseInt(nidStr));

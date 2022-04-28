@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
-import org.apache.log4j.Logger;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.json.JSONArray;
@@ -36,8 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class IndexUtils {
-    private static final Logger LOGGER = Logger.getLogger(IndexUtils.class.getName());
-
     public static Map<String, Object> JSONObjectToMap(JSONObject jsonObject) {
         if (jsonObject == null || jsonObject.isEmpty()) {
             return null;
@@ -83,14 +81,14 @@ public class IndexUtils {
         return array;
     }
 
-    public static Long parseHttpLastModifiedHeader(Connection.Response response) {
+    public static Long parseHttpLastModifiedHeader(Connection.Response response, Messages messages) {
         if (response == null) {
             return null;
         }
 
-        return IndexUtils.parseHttpLastModifiedHeader(response.header("Last-Modified"));
+        return IndexUtils.parseHttpLastModifiedHeader(response.header("Last-Modified"), messages);
     }
-    public static Long parseHttpLastModifiedHeader(String lastModifiedHeader) {
+    public static Long parseHttpLastModifiedHeader(String lastModifiedHeader, Messages messages) {
         if (lastModifiedHeader == null || lastModifiedHeader.isEmpty()) {
             return null;
         }
@@ -101,7 +99,8 @@ public class IndexUtils {
                 .withLocale(Locale.ENGLISH)
                 .parseDateTime(lastModifiedHeader);
         } catch(Exception ex) {
-            LOGGER.error(String.format("Exception occurred while parsing the HTTP header Last-Modified date: %s", lastModifiedHeader), ex);
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("Exception occurred while parsing the HTTP header Last-Modified date: %s", lastModifiedHeader), ex);
         }
 
         return lastModifiedDate == null ? null : lastModifiedDate.getMillis();

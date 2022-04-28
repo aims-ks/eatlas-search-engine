@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import org.apache.log4j.Logger;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -27,18 +27,16 @@ import org.json.JSONObject;
 import java.net.URL;
 
 public class DrupalMedia extends Entity {
-    private static final Logger LOGGER = Logger.getLogger(DrupalMedia.class.getName());
-
     private Integer mid;
 
     private DrupalMedia() {}
 
     // Load from Drupal JSON:API output
-    public DrupalMedia(String index, JSONObject jsonApiMedia) {
+    public DrupalMedia(String index, JSONObject jsonApiMedia, Messages messages) {
         this.setIndex(index);
 
         if (jsonApiMedia != null) {
-            URL baseUrl = DrupalMedia.getDrupalBaseUrl(jsonApiMedia);
+            URL baseUrl = DrupalMedia.getDrupalBaseUrl(jsonApiMedia, messages);
 
             // UUID
             this.setId(jsonApiMedia.optString("id", null));
@@ -64,7 +62,8 @@ public class DrupalMedia extends Entity {
                 try {
                     this.setLink(new URL(baseUrl, mediaRelativePath));
                 } catch(Exception ex) {
-                    LOGGER.error(String.format("Can not craft media URL from Drupal base URL: %s", baseUrl), ex);
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("Can not craft media URL from Drupal base URL: %s", baseUrl), ex);
                 }
             }
 
@@ -73,7 +72,7 @@ public class DrupalMedia extends Entity {
         }
     }
 
-    public static URL getDrupalBaseUrl(JSONObject jsonApiMedia) {
+    public static URL getDrupalBaseUrl(JSONObject jsonApiMedia, Messages messages) {
         JSONObject jsonLinks = jsonApiMedia == null ? null : jsonApiMedia.optJSONObject("links");
         JSONObject jsonLinksSelf = jsonLinks == null ? null : jsonLinks.optJSONObject("self");
         String linksSelfHref = jsonLinksSelf == null ? null : jsonLinksSelf.optString("href", null);
@@ -83,7 +82,8 @@ public class DrupalMedia extends Entity {
             try {
                 linksSelfUrl = new URL(linksSelfHref);
             } catch(Exception ex) {
-                LOGGER.error(String.format("Invalid URL found in links.self.href: %s", linksSelfHref), ex);
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Invalid URL found in links.self.href: %s", linksSelfHref), ex);
             }
         }
 
@@ -91,7 +91,8 @@ public class DrupalMedia extends Entity {
             try {
                 return new URL(linksSelfUrl.getProtocol(), linksSelfUrl.getHost(), linksSelfUrl.getPort(), "/");
             } catch(Exception ex) {
-                LOGGER.error(String.format("Can not get root URL from links.self.href: %s", linksSelfUrl), ex);
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Can not get root URL from links.self.href: %s", linksSelfUrl), ex);
             }
         }
 
@@ -122,9 +123,9 @@ public class DrupalMedia extends Entity {
         return this.mid;
     }
 
-    public static DrupalMedia load(JSONObject json) {
+    public static DrupalMedia load(JSONObject json, Messages messages) {
         DrupalMedia media = new DrupalMedia();
-        media.loadJSON(json);
+        media.loadJSON(json, messages);
         String midStr = json.optString("mid", null);
         if (midStr != null && !midStr.isEmpty()) {
             media.mid = Integer.parseInt(midStr);
