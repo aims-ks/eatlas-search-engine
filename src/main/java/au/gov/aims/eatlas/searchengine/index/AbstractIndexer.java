@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
@@ -109,10 +110,10 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     // If full is true, re-index everything.
     // If not, only index what have changed since last indexation.
-    public synchronized void index(boolean full) throws IOException {
+    public synchronized void index(boolean full, Messages messages) throws IOException {
         if (!this.isRunning()) {
             this.completed = 0;
-            this.indexerThread = new IndexerThread(full);
+            this.indexerThread = new IndexerThread(full, messages);
             this.indexerThread.start();
         }
     }
@@ -394,11 +395,11 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     public class IndexerThread extends Thread {
         private final boolean fullIndex;
-        private Exception exception;
+        private Messages messages;
 
-        public IndexerThread(boolean fullIndex) {
+        public IndexerThread(boolean fullIndex, Messages messages) {
             this.fullIndex = fullIndex;
-            this.exception = null;
+            this.messages = messages;
         }
 
         @Override
@@ -421,7 +422,10 @@ public abstract class AbstractIndexer<E extends Entity> {
                 AbstractIndexer.this.refreshCount(client);
                 state.setLastIndexed(lastIndexedStarts);
             } catch(Exception ex) {
-                this.exception = ex;
+                if (this.messages != null) {
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("An error occurred during the indexation of %s", AbstractIndexer.this.getIndex()), ex);
+                }
             }
 
             long lastIndexedEnds = System.currentTimeMillis();
@@ -430,8 +434,9 @@ public abstract class AbstractIndexer<E extends Entity> {
             try {
                 SearchEngineState.getInstance().save();
             } catch(Exception ex) {
-                if (this.exception == null) {
-                    this.exception = ex;
+                if (this.messages != null) {
+                    messages.addMessage(Messages.Level.ERROR,
+                            String.format("An error occurred while saving the index state for %s", AbstractIndexer.this.getIndex()), ex);
                 }
             }
         }

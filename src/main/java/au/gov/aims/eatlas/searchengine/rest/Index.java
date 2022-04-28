@@ -19,13 +19,14 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -89,20 +90,22 @@ public class Index {
     @Path("reindex")
     @Produces(MediaType.APPLICATION_JSON)
     public Response reindex(
-            @Context HttpServletRequest servletRequest,
+            @Context HttpServletRequest httpRequest,
             @QueryParam("full") Boolean full // List of indexes to query
     ) {
+        HttpSession session = httpRequest.getSession(true);
+        Messages messages = Messages.getInstance(session);
+
         try {
             SearchEngineConfig config = SearchEngineConfig.getInstance();
-            JSONObject jsonStatus = Index.internalReindex(full == null ? true : full);
+            JSONObject jsonStatus = Index.internalReindex(full == null ? true : full, messages);
 
             String responseTxt = jsonStatus.toString();
 
-            // Disable cache DURING DEVELOPMENT!
             CacheControl noCache = new CacheControl();
             noCache.setNoCache(true);
 
-            // Return the JSON array with a OK status.
+            // Return the JSON object with an OK status.
             return Response.ok(responseTxt).cacheControl(noCache).build();
 
         } catch(Exception ex) {
@@ -113,51 +116,38 @@ public class Index {
 
             String responseTxt = jsonStatus.toString();
 
-            // Disable cache DURING DEVELOPMENT!
             CacheControl noCache = new CacheControl();
             noCache.setNoCache(true);
 
-            // Return the JSON array with a OK status.
-            return Response.ok(responseTxt).cacheControl(noCache).build();
+            // Return the JSON object with an ERROR status.
+            return Response.serverError().entity(responseTxt).cacheControl(noCache).build();
         }
     }
 
-    public static JSONObject internalReindex(boolean full) throws IOException {
+    public static JSONObject internalReindex(boolean full, Messages messages) throws IOException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         // Re-index
-        JSONObject jsonElapseTime = new JSONObject();
         if (config != null) {
             List<AbstractIndexer> indexers = config.getIndexers();
             if (indexers != null && !indexers.isEmpty()) {
                 for (AbstractIndexer indexer : indexers) {
                     if (indexer.isEnabled()) {
-                        long runtimeSec = Index.internalReindex(indexer, full);
-                        jsonElapseTime.put(indexer.getIndex(), String.format("%d sec", runtimeSec));
+                        Index.internalReindex(indexer, full, messages);
                     }
                 }
             }
         }
 
         return new JSONObject()
-            .put("status", "success")
-            .put("elapseTime", jsonElapseTime);
+            .put("status", "success");
     }
 
-    public static long internalReindex(AbstractIndexer indexer, boolean full) throws IOException {
+    public static void internalReindex(AbstractIndexer indexer, boolean full, Messages messages) throws IOException {
         LOGGER.info(String.format("Reindexing %s class %s",
                 indexer.getIndex(), indexer.getClass().getSimpleName()));
 
-        indexer.index(full);
-
-        SearchEngineState.getInstance().save();
-
-        Long runtime = indexer.getState().getLastIndexRuntime();
-        long runtimeSec = runtime == null ? -1 : runtime/1000;
-        LOGGER.info(String.format("-- %s class %s reindexing time: %d sec",
-                indexer.getIndex(), indexer.getClass().getSimpleName(), runtimeSec));
-
-        return runtimeSec;
+        indexer.index(full, messages);
     }
 
 }

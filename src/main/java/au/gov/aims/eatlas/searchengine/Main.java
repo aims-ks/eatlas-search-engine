@@ -75,7 +75,7 @@ public class Main {
         //Index.internalReindex(geoNetworkIndexer, fullHarvest);
 
         AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-        Index.internalReindex(atlasMapperIndexer, fullHarvest);
+        Index.internalReindex(atlasMapperIndexer, fullHarvest, null);
 
 
         //Main.testElasticsearchClient();

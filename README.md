@@ -4,6 +4,10 @@ TODO:
 
 - Fix tests
 
+- cron API
+  - Implement public API to allow cron to trigger daily re-indexation.
+  - Show cron URL in dashboard and reindex page.
+
 - Settings page
   - Commit to Git repo (repo dedicated for the search engine config)
 

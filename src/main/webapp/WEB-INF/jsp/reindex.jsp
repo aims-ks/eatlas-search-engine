@@ -56,8 +56,8 @@
                 </c:forEach>
             </table>
 
-            <button class="index-all" name="reindex-all-button" value="reindex" title="Re-index all">Re-index all</button>
-            <button class="index-latest-all" name="index-latest-all-button" value="index-latest" title="Index latest all">Index latest all</button>
+            <button class="index-all" name="reindex-all-button" value="reindex" title="Re-index all enabled indexes">Re-index all</button>
+            <button class="index-latest-all" name="index-latest-all-button" value="index-latest" title="Index latest content for all enabled indexes">Index latest all</button>
 
             <button class="refresh" name="refresh-count-button" value="refresh-count" title="Refresh count">Refresh indexes document count</button>
         </form>

@@ -120,7 +120,7 @@ public class ReindexPage {
 
     private void reindexAll(boolean fullHarvest, Messages messages) {
         try {
-            Index.internalReindex(fullHarvest);
+            Index.internalReindex(fullHarvest, messages);
         } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred during the indexation.", ex);
@@ -147,7 +147,7 @@ public class ReindexPage {
             AbstractIndexer indexer = config.getIndexer(index);
 
             try {
-                Index.internalReindex(indexer, fullHarvest);
+                Index.internalReindex(indexer, fullHarvest, messages);
             } catch (Exception ex) {
                 messages.addMessage(Messages.Level.ERROR,
                     String.format("An exception occurred during the indexation of index: %s", index), ex);
