@@ -95,6 +95,17 @@
 
                 <button class="reload" name="reload-state-button" value="reload-button" title="Reload state">Reload state file</button>
             </div>
+
+            <%-- Image cache folders --%>
+            <h3>Cache directory</h3>
+            <div class="file-status">
+                <p><c:out value="${it.imageCacheDirectory.absolutePath}" /></p>
+                <ul>
+                    <li><span class="label">Exists</span> <span class="${it.imageCacheDirectory.exists() ? "ok" : "error"}">${it.imageCacheDirectory.exists() ? "Yes" : "No"}</span></li>
+                    <li><span class="label">Readable</span> <span class="${it.imageCacheDirectory.canRead() ? "ok" : "error"}">${it.imageCacheDirectory.canRead() ? "Yes" : "No"}</span></li>
+                    <li><span class="label">Writable</span> <span class="${it.imageCacheDirectory.canWrite() ? "ok" : "error"}">${it.imageCacheDirectory.canWrite() ? "Yes" : "No"}</span></li>
+                </ul>
+            </div>
         </div>
 
         <div class="box">
@@ -106,6 +117,7 @@
                     <th>Status</th>
                     <th>Type</th>
                     <th>Document count</th>
+                    <th>Cache directory</th>
                     <th>Last indexed</th>
                     <th>Last runtime</th>
                 </tr>
@@ -118,6 +130,12 @@
                         </td>
                         <td><c:out value="${indexer.type}" /></td>
                         <td class="number">${indexer.state.count}</td>
+                        <c:set var="imageCacheDir" value="${it.imageCacheDirectories.get(indexer.index)}"/>
+                        <td class="rights" title="${imageCacheDir.absolutePath}">
+                            <span class="${imageCacheDir.exists() ? "ok" : "error"}">${imageCacheDir.exists() ? "Exists" : "Doesn\'t exists"}</span>,
+                            <span class="${imageCacheDir.canRead() ? "ok" : "error"}">${imageCacheDir.canRead() ? "Readable" : "Not readable"}</span>,
+                            <span class="${imageCacheDir.canWrite() ? "ok" : "error"}">${imageCacheDir.canWrite() ? "Writable" : "Not writable"}</span>
+                        </td>
                         <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
                         <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
                     </tr>

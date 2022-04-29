@@ -235,7 +235,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                             url), ex);
                 }
 
-                hasMore = from < this.getTotal();
+                long total = this.getTotal() == null ? 0 : this.getTotal();
+                hasMore = from < total;
             }
         } while(hasMore && !empty);
 

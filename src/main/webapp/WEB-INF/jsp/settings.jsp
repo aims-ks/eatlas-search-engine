@@ -4,6 +4,8 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
+<c:set var="baseURL" value="${pageContext.request.scheme}://${pageContext.request.localName}:${pageContext.request.localPort}" />
+
 <%-- Variables accessible in templates --%>
 <c:set var="title" value="Settings" scope="request"/>
 <c:set var="settingsActive" value="active" scope="request"/>
@@ -85,6 +87,26 @@
                 </label>
                 <div class="desc">Time to wait before re-attempting to download thumbnail which previously failed. Can be overwritten in indexer settings.</div>
                 <div class="desc">Default: 0 days</div>
+            </div>
+
+            <div class="field">
+                <label for="reindexToken">
+                    <span class="label required">Reindex token</span>
+                    <input type="text"
+                        id="reindexToken"
+                        name="reindexToken"
+                        data-lpignore="true"
+                        required="required"
+                        value="<c:out value="${it.config.reindexToken}" />" />
+                </label>
+                <div class="desc">Token used to call the re-indexation API from the cron.</div>
+                <div class="desc">
+                    Test re-indexation URL:
+                    ${baseURL}<c:url value="/public/index/v1/reindex">
+                        <c:param name="full" value="false" />
+                        <c:param name="token" value="${it.config.reindexToken}" />
+                    </c:url>
+                </div>
             </div>
         </div>
 

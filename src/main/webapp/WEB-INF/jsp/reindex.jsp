@@ -4,6 +4,8 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
+<c:set var="baseURL" value="${pageContext.request.scheme}://${pageContext.request.localName}:${pageContext.request.localPort}" />
+
 <%-- Variables accessible in templates --%>
 <c:set var="title" value="Re-indexation page" scope="request"/>
 <c:set var="reindexActive" value="active" scope="request"/>
@@ -20,7 +22,25 @@
     <c:import url="include/header.jsp"/>
 
     <div class="box">
-        <h2>Re-indexation page</h2>
+        <h2>Cron configuration</h2>
+
+        <p>
+            Add the following entries to the server crontab, to keep the search indexes up to date.
+        </p>
+
+        <pre>0   2   *   *   *   curl --silent "${baseURL}<c:url value="/public/index/v1/reindex">
+    <c:param name="full" value="false" />
+    <c:param name="token" value="${it.config.reindexToken}" />
+</c:url>"
+0   0   1   *   *   curl --silent "${baseURL}<c:url value="/public/index/v1/reindex">
+    <c:param name="full" value="true" />
+    <c:param name="token" value="${it.config.reindexToken}" />
+</c:url>"
+        </pre>
+    </div>
+
+    <div class="box">
+        <h2>Re-indexation</h2>
 
         <form method="post">
             <table>

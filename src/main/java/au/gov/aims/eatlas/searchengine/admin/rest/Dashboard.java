@@ -21,6 +21,8 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,6 +68,17 @@ public class Dashboard {
         File stateFile = state.getStateFile();
         model.put("stateFile", stateFile);
         model.put("stateFileLastModifiedDate", stateFile == null ? null : new Date(stateFile.lastModified()));
+
+        File imageCacheDirectory = new File(config.getImageCacheDirectory());
+        model.put("imageCacheDirectory", imageCacheDirectory);
+
+        Map<String, File> cacheDirectories = new HashMap<>();
+        for (AbstractIndexer indexer : config.getIndexers()) {
+            String index = indexer.getIndex();
+            File cacheDirectory = ImageCache.getCacheDirectory(index, messages);
+            cacheDirectories.put(index, cacheDirectory);
+        }
+        model.put("imageCacheDirectories", cacheDirectories);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/dashboard.jsp
         return new Viewable("/dashboard", model);

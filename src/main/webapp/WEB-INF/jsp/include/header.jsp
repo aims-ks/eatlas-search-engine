@@ -23,7 +23,7 @@
         <div class="content">
             <c:if test="${not empty requestScope.messages.messages}">
                 <div class="message box">
-                    <c:set var="messages" value="${requestScope.messages.clear()}"/>
+                    <c:set var="messages" value="${requestScope.messages.consume()}"/>
                     <c:forEach items="${messages}" var="message">
                         <div class="${message.level.cssClass}">
                             <c:out value="${message.message}"/>

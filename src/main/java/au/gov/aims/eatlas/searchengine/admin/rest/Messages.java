@@ -92,7 +92,7 @@ public class Messages {
         return this.messages;
     }
 
-    public List<Message> clear() {
+    public List<Message> consume() {
         List<Message> deletedMessages = this.messages;
         this.messages = null;
         this.save();

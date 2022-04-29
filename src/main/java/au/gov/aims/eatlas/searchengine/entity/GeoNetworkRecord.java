@@ -256,7 +256,6 @@ public class GeoNetworkRecord extends Entity {
 
         // Online Resources
         // including pointOfTruthUrlStr
-        String pointOfTruthUrlStr = null;
         List<OnlineResource> onlineResources = new ArrayList<>();
         Element distributionInfo = IndexUtils.getXMLChild(rootElement, "mdb:distributionInfo");
         Element mdDistribution = IndexUtils.getXMLChild(distributionInfo, "mrd:MD_Distribution");
@@ -268,28 +267,36 @@ public class GeoNetworkRecord extends Entity {
             Element ciOnlineResource = IndexUtils.getXMLChild(onlineElement, "cit:CI_OnlineResource");
             OnlineResource onlineResource = OnlineResource.parseIso19115_3_2018Node(ciOnlineResource);
             if (onlineResource != null) {
-                String label = onlineResource.getLabel();
-                String safeLabel = label == null ? "" : label.toLowerCase(Locale.ENGLISH);
-
-                // TODO Find the proper protocol for Point of Truth in ISO19115.3-2018 records
-
-                if ("WWW:LINK-1.0-http--metadata-URL".equals(onlineResource.protocol) && safeLabel.contains("point of truth")) {
-                    if (onlineResource.linkage != null) {
-                        if (pointOfTruthUrlStr != null) {
-                            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
-                                this.getId()));
-                        }
-                        pointOfTruthUrlStr = onlineResource.linkage;
-                        if (!pointOfTruthUrlStr.contains(this.getId())) {
-                            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
-                                this.getId(), pointOfTruthUrlStr));
-                        }
-                    }
-                } else {
-                    onlineResources.add(onlineResource);
-                }
+                onlineResources.add(onlineResource);
             }
         }
+
+        // Point of Truth URL
+        String pointOfTruthUrlStr = null;
+        Element pocMetadataLinkage = IndexUtils.getXMLChild(rootElement, "mdb:metadataLinkage");
+        Element pocCiOnlineResource = IndexUtils.getXMLChild(pocMetadataLinkage, "cit:CI_OnlineResource");
+        OnlineResource pocOnlineResource = OnlineResource.parseIso19115_3_2018Node(pocCiOnlineResource);
+        if (pocOnlineResource != null) {
+            String label = pocOnlineResource.getLabel();
+            String safeLabel = label == null ? "" : label.toLowerCase(Locale.ENGLISH);
+
+            if ("WWW:LINK-1.0-http--metadata-URL".equals(pocOnlineResource.protocol) && safeLabel.contains("point of truth")) {
+                if (pocOnlineResource.linkage != null) {
+                    if (pointOfTruthUrlStr != null) {
+                        messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
+                            this.getId()));
+                    }
+                    pointOfTruthUrlStr = pocOnlineResource.linkage;
+                    if (!pointOfTruthUrlStr.contains(this.getId())) {
+                        messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
+                            this.getId(), pointOfTruthUrlStr));
+                    }
+                }
+            } else {
+                onlineResources.add(pocOnlineResource);
+            }
+        }
+
 
         // Cited parties
         List<Element> citedResponsiblePartyElements = IndexUtils.getXMLChildren(dataCiCitation, "cit:citedResponsibleParty");

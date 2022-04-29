@@ -33,10 +33,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Random;
 
 public class SearchEngineConfig {
     private static final long DEFAULT_GLOBAL_THUMBNAIL_TTL = 30; // TTL, in days
     private static final long DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL = 1; // TTL, in days
+    private static final int RANDOM_TOKEN_LENGTH = 12;
 
     // CONFIG_FILE_PROPERTY can be set in many ways (same as GeoServer)
     // * Servlet context parameter (web.xml)
@@ -60,6 +62,8 @@ public class SearchEngineConfig {
     private long globalBrokenThumbnailTTL = DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL; // TTL, in days
     private String imageCacheDirectory;
     private List<AbstractIndexer> indexers;
+
+    private String reindexToken;
 
     private SearchEngineConfig(File configFile, Messages messages) throws IOException {
         this.configFile = configFile;
@@ -98,13 +102,13 @@ public class SearchEngineConfig {
         this.indexers = null;
         this.elasticSearchUrls = null;
         if (this.configFile != null && this.configFile.canRead()) {
+            // Set lastModified to config file last modified
+            this.lastModified = this.configFile.lastModified();
+
             // Reload config from config file
             String jsonStr = FileUtils.readFileToString(this.configFile, StandardCharsets.UTF_8);
             JSONObject json = (jsonStr == null || jsonStr.isEmpty()) ? new JSONObject() : new JSONObject(jsonStr);
             this.loadJSON(json, messages);
-
-            // Set lastModified to config file last modified
-            this.lastModified = this.configFile.lastModified();
         }
     }
 
@@ -208,6 +212,16 @@ public class SearchEngineConfig {
 
     public void setGlobalBrokenThumbnailTTL(Long globalBrokenThumbnailTTL) {
         this.globalBrokenThumbnailTTL = globalBrokenThumbnailTTL == null ? DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL : globalBrokenThumbnailTTL;
+    }
+
+    public String getReindexToken() {
+        return this.reindexToken;
+    }
+
+    public void setReindexToken(String reindexToken) {
+        if (reindexToken != null && !reindexToken.isEmpty()) {
+            this.reindexToken = reindexToken;
+        }
     }
 
     public File getConfigFile() {
@@ -405,6 +419,7 @@ public class SearchEngineConfig {
             .put("globalThumbnailTTL", this.globalThumbnailTTL)
             .put("globalBrokenThumbnailTTL", this.globalBrokenThumbnailTTL)
             .put("imageCacheDirectory", this.imageCacheDirectory)
+            .put("reindexToken", this.reindexToken)
             .put("indexers", jsonIndexers);
     }
 
@@ -412,6 +427,7 @@ public class SearchEngineConfig {
         this.globalThumbnailTTL = json.optLong("globalThumbnailTTL", DEFAULT_GLOBAL_THUMBNAIL_TTL);
         this.globalBrokenThumbnailTTL = json.optLong("globalBrokenThumbnailTTL", DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL);
         this.imageCacheDirectory = json.optString("imageCacheDirectory", null);
+        this.reindexToken = json.optString("reindexToken", null);
 
         JSONArray jsonElasticSearchUrls = json.optJSONArray("elasticSearchUrls");
         if (jsonElasticSearchUrls != null) {
@@ -433,6 +449,34 @@ public class SearchEngineConfig {
                 }
             }
         }
+
+        if (this.reindexToken == null || this.reindexToken.isEmpty()) {
+            this.reindexToken = SearchEngineConfig.generateRandomToken(SearchEngineConfig.RANDOM_TOKEN_LENGTH);
+            try {
+                this.save();
+            } catch (IOException ex) {
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Error occurred while saving the configuration file: %s",
+                        this.getConfigFile()), ex);
+            }
+        }
+    }
+
+    // Inspired from:
+    //     https://stackoverflow.com/questions/41107/how-to-generate-a-random-alpha-numeric-string#41156
+    private static String generateRandomToken(int length) {
+        String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lower = upper.toLowerCase();
+        String digits = "0123456789";
+        String alphanum = upper + lower + digits;
+        Random random = new Random();
+
+        char[] buffer = new char[length];
+        char[] symbols = alphanum.toCharArray();
+        for (int idx = 0; idx < buffer.length; ++idx) {
+            buffer[idx] = symbols[random.nextInt(symbols.length)];
+        }
+        return new String(buffer);
     }
 
     @Override

@@ -25,8 +25,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.POST;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -41,35 +40,66 @@ import java.util.List;
 public class Index {
     private static final Logger LOGGER = Logger.getLogger(Index.class.getName());
 
+    // http://localhost:8080/eatlas-search-engine/public/index/v1/reindex?full=false&token=[REINDEX TOKEN]
+    // REINDEX TOKEN: The token is set in the search engine configuration file. See setting page:
+    //   http://localhost:8080/eatlas-search-engine/admin/settings
     // NOTE: To index Drupal nodes, the following core modules needs to be enabled:
     // - WEB SERVICES
     //   - [X] JSON:API
     //   - [X] Serialization
-    // URL: http://localhost:9090/jsonapi/node/article
-    //   http://localhost:9090/jsonapi/node/article?sort=-changed
-    //   http://localhost:9090/jsonapi/node/article?sort=-changed&page[limit]=10&page[offset]=10
     // NOTE:
     //   The search engine will need to do a complete re-harvest once in a while to remove deleted nodes
-
-    // TODO Needs to be logged in? Post username password? I still need to figure out a safe way to do this
-    @POST
+    @GET
     @Path("reindex")
     @Produces(MediaType.APPLICATION_JSON)
     public Response reindex(
             @Context HttpServletRequest httpRequest,
-            @QueryParam("full") Boolean full // List of indexes to query
+            @QueryParam("full") Boolean full, // List of indexes to query
+            @QueryParam("token") String token
     ) {
-        HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        String expectedToken = config.getReindexToken();
 
-        try {
-            SearchEngineConfig config = SearchEngineConfig.getInstance();
-            JSONObject jsonStatus = Index.internalReindex(full == null ? true : full, messages);
+        CacheControl noCache = new CacheControl();
+        noCache.setNoCache(true);
+
+        if (expectedToken == null || expectedToken.isEmpty()) {
+            JSONObject jsonStatus = new JSONObject()
+                .put("status", "error")
+                .put("message", "Reindex token not set in Search Engine configuration.");
 
             String responseTxt = jsonStatus.toString();
 
-            CacheControl noCache = new CacheControl();
-            noCache.setNoCache(true);
+            return Response.serverError().entity(responseTxt).cacheControl(noCache).build();
+        }
+
+        if (token == null || token.isEmpty()) {
+            JSONObject jsonStatus = new JSONObject()
+                .put("status", "error")
+                .put("message", "Parameter token required.");
+
+            String responseTxt = jsonStatus.toString();
+
+            return Response.status(Response.Status.BAD_REQUEST).entity(responseTxt).cacheControl(noCache).build();
+        }
+
+        if (!expectedToken.equals(token)) {
+            JSONObject jsonStatus = new JSONObject()
+                .put("status", "error")
+                .put("message", "Invalid token provided.");
+
+            String responseTxt = jsonStatus.toString();
+
+            return Response.status(Response.Status.FORBIDDEN).entity(responseTxt).cacheControl(noCache).build();
+        }
+
+        // API call - display messages using the LOGGER.
+        Messages messages = Messages.getInstance(null);
+
+        try {
+            JSONObject jsonStatus = Index.internalReindex(full == null ? true : full, messages);
+
+            String responseTxt = jsonStatus.toString();
 
             // Return the JSON object with an OK status.
             return Response.ok(responseTxt).cacheControl(noCache).build();
@@ -81,9 +111,6 @@ public class Index {
                 .put("stacktrace", ServletUtils.exceptionToJSON(ex));
 
             String responseTxt = jsonStatus.toString();
-
-            CacheControl noCache = new CacheControl();
-            noCache.setNoCache(true);
 
             // Return the JSON object with an ERROR status.
             return Response.serverError().entity(responseTxt).cacheControl(noCache).build();
