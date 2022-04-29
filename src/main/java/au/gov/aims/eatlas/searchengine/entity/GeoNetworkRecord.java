@@ -75,262 +75,523 @@ public class GeoNetworkRecord extends Entity {
 
     // geoNetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
-    // TODO Write parser for GeoNetwork 3.x
-    public GeoNetworkRecord(String index, String geoNetworkVersion, String metadataRecordUUID, String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
+    public GeoNetworkRecord(String index) {
         this.setIndex(index);
-
-        if (geoNetworkVersion.startsWith("2.")) {
-            this.parseGeoNetwork2Record(index, metadataRecordUUID, geoNetworkUrlStr, xmlMetadataRecord, messages);
-        } else {
-            this.parseGeoNetwork3Record(index, metadataRecordUUID, geoNetworkUrlStr, xmlMetadataRecord, messages);
-        }
     }
 
-    /**
-     * GeoNetwork 3.x
-     */
-
-    private void parseGeoNetwork3Record(String index, String metadataRecordUUID, String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
-        // TODO Implement!
-    }
-
-
-    /**
-     * GeoNetwork 2.x
-     */
-
-    private void parseGeoNetwork2Record(String index, String metadataRecordUUID, String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
-        String pointOfTruthUrlStr = null;
-        if (xmlMetadataRecord != null) {
-
-            // Fix the document, if needed
-            xmlMetadataRecord.getDocumentElement().normalize();
-            Element root = xmlMetadataRecord.getDocumentElement();
-            if (root != null) {
-                if (metadataRecordUUID != null) {
-                    String trimmedUuid = metadataRecordUUID.trim();
-                    if (!trimmedUuid.isEmpty()) {
-                        this.setId(metadataRecordUUID);
-                    }
-                }
-
-                // UUID
-                // NOTE: Get it from the XML document if not provided already
-                if (this.getId() == null) {
-                    this.setId(IndexUtils.parseCharacterString(IndexUtils.getXMLChild(root, "gmd:fileIdentifier")));
-                }
-
-                // Parent UUID
-                this.parentUUID = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(root, "gmd:parentIdentifier"));
-
-                // The responsible parties are not always where they are expected.
-                // Lets parse responsible parties where ever they are found and put them in the right category.
-                // Key: role
-                Map<String, List<ResponsibleParty>> responsiblePartyMap = new HashMap<>();
-
-                // Metadata contact info
-                List<Element> metadataContacts = IndexUtils.getXMLChildren(root, "gmd:contact");
-                for (Element metadataContact : metadataContacts) {
-                    ResponsibleParty metadataContactResponsibleParty = ResponsibleParty.parseNode(IndexUtils.getXMLChild(metadataContact, "gmd:CI_ResponsibleParty"));
-                    addResponsibleParty(metadataContactResponsibleParty, responsiblePartyMap);
-                }
-
-                // Title
-                Element identificationInfo = IndexUtils.getXMLChild(root, "gmd:identificationInfo");
-                Element mdDataIdentification = IndexUtils.getXMLChild(identificationInfo, "gmd:MD_DataIdentification", "mcp:MD_DataIdentification");
-                Element dataCitation = IndexUtils.getXMLChild(mdDataIdentification, "gmd:citation");
-                Element dataCiCitation = IndexUtils.getXMLChild(dataCitation, "gmd:CI_Citation");
-                this.setTitle(IndexUtils.parseCharacterString(IndexUtils.getXMLChild(dataCiCitation, "gmd:title")));
-
-                String dataAbstract = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdDataIdentification, "gmd:abstract"));
-
-                // Point of contact in MD_DataIdentification
-                List<Element> dataPointOfContactElements = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:pointOfContact");
-                for (Element dataPointOfContactElement : dataPointOfContactElements) {
-                    ResponsibleParty dataPointOfContact = ResponsibleParty.parseNode(IndexUtils.getXMLChild(dataPointOfContactElement, "gmd:CI_ResponsibleParty"));
-                    addResponsibleParty(dataPointOfContact, responsiblePartyMap);
-                }
-
-                // Preview image
-                //   Key: fileDescription (thumbnail, large_thumbnail, etc)
-                //   Value: fileName (used to craft the URL)
-                Map<String, String> previewImageMap = new HashMap<>();
-                List<Element> graphicOverviewElements = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:graphicOverview");
-                for (Element graphicOverviewElement : graphicOverviewElements) {
-                    Element mdBrowseGraphic = IndexUtils.getXMLChild(graphicOverviewElement, "gmd:MD_BrowseGraphic");
-                    String fileDescription = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdBrowseGraphic, "gmd:fileDescription"));
-                    if (fileDescription == null) {
-                        fileDescription = "UNKNOWN";
-                    }
-                    String fileName = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdBrowseGraphic, "gmd:fileName"));
-                    if (fileName != null) {
-                        previewImageMap.put(fileDescription, fileName);
-                    }
-                }
-                // Look for a "large_thumbnail".
-                // If there is none, look for a "thumbnail".
-                // If there is none, just pick a random thumbnail, something is better than nothing.
-                if (!previewImageMap.isEmpty()) {
-                    String fileName = previewImageMap.get("large_thumbnail");
-                    if (fileName == null) {
-                        fileName = previewImageMap.get("thumbnail");
-                    }
-                    if (fileName == null) {
-                        // There is no "large_thumbnail" nor "thumbnail" (very unlikely).
-                        // Just get one, anyone will do...
-                        for (String randomFileName : previewImageMap.values()) {
-                            fileName = randomFileName;
-                            break;
-                        }
-                    }
-
-                    if (fileName != null) {
-                        String previewUrlStr;
-                        if (fileName.startsWith("http://") || fileName.startsWith("https://")) {
-                            // Some records puts the full URL in the preview field.
-                            // Example:
-                            //     https://eatlas.org.au/geonetwork/srv/eng/xml.metadata.get?uuid=a86f062e-f47c-49f1-ace5-3e03a2272088
-                            previewUrlStr = fileName;
-                        } else {
-                            previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
-                                    geoNetworkUrlStr, this.getId(), fileName);
-                        }
-
-                        try {
-                            URL thumbnailUrl = new URL(previewUrlStr);
-                            this.setThumbnailUrl(thumbnailUrl);
-                        } catch(Exception ex) {
-                            this.setThumbnailUrl(null);
-                            messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
-                        }
-                    }
-                }
-
-                // Langcode (example: "en")
-                String langcode = null;
-                String geonetworkLangcode = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdDataIdentification, "gmd:language"));
-                if (geonetworkLangcode != null) {
-                    if (geonetworkLangcode.length() == 2) {
-                        langcode = geonetworkLangcode;
-                    } else if (geonetworkLangcode.length() == 3) {
-                        Locale locale = LANGCODE_MAP.get(geonetworkLangcode);
-                        if (locale != null) {
-                            // getLanguage returns the 2 letters langcode
-                            langcode = locale.getLanguage();
-                        }
-                    }
-                }
-                this.setLangcode(langcode);
-
-                // TODO GIS Information (bbox, points, polygons, etc.
-                // List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:extent");
-
-                // Online Resources
-                // including pointOfTruthUrlStr
-                List<OnlineResource> onlineResources = new ArrayList<>();
-                Element distributionInfo = IndexUtils.getXMLChild(root, "gmd:distributionInfo");
-                Element transferOptions = IndexUtils.getXMLChild(distributionInfo, "gmd:transferOptions");
-                Element mdDigitalTransferOptions = IndexUtils.getXMLChild(transferOptions, "gmd:MD_DigitalTransferOptions");
-                List<Element> onlineElements = IndexUtils.getXMLChildren(mdDigitalTransferOptions, "gmd:onLine");
-                for (Element onlineElement : onlineElements) {
-                    Element ciOnlineResource = IndexUtils.getXMLChild(onlineElement, "gmd:CI_OnlineResource");
-                    OnlineResource onlineResource = OnlineResource.parseNode(ciOnlineResource);
-                    if (onlineResource != null) {
-                        String label = onlineResource.getLabel();
-                        String safeLabel = label == null ? "" : label.toLowerCase(Locale.ENGLISH);
-                        if ("WWW:LINK-1.0-http--metadata-URL".equals(onlineResource.protocol) && safeLabel.contains("point of truth")) {
-                            if (onlineResource.linkage != null) {
-                                if (pointOfTruthUrlStr != null) {
-                                    messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
-                                        this.getId()));
-                                }
-                                pointOfTruthUrlStr = onlineResource.linkage;
-                                if (!pointOfTruthUrlStr.contains(this.getId())) {
-                                    messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
-                                        this.getId(), pointOfTruthUrlStr));
-                                }
-                            }
-                        } else {
-                            onlineResources.add(onlineResource);
-                        }
-                    }
-                }
-
-                // Cited parties
-                List<Element> citedResponsiblePartyElements = IndexUtils.getXMLChildren(dataCiCitation, "gmd:citedResponsibleParty");
-                for (Element citedResponsiblePartyElement : citedResponsiblePartyElements) {
-                    ResponsibleParty citedResponsibleParty = ResponsibleParty.parseNode(IndexUtils.getXMLChild(citedResponsiblePartyElement, "gmd:CI_ResponsibleParty"));
-                    addResponsibleParty(citedResponsibleParty, responsiblePartyMap);
-                }
-
-                // Point of contact in document root
-                List<Element> rootPointOfContactElements = IndexUtils.getXMLChildren(root, "gmd:contact");
-                for (Element rootPointOfContactElement : rootPointOfContactElements) {
-                    ResponsibleParty rootPointOfContact = ResponsibleParty.parseNode(IndexUtils.getXMLChild(rootPointOfContactElement, "gmd:CI_ResponsibleParty"));
-                    addResponsibleParty(rootPointOfContact, responsiblePartyMap);
-                }
-
-
-
-
-                // Build the document string
-                List<String> documentPartList = new ArrayList<String>();
-
-                // Add abstract
-                String parsedAbstract = WikiFormatter.getText(dataAbstract);
-                if (parsedAbstract != null) {
-                    documentPartList.add(parsedAbstract);
-                }
-
-                // Add contact (excluding metadataContact)
-                for (Map.Entry<String, List<ResponsibleParty>> responsiblePartyEntry : responsiblePartyMap.entrySet()) {
-                    String role = responsiblePartyEntry.getKey();
-                    if (!"metadataContact".equals(role)) {
-                        String label = ROLE_LABEL_MAP.get(role);
-                        if (label == null) {
-                            label = String.format("Other (%s)", role);
-                        }
-                        documentPartList.add(label);
-                        List<ResponsibleParty> responsiblePartyList = responsiblePartyEntry.getValue();
-                        for (ResponsibleParty responsibleParty : responsiblePartyList) {
-                            documentPartList.add(responsibleParty.toString());
-                        }
-                    }
-                }
-
-                // Online resources
-                for (OnlineResource onlineResource : onlineResources) {
-                    documentPartList.add(onlineResource.toString());
-                }
-
-                this.setDocument(documentPartList.isEmpty() ? null :
-                        String.join(NL + NL, documentPartList));
-
-
-                // Set the metadata link to the original GeoNetwork URL.
-                // If we find a valid "point-of-truth" URL in the document,
-                // we will use that one instead.
-                URL metadataRecordUrl = null;
-                if (pointOfTruthUrlStr != null) {
-                    try {
-                        metadataRecordUrl = new URL(pointOfTruthUrlStr);
-                    } catch(Exception ex) {
-                        messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL found in Point Of Truth of record %s: %s", this.getId(), pointOfTruthUrlStr), ex);
-                    }
-                }
-
-                if (metadataRecordUrl == null) {
-                    String geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrlStr, this.getId());
-                    try {
-                        metadataRecordUrl = new URL(geonetworkMetadataUrlStr);
-                    } catch(Exception ex) {
-                        messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", this.getId(), geonetworkMetadataUrlStr), ex);
-                    }
-                }
-
-                this.setLink(metadataRecordUrl);
+    public void parseRecord(String metadataRecordUUID, String metadataSchema, String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
+        if (metadataRecordUUID != null) {
+            metadataRecordUUID = metadataRecordUUID.trim();
+            if (metadataRecordUUID.isEmpty()) {
+                metadataRecordUUID = null;
             }
         }
+
+        if (metadataSchema == null || metadataSchema.isEmpty()) {
+            messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has no defined metadata schema.", metadataRecordUUID));
+            return;
+        }
+
+        if (xmlMetadataRecord == null) {
+            messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has no metadata record.", metadataRecordUUID));
+            return;
+        }
+
+        // Fix the document, if needed
+        xmlMetadataRecord.getDocumentElement().normalize();
+        Element root = xmlMetadataRecord.getDocumentElement();
+        if (root == null) {
+            messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has no root in its metadata document.", metadataRecordUUID));
+            return;
+        }
+
+        switch(metadataSchema) {
+            case "iso19139":
+            case "iso19139.anzlic":
+            case "iso19139.mcp":
+            case "iso19139.mcp-1.4":
+                this.parse_ISO19139_Record(metadataRecordUUID, geoNetworkUrlStr, root, messages);
+                break;
+
+            case "iso19115-3.2018":
+                this.parse_ISO19115_3_2018_Record(metadataRecordUUID, geoNetworkUrlStr, root, messages);
+                break;
+
+            default:
+                messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has unsupported schema %s", metadataRecordUUID, metadataSchema));
+                break;
+        }
+    }
+
+
+    /**
+     * ISO 19115-3.2018 (GeoNetwork 3.x)
+     */
+
+    private void parse_ISO19115_3_2018_Record(String metadataRecordUUID, String geoNetworkUrlStr, Element rootElement, Messages messages) {
+        if (metadataRecordUUID != null) {
+            this.setId(metadataRecordUUID);
+        }
+
+        // UUID
+        // NOTE: Get it from the XML document if not provided already
+        if (this.getId() == null) {
+            Element metadataIdentifier = IndexUtils.getXMLChild(rootElement, "mdb:metadataIdentifier");
+            Element mdIdentifier = IndexUtils.getXMLChild(metadataIdentifier, "mcc:MD_Identifier");
+            this.setId(IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdIdentifier, "mcc:code")));
+        }
+
+        // Parent UUID
+        Element parentMetadata = IndexUtils.getXMLChild(rootElement, "mdb:parentMetadata");
+        this.parentUUID = IndexUtils.parseAttribute(parentMetadata, "uuidref");
+
+        // The responsible parties are not always where they are expected.
+        // Lets parse responsible parties where ever they are found and put them in the right category.
+        // Key: role
+        Map<String, List<ResponsibleParty>> responsiblePartyMap = new HashMap<>();
+
+        // Metadata contact info
+        List<Element> metadataContacts = IndexUtils.getXMLChildren(rootElement, "mdb:contact");
+        for (Element metadataContact : metadataContacts) {
+            ResponsibleParty metadataContactResponsibleParty = ResponsibleParty.parseIso19115_3_2018Node(IndexUtils.getXMLChild(metadataContact, "cit:CI_Responsibility"));
+            addResponsibleParty(metadataContactResponsibleParty, responsiblePartyMap);
+        }
+
+        // Title
+        Element identificationInfo = IndexUtils.getXMLChild(rootElement, "mdb:identificationInfo");
+
+        Element mdDataIdentification = IndexUtils.getXMLChild(identificationInfo, "mri:MD_DataIdentification");
+        Element dataCitation = IndexUtils.getXMLChild(mdDataIdentification, "mri:citation");
+        Element dataCiCitation = IndexUtils.getXMLChild(dataCitation, "cit:CI_Citation");
+        this.setTitle(IndexUtils.parseCharacterString(IndexUtils.getXMLChild(dataCiCitation, "cit:title")));
+
+        String dataAbstract = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdDataIdentification, "mri:abstract"));
+
+        // Point of contact in MD_DataIdentification
+        List<Element> dataPointOfContactElements = IndexUtils.getXMLChildren(mdDataIdentification, "mri:pointOfContact");
+        for (Element dataPointOfContactElement : dataPointOfContactElements) {
+            ResponsibleParty dataPointOfContact = ResponsibleParty.parseIso19115_3_2018Node(IndexUtils.getXMLChild(dataPointOfContactElement, "cit:CI_Responsibility"));
+            addResponsibleParty(dataPointOfContact, responsiblePartyMap);
+        }
+
+        // Preview image
+        //   Key: fileDescription (thumbnail, large_thumbnail, etc)
+        //   Value: fileName (used to craft the URL)
+        Map<String, String> previewImageMap = new HashMap<>();
+        List<Element> graphicOverviewElements = IndexUtils.getXMLChildren(mdDataIdentification, "mri:graphicOverview");
+
+
+        for (Element graphicOverviewElement : graphicOverviewElements) {
+            Element mdBrowseGraphic = IndexUtils.getXMLChild(graphicOverviewElement, "mcc:MD_BrowseGraphic");
+            String fileDescription = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdBrowseGraphic, "mcc:fileDescription"));
+            if (fileDescription == null) {
+                fileDescription = "UNKNOWN";
+            }
+            String fileName = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdBrowseGraphic, "mcc:fileName"));
+            if (fileName != null) {
+                previewImageMap.put(fileDescription, fileName);
+            }
+        }
+        // Look for a "large_thumbnail".
+        // If there is none, look for a "thumbnail".
+        // If there is none, just pick a random thumbnail, something is better than nothing.
+        if (!previewImageMap.isEmpty()) {
+            String fileName = previewImageMap.get("large_thumbnail");
+            if (fileName == null) {
+                fileName = previewImageMap.get("thumbnail");
+            }
+            if (fileName == null) {
+                // There is no "large_thumbnail" nor "thumbnail" (very unlikely).
+                // Just get one, anyone will do...
+                for (String randomFileName : previewImageMap.values()) {
+                    fileName = randomFileName;
+                    break;
+                }
+            }
+
+            if (fileName != null) {
+                String previewUrlStr;
+                if (fileName.startsWith("http://") || fileName.startsWith("https://")) {
+                    // Some records put the full URL in the preview field.
+                    // Example:
+                    //     https://eatlas.org.au/geonetwork/srv/eng/xml.metadata.get?uuid=a86f062e-f47c-49f1-ace5-3e03a2272088
+                    previewUrlStr = fileName;
+                } else {
+                    previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
+                            geoNetworkUrlStr, this.getId(), fileName);
+                }
+
+                try {
+                    URL thumbnailUrl = new URL(previewUrlStr);
+                    this.setThumbnailUrl(thumbnailUrl);
+                } catch(Exception ex) {
+                    this.setThumbnailUrl(null);
+                    messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
+                }
+            }
+        }
+
+        // Langcode (example: "en")
+        String langcode = null;
+        Element defaultLocale = IndexUtils.getXMLChild(mdDataIdentification, "mri:defaultLocale");
+        Element ptLocale = IndexUtils.getXMLChild(defaultLocale, "lan:PT_Locale");
+        Element language = IndexUtils.getXMLChild(ptLocale, "lan:language");
+        Element languageCode = IndexUtils.getXMLChild(language, "lan:LanguageCode");
+        String geonetworkLangcode = IndexUtils.parseAttribute(languageCode, "codeListValue");
+        if (geonetworkLangcode != null) {
+            if (geonetworkLangcode.length() == 2) {
+                langcode = geonetworkLangcode;
+            } else if (geonetworkLangcode.length() == 3) {
+                Locale locale = LANGCODE_MAP.get(geonetworkLangcode);
+                if (locale != null) {
+                    // getLanguage returns the 2 letters langcode
+                    langcode = locale.getLanguage();
+                }
+            }
+        }
+        this.setLangcode(langcode);
+
+        // TODO GIS Information (bbox, points, polygons, etc.
+        // List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:extent");
+
+        // Online Resources
+        // including pointOfTruthUrlStr
+        String pointOfTruthUrlStr = null;
+        List<OnlineResource> onlineResources = new ArrayList<>();
+        Element distributionInfo = IndexUtils.getXMLChild(rootElement, "mdb:distributionInfo");
+        Element mdDistribution = IndexUtils.getXMLChild(distributionInfo, "mrd:MD_Distribution");
+        Element transferOptions = IndexUtils.getXMLChild(mdDistribution, "mrd:transferOptions");
+        Element mdDigitalTransferOptions = IndexUtils.getXMLChild(transferOptions, "mrd:MD_DigitalTransferOptions");
+        List<Element> onlineElements = IndexUtils.getXMLChildren(mdDigitalTransferOptions, "mrd:onLine");
+
+        for (Element onlineElement : onlineElements) {
+            Element ciOnlineResource = IndexUtils.getXMLChild(onlineElement, "cit:CI_OnlineResource");
+            OnlineResource onlineResource = OnlineResource.parseIso19115_3_2018Node(ciOnlineResource);
+            if (onlineResource != null) {
+                String label = onlineResource.getLabel();
+                String safeLabel = label == null ? "" : label.toLowerCase(Locale.ENGLISH);
+
+                // TODO Find the proper protocol for Point of Truth in ISO19115.3-2018 records
+
+                if ("WWW:LINK-1.0-http--metadata-URL".equals(onlineResource.protocol) && safeLabel.contains("point of truth")) {
+                    if (onlineResource.linkage != null) {
+                        if (pointOfTruthUrlStr != null) {
+                            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
+                                this.getId()));
+                        }
+                        pointOfTruthUrlStr = onlineResource.linkage;
+                        if (!pointOfTruthUrlStr.contains(this.getId())) {
+                            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
+                                this.getId(), pointOfTruthUrlStr));
+                        }
+                    }
+                } else {
+                    onlineResources.add(onlineResource);
+                }
+            }
+        }
+
+        // Cited parties
+        List<Element> citedResponsiblePartyElements = IndexUtils.getXMLChildren(dataCiCitation, "cit:citedResponsibleParty");
+        for (Element citedResponsiblePartyElement : citedResponsiblePartyElements) {
+            ResponsibleParty citedResponsibleParty = ResponsibleParty.parseIso19115_3_2018Node(IndexUtils.getXMLChild(citedResponsiblePartyElement, "cit:CI_Responsibility"));
+            addResponsibleParty(citedResponsibleParty, responsiblePartyMap);
+        }
+
+        // Point of contact in document root
+        List<Element> rootPointOfContactElements = IndexUtils.getXMLChildren(rootElement, "mdb:contact");
+        for (Element rootPointOfContactElement : rootPointOfContactElements) {
+            ResponsibleParty rootPointOfContact = ResponsibleParty.parseIso19115_3_2018Node(IndexUtils.getXMLChild(rootPointOfContactElement, "cit:CI_Responsibility"));
+            addResponsibleParty(rootPointOfContact, responsiblePartyMap);
+        }
+
+
+
+
+        // Build the document string
+        List<String> documentPartList = new ArrayList<String>();
+
+        // Add abstract
+        String parsedAbstract = WikiFormatter.getText(dataAbstract);
+        if (parsedAbstract != null) {
+            documentPartList.add(parsedAbstract);
+        }
+
+        // Add contact (excluding metadataContact)
+        for (Map.Entry<String, List<ResponsibleParty>> responsiblePartyEntry : responsiblePartyMap.entrySet()) {
+            String role = responsiblePartyEntry.getKey();
+            if (!"metadataContact".equals(role)) {
+                String label = ROLE_LABEL_MAP.get(role);
+                if (label == null) {
+                    label = String.format("Other (%s)", role);
+                }
+                documentPartList.add(label);
+                List<ResponsibleParty> responsiblePartyList = responsiblePartyEntry.getValue();
+                for (ResponsibleParty responsibleParty : responsiblePartyList) {
+                    documentPartList.add(responsibleParty.toString());
+                }
+            }
+        }
+
+        // Online resources
+        for (OnlineResource onlineResource : onlineResources) {
+            documentPartList.add(onlineResource.toString());
+        }
+
+        this.setDocument(documentPartList.isEmpty() ? null :
+                String.join(NL + NL, documentPartList));
+
+
+        // Set the metadata link to the original GeoNetwork URL.
+        // If we find a valid "point-of-truth" URL in the document,
+        // we will use that one instead.
+        URL metadataRecordUrl = null;
+        if (pointOfTruthUrlStr != null) {
+            try {
+                metadataRecordUrl = new URL(pointOfTruthUrlStr);
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL found in Point Of Truth of record %s: %s", this.getId(), pointOfTruthUrlStr), ex);
+            }
+        }
+
+        if (metadataRecordUrl == null) {
+            String geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrlStr, this.getId());
+            try {
+                metadataRecordUrl = new URL(geonetworkMetadataUrlStr);
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", this.getId(), geonetworkMetadataUrlStr), ex);
+            }
+        }
+
+        this.setLink(metadataRecordUrl);
+    }
+
+
+    /**
+     * ISO 19139 (GeoNetwork 2.x)
+     */
+
+    private void parse_ISO19139_Record(String metadataRecordUUID, String geoNetworkUrlStr, Element rootElement, Messages messages) {
+        if (metadataRecordUUID != null) {
+            this.setId(metadataRecordUUID);
+        }
+
+        // UUID
+        // NOTE: Get it from the XML document if not provided already
+        if (this.getId() == null) {
+            this.setId(IndexUtils.parseCharacterString(IndexUtils.getXMLChild(rootElement, "gmd:fileIdentifier")));
+        }
+
+        // Parent UUID
+        this.parentUUID = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(rootElement, "gmd:parentIdentifier"));
+
+        // The responsible parties are not always where they are expected.
+        // Lets parse responsible parties where ever they are found and put them in the right category.
+        // Key: role
+        Map<String, List<ResponsibleParty>> responsiblePartyMap = new HashMap<>();
+
+        // Metadata contact info
+        List<Element> metadataContacts = IndexUtils.getXMLChildren(rootElement, "gmd:contact");
+        for (Element metadataContact : metadataContacts) {
+            ResponsibleParty metadataContactResponsibleParty = ResponsibleParty.parseIso19139Node(IndexUtils.getXMLChild(metadataContact, "gmd:CI_ResponsibleParty"));
+            addResponsibleParty(metadataContactResponsibleParty, responsiblePartyMap);
+        }
+
+        // Title
+        Element identificationInfo = IndexUtils.getXMLChild(rootElement, "gmd:identificationInfo");
+        Element mdDataIdentification = IndexUtils.getXMLChild(identificationInfo, "gmd:MD_DataIdentification", "mcp:MD_DataIdentification");
+        Element dataCitation = IndexUtils.getXMLChild(mdDataIdentification, "gmd:citation");
+        Element dataCiCitation = IndexUtils.getXMLChild(dataCitation, "gmd:CI_Citation");
+        this.setTitle(IndexUtils.parseCharacterString(IndexUtils.getXMLChild(dataCiCitation, "gmd:title")));
+
+        String dataAbstract = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdDataIdentification, "gmd:abstract"));
+
+        // Point of contact in MD_DataIdentification
+        List<Element> dataPointOfContactElements = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:pointOfContact");
+        for (Element dataPointOfContactElement : dataPointOfContactElements) {
+            ResponsibleParty dataPointOfContact = ResponsibleParty.parseIso19139Node(IndexUtils.getXMLChild(dataPointOfContactElement, "gmd:CI_ResponsibleParty"));
+            addResponsibleParty(dataPointOfContact, responsiblePartyMap);
+        }
+
+        // Preview image
+        //   Key: fileDescription (thumbnail, large_thumbnail, etc)
+        //   Value: fileName (used to craft the URL)
+        Map<String, String> previewImageMap = new HashMap<>();
+        List<Element> graphicOverviewElements = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:graphicOverview");
+        for (Element graphicOverviewElement : graphicOverviewElements) {
+            Element mdBrowseGraphic = IndexUtils.getXMLChild(graphicOverviewElement, "gmd:MD_BrowseGraphic");
+            String fileDescription = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdBrowseGraphic, "gmd:fileDescription"));
+            if (fileDescription == null) {
+                fileDescription = "UNKNOWN";
+            }
+            String fileName = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdBrowseGraphic, "gmd:fileName"));
+            if (fileName != null) {
+                previewImageMap.put(fileDescription, fileName);
+            }
+        }
+        // Look for a "large_thumbnail".
+        // If there is none, look for a "thumbnail".
+        // If there is none, just pick a random thumbnail, something is better than nothing.
+        if (!previewImageMap.isEmpty()) {
+            String fileName = previewImageMap.get("large_thumbnail");
+            if (fileName == null) {
+                fileName = previewImageMap.get("thumbnail");
+            }
+            if (fileName == null) {
+                // There is no "large_thumbnail" nor "thumbnail" (very unlikely).
+                // Just get one, anyone will do...
+                for (String randomFileName : previewImageMap.values()) {
+                    fileName = randomFileName;
+                    break;
+                }
+            }
+
+            if (fileName != null) {
+                String previewUrlStr;
+                if (fileName.startsWith("http://") || fileName.startsWith("https://")) {
+                    // Some records put the full URL in the preview field.
+                    // Example:
+                    //     https://eatlas.org.au/geonetwork/srv/eng/xml.metadata.get?uuid=a86f062e-f47c-49f1-ace5-3e03a2272088
+                    previewUrlStr = fileName;
+                } else {
+                    previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
+                            geoNetworkUrlStr, this.getId(), fileName);
+                }
+
+                try {
+                    URL thumbnailUrl = new URL(previewUrlStr);
+                    this.setThumbnailUrl(thumbnailUrl);
+                } catch(Exception ex) {
+                    this.setThumbnailUrl(null);
+                    messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata thumbnail URL found in record %s: %s", this.getId(), previewUrlStr), ex);
+                }
+            }
+        }
+
+        // Langcode (example: "en")
+        String langcode = null;
+        String geonetworkLangcode = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdDataIdentification, "gmd:language"));
+        if (geonetworkLangcode != null) {
+            if (geonetworkLangcode.length() == 2) {
+                langcode = geonetworkLangcode;
+            } else if (geonetworkLangcode.length() == 3) {
+                Locale locale = LANGCODE_MAP.get(geonetworkLangcode);
+                if (locale != null) {
+                    // getLanguage returns the 2 letters langcode
+                    langcode = locale.getLanguage();
+                }
+            }
+        }
+        this.setLangcode(langcode);
+
+        // TODO GIS Information (bbox, points, polygons, etc.
+        // List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:extent");
+
+        // Online Resources
+        // including pointOfTruthUrlStr
+        String pointOfTruthUrlStr = null;
+        List<OnlineResource> onlineResources = new ArrayList<>();
+        Element distributionInfo = IndexUtils.getXMLChild(rootElement, "gmd:distributionInfo");
+        Element transferOptions = IndexUtils.getXMLChild(distributionInfo, "gmd:transferOptions");
+        Element mdDigitalTransferOptions = IndexUtils.getXMLChild(transferOptions, "gmd:MD_DigitalTransferOptions");
+        List<Element> onlineElements = IndexUtils.getXMLChildren(mdDigitalTransferOptions, "gmd:onLine");
+        for (Element onlineElement : onlineElements) {
+            Element ciOnlineResource = IndexUtils.getXMLChild(onlineElement, "gmd:CI_OnlineResource");
+            OnlineResource onlineResource = OnlineResource.parseIso19139Node(ciOnlineResource);
+            if (onlineResource != null) {
+                String label = onlineResource.getLabel();
+                String safeLabel = label == null ? "" : label.toLowerCase(Locale.ENGLISH);
+                if ("WWW:LINK-1.0-http--metadata-URL".equals(onlineResource.protocol) && safeLabel.contains("point of truth")) {
+                    if (onlineResource.linkage != null) {
+                        if (pointOfTruthUrlStr != null) {
+                            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
+                                this.getId()));
+                        }
+                        pointOfTruthUrlStr = onlineResource.linkage;
+                        if (!pointOfTruthUrlStr.contains(this.getId())) {
+                            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
+                                this.getId(), pointOfTruthUrlStr));
+                        }
+                    }
+                } else {
+                    onlineResources.add(onlineResource);
+                }
+            }
+        }
+
+        // Cited parties
+        List<Element> citedResponsiblePartyElements = IndexUtils.getXMLChildren(dataCiCitation, "gmd:citedResponsibleParty");
+        for (Element citedResponsiblePartyElement : citedResponsiblePartyElements) {
+            ResponsibleParty citedResponsibleParty = ResponsibleParty.parseIso19139Node(IndexUtils.getXMLChild(citedResponsiblePartyElement, "gmd:CI_ResponsibleParty"));
+            addResponsibleParty(citedResponsibleParty, responsiblePartyMap);
+        }
+
+        // Point of contact in document root
+        List<Element> rootPointOfContactElements = IndexUtils.getXMLChildren(rootElement, "gmd:contact");
+        for (Element rootPointOfContactElement : rootPointOfContactElements) {
+            ResponsibleParty rootPointOfContact = ResponsibleParty.parseIso19139Node(IndexUtils.getXMLChild(rootPointOfContactElement, "gmd:CI_ResponsibleParty"));
+            addResponsibleParty(rootPointOfContact, responsiblePartyMap);
+        }
+
+
+
+
+        // Build the document string
+        List<String> documentPartList = new ArrayList<String>();
+
+        // Add abstract
+        String parsedAbstract = WikiFormatter.getText(dataAbstract);
+        if (parsedAbstract != null) {
+            documentPartList.add(parsedAbstract);
+        }
+
+        // Add contact (excluding metadataContact)
+        for (Map.Entry<String, List<ResponsibleParty>> responsiblePartyEntry : responsiblePartyMap.entrySet()) {
+            String role = responsiblePartyEntry.getKey();
+            if (!"metadataContact".equals(role)) {
+                String label = ROLE_LABEL_MAP.get(role);
+                if (label == null) {
+                    label = String.format("Other (%s)", role);
+                }
+                documentPartList.add(label);
+                List<ResponsibleParty> responsiblePartyList = responsiblePartyEntry.getValue();
+                for (ResponsibleParty responsibleParty : responsiblePartyList) {
+                    documentPartList.add(responsibleParty.toString());
+                }
+            }
+        }
+
+        // Online resources
+        for (OnlineResource onlineResource : onlineResources) {
+            documentPartList.add(onlineResource.toString());
+        }
+
+        this.setDocument(documentPartList.isEmpty() ? null :
+                String.join(NL + NL, documentPartList));
+
+
+        // Set the metadata link to the original GeoNetwork URL.
+        // If we find a valid "point-of-truth" URL in the document,
+        // we will use that one instead.
+        URL metadataRecordUrl = null;
+        if (pointOfTruthUrlStr != null) {
+            try {
+                metadataRecordUrl = new URL(pointOfTruthUrlStr);
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL found in Point Of Truth of record %s: %s", this.getId(), pointOfTruthUrlStr), ex);
+            }
+        }
+
+        if (metadataRecordUrl == null) {
+            String geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrlStr, this.getId());
+            try {
+                metadataRecordUrl = new URL(geonetworkMetadataUrlStr);
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", this.getId(), geonetworkMetadataUrlStr), ex);
+            }
+        }
+
+        this.setLink(metadataRecordUrl);
     }
 
     private static void addResponsibleParty(ResponsibleParty responsibleParty, Map<String, List<ResponsibleParty>> responsiblePartyMap) {
@@ -402,8 +663,92 @@ public class GeoNetworkRecord extends Entity {
 
         private ResponsibleParty() {}
 
+        // Parse a "cit:CI_Responsibility" node
+        public static ResponsibleParty parseIso19115_3_2018Node(Node responsiblePartyNode) {
+            if (!(responsiblePartyNode instanceof Element)) {
+                return null;
+            }
+
+            ResponsibleParty responsibleParty = new ResponsibleParty();
+
+            Element role = IndexUtils.getXMLChild(responsiblePartyNode, "cit:role");
+            Element roleCode = IndexUtils.getXMLChild(role, "cit:CI_RoleCode");
+            responsibleParty.role = IndexUtils.parseAttribute(roleCode, "codeListValue");
+
+            Element party = IndexUtils.getXMLChild(responsiblePartyNode, "cit:party");
+            Element ciOrganisation = IndexUtils.getXMLChild(party, "cit:CI_Organisation");
+
+            responsibleParty.organisation = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciOrganisation, "cit:name"));
+
+            Element individual = IndexUtils.getXMLChild(ciOrganisation, "cit:individual");
+            Element ciIndividual = IndexUtils.getXMLChild(individual, "cit:CI_Individual");
+
+            responsibleParty.name = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciIndividual, "cit:name"));
+            responsibleParty.position = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciIndividual, "cit:positionName"));
+
+            Element contactInfo = IndexUtils.getXMLChild(ciIndividual, "cit:contactInfo");
+            Element ciContact = IndexUtils.getXMLChild(contactInfo, "cit:CI_Contact");
+
+            // Get the phone number
+            List<Element> phoneElements = IndexUtils.getXMLChildren(ciContact, "cit:phone");
+            for (Element phoneElement : phoneElements) {
+                Element ciTelephone = IndexUtils.getXMLChild(phoneElement, "cit:CI_Telephone");
+
+                Element numberType = IndexUtils.getXMLChild(ciTelephone, "cit:numberType");
+                Element ciTelephoneTypeCode = IndexUtils.getXMLChild(numberType, "cit:CI_TelephoneTypeCode");
+                String type = IndexUtils.parseAttribute(ciTelephoneTypeCode, "codeListValue");
+
+                String number = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciTelephone, "cit:number"));
+
+                // Parse the phone number, ignore facsimile, etc
+                if ("voice".equalsIgnoreCase(type)) {
+                    responsibleParty.phone = number;
+                }
+            }
+
+            // Get the address (spread across multiple fields)
+            Element address = IndexUtils.getXMLChild(ciContact, "cit:address");
+            Element ciAddress = IndexUtils.getXMLChild(address, "cit:CI_Address");
+            String deliveryPoint = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciAddress, "cit:deliveryPoint"));
+            String city = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciAddress, "cit:city"));
+            String postalCode = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciAddress, "cit:postalCode"));
+            // Technically, it's not always a "state". It can be a territory, province, etc. but the word "state" is shorter and easier to understand.
+            String state = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciAddress, "cit:administrativeArea"));
+            String country = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciAddress, "cit:country"));
+
+            // Build the address string
+            //   using a clever "join" trick on a list, so we don't have
+            //   to deal with "," between null or not null fields.
+            List<String> addressPartList = new ArrayList<String>();
+            if (deliveryPoint != null) {
+                addressPartList.add(deliveryPoint);
+            }
+            if (city != null) {
+                addressPartList.add(city);
+            }
+            if (postalCode != null) {
+                addressPartList.add(postalCode);
+            }
+            if (state != null) {
+                addressPartList.add(state);
+            }
+            if (country != null) {
+                addressPartList.add(country);
+            }
+            responsibleParty.address = addressPartList.isEmpty() ? null : String.join(", ", addressPartList);
+
+            // E-mail address
+            responsibleParty.email = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(ciAddress, "cit:electronicMailAddress"));
+
+            // Website
+            Element onlineResource = IndexUtils.getXMLChild(ciContact, "cit:onlineResource");
+            responsibleParty.website = OnlineResource.parseIso19115_3_2018Node(IndexUtils.getXMLChild(onlineResource, "cit:CI_OnlineResource"));
+
+            return responsibleParty;
+        }
+
         // Parse a "gmd:CI_ResponsibleParty" node
-        public static ResponsibleParty parseNode(Node responsiblePartyNode) {
+        public static ResponsibleParty parseIso19139Node(Node responsiblePartyNode) {
             if (!(responsiblePartyNode instanceof Element)) {
                 return null;
             }
@@ -459,7 +804,7 @@ public class GeoNetworkRecord extends Entity {
 
             // Website
             Element onlineResource = IndexUtils.getXMLChild(ciContact, "gmd:onlineResource");
-            responsibleParty.website = OnlineResource.parseNode(IndexUtils.getXMLChild(onlineResource, "gmd:CI_OnlineResource"));
+            responsibleParty.website = OnlineResource.parseIso19139Node(IndexUtils.getXMLChild(onlineResource, "gmd:CI_OnlineResource"));
 
             Element role = IndexUtils.getXMLChild(responsiblePartyNode, "gmd:role");
             Element roleCode = IndexUtils.getXMLChild(role, "gmd:CI_RoleCode");
@@ -516,8 +861,24 @@ public class GeoNetworkRecord extends Entity {
 
         private OnlineResource() {}
 
+        // Parse a "cit:CI_OnlineResource" node
+        public static OnlineResource parseIso19115_3_2018Node(Node onlineResourceNode) {
+            if (!(onlineResourceNode instanceof Element)) {
+                return null;
+            }
+
+            OnlineResource onlineResource = new OnlineResource();
+
+            onlineResource.protocol = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(onlineResourceNode, "cit:protocol"));
+            onlineResource.name = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(onlineResourceNode, "cit:name"));
+            onlineResource.description = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(onlineResourceNode, "cit:description"));
+            onlineResource.linkage = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(onlineResourceNode, "cit:linkage"));
+
+            return onlineResource;
+        }
+
         // Parse a "gmd:CI_OnlineResource" node
-        public static OnlineResource parseNode(Node onlineResourceNode) {
+        public static OnlineResource parseIso19139Node(Node onlineResourceNode) {
             if (!(onlineResourceNode instanceof Element)) {
                 return null;
             }

@@ -215,11 +215,14 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                         for (Element metadataRecordElement : metadataRecordList) {
                             Element metadataRecordInfoElement = IndexUtils.getXMLChild(metadataRecordElement, "geonet:info");
                             Element metadataRecordUUIDElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "uuid");
-                            if (metadataRecordUUIDElement != null) {
+                            Element metadataSchemaElement = IndexUtils.getXMLChild(metadataRecordInfoElement, "schema");
+                            if (metadataRecordUUIDElement != null && metadataSchemaElement != null) {
                                 String metadataRecordUUID = IndexUtils.parseText(metadataRecordUUIDElement);
+                                String metadataSchema = IndexUtils.parseText(metadataSchemaElement);
 
                                 GeoNetworkIndexerThread thread = new GeoNetworkIndexerThread(
-                                        client, messages, factory, metadataRecordUUID, orphanMetadataRecordList, usedThumbnails, from);
+                                        client, messages, factory, metadataRecordUUID, metadataSchema,
+                                        orphanMetadataRecordList, usedThumbnails, from);
 
                                 threadPool.execute(thread);
                             }
@@ -303,6 +306,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         private final Messages messages;
         private final DocumentBuilderFactory documentBuilderFactory;
         private final String metadataRecordUUID;
+        private final String metadataSchema;
         private final List<String> orphanMetadataRecordList;
         private final Set<String> usedThumbnails;
         private final long current;
@@ -312,6 +316,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 Messages messages,
                 DocumentBuilderFactory documentBuilderFactory,
                 String metadataRecordUUID,
+                String metadataSchema,
                 List<String> orphanMetadataRecordList,
                 Set<String> usedThumbnails,
                 long current
@@ -320,6 +325,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             this.messages = messages;
             this.documentBuilderFactory = documentBuilderFactory;
             this.metadataRecordUUID = metadataRecordUUID;
+            this.metadataSchema = metadataSchema;
             this.orphanMetadataRecordList = orphanMetadataRecordList;
             this.usedThumbnails = usedThumbnails;
             this.current = current;
@@ -327,7 +333,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         @Override
         public void run() {
-            GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(this.client, this.documentBuilderFactory, this.metadataRecordUUID);
+            GeoNetworkRecord geoNetworkRecord = this.loadGeoNetworkRecord(this.client, this.documentBuilderFactory, this.metadataRecordUUID, this.metadataSchema);
             if (geoNetworkRecord != null) {
                 // If the record have a parent UUID,
                 // keep it's UUID in a list so we can come back to it later to set its parent title.
@@ -358,7 +364,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             GeoNetworkIndexer.this.incrementCompleted();
         }
 
-        private GeoNetworkRecord loadGeoNetworkRecord(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID) {
+        private GeoNetworkRecord loadGeoNetworkRecord(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, String metadataSchema) {
             String url;
             String geoNetworkUrl = GeoNetworkIndexer.this.getGeoNetworkUrl();
             String urlBase = String.format("%s/srv/eng/xml.metadata.get", geoNetworkUrl);
@@ -400,9 +406,9 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     }
 
                     Document document = builder.parse(input);
-                    GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(
-                            GeoNetworkIndexer.this.getIndex(), GeoNetworkIndexer.this.getGeoNetworkVersion(),
-                            metadataRecordUUID, geoNetworkUrl, document, this.messages);
+                    GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(GeoNetworkIndexer.this.getIndex());
+                    geoNetworkRecord.parseRecord(metadataRecordUUID, metadataSchema, geoNetworkUrl, document, this.messages);
+
                     if (geoNetworkRecord.getId() != null) {
                         URL thumbnailUrl = geoNetworkRecord.getThumbnailUrl();
                         geoNetworkRecord.setThumbnailUrl(thumbnailUrl);
