@@ -74,9 +74,11 @@
             <div class="file-status">
                 <p><c:out value="${it.configFile.absolutePath}" /></p>
                 <ul>
-                    <li><span class="label">Exists</span> <span class="${it.configFile.exists() ? "ok" : "error"}">${it.configFile.exists() ? "Yes" : "No"}</span></li>
-                    <li><span class="label">Readable</span> <span class="${it.configFile.canRead() ? "ok" : "error"}">${it.configFile.canRead() ? "Yes" : "No"}</span></li>
-                    <li><span class="label">Writable</span> <span class="${it.configFile.canWrite() ? "ok" : "error"}">${it.configFile.canWrite() ? "Yes" : "No"}</span></li>
+                    <li>
+                        <span class="${it.configFile.exists() ? "ok" : "error"}">${it.configFile.exists() ? "Exists" : "Doesn\'t exists"}</span>,
+                        <span class="${it.configFile.canRead() ? "ok" : "error"}">${it.configFile.canRead() ? "Readable" : "Not readable"}</span>,
+                        <span class="${it.configFile.canWrite() ? "ok" : "error"}">${it.configFile.canWrite() ? "Writable" : "Not writable"}</span>
+                    </li>
                     <li><span class="label">Last modified</span> <fmt:formatDate value="${it.configFileLastModifiedDate}" pattern="dd/MM/yyyy HH:mm:ss"/></li>
                 </ul>
 
@@ -87,9 +89,11 @@
             <div class="file-status">
                 <p><c:out value="${it.stateFile.absolutePath}" /></p>
                 <ul>
-                    <li><span class="label">Exists</span> <span class="${it.stateFile.exists() ? "ok" : "error"}">${it.stateFile.exists() ? "Yes" : "No"}</span></li>
-                    <li><span class="label">Readable</span> <span class="${it.stateFile.canRead() ? "ok" : "error"}">${it.stateFile.canRead() ? "Yes" : "No"}</span></li>
-                    <li><span class="label">Writable</span> <span class="${it.stateFile.canWrite() ? "ok" : "error"}">${it.stateFile.canWrite() ? "Yes" : "No"}</span></li>
+                    <li>
+                        <span class="${it.stateFile.exists() ? "ok" : "error"}">${it.stateFile.exists() ? "Exists" : "Doesn\'t exists"}</span>,
+                        <span class="${it.stateFile.canRead() ? "ok" : "error"}">${it.stateFile.canRead() ? "Readable" : "Not readable"}</span>,
+                        <span class="${it.stateFile.canWrite() ? "ok" : "error"}">${it.stateFile.canWrite() ? "Writable" : "Not writable"}</span>
+                    </li>
                     <li><span class="label">Last modified</span> <fmt:formatDate value="${it.stateFileLastModifiedDate}" pattern="dd/MM/yyyy HH:mm:ss"/></li>
                 </ul>
 
@@ -101,9 +105,11 @@
             <div class="file-status">
                 <p><c:out value="${it.imageCacheDirectory.absolutePath}" /></p>
                 <ul>
-                    <li><span class="label">Exists</span> <span class="${it.imageCacheDirectory.exists() ? "ok" : "error"}">${it.imageCacheDirectory.exists() ? "Yes" : "No"}</span></li>
-                    <li><span class="label">Readable</span> <span class="${it.imageCacheDirectory.canRead() ? "ok" : "error"}">${it.imageCacheDirectory.canRead() ? "Yes" : "No"}</span></li>
-                    <li><span class="label">Writable</span> <span class="${it.imageCacheDirectory.canWrite() ? "ok" : "error"}">${it.imageCacheDirectory.canWrite() ? "Yes" : "No"}</span></li>
+                    <li>
+                        <span class="${it.imageCacheDirectory.exists() ? "ok" : "error"}">${it.imageCacheDirectory.exists() ? "Exists" : "Doesn\'t exists"}</span>,
+                        <span class="${it.imageCacheDirectory.canRead() ? "ok" : "error"}">${it.imageCacheDirectory.canRead() ? "Readable" : "Not readable"}</span>,
+                        <span class="${it.imageCacheDirectory.canWrite() ? "ok" : "error"}">${it.imageCacheDirectory.canWrite() ? "Writable" : "Not writable"}</span>
+                    </li>
                 </ul>
             </div>
         </div>

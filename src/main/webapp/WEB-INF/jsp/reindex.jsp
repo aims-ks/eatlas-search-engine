@@ -25,7 +25,7 @@
         <h2>Cron configuration</h2>
 
         <p>
-            Add the following entries to the server crontab, to keep the search indexes up to date.
+            Add the following entries to the server's crontab, to keep the search indexes up to date.
         </p>
 
         <pre>0   2   *   *   *   curl --silent "${baseURL}<c:url value="/public/index/v1/reindex">
