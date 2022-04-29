@@ -120,7 +120,7 @@
             <table>
                 <tr class="table-header">
                     <th>Index</th>
-                    <th>Status</th>
+                    <th>Indexer</th>
                     <th>Type</th>
                     <th>Document count</th>
                     <th>Cache directory</th>

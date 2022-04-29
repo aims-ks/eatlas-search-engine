@@ -116,7 +116,7 @@
             <table>
                 <tr class="table-header">
                     <th>Index</th>
-                    <th>Status</th>
+                    <th>Indexer</th>
                     <th>Type</th>
                     <th>Document count</th>
                     <th>Last indexed</th>
@@ -155,13 +155,14 @@
 
                             <div class="field">
                                 <label for="${indexer.index}_enabled">
-                                    <span class="label">Indexation</span>
+                                    <span class="label">Indexer</span>
                                     <input type="checkbox"
                                         id="${indexer.index}_enabled"
                                         name="${indexer.index}_enabled"
                                         ${indexer.enabled ? "checked=\"checked\"" : ""} /> Enabled
                                 </label>
                                 <div class="desc">Check to enable automatic indexation from the cron.</div>
+                                <div class="desc">The buttons "Re-index all" and "Index latest all" from the Reindex tab only process enabled indexes.</div>
                             </div>
 
                             <div class="field">
