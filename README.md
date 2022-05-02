@@ -1,11 +1,8 @@
 TODO:
 
-- Authentication
-  - Direct login
-  - KeyCloak (maybe? Probably overkill)
-
 - Create files:
   - resources/eatlas_search_engine_default.json
+  - favicon
 
 - Fix tests
 

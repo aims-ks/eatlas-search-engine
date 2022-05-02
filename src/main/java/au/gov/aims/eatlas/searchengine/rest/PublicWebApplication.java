@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2022 Australian Institute of Marine Science
+ *  Copyright (C) 2020 Australian Institute of Marine Science
  *
  *  Contact: Gael Lafond <g.lafond@aims.gov.au>
  *
@@ -16,9 +16,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package au.gov.aims.eatlas.searchengine.admin;
+package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.client.SearchUtils;
+import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.jsp.JspMvcFeature;
 
@@ -26,19 +29,26 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 import java.io.IOException;
 
-public class AppConfig extends ResourceConfig {
+public class PublicWebApplication extends ResourceConfig {
+    private static final Logger LOGGER = Logger.getLogger(PublicWebApplication.class.getName());
 
-    public AppConfig(@Context ServletContext servletContext) {
+    public PublicWebApplication(@Context ServletContext servletContext) {
+        this.packages("au.gov.aims.eatlas.searchengine.admin.rest");
+        this.property(JspMvcFeature.TEMPLATE_BASE_PATH, "/WEB-INF/jsp");
+        this.register(JspMvcFeature.class);
+
         Messages messages = Messages.getInstance(null);
 
         try {
             SearchEngineConfig.createInstance(servletContext, messages);
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                SearchUtils.deleteOrphanIndexes();
+            } catch (IOException ex) {
+                LOGGER.error(
+                    "An exception occurred while deleting orphan search indexes.", ex);
+            }
+        } catch (IOException ex) {
+            LOGGER.error("The eAtlas search engine could not load its configuration.", ex);
         }
-
-        this.packages("au.gov.aims.eatlas.searchengine.admin.rest");
-        this.property(JspMvcFeature.TEMPLATE_BASE_PATH, "/WEB-INF/jsp");
-        this.register(JspMvcFeature.class);
     }
 }

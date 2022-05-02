@@ -53,6 +53,14 @@ progress.disabled {
   justify-content: space-between;
   align-items: center;
 }
+
+.footer {
+  justify-content: flex-end;
+}
+.footer .copyright {
+  font-size: 0.8em;
+}
+
 .header .user-menu {
   display: flex;
 
@@ -295,31 +303,31 @@ button.reload {
   background-image: url("../img/cog.png");
 }
 
-.main .content .message .info,
-.main .content .message .warning,
-.main .content .message .error {
+.content .message .info,
+.content .message .warning,
+.content .message .error {
   padding: 0.2em;
   margin: 0.5em 0;
 }
 
-.main .content .message .info {
+.content .message .info {
   background-color: #DDFFDD;
 }
 
-.main .content .message .warning {
+.content .message .warning {
   background-color: #FFFFDD;
 }
 
-.main .content .message .error {
+.content .message .error {
   background-color: #FFDDDD;
   font-weight: bold;
 }
 
-.main .content .message .error .exception {
+.content .message .error .exception {
   font-weight: normal;
 }
 
-.main .content .message .error .exception .stacktrace {
+.content .message .error .exception .stacktrace {
   overflow: auto;
 }
 

@@ -1,0 +1,37 @@
+html, body {
+  height: 100%;
+  background-color: #3366DD;
+  overflow: auto;
+}
+
+.login-page .content {
+  margin: 5em auto;
+  max-width: 30em;
+}
+
+.login-page .content .box {
+  background-color: #FFFFFF;
+  box-shadow: 0 0 20px #000000;
+  margin: 2em 1em;
+  padding: 1em 2em;
+}
+
+.login-page .content .box h2 {
+  text-align: center;
+}
+
+.login-page .content .box .field label {
+  display: flex;
+  flex-wrap: wrap; /* For small screen */
+  margin: 1em 0;
+}
+
+.login-page .content .box .field label .label {
+  width: 6em;
+}
+
+.login-page .content .box .field label input[type=text],
+.login-page .content .box .field label input[type=password] {
+  flex-grow: 1;
+  width: 5em; /* For small screen */
+}

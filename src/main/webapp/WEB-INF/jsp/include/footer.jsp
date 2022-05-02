@@ -2,5 +2,7 @@
     </div>
 
     <div class="footer">
-        FOOTER
+        <div class="copyright">
+            &copy; eAtlas, AIMS 2022
+        </div>
     </div>
