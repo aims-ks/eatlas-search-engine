@@ -112,11 +112,11 @@ public class LoginPage {
 
         boolean formFilled = true;
         if (username == null || username.isEmpty()) {
-            messages.addMessage(Messages.Level.WARNING, "Please, enter a username.");
+            messages.addMessage(Messages.Level.ERROR, "Please, enter a username.");
             formFilled = false;
         }
         if (password == null || password.isEmpty()) {
-            messages.addMessage(Messages.Level.WARNING, "Please, enter a password.");
+            messages.addMessage(Messages.Level.ERROR, "Please, enter a password.");
             formFilled = false;
         }
 
@@ -130,7 +130,7 @@ public class LoginPage {
         // Hide "verifyPassword" messages. We do NOT want to give any clues to the user attempting to login.
         Messages hiddenMessages = Messages.getInstance(null);
         if (!username.equals(user.getUsername()) || !user.verifyPassword(password, hiddenMessages)) {
-            messages.addMessage(Messages.Level.WARNING, "Invalid username / password.");
+            messages.addMessage(Messages.Level.ERROR, "Invalid username / password.");
             return null;
         }
 

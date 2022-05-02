@@ -14,6 +14,10 @@
 
 <body class="login-page">
     <div class="content">
+        <div class="box">
+            <h2>eAtlas Search Engine</h2>
+        </div>
+
         <c:import url="include/messages.jsp"/>
 
         <form method="post">

@@ -331,6 +331,10 @@ button.reload {
   overflow: auto;
 }
 
+.main .main-menu {
+  flex-shrink: 0;
+}
+
 .main .content .result .preview {
   overflow: auto;
 }

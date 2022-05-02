@@ -11,7 +11,7 @@
     </div>
 
     <div class="main">
-        <nav>
+        <nav class="main-menu">
             <ul class="menu">
                 <li class="${requestScope.dashboardActive}"><a href="<c:url value="/admin/" />">Status</a></li> <!-- List indexes in table, each row have: number of doc, edit button (goes to Manage), index button (goes to Index) -->
                 <li class="${requestScope.settingsActive}"><a href="<c:url value="/admin/settings" />">Settings</a></li> <!-- Create, edit, delete index -->
