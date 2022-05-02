@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.admin;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.entity.User;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -54,6 +55,8 @@ public class SearchEngineConfig {
 
     private long lastModified;
     private final File configFile;
+
+    private User user;
 
     // Values saved in the config file
     private List<String> elasticSearchUrls; // http://localhost:9200, http://localhost:9300
@@ -226,6 +229,14 @@ public class SearchEngineConfig {
 
     public File getConfigFile() {
         return this.configFile;
+    }
+
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     // Find config file
@@ -415,15 +426,22 @@ public class SearchEngineConfig {
         }
 
         return new JSONObject()
-            .put("elasticSearchUrls", jsonElasticSearchUrls)
-            .put("globalThumbnailTTL", this.globalThumbnailTTL)
-            .put("globalBrokenThumbnailTTL", this.globalBrokenThumbnailTTL)
-            .put("imageCacheDirectory", this.imageCacheDirectory)
-            .put("reindexToken", this.reindexToken)
-            .put("indexers", jsonIndexers);
+                .put("user", this.user == null ? null : this.user.toJSON())
+                .put("elasticSearchUrls", jsonElasticSearchUrls)
+                .put("globalThumbnailTTL", this.globalThumbnailTTL)
+                .put("globalBrokenThumbnailTTL", this.globalBrokenThumbnailTTL)
+                .put("imageCacheDirectory", this.imageCacheDirectory)
+                .put("reindexToken", this.reindexToken)
+                .put("indexers", jsonIndexers);
     }
 
     private void loadJSON(JSONObject json, Messages messages) {
+        JSONObject jsonUser = json.optJSONObject("user");
+        if (this.user == null) {
+            this.user = new User(jsonUser, messages);
+        } else {
+            this.user.loadJSON(jsonUser, messages);
+        }
         this.globalThumbnailTTL = json.optLong("globalThumbnailTTL", DEFAULT_GLOBAL_THUMBNAIL_TTL);
         this.globalBrokenThumbnailTTL = json.optLong("globalBrokenThumbnailTTL", DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL);
         this.imageCacheDirectory = json.optString("imageCacheDirectory", null);
@@ -450,10 +468,11 @@ public class SearchEngineConfig {
             }
         }
 
-        if (this.reindexToken == null || this.reindexToken.isEmpty()) {
+        if (this.reindexToken == null || this.reindexToken.isEmpty() || this.user.isModified()) {
             this.reindexToken = SearchEngineConfig.generateRandomToken(SearchEngineConfig.RANDOM_TOKEN_LENGTH);
             try {
                 this.save();
+                this.user.setModified(false);
             } catch (IOException ex) {
                 messages.addMessage(Messages.Level.ERROR,
                         String.format("Error occurred while saving the configuration file: %s",
@@ -464,7 +483,7 @@ public class SearchEngineConfig {
 
     // Inspired from:
     //     https://stackoverflow.com/questions/41107/how-to-generate-a-random-alpha-numeric-string#41156
-    private static String generateRandomToken(int length) {
+    public static String generateRandomToken(int length) {
         String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String lower = upper.toLowerCase();
         String digits = "0123456789";

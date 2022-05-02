@@ -160,8 +160,10 @@ public class SettingsPage {
         config.setElasticSearchUrls(FormUtils.getFormStringValues(form, "elasticSearchUrl"));
         config.setReindexToken(FormUtils.getFormStringValue(form, "reindexToken"));
 
+        boolean valid = true;
         for (AbstractIndexer indexer : config.getIndexers()) {
             String index = indexer.getIndex();
+            valid = valid && indexer.validate();
 
             String newIndex = FormUtils.getFormStringValue(form, index + "_index");
             if (newIndex != null && !newIndex.equals(index)) {
@@ -231,11 +233,17 @@ public class SettingsPage {
             }
         }
 
-        try {
-            config.save();
-        } catch (IOException ex) {
+        if (!valid) {
+            // This message is rather cryptic, but it should only appear if the user turn off JavaScript.
             messages.addMessage(Messages.Level.ERROR,
-                "An exception occurred while saving the search engine settings.", ex);
+                "Form validation failed.");
+        } else {
+            try {
+                config.save();
+            } catch (IOException ex) {
+                messages.addMessage(Messages.Level.ERROR,
+                    "An exception occurred while saving the search engine settings.", ex);
+            }
         }
     }
 

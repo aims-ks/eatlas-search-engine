@@ -4,7 +4,7 @@
         <h1>eAtlas Search Engine - ${requestScope.title}</h1>
         <nav>
             <ul class="user-menu">
-                <li><span>Admin</span></li>
+                <li><a href="<c:url value="/admin/user" />">Admin</a></li>
                 <li><a href="#">Logout</a></li>
             </ul>
         </nav>

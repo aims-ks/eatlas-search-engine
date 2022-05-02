@@ -32,19 +32,26 @@ docReady(function() {
     let editFormRowId = "formRow_" + index;
 
     let editFormRowEl = document.getElementById(editFormRowId);
-    editFormRowEl.style.display = "none";
 
-    editFormButtonEl.addEventListener("click", function(event) {
-      let index = this.parentNode.id;
-      let editFormRowId = "formRow_" + index;
-      let editFormRowEl = document.getElementById(editFormRowId);
+    // If the form contains required fields which are not filled, do not collapse the edit form,
+    // and do not make it collapsable.
+    // This will allow the browser to position the window to the first required field when a submit button is pressed,
+    // if the user forgot to fill one.
+    if (!editFormRowEl.classList.contains("invalid")) {
+      editFormRowEl.style.display = "none";
 
-      if (editFormRowEl.style.display === "none") {
-        editFormRowEl.style.display = "table-row";
-      } else {
-        editFormRowEl.style.display = "none";
-      }
-    });
+      editFormButtonEl.addEventListener("click", function(event) {
+        let index = this.parentNode.id;
+        let editFormRowId = "formRow_" + index;
+        let editFormRowEl = document.getElementById(editFormRowId);
+
+        if (editFormRowEl.style.display === "none") {
+          editFormRowEl.style.display = "table-row";
+        } else {
+          editFormRowEl.style.display = "none";
+        }
+      });
+    }
   }
 
   // Progress bars
@@ -52,7 +59,30 @@ docReady(function() {
   for (let i=0; i<progressBarEls.length; i++) {
     refreshProgressBar(progressBarEls[i]);
   }
+
+  // Change password - Validate password and repeat password
+  const passwordEl = document.getElementById("password");
+  const repasswordEl = document.getElementById("repassword");
+  if (passwordEl !== null) {
+    passwordEl.addEventListener("change", confirmPassword);
+  }
+  if (repasswordEl !== null) {
+    repasswordEl.addEventListener("keyup", confirmPassword);
+  }
 });
+
+function confirmPassword() {
+  const passwordEl = document.getElementById("password");
+  const repasswordEl = document.getElementById("repassword");
+
+  // When setCustomValidity is set to a none-empty value,
+  // the value is displayed on the form and the form does not submit.
+  if (passwordEl.value !== repasswordEl.value) {
+    repasswordEl.setCustomValidity("Passwords do not match.");
+  } else {
+    repasswordEl.setCustomValidity("");
+  }
+}
 
 function refreshProgressBar(progressBarEl) {
   const Http = new XMLHttpRequest();
@@ -126,17 +156,14 @@ function docReady(fn) {
     }
 }
 
-function validateNotEmpty(elementId, humanReadableFieldName) {
+function validateNotEmpty(elementId) {
   const element = document.getElementById(elementId);
-  if (element == null) {
-    alert("Validation failed. Element " + elementId + " does not exists.");
-    return false;
-  }
 
-  if (!element.value) {
-    alert("Validation failed. You must enter a value for: " + humanReadableFieldName);
-    return false;
+  // When setCustomValidity is set to a none-empty value,
+  // the value is displayed on the form and the form does not submit.
+  if (element != null && (element.value === null || element.value === "")) {
+    element.setCustomValidity("You must enter a value.");
+  } else {
+    element.setCustomValidity("");
   }
-
-  return true;
 }

@@ -71,6 +71,20 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
             .put("drupalPreviewImageField", this.drupalPreviewImageField);
     }
 
+    @Override
+    public boolean validate() {
+        if (!super.validate()) {
+            return false;
+        }
+        if (this.drupalUrl == null || this.drupalUrl.isEmpty()) {
+            return false;
+        }
+        if (this.drupalNodeType == null || this.drupalNodeType.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     public DrupalNode load(JSONObject json, Messages messages) {
         return DrupalNode.load(json, messages);
     }

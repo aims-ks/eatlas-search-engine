@@ -68,6 +68,13 @@ public abstract class AbstractIndexer<E extends Entity> {
     public abstract Entity load(JSONObject json, Messages messages);
     public abstract JSONObject toJSON();
 
+    public boolean validate() {
+        if (this.index == null || this.index.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     public boolean supportsIndexLatest() {
         return false;
     }

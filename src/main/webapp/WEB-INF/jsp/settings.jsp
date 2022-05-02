@@ -125,7 +125,7 @@
                 </tr>
 
                 <c:forEach items="${it.config.indexers}" var="indexer" varStatus="loopStatus">
-                    <c:set var="cssClass" value="${(loopStatus.index+1) % 2 == 0 ? 'even' : 'odd'}"/>
+                    <c:set var="cssClass" value="${(loopStatus.index+1) % 2 == 0 ? 'even' : 'odd'} ${indexer.validate() ? 'valid' : 'invalid'}"/>
                     <tr class="${cssClass}">
                         <td><c:out value="${indexer.index}" /></td>
                         <td class="${indexer.enabled ? "enabled" : "disabled"}">
@@ -136,7 +136,7 @@
                         <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
                         <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
                         <td class="buttons" id="${indexer.index}">
-                            <button type="button" class="edit editFormButton" title="Edit">Edit</button>
+                            <button type="button" class="edit editFormButton" title="Edit" ${indexer.validate() ? '' : 'disabled="disabled"'}>Edit</button>
 
                             <!-- Dummy button used for form submission using the Enter button -->
                             <button class="hiddenSubmitButton" name="save-button" value="save" title="save">Save</button>
@@ -145,7 +145,9 @@
                                 class="delete"
                                 name="delete-button"
                                 value="${indexer.index}"
-                                onClick="return window.confirm('Are you sure you want to delete the index: <c:out value="${indexer.index}" />?')"
+                                <%-- Do not validate the edit form (hidden, bellow) when the delete button is pressed. --%>
+                                formnovalidate="formnovalidate"
+                                onClick="return window.confirm('Are you sure you want to delete the index: <c:out value="${indexer.index}" />?');"
                                 title="Delete">Delete</button>
                         </td>
                     </tr>
@@ -542,7 +544,7 @@
                         class="add"
                         name="add-index-button"
                         value="addIndex"
-                        onClick="return validateNotEmpty('newIndexType', 'Index type')"
+                        onClick="validateNotEmpty('newIndexType')"
                         title="Add an index">Add</button>
                 </label>
             </div>

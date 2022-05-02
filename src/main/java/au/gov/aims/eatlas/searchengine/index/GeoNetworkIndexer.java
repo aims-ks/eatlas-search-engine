@@ -72,6 +72,17 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             .put("geoNetworkVersion", this.geoNetworkVersion);
     }
 
+    @Override
+    public boolean validate() {
+        if (!super.validate()) {
+            return false;
+        }
+        if (this.geoNetworkUrl == null || this.geoNetworkUrl.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     public GeoNetworkRecord load(JSONObject json, Messages messages) {
         return GeoNetworkRecord.load(json, messages);
     }

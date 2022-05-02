@@ -77,6 +77,20 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
             .put("drupalContentOverwriteField", this.drupalContentOverwriteField);
     }
 
+    @Override
+    public boolean validate() {
+        if (!super.validate()) {
+            return false;
+        }
+        if (this.drupalUrl == null || this.drupalUrl.isEmpty()) {
+            return false;
+        }
+        if (this.drupalNodeType == null || this.drupalNodeType.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     public ExternalLink load(JSONObject json, Messages messages) {
         return ExternalLink.load(json, messages);
     }

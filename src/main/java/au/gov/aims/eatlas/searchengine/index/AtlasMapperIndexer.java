@@ -70,6 +70,17 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             .put("atlasMapperVersion", this.atlasMapperVersion);
     }
 
+    @Override
+    public boolean validate() {
+        if (!super.validate()) {
+            return false;
+        }
+        if (this.atlasMapperClientUrl == null || this.atlasMapperClientUrl.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     public AtlasMapperLayer load(JSONObject json, Messages messages) {
         return AtlasMapperLayer.load(json, messages);
     }

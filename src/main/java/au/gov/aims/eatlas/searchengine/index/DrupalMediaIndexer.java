@@ -77,6 +77,20 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
             .put("drupalDescriptionField", this.drupalDescriptionField);
     }
 
+    @Override
+    public boolean validate() {
+        if (!super.validate()) {
+            return false;
+        }
+        if (this.drupalUrl == null || this.drupalUrl.isEmpty()) {
+            return false;
+        }
+        if (this.drupalMediaType == null || this.drupalMediaType.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     public DrupalMedia load(JSONObject json, Messages messages) {
         return DrupalMedia.load(json, messages);
     }
