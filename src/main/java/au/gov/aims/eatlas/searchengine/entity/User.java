@@ -24,6 +24,8 @@ import org.json.JSONObject;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User {
     private static final int RANDOM_SALT_LENGTH = 6;
@@ -105,6 +107,34 @@ public class User {
 
     public void setModified(boolean modified) {
         this.modified = modified;
+    }
+
+    public String display() {
+        List<String> displayUser = new ArrayList<>();
+        if (this.firstName != null && !this.firstName.isEmpty()) {
+            displayUser.add(this.firstName);
+        }
+        if (this.lastName != null && !this.lastName.isEmpty()) {
+            displayUser.add(this.lastName);
+        }
+
+        if (displayUser.isEmpty()) {
+            if (this.username != null && !this.username.isEmpty()) {
+                displayUser.add(this.username);
+            } else {
+                // This should not happen
+                displayUser.add("Admin");
+            }
+        }
+
+        return String.join(" ", displayUser);
+    }
+
+    public boolean validate() {
+        if (this.username == null || this.username.isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
     public JSONObject toJSON() {

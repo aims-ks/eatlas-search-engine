@@ -205,7 +205,8 @@ progress.disabled {
 .main .content .box .field label .label {
   width: 20em;
 }
-.main .content .box .field label input[type=text] {
+.main .content .box .field label input[type=text],
+.main .content .box .field label input[type=password] {
   flex-grow: 1;
 }
 .main .content .box .field label input[type=number] {

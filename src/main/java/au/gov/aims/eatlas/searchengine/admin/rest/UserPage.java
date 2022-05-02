@@ -99,11 +99,18 @@ public class UserPage {
             }
         }
 
-        try {
-            config.save();
-        } catch (IOException ex) {
+        if (!user.validate()) {
+            // This should only happen when the user modify the form using the browser's developer tool,
+            // or if the browser doesn't support HTML 5.
             messages.addMessage(Messages.Level.ERROR,
-                "An exception occurred while saving the user information.", ex);
+                "Form validation failed.");
+        } else {
+            try {
+                config.save();
+            } catch (IOException ex) {
+                messages.addMessage(Messages.Level.ERROR,
+                    "An exception occurred while saving the user information.", ex);
+            }
         }
     }
 }

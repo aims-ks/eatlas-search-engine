@@ -234,7 +234,9 @@ public class SettingsPage {
         }
 
         if (!valid) {
-            // This message is rather cryptic, but it should only appear if the user turn off JavaScript.
+            // This message is rather cryptic, but it should only happen when the user
+            // modify the form using the browser's developer tool,
+            // or if the browser doesn't support HTML 5.
             messages.addMessage(Messages.Level.ERROR,
                 "Form validation failed.");
         } else {
