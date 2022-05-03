@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Draw SVG</title>
+
+<script>
+function drawSVG() {
+    const svg = document.getElementById('svg');
+    const colour = "#3366DD";
+    const border = 7;
+
+    drawMagnifierGlass(svg, colour, border);
+    drawCog(30.2, 69.2, svg, colour, border);
+}
+
+function drawMagnifierGlass(svg, colour, border) {
+    // Magnifier handle
+    svg.appendChild(
+        new Rectangle(16, 40, 2)
+            .rotate(-45)
+            .move(81, 81)
+            .fill(colour)
+            .getShape()
+    );
+
+    // Magnifier rim border (white border to obscure the handle)
+    svg.appendChild(
+        new Circle(35.4 + border/2)
+            .move(40.4, 40.4)
+            .stroke(10, "white")
+            .getShape()
+    );
+
+    // Magnifier rim (circle)
+    svg.appendChild(
+        new Circle(35.4)
+            .move(40.4, 40.4)
+            .stroke(10, colour)
+            .getShape()
+    );
+
+    // Reflection in the glass (arc)
+    // http://xahlee.info/js/svg_circle_arc.html
+    //   Ellipse center x y: 0, 0
+    //   Major/minor radius: 25, 25
+    //   Start angle and sweep: -40, 80
+    //   Rotation: 0
+    svg.appendChild(
+        new Path("M 19 -16 A 25 25 0 0 1 19 16")
+            .move(40.4, 40.4)
+            .stroke(3.5, colour, "round")
+            .getShape()
+    );
+}
+
+function drawCog(x, y, svg, colour, border) {
+    const nbTeeth = 8;
+
+    // Cog border
+    svg.appendChild(
+        new Circle(17)
+            .move(x, y)
+            .stroke(8.7 + border, "white")
+            .getShape()
+    );
+
+    // Teeth border
+    for (angle = 0; angle < 360; angle += 360 / nbTeeth) {
+        svg.appendChild(
+            new Rectangle(6.5 + border, 10 + border, 1.5)
+                .move(x, y)
+                .move(0, -23.6)
+                .rotate(angle, 0, 23.6)
+                .fill("white")
+                .getShape()
+        );
+    }
+
+    // Cog
+    svg.appendChild(
+        new Circle(17)
+            .move(x, y)
+            .stroke(8.7, colour)
+            .getShape()
+    );
+
+    // Teeth
+    for (angle = 0; angle < 360; angle += 360 / nbTeeth) {
+        svg.appendChild(
+            new Rectangle(6.5, 10)
+                .move(x, y)
+                .move(0, -23.6)
+                .rotate(angle, 0, 23.6)
+                .fill(colour)
+                .getShape()
+        );
+    }
+}
+
+class Shape {
+    constructor(shape) {
+        this.shape = shape;
+        this.fill("none");
+        this.moveX = 0;
+        this.moveY = 0;
+        this.rotateAngle = 0;
+        this.rotateCenterX = 0;
+        this.rotateCenterY = 0;
+    }
+
+    fill(colour, opacity = null) {
+        this.shape.setAttribute("fill", colour);
+        if (opacity != null) {
+            this.shape.setAttribute("fill-opacity", opacity);
+        }
+        return this;
+    }
+
+    // Line ending:
+    //   - "butt" (default)
+    //   - "round"
+    //   - "square"
+    //   https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-linecap
+    stroke(width, colour, lineEnding = null, opacity = null) {
+        this.shape.setAttribute("stroke", colour);
+        this.shape.setAttribute("stroke-width", width);
+        if (lineEnding !== null) {
+            this.shape.setAttribute("stroke-linecap", lineEnding);
+        }
+        if (opacity != null) {
+            this.shape.setAttribute("stroke-opacity", opacity);
+        }
+        return this;
+    }
+
+    move(x, y) {
+        this.moveX += x;
+        this.moveY += y;
+        return this;
+    }
+
+    rotate(angle, rotateCenterX = 0, rotateCenterY = 0) {
+        this.rotateAngle += angle;
+        this.rotateCenterX = rotateCenterX;
+        this.rotateCenterY = rotateCenterY;
+        return this;
+    }
+
+    getTransform() {
+        let transform = "";
+        // NOTE: Transformations are applied in reverse order.
+        if (this.moveX !== 0 || this.moveY !== 0) {
+            transform += "translate(" + this.moveX + " " + this.moveY + ") "
+        }
+        if (this.rotateAngle !== 0) {
+            transform += "rotate(" + this.rotateAngle + " " + this.rotateCenterX + " " + this.rotateCenterY + ") "
+        }
+        return transform.trim();
+    }
+
+    getShape() {
+        const transform = this.getTransform();
+        if (transform) {
+            this.shape.setAttribute("transform", transform);
+        }
+        return this.shape;
+    }
+}
+
+class Rectangle extends Shape {
+    constructor(width, height, roundedCorner = null) {
+        const rectShape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+
+        rectShape.setAttribute("x", -width/2);
+        rectShape.setAttribute("y", -height/2);
+        rectShape.setAttribute("width", width);
+        rectShape.setAttribute("height", height);
+        if (roundedCorner !== null) {
+            rectShape.setAttribute("rx", roundedCorner);
+        }
+
+        super(rectShape);
+    }
+}
+
+class Circle extends Shape {
+    constructor(radius) {
+        const circleShape = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+        circleShape.setAttribute("r",  radius);
+
+        super(circleShape);
+    }
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+// Tool to create arc:
+//     http://xahlee.info/js/svg_circle_arc.html
+class Path extends Shape {
+    constructor(strPath) {
+        const pathShape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+        pathShape.setAttribute("d", strPath);
+
+        return super(pathShape);
+    }
+}
+
+function download() {
+    const filename = "drawing.svg";
+    const svg = document.getElementById('svg');
+    svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const svgData = svg.outerHTML;
+    const preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    const svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    const svgUrl = URL.createObjectURL(svgBlob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = filename;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+</script>
+
+<style>
+body {
+    background-color: #6FF;
+}
+.page {
+    display: flex;
+    align-items: flex-start;
+    gap: 1em;
+    flex-direction: column;
+}
+
+svg {
+    background-color: #FFF;
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    /* Used for drawing */
+    /*
+    background-image: url("cropped.jpg");
+    background-size: contain;
+    */
+}
+</style>
+</head>
+
+<body onload="drawSVG()">
+    <div class="page">
+        <button onclick="download()">Download</button>
+        <svg id="svg" viewBox="0 0 100 100"></svg>
+    </div>
+</body>
+
+</html>

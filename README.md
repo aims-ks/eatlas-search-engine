@@ -3,11 +3,8 @@ TODO:
 - Reload after indexation
   - Only reload when all running indexation are done, to avoid losing error messages.
 
-- User icon next to username.
-
 - Create files:
   - resources/eatlas_search_engine_default.json
-  - favicon
 
 - Fix tests
 

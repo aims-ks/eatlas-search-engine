@@ -8,6 +8,7 @@
 <html lang="en">
 <head>
     <title>eAtlas Search Engine - Login</title>
+    <link rel="icon" href="<c:url value="/img/favicon.svg" />" type="image/svg+xml">
     <link rel="stylesheet" href="<c:url value="/css/admin.css" />">
     <link rel="stylesheet" href="<c:url value="/css/login.css" />">
 </head>

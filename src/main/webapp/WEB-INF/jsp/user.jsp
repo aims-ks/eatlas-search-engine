@@ -12,6 +12,7 @@
 <html lang="en">
 <head>
     <title>eAtlas Search Engine - ${title}</title>
+    <link rel="icon" href="<c:url value="/img/favicon.svg" />" type="image/svg+xml">
     <script src="<c:url value="/js/admin.js" />"></script>
     <link rel="stylesheet" href="<c:url value="/css/admin.css" />">
 </head>
