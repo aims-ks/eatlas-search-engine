@@ -122,7 +122,7 @@ public class SearchUtils {
         return status;
     }
 
-    public static void refreshIndexesCount() throws IOException {
+    public static void refreshIndexesCount() throws Exception {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         SearchEngineState searchEngineState = SearchEngineState.getInstance();
 
@@ -175,7 +175,7 @@ public class SearchUtils {
         return foundIndexer != null;
     }
 
-    public static AbstractIndexer addIndex(String newIndexType) throws IOException {
+    public static AbstractIndexer addIndex(String newIndexType) throws Exception {
         if (newIndexType == null || newIndexType.isEmpty()) {
             return null;
         }

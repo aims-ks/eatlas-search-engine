@@ -32,7 +32,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -91,11 +90,13 @@ public class UserPage {
         String password = FormUtils.getFormStringValue(form, "password");
         String repassword = FormUtils.getFormStringValue(form, "repassword");
 
+        boolean passwordChanged = false;
         if (password != null && repassword != null) {
             if (password.equals(repassword)) {
                 user.setPassword(password, messages);
+                passwordChanged = true;
             } else {
-                messages.addMessage(Messages.Level.WARNING, "The password was not changed. Passwords do not match. ");
+                messages.addMessage(Messages.Level.WARNING, "The password was not changed. Passwords do not match.");
             }
         }
 
@@ -107,9 +108,15 @@ public class UserPage {
         } else {
             try {
                 config.save();
-            } catch (IOException ex) {
+                if (passwordChanged) {
+                    messages.addMessage(Messages.Level.INFO, "Password successfully changed.");
+                }
+            } catch (Exception ex) {
                 messages.addMessage(Messages.Level.ERROR,
                     "An exception occurred while saving the user information.", ex);
+                if (passwordChanged) {
+                    messages.addMessage(Messages.Level.ERROR, "Password was changed, but will be reset next time the configuration file is reloaded.");
+                }
             }
         }
     }

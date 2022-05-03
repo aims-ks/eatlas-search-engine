@@ -110,7 +110,7 @@ public class SettingsPage {
 
         try {
             SearchUtils.addIndex(newIndexType);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
                 String.format("An exception occurred while adding the new index: %s", newIndexType), ex);
         }
@@ -123,7 +123,7 @@ public class SettingsPage {
             AbstractIndexer deletedIndexer = null;
             try {
                 deletedIndexer = config.removeIndexer(deleteIndex);
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 messages.addMessage(Messages.Level.ERROR,
                     String.format("An exception occurred while deleting the search index: %s", deleteIndex), ex);
             }
@@ -131,7 +131,7 @@ public class SettingsPage {
             if (deletedIndexer != null) {
                 try {
                     config.save();
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     messages.addMessage(Messages.Level.ERROR,
                         "An exception occurred while saving the search engine settings.", ex);
                 }
@@ -242,7 +242,7 @@ public class SettingsPage {
         } else {
             try {
                 config.save();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 messages.addMessage(Messages.Level.ERROR,
                     "An exception occurred while saving the search engine settings.", ex);
             }

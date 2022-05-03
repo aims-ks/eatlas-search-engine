@@ -74,7 +74,7 @@ public class SearchEngineConfig {
     }
 
     // For internal use (rest.WebApplication)
-    public static SearchEngineConfig createInstance(ServletContext context, Messages messages) throws IOException {
+    public static SearchEngineConfig createInstance(ServletContext context, Messages messages) throws Exception {
         return createInstance(
                 SearchEngineConfig.findConfigFile(context, messages),
                 "eatlas_search_engine_default.json", messages);
@@ -82,7 +82,7 @@ public class SearchEngineConfig {
 
     // For internal use (unit tests)
     public static SearchEngineConfig createInstance(
-            File configFile, String configFileResourcePath, Messages messages) throws IOException {
+            File configFile, String configFileResourcePath, Messages messages) throws Exception {
 
         File stateFile = SearchEngineConfig.findStateFile(configFile);
         if (SearchEngineConfig.checkStateFile(stateFile, true, messages)) {
@@ -115,13 +115,13 @@ public class SearchEngineConfig {
         }
     }
 
-    public void save() throws IOException {
+    public void save() throws Exception {
         if (this.configFile == null) {
             // This should not happen
             throw new IllegalStateException("The configuration file is null.");
         }
         if (!this.configFile.canWrite()) {
-            throw new IllegalStateException(String.format("The configuration file is not writable: %s",
+            throw new IOException(String.format("The configuration file is not writable: %s",
                     this.configFile.getAbsolutePath()));
         }
 
@@ -161,7 +161,7 @@ public class SearchEngineConfig {
         this.indexers.add(indexer);
     }
 
-    public AbstractIndexer removeIndexer(String index) throws IOException {
+    public AbstractIndexer removeIndexer(String index) throws Exception {
         AbstractIndexer foundIndexer = this.getIndexer(index);
         if (foundIndexer != null) {
             return this.removeIndexer(foundIndexer) ? foundIndexer : null;
@@ -169,7 +169,7 @@ public class SearchEngineConfig {
         return null;
     }
 
-    public boolean removeIndexer(AbstractIndexer indexer) throws IOException {
+    public boolean removeIndexer(AbstractIndexer indexer) throws Exception {
         if (indexer != null && this.indexers != null) {
             SearchEngineState searchEngineState = SearchEngineState.getInstance();
             searchEngineState.removeIndexerState(indexer.getIndex());
@@ -473,7 +473,7 @@ public class SearchEngineConfig {
             try {
                 this.save();
                 this.user.setModified(false);
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 messages.addMessage(Messages.Level.ERROR,
                         String.format("Error occurred while saving the configuration file: %s",
                         this.getConfigFile()), ex);

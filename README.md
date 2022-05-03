@@ -1,5 +1,10 @@
 TODO:
 
+- Reload after indexation
+  - Only reload when all running indexation are done, to avoid losing error messages.
+
+- User icon next to username.
+
 - Create files:
   - resources/eatlas_search_engine_default.json
   - favicon
@@ -40,7 +45,7 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
 
 ## Personal notes
 
-- TODO list, HOWTO, what I have learn, etc:  
+- TODO list, HOWTO, what I have learn, etc:
   ```
   ~/Desktop/projects/eAtlas-redesign/2020-Drupal9/README.md
   ```
@@ -81,12 +86,12 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   http://localhost:8080/eatlas-search-engine/admin
   ```
 
-- Testing search engine:  
+- Testing search engine:
   ```
   http://localhost:8080/eatlas-search-engine/public/search/v1?q=lorem&idx=eatlas_article
   ```
 
-- Drupal website:  
+- Drupal website:
   ```
   http://localhost:9090/
   ```

@@ -20,35 +20,27 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.jsp.JspMvcFeature;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
-import java.io.IOException;
 
 public class PublicWebApplication extends ResourceConfig {
     private static final Logger LOGGER = Logger.getLogger(PublicWebApplication.class.getName());
 
     public PublicWebApplication(@Context ServletContext servletContext) {
-        this.packages("au.gov.aims.eatlas.searchengine.admin.rest");
-        this.property(JspMvcFeature.TEMPLATE_BASE_PATH, "/WEB-INF/jsp");
-        this.register(JspMvcFeature.class);
-
         Messages messages = Messages.getInstance(null);
 
         try {
             SearchEngineConfig.createInstance(servletContext, messages);
-            try {
-                SearchUtils.deleteOrphanIndexes();
-            } catch (IOException ex) {
-                LOGGER.error(
-                    "An exception occurred while deleting orphan search indexes.", ex);
-            }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             LOGGER.error("The eAtlas search engine could not load its configuration.", ex);
         }
+
+        this.packages("au.gov.aims.eatlas.searchengine.rest");
+        this.property(JspMvcFeature.TEMPLATE_BASE_PATH, "/WEB-INF/jsp");
+        this.register(JspMvcFeature.class);
     }
 }

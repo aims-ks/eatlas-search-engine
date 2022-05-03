@@ -41,12 +41,12 @@ public class SearchEngineState {
     // Key = index
     private Map<String, IndexerState> indexerStates;
 
-    private SearchEngineState(File stateFile) throws IOException {
+    private SearchEngineState(File stateFile) throws Exception {
         this.stateFile = stateFile;
         this.reload();
     }
 
-    public static SearchEngineState createInstance(File stateFile) throws IOException {
+    public static SearchEngineState createInstance(File stateFile) throws Exception {
         instance = new SearchEngineState(stateFile);
         return instance;
     }
@@ -55,7 +55,7 @@ public class SearchEngineState {
         return instance;
     }
 
-    public void reload() throws IOException {
+    public void reload() throws Exception {
         this.indexerStates = null;
         if (this.stateFile != null && this.stateFile.canRead()) {
             // Reload config from config file
@@ -70,7 +70,7 @@ public class SearchEngineState {
         }
     }
 
-    public void deleteOrphanStates() throws IOException {
+    public void deleteOrphanStates() throws Exception {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         if (config != null && this.indexerStates != null) {
@@ -91,9 +91,9 @@ public class SearchEngineState {
         }
     }
 
-    public void save() throws IOException {
+    public void save() throws Exception {
         if (this.stateFile == null) {
-            throw new IOException("State file is not defined.");
+            throw new IllegalStateException("State file is not defined.");
         } else if (!this.stateFile.canWrite()) {
             throw new IOException(String.format("State file is not writable: %s", stateFile.getAbsolutePath()));
         } else {
@@ -134,7 +134,7 @@ public class SearchEngineState {
         this.indexerStates.put(index, indexerState);
     }
 
-    public IndexerState removeIndexerState(String index) throws IOException {
+    public IndexerState removeIndexerState(String index) throws Exception {
         if (this.indexerStates == null) {
             return null;
         }
