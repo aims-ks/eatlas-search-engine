@@ -129,7 +129,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
-        long totalFound = 0;
+        long totalFound = 0, totalIndexed = 0;
         int nodeFound, page = 0;
         boolean stop = false;
         boolean crashed = false;
@@ -171,17 +171,21 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
                     DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode, messages);
 
+                    // NOTE: Drupal last modified date (aka changed date) are rounded to second,
+                    //     and can be a bit off. Use a 10s margin for safety.
+                    if (!fullHarvest && lastHarvested != null && drupalNode.getLastModified() < lastHarvested + 10000) {
+                        stop = true;
+                        if (totalIndexed == 0) {
+                            messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
+                        }
+                        break;
+                    }
+
                     DrupalNodeIndexer.DrupalNodeIndexerThread thread = new DrupalNodeIndexer.DrupalNodeIndexerThread(
                         client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
 
                     threadPool.execute(thread);
-
-                    // NOTE: Drupal last modified date (aka changed date) are rounded to seconds,
-                    //     and can be a bit off. Use a 10s margin for safety.
-                    if (!fullHarvest && lastHarvested != null && drupalNode.getLastModified() < lastHarvested + 10000) {
-                        stop = true;
-                        break;
-                    }
+                    totalIndexed++;
                 }
             }
             page++;

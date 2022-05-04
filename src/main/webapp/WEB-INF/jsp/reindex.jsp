@@ -43,7 +43,7 @@
     <div class="box">
         <h2>Re-indexation</h2>
 
-        <form method="post">
+        <form method="post" data-progress-url="<c:url value="/admin/reindex/progress" />">
             <table>
                 <tr class="table-header">
                     <th>Index</th>
@@ -67,7 +67,7 @@
                         <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
                         <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
                         <td class="progress">
-                            <progress class="index-progress disabled" value="0" max="100" data-progress-url="<c:url value="/admin/reindex/progress"><c:param name="index" value="${indexer.index}" /></c:url>"></progress>
+                            <progress class="index-progress disabled" value="0" max="100" id="progress_${indexer.index}" data-progress-url="<c:url value="/admin/reindex/OLDprogress"><c:param name="index" value="${indexer.index}" /></c:url>"></progress>
                         </td>
                         <td class="buttons">
                             <button class="index" name="reindex-button" value="${indexer.index}" title="Re-index">Re-index</button>

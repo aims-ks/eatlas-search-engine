@@ -121,8 +121,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         }
 
-        // TODO PAGING!
-
         // GeoNetwork export API URL
         // If we have a "lastHarvested" parameter, request metadata records modified since that date (with a small buffer)
         // Otherwise, request everything.
@@ -253,6 +251,10 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 hasMore = from < total;
             }
         } while(hasMore && !empty && !crashed);
+
+        if (!fullHarvest && empty) {
+            messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
+        }
 
         threadPool.shutdown();
         try {

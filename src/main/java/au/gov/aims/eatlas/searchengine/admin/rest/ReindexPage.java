@@ -65,36 +65,42 @@ public class ReindexPage {
     @Path("/progress")
     @Produces({ MediaType.APPLICATION_JSON })
     public String reindexProgress(
-        @Context HttpServletRequest httpRequest,
-        @QueryParam("index") String index
+        @Context HttpServletRequest httpRequest
     ) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
+        JSONObject jsonIndexersProgress = new JSONObject();
+
         // If it's not running, show 100%
-        Double progress = 1.0;
-        boolean running = false;
         int runningCount = 0;
         for (AbstractIndexer indexer : config.getIndexers()) {
             if (indexer != null) {
+                Double progress = 1.0;
+                boolean running = false;
                 if (indexer.isRunning()) {
                     runningCount++;
-                    if (index != null && index.equals(indexer.getIndex())) {
-                        running = true;
-                        progress = indexer.getProgress();
-                        if (progress != null) {
-                            // Progress, floored to 2 decimal places.
-                            // We want 99.9999% to be 99%, to avoid getting 100% before the process is truly done.
-                            progress = Math.floor(progress * 100) / 100;
-                        }
+
+                    running = true;
+                    progress = indexer.getProgress();
+                    if (progress != null) {
+                        // Progress, floored to 2 decimal places.
+                        // We want 99.9999% to be 99%, to avoid getting 100% before the process is truly done.
+                        progress = Math.floor(progress * 100) / 100;
                     }
                 }
+
+                String index = indexer.getIndex();
+                JSONObject jsonIndexerProgress = new JSONObject()
+                        .put("index", index)
+                        .put("progress", progress)
+                        .put("running", running);
+
+                jsonIndexersProgress.put(index, jsonIndexerProgress);
             }
         }
 
         JSONObject jsonResponse = new JSONObject()
-                .put("index", index)
-                .put("progress", progress)
-                .put("running", running)
+                .put("indexes", jsonIndexersProgress)
                 .put("runningCount", runningCount);
 
         return jsonResponse.toString();

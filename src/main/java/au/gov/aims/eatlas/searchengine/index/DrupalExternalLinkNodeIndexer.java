@@ -145,7 +145,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
 
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
-        long totalFound = 0;
+        long totalFound = 0, totalIndexed = 0;
         int nodeFound, page = 0;
         boolean stop = false;
         boolean crashed = false;
@@ -187,17 +187,21 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
                     JSONObject jsonApiNode = jsonNodes.optJSONObject(i);
                     ExternalLink externalLink = new ExternalLink(this.getIndex(), jsonApiNode, messages);
 
+                    // NOTE: Drupal last modified date (aka changed date) are rounded to second,
+                    //     and can be a bit off. Use a 10s margin for safety.
+                    if (!fullHarvest && lastHarvested != null && externalLink.getLastModified() < lastHarvested + 10000) {
+                        stop = true;
+                        if (totalIndexed == 0) {
+                            messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
+                        }
+                        break;
+                    }
+
                     DrupalExternalLinkNodeIndexerThread thread = new DrupalExternalLinkNodeIndexerThread(
                         client, messages, externalLink, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
 
                     threadPool.execute(thread);
-
-                    // NOTE: Drupal last modified date (aka changed date) are rounded to seconds,
-                    //     and can be a bit off. Use a 10s margin for safety.
-                    if (!fullHarvest && lastHarvested != null && externalLink.getLastModified() < lastHarvested + 10000) {
-                        stop = true;
-                        break;
-                    }
+                    totalIndexed++;
                 }
             }
             page++;

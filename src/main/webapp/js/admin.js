@@ -55,9 +55,13 @@ docReady(function() {
   }
 
   // Progress bars
-  const progressBarEls = document.getElementsByClassName("index-progress");
-  for (let i=0; i<progressBarEls.length; i++) {
-    refreshProgressBar(progressBarEls[i]);
+  // Find forms with attribute "data-progress-url"
+  const formEls = document.getElementsByTagName("form");
+  for (let i=0; i<formEls.length; i++) {
+    const dataProgressUrl = formEls[i].getAttribute("data-progress-url");
+    if (dataProgressUrl) {
+      refreshProgressBars(dataProgressUrl);
+    }
   }
 
   // Change password - Validate password and repeat password
@@ -84,54 +88,61 @@ function confirmPassword() {
   }
 }
 
-function refreshProgressBar(progressBarEl, lastRunningCount = 0) {
+function refreshProgressBars(dataProgressUrl, lastRunningCount = 0) {
   const httpRequest = new XMLHttpRequest();
-  const apiUrl = progressBarEl.getAttribute("data-progress-url");
 
-  // 1. Request indexation progress for the index.
+  // 1. Request indexation progress.
 
-  httpRequest.open("GET", apiUrl);
+  httpRequest.open("GET", dataProgressUrl);
 
-  httpRequest.onreadystatechange = function(progressBarEl, httpRequest, url) {
+  httpRequest.onreadystatechange = function(httpRequest, dataProgressUrl) {
     return function(e) {
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-        let runningCount = 0;
 
         // The response will be empty if the page reloads before the request is done.
+        let runningCount = 0;
         if (httpRequest.responseText) {
           let jsonResponse = JSON.parse(httpRequest.responseText);
           if (jsonResponse !== null) {
 
-            // 2. Set progress bar with progress info.
+            // 2. Set progress bars with progress info.
 
-            let index = jsonResponse.index;
-            let running = jsonResponse.running;
-            let progress = jsonResponse.progress;
             runningCount = jsonResponse.runningCount;
-            setProgressBar(progressBarEl, progress, running);
+            let indexes = jsonResponse.indexes;
+            if (indexes) {
+              for (const index in indexes) {
+                const progressBarEl = document.getElementById("progress_" + index);
+                if (progressBarEl) {
+                  const jsonProgress = indexes[index];
 
-            // If it was indexing, and it finished the last one,
-            // reload the page to refresh the stats and display messages.
-            if (lastRunningCount > 0 && runningCount === 0) {
-              // Reload the page without re-submitting the form.
-              window.location.href = window.location.href;
+                  const running = jsonProgress.running;
+                  const progress = jsonProgress.progress;
+                  setProgressBar(progressBarEl, progress, running);
+                }
+              }
             }
           }
         }
 
         // 3. Call this function again in 1 second.
 
-        // NOTE: Check every seconds even when it is not running,
-        //     in case someone else starts the indexation.
-        window.setTimeout(function(lastRunningCount) {
-          return function() {
-            refreshProgressBar(progressBarEl, lastRunningCount);
-          }
-        }(runningCount), 1000);
-
+        // If it was indexing, and it finished the last one,
+        // reload the page to refresh the stats and display messages.
+        if (lastRunningCount > 0 && runningCount === 0) {
+          // Reload the page without re-submitting the form.
+          window.location.href = window.location.href;
+        } else {
+          // NOTE: Check every seconds even when no indexation is running,
+          //     in case someone else starts an indexation.
+          window.setTimeout(function(dataProgressUrl, lastRunningCount) {
+            return function() {
+              refreshProgressBars(dataProgressUrl, lastRunningCount);
+            }
+          }(dataProgressUrl, runningCount), 1000);
+        }
       }
-    };
-  }(progressBarEl, httpRequest, apiUrl);
+    }
+  }(httpRequest, dataProgressUrl);
 
   httpRequest.send();
 }

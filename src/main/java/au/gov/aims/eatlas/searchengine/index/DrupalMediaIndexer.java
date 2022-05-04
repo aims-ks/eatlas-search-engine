@@ -146,7 +146,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
 
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
-        long totalFound = 0;
+        long totalFound = 0, totalIndexed = 0;
         int mediaFound, page = 0;
         boolean stop = false;
         boolean crashed = false;
@@ -188,6 +188,16 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                     JSONObject jsonApiMedia = jsonMedias.optJSONObject(i);
                     DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia, messages);
 
+                    // NOTE: Drupal last modified date (aka changed date) are rounded to second,
+                    //     and can be a bit off. Use a 10s margin for safety.
+                    if (!fullHarvest && lastHarvested != null && drupalMedia.getLastModified() < lastHarvested + 10000) {
+                        stop = true;
+                        if (totalIndexed == 0) {
+                            messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
+                        }
+                        break;
+                    }
+
                     drupalMedia.setTitle(DrupalMediaIndexer.getDrupalTitle(jsonApiMedia, DrupalMediaIndexer.this.drupalTitleField));
                     drupalMedia.setDocument(DrupalMediaIndexer.getDrupalDescription(jsonApiMedia, DrupalMediaIndexer.this.drupalDescriptionField));
 
@@ -195,13 +205,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                         client, messages, drupalMedia, jsonApiMedia, jsonIncluded, usedThumbnails, page+1, i+1, mediaFound);
 
                     threadPool.execute(thread);
-
-                    // NOTE: Drupal last modified date (aka changed date) are rounded to seconds,
-                    //     and can be a bit off. Use a 10s margin for safety.
-                    if (!fullHarvest && lastHarvested != null && drupalMedia.getLastModified() < lastHarvested + 10000) {
-                        stop = true;
-                        break;
-                    }
+                    totalIndexed++;
                 }
             }
             page++;
