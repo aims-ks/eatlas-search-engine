@@ -430,6 +430,14 @@ public abstract class AbstractIndexer<E extends Entity> {
         @Override
         public void run() {
             // Wait 1 second, to be sure the progress system have time to be initialised.
+            // NOTE: The client (browser) won't know the indexation process had occurred
+            //     if it starts and completes in less than 1 second, between 2 checks.
+            //     Also, the user might think the indexation process is broken if no visual cue is shown
+            //     after pressing the button.
+            //     Note that the client (browser) checks for indexation progress every second.
+            //     This 1sec "initialisation" delay allow the client to register that an indexation process
+            //     is in progress. It also shows a short initialisation animation in the progress bar,
+            //     giving some visual cue to the user.
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {

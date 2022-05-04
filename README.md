@@ -1,11 +1,5 @@
 TODO:
 
-- Login page
-  - Auto-focus on username field
-
-- Indexer
-  - Message showing how many resources were indexed
-
 - Create files:
   - resources/eatlas_search_engine_default.json
 
