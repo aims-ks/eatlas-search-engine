@@ -144,7 +144,6 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 // The index is more recent than both files.
                 // We can skip the harvest.
                 if (!indexOutDated) {
-                    messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
                     return;
                 }
             }
@@ -429,7 +428,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             }
 
             try {
-                IndexResponse indexResponse = AtlasMapperIndexer.this.index(this.client, layerEntity);
+                IndexResponse indexResponse = AtlasMapperIndexer.this.indexEntity(this.client, layerEntity);
 
                 LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, index response status: %s",
                         this.current, AtlasMapperIndexer.this.getTotal(),

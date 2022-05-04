@@ -146,7 +146,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
 
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
-        long totalFound = 0, totalIndexed = 0;
+        long totalFound = 0;
         int mediaFound, page = 0;
         boolean stop = false;
         boolean crashed = false;
@@ -192,9 +192,6 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                     //     and can be a bit off. Use a 10s margin for safety.
                     if (!fullHarvest && lastHarvested != null && drupalMedia.getLastModified() < lastHarvested + 10000) {
                         stop = true;
-                        if (totalIndexed == 0) {
-                            messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
-                        }
                         break;
                     }
 
@@ -205,7 +202,6 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                         client, messages, drupalMedia, jsonApiMedia, jsonIncluded, usedThumbnails, page+1, i+1, mediaFound);
 
                     threadPool.execute(thread);
-                    totalIndexed++;
                 }
             }
             page++;
@@ -398,7 +394,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
             }
 
             try {
-                IndexResponse indexResponse = DrupalMediaIndexer.this.index(this.client, this.drupalMedia);
+                IndexResponse indexResponse = DrupalMediaIndexer.this.indexEntity(this.client, this.drupalMedia);
 
                 // NOTE: We don't know how many medias (or pages of medias) there is.
                 //     We index until we reach the bottom of the barrel...

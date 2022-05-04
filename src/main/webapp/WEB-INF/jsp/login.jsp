@@ -31,7 +31,8 @@
                         <input type="text"
                             name="username"
                             id="username"
-                            required="required" />
+                            required="required"
+                            autofocus="autofocus" />
                     </label>
                 </div>
 

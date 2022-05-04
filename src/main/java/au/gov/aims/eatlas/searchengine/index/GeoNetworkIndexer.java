@@ -252,10 +252,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             }
         } while(hasMore && !empty && !crashed);
 
-        if (!fullHarvest && empty) {
-            messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
-        }
-
         threadPool.shutdown();
         try {
             threadPool.awaitTermination(1, TimeUnit.HOURS);
@@ -282,7 +278,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     geoNetworkRecord.setParentTitle(parentRecord.getTitle());
 
                     try {
-                        IndexResponse indexResponse = this.index(client, geoNetworkRecord);
+                        IndexResponse indexResponse = this.indexEntity(client, geoNetworkRecord, false);
 
                         LOGGER.debug(String.format("Re-indexing GeoNetwork metadata record: %s with parent title: %s, status: %s",
                                 geoNetworkRecord.getId(),
@@ -360,7 +356,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 }
 
                 try {
-                    IndexResponse indexResponse = GeoNetworkIndexer.this.index(this.client, geoNetworkRecord);
+                    IndexResponse indexResponse = GeoNetworkIndexer.this.indexEntity(this.client, geoNetworkRecord);
 
                     LOGGER.debug(String.format("[%d/%d] Indexing GeoNetwork metadata record: %s, index response status: %s",
                             this.current, GeoNetworkIndexer.this.getTotal(),

@@ -59,6 +59,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     private IndexerThread indexerThread;
     private Long total;
     private long completed;
+    private long indexed;
 
     public AbstractIndexer(String index) {
         this.index = index;
@@ -105,6 +106,9 @@ public abstract class AbstractIndexer<E extends Entity> {
     protected synchronized void incrementCompleted() {
         this.completed++;
     }
+    private synchronized void incrementIndexed() {
+        this.indexed++;
+    }
 
     public IndexerState getState() {
         SearchEngineState searchEngineState = SearchEngineState.getInstance();
@@ -117,6 +121,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         if (!this.isRunning()) {
             this.total = null;
             this.completed = 0;
+            this.indexed = 0;
             this.indexerThread = new IndexerThread(full, messages);
             this.indexerThread.start();
         }
@@ -252,9 +257,16 @@ public abstract class AbstractIndexer<E extends Entity> {
         this.brokenThumbnailTTL = brokenThumbnailTTL;
     }
 
-    public IndexResponse index(SearchClient client, E entity) throws IOException {
+    public IndexResponse indexEntity(SearchClient client, E entity) throws IOException {
+        return this.indexEntity(client, entity, true);
+    }
+    public IndexResponse indexEntity(SearchClient client, E entity, boolean incrementIndexedCount) throws IOException {
         entity.setLastIndexed(System.currentTimeMillis());
-        return client.index(this.getIndexRequest(entity));
+        IndexResponse indexResponse = client.index(this.getIndexRequest(entity));
+        if (incrementIndexedCount) {
+            this.incrementIndexed();
+        }
+        return indexResponse;
     }
 
     // Only called with complete re-index
@@ -417,8 +429,16 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         @Override
         public void run() {
+            // Wait 1 second, to be sure the progress system have time to be initialised.
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                messages.addMessage(Messages.Level.ERROR, "The indexation was interrupted", ex);
+            }
+
             long lastIndexedStarts = System.currentTimeMillis();
             IndexerState state = AbstractIndexer.this.getState();
+            String index = AbstractIndexer.this.getIndex();
 
             try(
                     RestClient restClient = SearchUtils.buildRestClient();
@@ -430,13 +450,21 @@ public abstract class AbstractIndexer<E extends Entity> {
                     // And create the API client
                     SearchClient client = new ESClient(new ElasticsearchClient(transport))
             ) {
-                client.createIndex(AbstractIndexer.this.getIndex());
+                client.createIndex(index);
                 AbstractIndexer.this.internalIndex(client, this.fullIndex ? null : state.getLastIndexed(), this.messages);
                 AbstractIndexer.this.refreshCount(client);
+
+                long indexed = AbstractIndexer.this.indexed;
+                if (!this.fullIndex && indexed == 0) {
+                    messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", index));
+                } else {
+                    messages.addMessage(Messages.Level.INFO, String.format("Index %s %d document indexed.", index, indexed));
+                }
+
                 state.setLastIndexed(lastIndexedStarts);
             } catch(Exception ex) {
                 this.messages.addMessage(Messages.Level.ERROR,
-                        String.format("An error occurred during the indexation of %s", AbstractIndexer.this.getIndex()), ex);
+                        String.format("An error occurred during the indexation of %s", index), ex);
             }
 
             long lastIndexedEnds = System.currentTimeMillis();
@@ -446,7 +474,7 @@ public abstract class AbstractIndexer<E extends Entity> {
                 SearchEngineState.getInstance().save();
             } catch(Exception ex) {
                 this.messages.addMessage(Messages.Level.ERROR,
-                        String.format("An error occurred while saving the index state for %s", AbstractIndexer.this.getIndex()), ex);
+                        String.format("An error occurred while saving the index state for %s", index), ex);
             }
         }
     }

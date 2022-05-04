@@ -129,7 +129,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
 
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
-        long totalFound = 0, totalIndexed = 0;
+        long totalFound = 0;
         int nodeFound, page = 0;
         boolean stop = false;
         boolean crashed = false;
@@ -175,9 +175,6 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                     //     and can be a bit off. Use a 10s margin for safety.
                     if (!fullHarvest && lastHarvested != null && drupalNode.getLastModified() < lastHarvested + 10000) {
                         stop = true;
-                        if (totalIndexed == 0) {
-                            messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", this.getIndex()));
-                        }
                         break;
                     }
 
@@ -185,7 +182,6 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
                         client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page+1, i+1, nodeFound);
 
                     threadPool.execute(thread);
-                    totalIndexed++;
                 }
             }
             page++;
@@ -343,7 +339,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
             }
 
             try {
-                IndexResponse indexResponse = DrupalNodeIndexer.this.index(this.client, this.drupalNode);
+                IndexResponse indexResponse = DrupalNodeIndexer.this.indexEntity(this.client, this.drupalNode);
 
                 // NOTE: We don't know how many nodes (or pages of nodes) there is.
                 //     We index until we reach the bottom of the barrel...
