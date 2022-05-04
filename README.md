@@ -1,7 +1,7 @@
 TODO:
 
 - Indexer
-  - Do not delete documents if the service is down
+  - Progress done with 1 query instead of 1 query per index, to avoid page reload triggered for each index when indexation is over.
 
 - Create files:
   - resources/eatlas_search_engine_default.json

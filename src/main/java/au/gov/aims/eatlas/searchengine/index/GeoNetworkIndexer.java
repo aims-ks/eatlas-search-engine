@@ -150,6 +150,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         boolean hasMore = false;
         boolean empty = false;
+        boolean crashed = false;
 
         long harvestStart = System.currentTimeMillis();
         do {
@@ -173,9 +174,11 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             try {
                 responseStr = EntityUtils.harvestGetURL(url, messages);
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting GeoNetwork record list: %s",
-                        url), ex);
-                return;
+                if (!crashed) {
+                    messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting GeoNetwork record list: %s",
+                            url), ex);
+                }
+                crashed = true;
             }
 
             if (responseStr != null && !responseStr.isEmpty()) {
@@ -249,7 +252,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 long total = this.getTotal() == null ? 0 : this.getTotal();
                 hasMore = from < total;
             }
-        } while(hasMore && !empty);
+        } while(hasMore && !empty && !crashed);
 
         threadPool.shutdown();
         try {
@@ -291,7 +294,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         }
 
         // Only cleanup when we are doing a full harvest
-        if (fullHarvest) {
+        if (!crashed && fullHarvest) {
             this.cleanUp(client, harvestStart, usedThumbnails, "GeoNetwork metadata record", messages);
         }
     }

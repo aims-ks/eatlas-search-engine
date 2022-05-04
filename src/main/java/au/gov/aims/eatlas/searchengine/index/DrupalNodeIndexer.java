@@ -132,6 +132,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         long totalFound = 0;
         int nodeFound, page = 0;
         boolean stop = false;
+        boolean crashed = false;
         do {
             // Ordered by lastModified (changed).
             // If the parameter lastHarvested is set, harvest nodes until we found a node that was last modified before
@@ -145,7 +146,10 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
             try {
                 responseStr = EntityUtils.harvestGetURL(url, messages);
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting a page of Drupal nodes. Node type: %s",  this.drupalNodeType), ex);
+                if (!crashed) {
+                    messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting a page of Drupal nodes. Node type: %s",  this.drupalNodeType), ex);
+                }
+                crashed = true;
             }
             if (responseStr != null && !responseStr.isEmpty()) {
                 JSONObject jsonResponse = new JSONObject(responseStr);
@@ -192,7 +196,7 @@ public class DrupalNodeIndexer extends AbstractIndexer<DrupalNode> {
         }
 
         // Only cleanup when we are doing a full harvest
-        if (fullHarvest) {
+        if (!crashed && fullHarvest) {
             this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal node of type %s", this.drupalNodeType), messages);
         }
     }
