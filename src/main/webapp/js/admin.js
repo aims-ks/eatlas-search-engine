@@ -84,40 +84,56 @@ function confirmPassword() {
   }
 }
 
-function refreshProgressBar(progressBarEl) {
-  const Http = new XMLHttpRequest();
+function refreshProgressBar(progressBarEl, lastRunningCount = 0) {
+  const httpRequest = new XMLHttpRequest();
   const apiUrl = progressBarEl.getAttribute("data-progress-url");
 
-  // 1. Request indexation progress for that index.
+  // 1. Request indexation progress for the index.
 
-  Http.open("GET", apiUrl);
-  Http.send();
+  httpRequest.open("GET", apiUrl);
 
-  Http.onreadystatechange = function(progressBarEl) {
+  httpRequest.onreadystatechange = function(progressBarEl, httpRequest, url) {
     return function(e) {
-      if (this.readyState == 4 && this.status == 200) {
-        let jsonResponse = JSON.parse(Http.responseText);
-        if (jsonResponse !== null) {
+      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+        let runningCount = 0;
 
-          // 2. Set progress bar with progress info.
+        // The response will be empty if the page reloads before the request is done.
+        if (httpRequest.responseText) {
+          let jsonResponse = JSON.parse(httpRequest.responseText);
+          if (jsonResponse !== null) {
 
-          let index = jsonResponse.index;
-          let running = jsonResponse.running;
-          let progress = jsonResponse.progress;
-          setProgressBar(progressBarEl, progress, running);
+            // 2. Set progress bar with progress info.
 
+            let index = jsonResponse.index;
+            let running = jsonResponse.running;
+            let progress = jsonResponse.progress;
+            runningCount = jsonResponse.runningCount;
+            setProgressBar(progressBarEl, progress, running);
 
-          // 3. Call this function again in 1 second.
-          // NOTE: Check every seconds even when it is not running,
-          //     in case someone else starts the indexation.
-
-          window.setTimeout(function() {
-            refreshProgressBar(progressBarEl);
-          }, 1000);
+            // If it was indexing, and it finished the last one,
+            // reload the page to refresh the stats and display messages.
+            if (lastRunningCount > 0 && runningCount === 0) {
+              // Reload the page without re-submitting the form.
+              window.location.href = window.location.href;
+            }
+          }
         }
+
+        // 3. Call this function again in 1 second.
+
+        // NOTE: Check every seconds even when it is not running,
+        //     in case someone else starts the indexation.
+        window.setTimeout(function(lastRunningCount) {
+          return function() {
+            refreshProgressBar(progressBarEl, lastRunningCount);
+          }
+        }(runningCount), 1000);
+
       }
     };
-  }(progressBarEl);
+  }(progressBarEl, httpRequest, apiUrl);
+
+  httpRequest.send();
 }
 
 function setProgressBar(progressBarEl, progress, running) {

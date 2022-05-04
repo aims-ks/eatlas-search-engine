@@ -1,7 +1,7 @@
 TODO:
 
-- Reload after indexation
-  - Only reload when all running indexation are done, to avoid losing error messages.
+- Indexer
+  - Do not delete documents if the service is down
 
 - Create files:
   - resources/eatlas_search_engine_default.json

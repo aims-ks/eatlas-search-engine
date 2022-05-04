@@ -73,21 +73,29 @@ public class ReindexPage {
         // If it's not running, show 100%
         Double progress = 1.0;
         boolean running = false;
-        AbstractIndexer indexer = config.getIndexer(index);
-        if (indexer != null && indexer.isRunning()) {
-            running = true;
-            progress = indexer.getProgress();
-            if (progress != null) {
-                // Progress, floored to 2 decimal places.
-                // We want 99.9999% to be 99%, to avoid getting 100% before the process is truly done.
-                progress = Math.floor(progress * 100) / 100;
+        int runningCount = 0;
+        for (AbstractIndexer indexer : config.getIndexers()) {
+            if (indexer != null) {
+                if (indexer.isRunning()) {
+                    runningCount++;
+                    if (index != null && index.equals(indexer.getIndex())) {
+                        running = true;
+                        progress = indexer.getProgress();
+                        if (progress != null) {
+                            // Progress, floored to 2 decimal places.
+                            // We want 99.9999% to be 99%, to avoid getting 100% before the process is truly done.
+                            progress = Math.floor(progress * 100) / 100;
+                        }
+                    }
+                }
             }
         }
 
         JSONObject jsonResponse = new JSONObject()
                 .put("index", index)
                 .put("progress", progress)
-                .put("running", running);
+                .put("running", running)
+                .put("runningCount", runningCount);
 
         return jsonResponse.toString();
     }
