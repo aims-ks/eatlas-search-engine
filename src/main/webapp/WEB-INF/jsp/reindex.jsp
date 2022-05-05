@@ -29,15 +29,18 @@
             Add the following entries to the server's crontab, to keep the search indexes up to date.
         </p>
 
-        <pre>0   2   *   *   *   curl --silent "${baseURL}<c:url value="/public/index/v1/reindex">
-    <c:param name="full" value="false" />
-    <c:param name="token" value="${it.config.reindexToken}" />
-</c:url>"
-0   0   1   *   *   curl --silent "${baseURL}<c:url value="/public/index/v1/reindex">
-    <c:param name="full" value="true" />
-    <c:param name="token" value="${it.config.reindexToken}" />
-</c:url>"
-        </pre>
+        <c:url var="harvestNewURL" value="/public/index/v1/reindex">
+            <c:param name="full" value="false" />
+            <c:param name="token" value="${it.config.reindexToken}" />
+        </c:url>
+        <c:url var="fullHarvestURL" value="/public/index/v1/reindex">
+            <c:param name="full" value="true" />
+            <c:param name="token" value="${it.config.reindexToken}" />
+        </c:url>
+
+        <pre>
+0   2   *   *   *   curl --silent "${baseURL}${harvestNewURL}" &gt; /dev/null
+0   0   1   *   *   curl --silent "${baseURL}${fullHarvestURL}" &gt; /dev/null</pre>
     </div>
 
     <div class="box">
