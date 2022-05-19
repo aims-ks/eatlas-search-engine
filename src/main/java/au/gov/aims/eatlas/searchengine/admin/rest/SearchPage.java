@@ -60,14 +60,12 @@ public class SearchPage {
         }
 
         SearchResults results = null;
-        if (query != null && !query.isEmpty()) {
-            try {
-                int start = (page-1) * hitsPerPage;
-                results = Search.paginationSearch(query, start, hitsPerPage, indexes, indexes, messages);
-            } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
-                    "An exception occurred during the search.", ex);
-            }
+        try {
+            int start = (page-1) * hitsPerPage;
+            results = Search.paginationSearch(query, start, hitsPerPage, indexes, indexes, messages);
+        } catch(Exception ex) {
+            messages.addMessage(Messages.Level.ERROR,
+                "An exception occurred during the search.", ex);
         }
 
         int nbPage = 0;

@@ -29,6 +29,7 @@ import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
@@ -113,16 +114,26 @@ public class Search {
         return Response.ok(responseTxt).cacheControl(noCache).build();
     }
 
+    /**
+     * Perform a search, with paging.
+     * @param q The search query. Set to null or empty to get all the documents in the index.
+     * @param start The index of the first element. Default: 0.
+     * @param hits Number of search results per page. Default: 10.
+     * @param idx List of indexes used for the search summary. Used to notify the user how many search results are found on each index.
+     * @param fidx List of indexes to filter the search results (optional). Default: returns the results for all the index listed in idx.
+     * @param messages Messages instance, used to notify the user of errors, warnings, etc.
+     * @return A SearchResults object containing a summary of the search (number of search results in each index) and the list of search results.
+     * @throws IOException If something goes wrong with ElasticSearch.
+     */
     public static SearchResults paginationSearch(
             String q,
             Integer start,
             Integer hits,
             List<String> idx,  // List of indexes used for the summary
-            List<String> fidx, // List of indexes to filter the search results (optional)
+            List<String> fidx, // List of indexes to filter the search results (optional, default: list all search results for idx)
             Messages messages
     ) throws IOException {
         if (
-            q == null || q.isEmpty() ||
             idx == null || idx.isEmpty()
         ) {
             return null;
@@ -300,8 +311,15 @@ public class Search {
         defaultSearchFields.add("title");
         defaultSearchFields.add("document");
 
+        Query query = null;
+        if (needle == null || needle.isEmpty()) {
+            query = QueryBuilders.matchAll().build()._toQuery();
+        } else {
+            query = QueryBuilders.queryString().query(needle).fields(defaultSearchFields).build()._toQuery();
+        }
+
         return new SearchRequest.Builder()
-                .query(QueryBuilders.queryString().query(needle).fields(defaultSearchFields).build()._toQuery())
+                .query(query)
                 .timeout("60s"); // Wild guess, there is no doc, no example for this!!
     }
 }
