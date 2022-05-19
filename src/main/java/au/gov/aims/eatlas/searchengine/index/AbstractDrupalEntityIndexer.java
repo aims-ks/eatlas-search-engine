@@ -20,13 +20,19 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
+import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
+import au.gov.aims.eatlas.searchengine.rest.ImageCache;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,7 +40,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public abstract class DrupalEntityIndexer<E extends Entity> extends AbstractIndexer<E> {
+public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends AbstractIndexer<E> {
+    private static final Logger LOGGER = Logger.getLogger(AbstractDrupalEntityIndexer.class.getName());
     private static final int THREAD_POOL_SIZE = 10;
 
     // Number of Drupal entity to index per page.
@@ -47,7 +54,7 @@ public abstract class DrupalEntityIndexer<E extends Entity> extends AbstractInde
     private String drupalBundleId; // Content type (node type) or media type. Example: article, image, etc
     private String drupalPreviewImageField;
 
-    public DrupalEntityIndexer(
+    public AbstractDrupalEntityIndexer(
             String index,
             String drupalUrl,
             String drupalVersion,
@@ -107,8 +114,8 @@ public abstract class DrupalEntityIndexer<E extends Entity> extends AbstractInde
         if (fullHarvest) {
             usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
 
-            // There is no easy way to know how many nodes needs indexing.
-            // Use the total number of nodes we have in the index, by looking at the number in the state.
+            // There is no easy way to know how many entities needs indexing.
+            // Use the total number of entities we have in the index, by looking at the last indexed count in the state.
             IndexerState state = this.getState();
             Long total = null;
             if (state != null) {
@@ -204,7 +211,7 @@ public abstract class DrupalEntityIndexer<E extends Entity> extends AbstractInde
             page++;
 
         // while:
-        //     !stop: Stop explicitly set to true, because we found a node that was not modified since last harvest.
+        //     !stop: Stop explicitly set to true, because we found an entity that was not modified since last harvest.
         //     !crashed: An exception occurred or an error message was sent by Drupal.
         //     entityFound == INDEX_PAGE_SIZE: A page of results contains less entity than requested.
         } while(!stop && !crashed && entityFound == INDEX_PAGE_SIZE);
@@ -254,6 +261,34 @@ public abstract class DrupalEntityIndexer<E extends Entity> extends AbstractInde
         return uriBuilder;
     }
 
+    public static String getPreviewImageUUID(JSONObject jsonApiEntity, String previewImageField) {
+        if (previewImageField == null || previewImageField.isEmpty()) {
+            return null;
+        }
+        JSONObject jsonRelationships = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("relationships");
+        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
+        JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
+        return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
+    }
+
+    public static String findPreviewImageRelativePath(String imageUUID, JSONArray included) {
+        if (imageUUID == null || included == null) {
+            return null;
+        }
+
+        for (int i=0; i < included.length(); i++) {
+            JSONObject jsonInclude = included.optJSONObject(i);
+            String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
+            if (imageUUID.equals(includeId)) {
+                JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
+                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
+                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
+            }
+        }
+
+        return null;
+    }
+
     public String getDrupalUrl() {
         return this.drupalUrl;
     }
@@ -292,5 +327,145 @@ public abstract class DrupalEntityIndexer<E extends Entity> extends AbstractInde
 
     public void setDrupalPreviewImageField(String drupalPreviewImageField) {
         this.drupalPreviewImageField = drupalPreviewImageField;
+    }
+
+    // Thread class, which does typical entity indexing (node, media, etc).
+    // It can be extended in the indexer and used as a starting point.
+    public abstract class AbstractDrupalEntityIndexerThread extends Thread {
+        private final SearchClient client;
+        private final Messages messages;
+        private final E drupalEntity;
+        private final JSONObject jsonApiEntity;
+        private final JSONArray jsonIncluded;
+        private final Set<String> usedThumbnails;
+        private final int page;
+        private final int current;
+        private final int pageTotal;
+
+        public AbstractDrupalEntityIndexerThread(
+                SearchClient client,
+                Messages messages,
+                E drupalEntity,
+                JSONObject jsonApiEntity,
+                JSONArray jsonIncluded,
+                Set<String> usedThumbnails,
+                int page, int current, int pageTotal
+        ) {
+            this.client = client;
+            this.messages = messages;
+            this.drupalEntity = drupalEntity;
+            this.jsonApiEntity = jsonApiEntity;
+            this.jsonIncluded = jsonIncluded;
+            this.usedThumbnails = usedThumbnails;
+            this.page = page;
+            this.current = current;
+            this.pageTotal = pageTotal;
+        }
+
+        public abstract E getIndexedDrupalEntity();
+
+        public SearchClient getClient() {
+            return this.client;
+        }
+
+        public Messages getMessages() {
+            return this.messages;
+        }
+
+        public E getDrupalEntity() {
+            return this.drupalEntity;
+        }
+
+        // This method can be overwritten to add some processing.
+        // Return false to stop the processing.
+        // It is called before any processing is done.
+        public boolean preProcess() {
+            return true;
+        }
+
+        // This method can be overwritten to add some processing.
+        // Return false to stop the processing.
+        // It is called after parsing jsonApiEntity, just before indexing the entity.
+        public boolean postProcess() {
+            return true;
+        }
+
+        @Override
+        public void run() {
+            if (this.preProcess()) {
+
+                // Thumbnail (aka preview image)
+                URL baseUrl = DrupalNode.getDrupalBaseUrl(this.jsonApiEntity, this.messages);
+                if (baseUrl != null && AbstractDrupalEntityIndexer.this.getDrupalPreviewImageField() != null) {
+                    String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(this.jsonApiEntity, AbstractDrupalEntityIndexer.this.getDrupalPreviewImageField());
+                    if (previewImageUUID != null) {
+                        String previewImageRelativePath = AbstractDrupalEntityIndexer.findPreviewImageRelativePath(previewImageUUID, this.jsonIncluded);
+                        if (previewImageRelativePath != null) {
+                            URL thumbnailUrl = null;
+                            try {
+                                thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
+                            } catch(Exception ex) {
+                                this.messages.addMessage(Messages.Level.WARNING,
+                                        String.format("Exception occurred while creating a thumbnail URL for Drupal %s type %s, id: %s",
+                                                AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
+                                                AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
+                                                this.drupalEntity.getId()), ex);
+                            }
+                            this.drupalEntity.setThumbnailUrl(thumbnailUrl);
+
+                            // Create the thumbnail if it's missing or outdated
+                            E oldEntity = this.getIndexedDrupalEntity();
+                            if (this.drupalEntity.isThumbnailOutdated(oldEntity, AbstractDrupalEntityIndexer.this.getSafeThumbnailTTL(), AbstractDrupalEntityIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
+                                try {
+                                    File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, AbstractDrupalEntityIndexer.this.getIndex(), this.drupalEntity.getId(), this.messages);
+                                    if (cachedThumbnailFile != null) {
+                                        this.drupalEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                                    }
+                                } catch(Exception ex) {
+                                    this.messages.addMessage(Messages.Level.WARNING,
+                                            String.format("Exception occurred while creating a thumbnail for Drupal %s type %s, id: %s",
+                                                    AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
+                                                    AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
+                                                    this.drupalEntity.getId()), ex);
+                                }
+                                this.drupalEntity.setThumbnailLastIndexed(System.currentTimeMillis());
+                            } else {
+                                this.drupalEntity.useCachedThumbnail(oldEntity);
+                            }
+                        }
+                    }
+                }
+
+                if (this.usedThumbnails != null) {
+                    String thumbnailFilename = drupalEntity.getCachedThumbnailFilename();
+                    if (thumbnailFilename != null) {
+                        this.usedThumbnails.add(thumbnailFilename);
+                    }
+                }
+
+                if (this.postProcess()) {
+                    try {
+                        IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.client, this.drupalEntity);
+
+                        // NOTE: We don't know how many entities (or pages of entities) there is.
+                        //     We index until we reach the bottom of the barrel...
+                        LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal %s type %s, id: %s, index response status: %s",
+                                this.page, this.current, this.pageTotal,
+                                AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
+                                AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
+                                this.drupalEntity.getId(),
+                                indexResponse.result()));
+                    } catch(Exception ex) {
+                        this.messages.addMessage(Messages.Level.WARNING,
+                                String.format("Exception occurred while indexing a Drupal %s type %s, id: %s",
+                                        AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
+                                        AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
+                                        this.drupalEntity.getId()), ex);
+                    }
+                }
+            }
+
+            AbstractDrupalEntityIndexer.this.incrementCompleted();
+        }
     }
 }

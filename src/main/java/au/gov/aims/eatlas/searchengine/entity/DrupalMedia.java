@@ -36,7 +36,7 @@ public class DrupalMedia extends Entity {
         this.setIndex(index);
 
         if (jsonApiMedia != null) {
-            URL baseUrl = DrupalMedia.getDrupalBaseUrl(jsonApiMedia, messages);
+            URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiMedia, messages);
 
             // UUID
             this.setId(jsonApiMedia.optString("id", null));
@@ -70,33 +70,6 @@ public class DrupalMedia extends Entity {
             // Lang code
             this.setLangcode(jsonAttributes == null ? null : jsonAttributes.optString("langcode", null));
         }
-    }
-
-    public static URL getDrupalBaseUrl(JSONObject jsonApiMedia, Messages messages) {
-        JSONObject jsonLinks = jsonApiMedia == null ? null : jsonApiMedia.optJSONObject("links");
-        JSONObject jsonLinksSelf = jsonLinks == null ? null : jsonLinks.optJSONObject("self");
-        String linksSelfHref = jsonLinksSelf == null ? null : jsonLinksSelf.optString("href", null);
-
-        URL linksSelfUrl = null;
-        if (linksSelfHref != null) {
-            try {
-                linksSelfUrl = new URL(linksSelfHref);
-            } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
-                        String.format("Invalid URL found in links.self.href: %s", linksSelfHref), ex);
-            }
-        }
-
-        if (linksSelfUrl != null) {
-            try {
-                return new URL(linksSelfUrl.getProtocol(), linksSelfUrl.getHost(), linksSelfUrl.getPort(), "/");
-            } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
-                        String.format("Can not get root URL from links.self.href: %s", linksSelfUrl), ex);
-            }
-        }
-
-        return null;
     }
 
     private static String getMediaRelativeUrl(JSONObject jsonApiMedia) {

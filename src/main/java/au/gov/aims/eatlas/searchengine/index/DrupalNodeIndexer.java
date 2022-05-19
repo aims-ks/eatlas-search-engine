@@ -21,20 +21,13 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
-import au.gov.aims.eatlas.searchengine.rest.ImageCache;
-import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Set;
 
-public class DrupalNodeIndexer extends DrupalEntityIndexer<DrupalNode> {
-    private static final Logger LOGGER = Logger.getLogger(DrupalNodeIndexer.class.getName());
-
+public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
     private String drupalPrepressField;
 
     public static DrupalNodeIndexer fromJSON(String index, JSONObject json) {
@@ -115,34 +108,6 @@ public class DrupalNodeIndexer extends DrupalEntityIndexer<DrupalNode> {
             client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page, current, nodeFound);
     }
 
-    private static String getPreviewImageUUID(JSONObject jsonApiNode, String previewImageField) {
-        if (previewImageField == null || previewImageField.isEmpty()) {
-            return null;
-        }
-        JSONObject jsonRelationships = jsonApiNode == null ? null : jsonApiNode.optJSONObject("relationships");
-        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
-        JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
-        return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
-    }
-
-    private static String findPreviewImageRelativePath(String imageUUID, JSONArray included) {
-        if (imageUUID == null || included == null) {
-            return null;
-        }
-
-        for (int i=0; i < included.length(); i++) {
-            JSONObject jsonInclude = included.optJSONObject(i);
-            String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
-            if (imageUUID.equals(includeId)) {
-                JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
-                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
-                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
-            }
-        }
-
-        return null;
-    }
-
     public String getDrupalPrepressField() {
         return this.drupalPrepressField;
     }
@@ -151,17 +116,7 @@ public class DrupalNodeIndexer extends DrupalEntityIndexer<DrupalNode> {
         this.drupalPrepressField = drupalPrepressField;
     }
 
-    public class DrupalNodeIndexerThread extends Thread {
-        private final SearchClient client;
-        private final Messages messages;
-        private final DrupalNode drupalNode;
-        private final JSONObject jsonApiNode;
-        private final JSONArray jsonIncluded;
-        private final Set<String> usedThumbnails;
-        private final int page;
-        private final int current;
-        private final int pageTotal;
-
+    public class DrupalNodeIndexerThread extends AbstractDrupalEntityIndexerThread {
         public DrupalNodeIndexerThread(
                 SearchClient client,
                 Messages messages,
@@ -171,79 +126,11 @@ public class DrupalNodeIndexer extends DrupalEntityIndexer<DrupalNode> {
                 Set<String> usedThumbnails,
                 int page, int current, int pageTotal
         ) {
-
-            this.client = client;
-            this.messages = messages;
-            this.drupalNode = drupalNode;
-            this.jsonApiNode = jsonApiNode;
-            this.jsonIncluded = jsonIncluded;
-            this.usedThumbnails = usedThumbnails;
-            this.page = page;
-            this.current = current;
-            this.pageTotal = pageTotal;
+            super(client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page, current, pageTotal);
         }
 
-        @Override
-        public void run() {
-            // Thumbnail (aka preview image)
-            URL baseUrl = DrupalNode.getDrupalBaseUrl(this.jsonApiNode, this.messages);
-            if (baseUrl != null && DrupalNodeIndexer.this.getDrupalPreviewImageField() != null) {
-                String previewImageUUID = DrupalNodeIndexer.getPreviewImageUUID(this.jsonApiNode, DrupalNodeIndexer.this.getDrupalPreviewImageField());
-                if (previewImageUUID != null) {
-                    String previewImageRelativePath = DrupalNodeIndexer.findPreviewImageRelativePath(previewImageUUID, this.jsonIncluded);
-                    if (previewImageRelativePath != null) {
-                        URL thumbnailUrl = null;
-                        try {
-                            thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
-                        } catch(Exception ex) {
-                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
-                                    this.drupalNode.getId(), DrupalNodeIndexer.this.getDrupalBundleId()), ex);
-                        }
-                        this.drupalNode.setThumbnailUrl(thumbnailUrl);
-
-                        // Create the thumbnail if it's missing or outdated
-                        DrupalNode oldNode = DrupalNodeIndexer.this.safeGet(this.client, DrupalNode.class, this.drupalNode.getId(), this.messages);
-                        if (this.drupalNode.isThumbnailOutdated(oldNode, DrupalNodeIndexer.this.getSafeThumbnailTTL(), DrupalNodeIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
-                            try {
-                                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalNodeIndexer.this.getIndex(), this.drupalNode.getId(), this.messages);
-                                if (cachedThumbnailFile != null) {
-                                    this.drupalNode.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                                }
-                            } catch(Exception ex) {
-                                this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
-                                        this.drupalNode.getId(), DrupalNodeIndexer.this.getDrupalBundleId()), ex);
-                            }
-                            this.drupalNode.setThumbnailLastIndexed(System.currentTimeMillis());
-                        } else {
-                            this.drupalNode.useCachedThumbnail(oldNode);
-                        }
-                    }
-                }
-            }
-
-            if (this.usedThumbnails != null) {
-                String thumbnailFilename = drupalNode.getCachedThumbnailFilename();
-                if (thumbnailFilename != null) {
-                    this.usedThumbnails.add(thumbnailFilename);
-                }
-            }
-
-            try {
-                IndexResponse indexResponse = DrupalNodeIndexer.this.indexEntity(this.client, this.drupalNode);
-
-                // NOTE: We don't know how many nodes (or pages of nodes) there is.
-                //     We index until we reach the bottom of the barrel...
-                LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal node ID: %s, index response status: %s",
-                        this.page, this.current, this.pageTotal,
-                        this.drupalNode.getNid(),
-                        indexResponse.result()));
-            } catch(Exception ex) {
-                this.messages.addMessage(Messages.Level.WARNING,
-                        String.format("Exception occurred while indexing a Drupal node: %s, node type: %s",
-                                this.drupalNode.getId(), DrupalNodeIndexer.this.getDrupalBundleId()), ex);
-            }
-
-            DrupalNodeIndexer.this.incrementCompleted();
+        public DrupalNode getIndexedDrupalEntity() {
+            return DrupalNodeIndexer.this.safeGet(this.getClient(), DrupalNode.class, this.getDrupalEntity().getId(), this.getMessages());
         }
     }
 }

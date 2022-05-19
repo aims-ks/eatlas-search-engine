@@ -32,7 +32,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Set;
 
-public class DrupalExternalLinkNodeIndexer extends DrupalEntityIndexer<ExternalLink> {
+public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<ExternalLink> {
     private static final Logger LOGGER = Logger.getLogger(DrupalExternalLinkNodeIndexer.class.getName());
 
     private String drupalExternalUrlField;
@@ -125,34 +125,6 @@ public class DrupalExternalLinkNodeIndexer extends DrupalEntityIndexer<ExternalL
         return jsonAttributes == null ? null : jsonAttributes.optString(drupalContentOverwriteField, null);
     }
 
-    private static String getPreviewImageUUID(JSONObject jsonApiNode, String previewImageField) {
-        if (previewImageField == null || previewImageField.isEmpty()) {
-            return null;
-        }
-        JSONObject jsonRelationships = jsonApiNode == null ? null : jsonApiNode.optJSONObject("relationships");
-        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
-        JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
-        return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
-    }
-
-    private static String findPreviewImageRelativePath(String imageUUID, JSONArray included) {
-        if (imageUUID == null || included == null) {
-            return null;
-        }
-
-        for (int i=0; i < included.length(); i++) {
-            JSONObject jsonInclude = included.optJSONObject(i);
-            String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
-            if (imageUUID.equals(includeId)) {
-                JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
-                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
-                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
-            }
-        }
-
-        return null;
-    }
-
     public String getDrupalExternalUrlField() {
         return this.drupalExternalUrlField;
     }
@@ -169,6 +141,9 @@ public class DrupalExternalLinkNodeIndexer extends DrupalEntityIndexer<ExternalL
         this.drupalContentOverwriteField = drupalContentOverwriteField;
     }
 
+    // NOTE: This Thread class does NOT extends AbstractDrupalEntityIndexerThread.
+    //     It's getting its content by harvesting the URL found in the node.
+    //     It's very different from node / media indexation.
     public class DrupalExternalLinkNodeIndexerThread extends Thread {
         private final SearchClient client;
         private final Messages messages;
@@ -211,8 +186,9 @@ public class DrupalExternalLinkNodeIndexer extends DrupalEntityIndexer<ExternalL
                     try {
                         externalLink = new URL(externalLinkStr);
                     } catch(Exception ex) {
-                        this.messages.addMessage(Messages.Level.WARNING, String.format("Invalid URL found for Drupal external link node ID: %s, node type: %s",
-                                this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.getDrupalBundleId()), ex);
+                        this.messages.addMessage(Messages.Level.WARNING, String.format("Invalid URL found for Drupal node external link %s, id: %s",
+                                DrupalExternalLinkNodeIndexer.this.getDrupalBundleId(),
+                                this.externalLink.getId()), ex);
                     }
 
                     String content = null;
@@ -227,8 +203,10 @@ public class DrupalExternalLinkNodeIndexer extends DrupalEntityIndexer<ExternalL
                         try {
                             content = EntityUtils.harvestURLText(externalLinkStr, this.messages);
                         } catch (Exception ex) {
-                            this.messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting URL for Drupal external link node %s, node type: %s. URL %s",
-                                    this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.getDrupalBundleId(), externalLinkStr), ex);
+                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while harvesting URL for Drupal node external link %s, id: %s. URL %s",
+                                    DrupalExternalLinkNodeIndexer.this.getDrupalBundleId(),
+                                    this.externalLink.getId(),
+                                    externalLinkStr), ex);
                         }
                     }
 
@@ -241,16 +219,17 @@ public class DrupalExternalLinkNodeIndexer extends DrupalEntityIndexer<ExternalL
                         // Thumbnail (aka preview image)
                         URL baseUrl = ExternalLink.getDrupalBaseUrl(this.jsonApiNode, this.messages);
                         if (baseUrl != null && DrupalExternalLinkNodeIndexer.this.getDrupalPreviewImageField() != null) {
-                            String previewImageUUID = DrupalExternalLinkNodeIndexer.getPreviewImageUUID(this.jsonApiNode, DrupalExternalLinkNodeIndexer.this.getDrupalPreviewImageField());
+                            String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(this.jsonApiNode, DrupalExternalLinkNodeIndexer.this.getDrupalPreviewImageField());
                             if (previewImageUUID != null) {
-                                String previewImageRelativePath = DrupalExternalLinkNodeIndexer.findPreviewImageRelativePath(previewImageUUID, this.jsonIncluded);
+                                String previewImageRelativePath = AbstractDrupalEntityIndexer.findPreviewImageRelativePath(previewImageUUID, this.jsonIncluded);
                                 if (previewImageRelativePath != null) {
                                     URL thumbnailUrl = null;
                                     try {
                                         thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
                                     } catch(Exception ex) {
-                                        this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal node: %s, node type: %s",
-                                                this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.getDrupalBundleId()), ex);
+                                        this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal node external link %s, id: %s",
+                                                DrupalExternalLinkNodeIndexer.this.getDrupalBundleId(),
+                                                this.externalLink.getId()), ex);
                                     }
                                     this.externalLink.setThumbnailUrl(thumbnailUrl);
 
@@ -263,8 +242,9 @@ public class DrupalExternalLinkNodeIndexer extends DrupalEntityIndexer<ExternalL
                                                 this.externalLink.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                                             }
                                         } catch(Exception ex) {
-                                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal node: %s, node type: %s",
-                                                    this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.getDrupalBundleId()), ex);
+                                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal node external link %s, id: %s",
+                                                    DrupalExternalLinkNodeIndexer.this.getDrupalBundleId(),
+                                                    this.externalLink.getId()), ex);
                                         }
                                         this.externalLink.setThumbnailLastIndexed(System.currentTimeMillis());
                                     } else {
@@ -284,14 +264,17 @@ public class DrupalExternalLinkNodeIndexer extends DrupalEntityIndexer<ExternalL
                         try {
                             IndexResponse indexResponse = DrupalExternalLinkNodeIndexer.this.indexEntity(client, this.externalLink);
 
-                            LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal external link node ID: %s, URL: %s, index response status: %s",
+                            LOGGER.debug(String.format("[Page %d: %d/%d] Indexing Drupal node external link %s, id: %s, URL: %s, index response status: %s",
                                     this.page, this.current, this.pageTotal,
+                                    DrupalExternalLinkNodeIndexer.this.getDrupalBundleId(),
                                     this.externalLink.getNid(),
                                     externalLinkStr,
                                     indexResponse.result()));
                         } catch(Exception ex) {
-                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing an external link Drupal node: %s, node type: %s, URL: %s",
-                                    this.externalLink.getId(), DrupalExternalLinkNodeIndexer.this.getDrupalBundleId(), externalLinkStr), ex);
+                            this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a Drupal node external link %s, id: %s, URL: %s",
+                                    DrupalExternalLinkNodeIndexer.this.getDrupalBundleId(),
+                                    this.externalLink.getId(),
+                                    externalLinkStr), ex);
                         }
                     }
                 }

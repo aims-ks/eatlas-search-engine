@@ -22,19 +22,13 @@ import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
-import au.gov.aims.eatlas.searchengine.rest.ImageCache;
-import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Set;
 
-public class DrupalMediaIndexer extends DrupalEntityIndexer<DrupalMedia> {
-    private static final Logger LOGGER = Logger.getLogger(DrupalMediaIndexer.class.getName());
+public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia> {
     private static final String DEFAULT_PREVIEW_IMAGE_FIELD = "thumbnail";
 
     private String drupalTitleField;
@@ -147,31 +141,6 @@ public class DrupalMediaIndexer extends DrupalEntityIndexer<DrupalMedia> {
             EntityUtils.extractHTMLTextContent(jsonDesc.optString("processed", null));
     }
 
-    private static String getPreviewImageUUID(JSONObject jsonApiMedia, String previewImageField) {
-        JSONObject jsonRelationships = jsonApiMedia == null ? null : jsonApiMedia.optJSONObject("relationships");
-        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
-        JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
-        return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
-    }
-
-    private static String findPreviewImageRelativePath(String imageUUID, JSONArray included) {
-        if (imageUUID == null || included == null) {
-            return null;
-        }
-
-        for (int i=0; i < included.length(); i++) {
-            JSONObject jsonInclude = included.optJSONObject(i);
-            String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
-            if (imageUUID.equals(includeId)) {
-                JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
-                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
-                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
-            }
-        }
-
-        return null;
-    }
-
     public String getDrupalTitleField() {
         return this.drupalTitleField;
     }
@@ -196,99 +165,21 @@ public class DrupalMediaIndexer extends DrupalEntityIndexer<DrupalMedia> {
         this.drupalPrivateMediaField = drupalPrivateMediaField;
     }
 
-    public class DrupalMediaIndexerThread extends Thread {
-        private final SearchClient client;
-        private final Messages messages;
-        private final DrupalMedia drupalMedia;
-        private final JSONObject jsonApiMedia;
-        private final JSONArray jsonIncluded;
-        private final Set<String> usedThumbnails;
-        private final int page;
-        private final int current;
-        private final int pageTotal;
-
+    public class DrupalMediaIndexerThread extends AbstractDrupalEntityIndexerThread {
         public DrupalMediaIndexerThread(
                 SearchClient client,
                 Messages messages,
                 DrupalMedia drupalMedia,
-                JSONObject jsonApiMedia,
+                JSONObject jsonApiNode,
                 JSONArray jsonIncluded,
                 Set<String> usedThumbnails,
                 int page, int current, int pageTotal
         ) {
-
-            this.client = client;
-            this.messages = messages;
-            this.drupalMedia = drupalMedia;
-            this.jsonApiMedia = jsonApiMedia;
-            this.jsonIncluded = jsonIncluded;
-            this.usedThumbnails = usedThumbnails;
-            this.page = page;
-            this.current = current;
-            this.pageTotal = pageTotal;
+            super(client, messages, drupalMedia, jsonApiNode, jsonIncluded, usedThumbnails, page, current, pageTotal);
         }
 
-        @Override
-        public void run() {
-            // Thumbnail (aka preview image)
-            URL baseUrl = DrupalMedia.getDrupalBaseUrl(this.jsonApiMedia, this.messages);
-            String previewImageField = DrupalMediaIndexer.this.getDrupalPreviewImageField();
-            if (baseUrl != null && previewImageField != null) {
-                String previewImageUUID = DrupalMediaIndexer.getPreviewImageUUID(this.jsonApiMedia, previewImageField);
-                if (previewImageUUID != null) {
-                    String previewImageRelativePath = DrupalMediaIndexer.findPreviewImageRelativePath(previewImageUUID, this.jsonIncluded);
-                    if (previewImageRelativePath != null) {
-                        URL thumbnailUrl = null;
-                        try {
-                            thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
-                        } catch(Exception ex) {
-                            messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal media: %s, media type: %s",
-                                    this.drupalMedia.getId(), DrupalMediaIndexer.this.getDrupalBundleId()), ex);
-                        }
-                        this.drupalMedia.setThumbnailUrl(thumbnailUrl);
-
-                        // Create the thumbnail if it's missing or outdated
-                        DrupalMedia oldMedia = DrupalMediaIndexer.this.safeGet(this.client, DrupalMedia.class, this.drupalMedia.getId(), this.messages);
-                        if (this.drupalMedia.isThumbnailOutdated(oldMedia, DrupalMediaIndexer.this.getSafeThumbnailTTL(), DrupalMediaIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
-                            try {
-                                File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, DrupalMediaIndexer.this.getIndex(), this.drupalMedia.getId(), this.messages);
-                                if (cachedThumbnailFile != null) {
-                                    this.drupalMedia.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                                }
-                            } catch(Exception ex) {
-                                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal media: %s, media type: %s",
-                                        this.drupalMedia.getId(), DrupalMediaIndexer.this.getDrupalBundleId()), ex);
-                            }
-                            this.drupalMedia.setThumbnailLastIndexed(System.currentTimeMillis());
-                        } else {
-                            this.drupalMedia.useCachedThumbnail(oldMedia);
-                        }
-                    }
-                }
-            }
-
-            if (this.usedThumbnails != null) {
-                String thumbnailFilename = drupalMedia.getCachedThumbnailFilename();
-                if (thumbnailFilename != null) {
-                    this.usedThumbnails.add(thumbnailFilename);
-                }
-            }
-
-            try {
-                IndexResponse indexResponse = DrupalMediaIndexer.this.indexEntity(this.client, this.drupalMedia);
-
-                // NOTE: We don't know how many medias (or pages of medias) there is.
-                //     We index until we reach the bottom of the barrel...
-                LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal media ID: %s, index response status: %s",
-                        this.page, this.current, this.pageTotal,
-                        this.drupalMedia.getMid(),
-                        indexResponse.result()));
-            } catch(Exception ex) {
-                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a Drupal media: %s, media type: %s",
-                        this.drupalMedia.getId(), DrupalMediaIndexer.this.getDrupalBundleId()), ex);
-            }
-
-            DrupalMediaIndexer.this.incrementCompleted();
+        public DrupalMedia getIndexedDrupalEntity() {
+            return DrupalMediaIndexer.this.safeGet(this.getClient(), DrupalMedia.class, this.getDrupalEntity().getId(), this.getMessages());
         }
     }
 }
