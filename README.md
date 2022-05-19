@@ -8,13 +8,6 @@ TODO:
 - Settings page
   - Commit to Git repo (repo dedicated for the search engine config)
 
-- Image
-  - Drupal: Create public page, with metadata (with option to make image private; no public page)
-  - Indexer: Do not index private image
-
-- Drupal
-  - Make sure nodes / medias can be associated with a role, to give write access to multiple people (NWAtlas role for example)
-
 - Index GIS polygons / points
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}

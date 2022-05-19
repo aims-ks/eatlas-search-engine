@@ -30,27 +30,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
+public class DrupalMediaIndexer extends DrupalEntityIndexer<DrupalMedia> {
     private static final Logger LOGGER = Logger.getLogger(DrupalMediaIndexer.class.getName());
-    private static final int THREAD_POOL_SIZE = 10;
+    private static final String DEFAULT_PREVIEW_IMAGE_FIELD = "thumbnail";
 
-    // Number of Drupal media to index per page.
-    //     Larger number = less request, more RAM
-    private static final int INDEX_PAGE_SIZE = 100;
-
-    private String drupalUrl;
-    private String drupalVersion;
-    private String drupalMediaType;
-    private String drupalPreviewImageField;
     private String drupalTitleField;
     private String drupalDescriptionField;
     private String drupalPrivateMediaField;
@@ -73,27 +59,10 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
 
     public JSONObject toJSON() {
         return this.getJsonBase()
-            .put("drupalUrl", this.drupalUrl)
-            .put("drupalVersion", this.drupalVersion)
-            .put("drupalMediaType", this.drupalMediaType)
-            .put("drupalPreviewImageField", this.drupalPreviewImageField)
+            .put("drupalMediaType", this.getDrupalBundleId())
             .put("drupalTitleField", this.drupalTitleField)
             .put("drupalDescriptionField", this.drupalDescriptionField)
             .put("drupalPrivateMediaField", this.drupalPrivateMediaField);
-    }
-
-    @Override
-    public boolean validate() {
-        if (!super.validate()) {
-            return false;
-        }
-        if (this.drupalUrl == null || this.drupalUrl.isEmpty()) {
-            return false;
-        }
-        if (this.drupalMediaType == null || this.drupalMediaType.isEmpty()) {
-            return false;
-        }
-        return true;
     }
 
     public DrupalMedia load(JSONObject json, Messages messages) {
@@ -117,11 +86,8 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
             String drupalPrivateMediaField
     ) {
 
-        super(index);
-        this.drupalUrl = drupalUrl;
-        this.drupalVersion = drupalVersion;
-        this.drupalMediaType = drupalMediaType;
-        this.drupalPreviewImageField = drupalPreviewImageField;
+        super(index, drupalUrl, drupalVersion, "media", drupalMediaType,
+                (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField);
         this.drupalTitleField = drupalTitleField;
         this.drupalDescriptionField = drupalDescriptionField;
         this.drupalPrivateMediaField = drupalPrivateMediaField;
@@ -133,125 +99,34 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
     }
 
     @Override
-    protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
-        boolean fullHarvest = lastHarvested == null;
-        long harvestStart = System.currentTimeMillis();
-
-        Set<String> usedThumbnails = null;
-        if (fullHarvest) {
-            usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
-
-            // There is no easy way to know how many nodes needs indexing.
-            // Use the total number of nodes we have in the index, by looking at the number in the state.
-            IndexerState state = this.getState();
-            Long total = null;
-            if (state != null) {
-                total = state.getCount();
-            }
-            this.setTotal(total);
-        }
-
-        ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-
-        long totalFound = 0;
-        int mediaFound, page = 0;
-        boolean stop = false;
-        boolean crashed = false;
-        do {
-            // Ordered by lastModified (changed).
-            // If the parameter lastHarvested is set, harvest medias until we found a media that was last modified before
-            //     the lastHarvested parameter.
-            // "http://localhost:9090/jsonapi/media/image?include=thumbnail&sort=-changed&page[limit]=100&page[offset]=0&filter[status]=1&filter[field_private_media_page]=0"
-            // Filter out unpublished medias (when logged in): filter[status]=1
-            String urlBase = String.format("%s/jsonapi/media/%s", this.drupalUrl, this.drupalMediaType);
-            URIBuilder uriBuilder;
-            try {
-                uriBuilder = new URIBuilder(urlBase);
-            } catch(URISyntaxException ex) {
-                messages.addMessage(Messages.Level.ERROR,
-                        String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
-                return;
-            }
-            uriBuilder.setParameter("include", this.getSafeDrupalPreviewImageField());
-            uriBuilder.setParameter("sort", "-changed");
-            uriBuilder.setParameter("page[limit]", String.format("%d", INDEX_PAGE_SIZE));
-            uriBuilder.setParameter("page[offset]", String.format("%d", page * INDEX_PAGE_SIZE));
-            uriBuilder.setParameter("filter[status]", "1");
+    public URIBuilder buildDrupalApiUrl(int page, Messages messages) {
+        URIBuilder uriBuilder = super.buildDrupalApiUrl(page, messages);
+        if (uriBuilder != null) {
             if (this.drupalPrivateMediaField != null && !this.drupalPrivateMediaField.isEmpty()) {
                 uriBuilder.setParameter(String.format("filter[%s]", this.drupalPrivateMediaField), "0");
             }
-
-            String url;
-            try {
-                url = uriBuilder.build().toURL().toString();
-            } catch(Exception ex) {
-                // Should not happen
-                messages.addMessage(Messages.Level.ERROR,
-                        String.format("Invalid Drupal URL. Exception occurred while building a URL starting with: %s", urlBase), ex);
-                return;
-            }
-
-            mediaFound = 0;
-            String responseStr = null;
-            try {
-                responseStr = EntityUtils.harvestGetURL(url, messages);
-            } catch(Exception ex) {
-                if (!crashed) {
-                    messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting a page of Drupal medias. Media type: %s",  this.drupalMediaType), ex);
-                }
-                crashed = true;
-            }
-            if (responseStr != null && !responseStr.isEmpty()) {
-                JSONObject jsonResponse = new JSONObject(responseStr);
-
-                JSONArray jsonMedias = jsonResponse.optJSONArray("data");
-                JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
-
-                mediaFound = jsonMedias == null ? 0 : jsonMedias.length();
-                totalFound += mediaFound;
-                if (fullHarvest) {
-                    if (this.getTotal() != null && this.getTotal() < totalFound) {
-                        this.setTotal(totalFound);
-                    }
-                } else {
-                    this.setTotal(totalFound);
-                }
-
-                for (int i=0; i<mediaFound; i++) {
-                    JSONObject jsonApiMedia = jsonMedias.optJSONObject(i);
-                    DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia, messages);
-
-                    // NOTE: Drupal last modified date (aka changed date) are rounded to second,
-                    //     and can be a bit off. Use a 10s margin for safety.
-                    if (!fullHarvest && lastHarvested != null && drupalMedia.getLastModified() < lastHarvested + 10000) {
-                        stop = true;
-                        break;
-                    }
-
-                    drupalMedia.setTitle(DrupalMediaIndexer.getDrupalTitle(jsonApiMedia, DrupalMediaIndexer.this.drupalTitleField));
-                    drupalMedia.setDocument(DrupalMediaIndexer.getDrupalDescription(jsonApiMedia, DrupalMediaIndexer.this.drupalDescriptionField));
-
-                    DrupalMediaIndexerThread thread = new DrupalMediaIndexerThread(
-                        client, messages, drupalMedia, jsonApiMedia, jsonIncluded, usedThumbnails, page+1, i+1, mediaFound);
-
-                    threadPool.execute(thread);
-                }
-            }
-            page++;
-        } while(!stop && mediaFound == INDEX_PAGE_SIZE);
-
-        threadPool.shutdown();
-        try {
-            threadPool.awaitTermination(1, TimeUnit.HOURS);
-        } catch(InterruptedException ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("The DrupalMedia indexation for media type %s was interrupted",
-                    this.drupalMediaType), ex);
         }
 
-        // Only cleanup when we are doing a full harvest
-        if (!crashed && fullHarvest) {
-            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal media of type %s", this.drupalMediaType), messages);
-        }
+        return uriBuilder;
+    }
+
+    @Override
+    public DrupalMedia createDrupalEntity(JSONObject jsonApiMedia, Messages messages) {
+        return new DrupalMedia(this.getIndex(), jsonApiMedia, messages);
+    }
+
+    @Override
+    public Thread createIndexerThread(
+            SearchClient client,
+            Messages messages,
+            DrupalMedia drupalMedia,
+            JSONObject jsonApiMedia,
+            JSONArray jsonIncluded,
+            Set<String> usedThumbnails,
+            int page, int current, int mediaFound) {
+
+        return new DrupalMediaIndexerThread(
+            client, messages, drupalMedia, jsonApiMedia, jsonIncluded, usedThumbnails, page, current, mediaFound);
     }
 
     private static String getDrupalTitle(JSONObject jsonApiMedia, String drupalTitleField) {
@@ -295,41 +170,6 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         }
 
         return null;
-    }
-
-    public String getDrupalUrl() {
-        return this.drupalUrl;
-    }
-
-    public void setDrupalUrl(String drupalUrl) {
-        this.drupalUrl = drupalUrl;
-    }
-
-    public String getDrupalVersion() {
-        return this.drupalVersion;
-    }
-
-    public void setDrupalVersion(String drupalVersion) {
-        this.drupalVersion = drupalVersion;
-    }
-
-    public String getDrupalMediaType() {
-        return this.drupalMediaType;
-    }
-
-    public void setDrupalMediaType(String drupalMediaType) {
-        this.drupalMediaType = drupalMediaType;
-    }
-
-    public String getDrupalPreviewImageField() {
-        return this.drupalPreviewImageField;
-    }
-    public String getSafeDrupalPreviewImageField() {
-        return this.drupalPreviewImageField == null ? "thumbnail" : this.drupalPreviewImageField;
-    }
-
-    public void setDrupalPreviewImageField(String drupalPreviewImageField) {
-        this.drupalPreviewImageField = drupalPreviewImageField;
     }
 
     public String getDrupalTitleField() {
@@ -392,7 +232,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
         public void run() {
             // Thumbnail (aka preview image)
             URL baseUrl = DrupalMedia.getDrupalBaseUrl(this.jsonApiMedia, this.messages);
-            String previewImageField = DrupalMediaIndexer.this.getSafeDrupalPreviewImageField();
+            String previewImageField = DrupalMediaIndexer.this.getDrupalPreviewImageField();
             if (baseUrl != null && previewImageField != null) {
                 String previewImageUUID = DrupalMediaIndexer.getPreviewImageUUID(this.jsonApiMedia, previewImageField);
                 if (previewImageUUID != null) {
@@ -403,7 +243,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                             thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
                         } catch(Exception ex) {
                             messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail URL for Drupal media: %s, media type: %s",
-                                    this.drupalMedia.getId(), DrupalMediaIndexer.this.drupalMediaType), ex);
+                                    this.drupalMedia.getId(), DrupalMediaIndexer.this.getDrupalBundleId()), ex);
                         }
                         this.drupalMedia.setThumbnailUrl(thumbnailUrl);
 
@@ -417,7 +257,7 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                                 }
                             } catch(Exception ex) {
                                 messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for Drupal media: %s, media type: %s",
-                                        this.drupalMedia.getId(), DrupalMediaIndexer.this.drupalMediaType), ex);
+                                        this.drupalMedia.getId(), DrupalMediaIndexer.this.getDrupalBundleId()), ex);
                             }
                             this.drupalMedia.setThumbnailLastIndexed(System.currentTimeMillis());
                         } else {
@@ -444,7 +284,8 @@ public class DrupalMediaIndexer extends AbstractIndexer<DrupalMedia> {
                         this.drupalMedia.getMid(),
                         indexResponse.result()));
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a Drupal media: %s, media type: %s", this.drupalMedia.getId(), DrupalMediaIndexer.this.drupalMediaType), ex);
+                messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a Drupal media: %s, media type: %s",
+                        this.drupalMedia.getId(), DrupalMediaIndexer.this.getDrupalBundleId()), ex);
             }
 
             DrupalMediaIndexer.this.incrementCompleted();

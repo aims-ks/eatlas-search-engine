@@ -256,7 +256,7 @@
                                                     name="${indexer.index}_drupalNodeType"
                                                     data-lpignore="true"
                                                     required="required"
-                                                    value="<c:out value="${indexer.drupalNodeType}" />" />
+                                                    value="<c:out value="${indexer.drupalBundleId}" />" />
                                             </label>
                                             <div class="desc">Type of node indexed by this indexer.</div>
                                             <div class="desc">Example: article</div>
@@ -274,6 +274,23 @@
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
                                             <div class="desc">Drupal field type: Image</div>
                                             <div class="desc">Example: field_image</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalPrepressField">
+                                                <span class="label">Drupal prepress field ID</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalPrepressField"
+                                                    name="${indexer.index}_drupalPrepressField"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalPrepressField}" />" />
+                                            </label>
+                                            <div class="desc">
+                                                Drupal internal field ID for prepress node.
+                                                The indexer will ignore Drupal nodes where that field is set to true.
+                                            </div>
+                                            <div class="desc">Drupal field type: Boolean</div>
+                                            <div class="desc">Example: field_prepress</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -316,7 +333,7 @@
                                                     name="${indexer.index}_drupalMediaType"
                                                     data-lpignore="true"
                                                     required="required"
-                                                    value="<c:out value="${indexer.drupalMediaType}" />" />
+                                                    value="<c:out value="${indexer.drupalBundleId}" />" />
                                             </label>
                                             <div class="desc">Type of media indexed by this indexer.</div>
                                             <div class="desc">Example: image</div>
@@ -421,7 +438,7 @@
                                                     name="${indexer.index}_drupalNodeType"
                                                     data-lpignore="true"
                                                     required="required"
-                                                    value="<c:out value="${indexer.drupalNodeType}" />" />
+                                                    value="<c:out value="${indexer.drupalBundleId}" />" />
                                             </label>
                                             <div class="desc">Type of node indexed by this indexer.</div>
                                             <div class="desc">Example: external_link</div>

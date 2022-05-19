@@ -188,8 +188,9 @@ public class SettingsPage {
 
                 drupalNodeIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
                 drupalNodeIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
-                drupalNodeIndexer.setDrupalNodeType(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
+                drupalNodeIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
                 drupalNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
+                drupalNodeIndexer.setDrupalPrepressField(FormUtils.getFormStringValue(form, index + "_drupalPrepressField"));
 
             } else if (indexer instanceof DrupalMediaIndexer) {
                 // DrupalMediaIndexer
@@ -197,7 +198,7 @@ public class SettingsPage {
 
                 drupalMediaIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
                 drupalMediaIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
-                drupalMediaIndexer.setDrupalMediaType(FormUtils.getFormStringValue(form, index + "_drupalMediaType"));
+                drupalMediaIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalMediaType"));
                 drupalMediaIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
                 drupalMediaIndexer.setDrupalTitleField(FormUtils.getFormStringValue(form, index + "_drupalTitleField"));
                 drupalMediaIndexer.setDrupalDescriptionField(FormUtils.getFormStringValue(form, index + "_drupalDescriptionField"));
@@ -209,7 +210,7 @@ public class SettingsPage {
 
                 drupalExternalLinkNodeIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
                 drupalExternalLinkNodeIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
-                drupalExternalLinkNodeIndexer.setDrupalNodeType(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
+                drupalExternalLinkNodeIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
                 drupalExternalLinkNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
                 drupalExternalLinkNodeIndexer.setDrupalExternalUrlField(FormUtils.getFormStringValue(form, index + "_drupalExternalUrlField"));
                 drupalExternalLinkNodeIndexer.setDrupalContentOverwriteField(FormUtils.getFormStringValue(form, index + "_drupalContentOverwriteField"));
