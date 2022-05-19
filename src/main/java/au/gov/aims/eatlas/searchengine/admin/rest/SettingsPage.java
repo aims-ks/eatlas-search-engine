@@ -201,6 +201,7 @@ public class SettingsPage {
                 drupalMediaIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
                 drupalMediaIndexer.setDrupalTitleField(FormUtils.getFormStringValue(form, index + "_drupalTitleField"));
                 drupalMediaIndexer.setDrupalDescriptionField(FormUtils.getFormStringValue(form, index + "_drupalDescriptionField"));
+                drupalMediaIndexer.setDrupalPrivateMediaField(FormUtils.getFormStringValue(form, index + "_drupalPrivateMediaField"));
 
             } else if (indexer instanceof DrupalExternalLinkNodeIndexer) {
                 // DrupalExternalLinkNodeIndexer

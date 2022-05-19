@@ -273,27 +273,27 @@ public class GeoNetworkRecord extends Entity {
 
         // Point of Truth URL
         String pointOfTruthUrlStr = null;
-        Element pocMetadataLinkage = IndexUtils.getXMLChild(rootElement, "mdb:metadataLinkage");
-        Element pocCiOnlineResource = IndexUtils.getXMLChild(pocMetadataLinkage, "cit:CI_OnlineResource");
-        OnlineResource pocOnlineResource = OnlineResource.parseIso19115_3_2018Node(pocCiOnlineResource);
-        if (pocOnlineResource != null) {
-            String label = pocOnlineResource.getLabel();
+        Element potMetadataLinkage = IndexUtils.getXMLChild(rootElement, "mdb:metadataLinkage");
+        Element potCiOnlineResource = IndexUtils.getXMLChild(potMetadataLinkage, "cit:CI_OnlineResource");
+        OnlineResource potOnlineResource = OnlineResource.parseIso19115_3_2018Node(potCiOnlineResource);
+        if (potOnlineResource != null) {
+            String label = potOnlineResource.getLabel();
             String safeLabel = label == null ? "" : label.toLowerCase(Locale.ENGLISH);
 
-            if ("WWW:LINK-1.0-http--metadata-URL".equals(pocOnlineResource.protocol) && safeLabel.contains("point of truth")) {
-                if (pocOnlineResource.linkage != null) {
+            if ("WWW:LINK-1.0-http--metadata-URL".equals(potOnlineResource.protocol) && safeLabel.contains("point of truth")) {
+                if (potOnlineResource.linkage != null) {
                     if (pointOfTruthUrlStr != null) {
                         messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
                             this.getId()));
                     }
-                    pointOfTruthUrlStr = pocOnlineResource.linkage;
+                    pointOfTruthUrlStr = potOnlineResource.linkage;
                     if (!pointOfTruthUrlStr.contains(this.getId())) {
                         messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
                             this.getId(), pointOfTruthUrlStr));
                     }
                 }
             } else {
-                onlineResources.add(pocOnlineResource);
+                onlineResources.add(potOnlineResource);
             }
         }
 

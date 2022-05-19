@@ -24,11 +24,13 @@ import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
@@ -153,9 +155,32 @@ public class DrupalExternalLinkNodeIndexer extends AbstractIndexer<ExternalLink>
             // Ordered by lastModified (changed).
             // If the parameter lastHarvested is set, harvest nodes until we found a node that was last modified before
             //     the lastHarvested parameter.
-            // "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=100&page[offset]=0"
-            String url = String.format("%s/jsonapi/node/%s?include=%s&sort=-changed&page[limit]=%d&page[offset]=%d",
-                this.drupalUrl, this.drupalNodeType, this.drupalPreviewImageField, INDEX_PAGE_SIZE, page * INDEX_PAGE_SIZE);
+            // "http://localhost:9090/jsonapi/node/article?include=field_image&sort=-changed&page[limit]=100&page[offset]=0&filter[status]=1"
+            // Filter out unpublished nodes (when logged in): filter[status]=1
+            String urlBase = String.format("%s/jsonapi/node/%s", this.drupalUrl, this.drupalNodeType);
+            URIBuilder uriBuilder;
+            try {
+                uriBuilder = new URIBuilder(urlBase);
+            } catch(URISyntaxException ex) {
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
+                return;
+            }
+            uriBuilder.setParameter("include", this.drupalPreviewImageField);
+            uriBuilder.setParameter("sort", "-changed");
+            uriBuilder.setParameter("page[limit]", String.format("%d", INDEX_PAGE_SIZE));
+            uriBuilder.setParameter("page[offset]", String.format("%d", page * INDEX_PAGE_SIZE));
+            uriBuilder.setParameter("filter[status]", "1");
+
+            String url;
+            try {
+                url = uriBuilder.build().toURL().toString();
+            } catch(Exception ex) {
+                // Should not happen
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Invalid Drupal URL. Exception occurred while building a URL starting with: %s", urlBase), ex);
+                return;
+            }
 
             nodeFound = 0;
             String responseStr = null;

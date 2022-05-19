@@ -363,6 +363,23 @@
                                             <div class="desc">Drupal field type: Text (formatted, long)</div>
                                             <div class="desc">Example: field_description</div>
                                         </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalPrivateMediaField">
+                                                <span class="label">Drupal private media field ID</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalPrivateMediaField"
+                                                    name="${indexer.index}_drupalPrivateMediaField"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalPrivateMediaField}" />" />
+                                            </label>
+                                            <div class="desc">
+                                                Drupal internal field ID used to make media private.
+                                                The indexer will ignore Drupal medias where that field is set to true.
+                                            </div>
+                                            <div class="desc">Drupal field type: Boolean</div>
+                                            <div class="desc">Example: field_private_media_page</div>
+                                        </div>
                                     </div>
                                 </c:when>
 
