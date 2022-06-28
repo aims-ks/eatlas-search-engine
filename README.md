@@ -93,3 +93,5 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   $ tail -f /var/log/tomcat9/catalina.out
   $ journalctl -n 500 -f -u tomcat9.service
   ```
+
+- Change *master* to *main*
