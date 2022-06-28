@@ -190,7 +190,6 @@ public class SettingsPage {
                 drupalNodeIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
                 drupalNodeIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
                 drupalNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
-                drupalNodeIndexer.setDrupalPrepressField(FormUtils.getFormStringValue(form, index + "_drupalPrepressField"));
 
             } else if (indexer instanceof DrupalMediaIndexer) {
                 // DrupalMediaIndexer
@@ -202,7 +201,6 @@ public class SettingsPage {
                 drupalMediaIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
                 drupalMediaIndexer.setDrupalTitleField(FormUtils.getFormStringValue(form, index + "_drupalTitleField"));
                 drupalMediaIndexer.setDrupalDescriptionField(FormUtils.getFormStringValue(form, index + "_drupalDescriptionField"));
-                drupalMediaIndexer.setDrupalPrivateMediaField(FormUtils.getFormStringValue(form, index + "_drupalPrivateMediaField"));
 
             } else if (indexer instanceof DrupalExternalLinkNodeIndexer) {
                 // DrupalExternalLinkNodeIndexer

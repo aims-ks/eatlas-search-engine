@@ -165,7 +165,7 @@
                                         ${indexer.enabled ? "checked=\"checked\"" : ""} /> Enabled
                                 </label>
                                 <div class="desc">Check to enable automatic indexation from the cron.</div>
-                                <div class="desc">The buttons "Re-index all" and "Index latest all" from the Reindex tab only process enabled indexes.</div>
+                                <div class="desc">The buttons "Reindex all" and "Index latest all" from the Reindex tab only process enabled indexes.</div>
                             </div>
 
                             <div class="field">
@@ -275,23 +275,6 @@
                                             <div class="desc">Drupal field type: Image</div>
                                             <div class="desc">Example: field_image</div>
                                         </div>
-
-                                        <div class="field">
-                                            <label for="${indexer.index}_drupalPrepressField">
-                                                <span class="label">Drupal prepress field ID</span>
-                                                <input type="text"
-                                                    id="${indexer.index}_drupalPrepressField"
-                                                    name="${indexer.index}_drupalPrepressField"
-                                                    data-lpignore="true"
-                                                    value="<c:out value="${indexer.drupalPrepressField}" />" />
-                                            </label>
-                                            <div class="desc">
-                                                Drupal internal field ID for prepress node.
-                                                The indexer will ignore Drupal nodes where that field is set to true.
-                                            </div>
-                                            <div class="desc">Drupal field type: Boolean</div>
-                                            <div class="desc">Example: field_prepress</div>
-                                        </div>
                                     </div>
                                 </c:when>
 
@@ -379,23 +362,6 @@
                                             <div class="desc">Drupal internal field ID for the media's description.</div>
                                             <div class="desc">Drupal field type: Text (formatted, long)</div>
                                             <div class="desc">Example: field_description</div>
-                                        </div>
-
-                                        <div class="field">
-                                            <label for="${indexer.index}_drupalPrivateMediaField">
-                                                <span class="label">Drupal private media field ID</span>
-                                                <input type="text"
-                                                    id="${indexer.index}_drupalPrivateMediaField"
-                                                    name="${indexer.index}_drupalPrivateMediaField"
-                                                    data-lpignore="true"
-                                                    value="<c:out value="${indexer.drupalPrivateMediaField}" />" />
-                                            </label>
-                                            <div class="desc">
-                                                Drupal internal field ID used to make media private.
-                                                The indexer will ignore Drupal medias where that field is set to true.
-                                            </div>
-                                            <div class="desc">Drupal field type: Boolean</div>
-                                            <div class="desc">Example: field_private_media_page</div>
                                         </div>
                                     </div>
                                 </c:when>

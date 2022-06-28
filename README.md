@@ -40,7 +40,7 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   ~/Desktop/projects/eAtlas-redesign/2020-Drupal9/README.md
   ```
 
-- Starting the search engine:
+- Starting the Elastic Search engine:
   ```
   $ cd ~/Desktop/projects/Intellij/projects/eatlas-search-engine/
   $ docker-compose up
@@ -52,28 +52,28 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   $ docker-compose up
   ```
 
-- Re-index:
-
-  There is no API for doing this at the moment.
-  1. Open the project in IntelliJ
-  2. Find the class `au.gov.aims.eatlas.searchengine.Main`
-  3. Right-click - Run 'Main.main()'
+- Control panel
+  ```
+  http://localhost:8080/eatlas-search-engine/admin
+  ```
+  - Username: `admin`
+  - Password: `admin`
 
   The config file is in:
   ```
   /home/glafond/Desktop/projects/tomcat/etc-tomcat-Catalina-data/eatlas-search-engine/eatlas_search_engine.json
   ```
 
+- Reindex:
+  1. Access the control panel (see bellow)
+  2. Click on *Reindex* from the left menu
+  3. Click the *Reindex all* button at the bottom
+
 - Delete index:
 
   ```
   $ docker-compose down
   $ docker-compose up
-  ```
-
-- Control panel
-  ```
-  http://localhost:8080/eatlas-search-engine/admin
   ```
 
 - Testing search engine:

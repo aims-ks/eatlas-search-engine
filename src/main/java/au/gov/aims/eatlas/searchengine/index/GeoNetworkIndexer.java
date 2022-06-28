@@ -280,12 +280,12 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     try {
                         IndexResponse indexResponse = this.indexEntity(client, geoNetworkRecord, false);
 
-                        LOGGER.debug(String.format("Re-indexing GeoNetwork metadata record: %s with parent title: %s, status: %s",
+                        LOGGER.debug(String.format("Reindexing GeoNetwork metadata record: %s with parent title: %s, status: %s",
                                 geoNetworkRecord.getId(),
                                 geoNetworkRecord.getParentTitle(),
                                 indexResponse.result()));
                     } catch(Exception ex) {
-                        messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while re-indexing a GeoNetwork record: %s", recordUUID), ex);
+                        messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while reindexing a GeoNetwork record: %s", recordUUID), ex);
                     }
                 }
             }

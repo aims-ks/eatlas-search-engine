@@ -22,7 +22,6 @@ import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -33,7 +32,6 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
 
     private String drupalTitleField;
     private String drupalDescriptionField;
-    private String drupalPrivateMediaField;
 
     public static DrupalMediaIndexer fromJSON(String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
@@ -47,16 +45,14 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             json.optString("drupalMediaType", null),
             json.optString("drupalPreviewImageField", null),
             json.optString("drupalTitleField", null),
-            json.optString("drupalDescriptionField", null),
-            json.optString("drupalPrivateMediaField", null));
+            json.optString("drupalDescriptionField", null));
     }
 
     public JSONObject toJSON() {
         return this.getJsonBase()
             .put("drupalMediaType", this.getDrupalBundleId())
             .put("drupalTitleField", this.drupalTitleField)
-            .put("drupalDescriptionField", this.drupalDescriptionField)
-            .put("drupalPrivateMediaField", this.drupalPrivateMediaField);
+            .put("drupalDescriptionField", this.drupalDescriptionField);
     }
 
     public DrupalMedia load(JSONObject json, Messages messages) {
@@ -76,32 +72,18 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String drupalMediaType,
             String drupalPreviewImageField,
             String drupalTitleField,
-            String drupalDescriptionField,
-            String drupalPrivateMediaField
+            String drupalDescriptionField
     ) {
 
         super(index, drupalUrl, drupalVersion, "media", drupalMediaType,
                 (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField);
         this.drupalTitleField = drupalTitleField;
         this.drupalDescriptionField = drupalDescriptionField;
-        this.drupalPrivateMediaField = drupalPrivateMediaField;
     }
 
     @Override
     public boolean supportsIndexLatest() {
         return true;
-    }
-
-    @Override
-    public URIBuilder buildDrupalApiUrl(int page, Messages messages) {
-        URIBuilder uriBuilder = super.buildDrupalApiUrl(page, messages);
-        if (uriBuilder != null) {
-            if (this.drupalPrivateMediaField != null && !this.drupalPrivateMediaField.isEmpty()) {
-                uriBuilder.setParameter(String.format("filter[%s]", this.drupalPrivateMediaField), "0");
-            }
-        }
-
-        return uriBuilder;
     }
 
     @Override
@@ -155,14 +137,6 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
 
     public void setDrupalDescriptionField(String drupalDescriptionField) {
         this.drupalDescriptionField = drupalDescriptionField;
-    }
-
-    public String getDrupalPrivateMediaField() {
-        return this.drupalPrivateMediaField;
-    }
-
-    public void setDrupalPrivateMediaField(String drupalPrivateMediaField) {
-        this.drupalPrivateMediaField = drupalPrivateMediaField;
     }
 
     public class DrupalMediaIndexerThread extends AbstractDrupalEntityIndexerThread {

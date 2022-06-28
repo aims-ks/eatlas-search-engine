@@ -115,7 +115,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         return searchEngineState.getOrAddIndexerState(this.index);
     }
 
-    // If full is true, re-index everything.
+    // If full is true, reindex everything.
     // If not, only index what have changed since last indexation.
     public synchronized void index(boolean full, Messages messages) throws IOException {
         if (!this.isRunning()) {
@@ -269,7 +269,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         return indexResponse;
     }
 
-    // Only called with complete re-index
+    // Only called with complete reindex
     public void cleanUp(SearchClient client, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName, Messages messages) {
         long deletedIndexedItems = this.deleteOldIndexedItems(client, lastIndexed, messages);
         if (deletedIndexedItems > 0) {

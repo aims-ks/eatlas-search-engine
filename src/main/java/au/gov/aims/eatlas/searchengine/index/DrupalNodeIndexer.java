@@ -21,14 +21,12 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
-import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Set;
 
 public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
-    private String drupalPrepressField;
 
     public static DrupalNodeIndexer fromJSON(String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
@@ -40,14 +38,12 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
-            json.optString("drupalPreviewImageField", null),
-            json.optString("drupalPrepressField", null));
+            json.optString("drupalPreviewImageField", null));
     }
 
     public JSONObject toJSON() {
         return this.getJsonBase()
-            .put("drupalNodeType", this.getDrupalBundleId())
-            .put("drupalPrepressField", this.drupalPrepressField);
+            .put("drupalNodeType", this.getDrupalBundleId());
     }
 
     public DrupalNode load(JSONObject json, Messages messages) {
@@ -65,28 +61,14 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             String drupalUrl,
             String drupalVersion,
             String drupalNodeType,
-            String drupalPreviewImageField,
-            String drupalPrepressField) {
+            String drupalPreviewImageField) {
 
         super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField);
-        this.drupalPrepressField = drupalPrepressField;
     }
 
     @Override
     public boolean supportsIndexLatest() {
         return true;
-    }
-
-    @Override
-    public URIBuilder buildDrupalApiUrl(int page, Messages messages) {
-        URIBuilder uriBuilder = super.buildDrupalApiUrl(page, messages);
-        if (uriBuilder != null) {
-            if (this.drupalPrepressField != null && !this.drupalPrepressField.isEmpty()) {
-                uriBuilder.setParameter(String.format("filter[%s]", this.drupalPrepressField), "0");
-            }
-        }
-
-        return uriBuilder;
     }
 
     @Override
@@ -106,14 +88,6 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
 
         return new DrupalNodeIndexer.DrupalNodeIndexerThread(
             client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page, current, nodeFound);
-    }
-
-    public String getDrupalPrepressField() {
-        return this.drupalPrepressField;
-    }
-
-    public void setDrupalPrepressField(String drupalPrepressField) {
-        this.drupalPrepressField = drupalPrepressField;
     }
 
     public class DrupalNodeIndexerThread extends AbstractDrupalEntityIndexerThread {

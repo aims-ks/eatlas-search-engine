@@ -73,14 +73,14 @@
                             <progress class="index-progress disabled" value="0" max="100" id="progress_${indexer.index}" data-progress-url="<c:url value="/admin/reindex/OLDprogress"><c:param name="index" value="${indexer.index}" /></c:url>"></progress>
                         </td>
                         <td class="buttons">
-                            <button class="index" name="reindex-button" value="${indexer.index}" title="Re-index">Re-index</button>
+                            <button class="index" name="reindex-button" value="${indexer.index}" title="Reindex">Reindex</button>
                             <button class="index-latest" name="index-latest-button" value="${indexer.index}" title="Index latest" <c:if test="${not indexer.supportsIndexLatest()}">disabled="disabled"</c:if>>Index latest</button>
                         </td>
                     </tr>
                 </c:forEach>
             </table>
 
-            <button class="index-all" name="reindex-all-button" value="reindex" title="Re-index all enabled indexes">Re-index all</button>
+            <button class="index-all" name="reindex-all-button" value="reindex" title="Reindex all enabled indexes">Reindex all</button>
             <button class="index-latest-all" name="index-latest-all-button" value="index-latest" title="Index latest content for all enabled indexes">Index latest all</button>
 
             <button class="refresh" name="refresh-count-button" value="refresh-count" title="Refresh count">Refresh indexes document count</button>

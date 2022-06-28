@@ -50,16 +50,16 @@ public class Main {
 
         SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json", messages);
 
-        // Re-index everything
+        // Reindex everything
         //Index.internalReindex(fullHarvest);
 
 
-        // Re-index individual index
+        // Reindex individual index
 
         // TODO Implement LEMMATIZATION (mice => mouse, foot => feet, tooth => teeth, etc):
         //     https://apprize.best/data/elasticsearch_1/23.html
         // TODO Fix JUnit tests
-        // TODO Implement UI - Configure, re-index button, try search
+        // TODO Implement UI - Configure, reindex button, try search
 
         DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
         //Index.internalReindex(drupalNodeIndexer, fullHarvest, messages);

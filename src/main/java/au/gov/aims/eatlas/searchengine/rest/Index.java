@@ -120,7 +120,7 @@ public class Index {
     public static JSONObject internalReindex(boolean full, Messages messages) throws IOException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-        // Re-index
+        // Reindex
         if (config != null) {
             List<AbstractIndexer> indexers = config.getIndexers();
             if (indexers != null && !indexers.isEmpty()) {
