@@ -77,6 +77,16 @@ public class DrupalNode extends Entity {
             JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
             this.setDocument(jsonBody == null ? null :
                 EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
+
+
+            // TODO Implement WKT
+            // Do set WKT for node with "again" in the title.
+            String title = this.getTitle();
+            if (title != null && !title.contains("again")) {
+                // Set WKT to GBR
+                this.setWkt("BBOX (142.5, 153.0, -10.5, -22.5)");
+            }
+
         }
     }
 

@@ -45,6 +45,7 @@ public class SearchPage {
         @QueryParam("query") String query,
         @QueryParam("indexes") List<String> indexes,
         @QueryParam("hitsPerPage") Integer hitsPerPage,
+        @QueryParam("wkt") String wkt,
         @QueryParam("page") Integer page
     ) {
         HttpSession session = httpRequest.getSession(true);
@@ -62,7 +63,7 @@ public class SearchPage {
         SearchResults results = null;
         try {
             int start = (page-1) * hitsPerPage;
-            results = Search.paginationSearch(query, start, hitsPerPage, indexes, indexes, messages);
+            results = Search.paginationSearch(query, start, hitsPerPage, wkt, indexes, indexes, messages);
         } catch(Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred during the search.", ex);

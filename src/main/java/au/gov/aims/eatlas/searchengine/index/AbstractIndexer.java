@@ -130,7 +130,11 @@ public abstract class AbstractIndexer<E extends Entity> {
     public void refreshCount(SearchClient client) throws IOException {
         IndexerState state = this.getState();
 
-        CountRequest countRequest = new CountRequest.Builder().index(this.getIndex()).build();
+        CountRequest countRequest = new CountRequest.Builder()
+                .index(this.getIndex())
+                .ignoreUnavailable(true)
+                .build();
+
         CountResponse countResponse = client.count(countRequest);
         state.setCount(countResponse.count());
     }

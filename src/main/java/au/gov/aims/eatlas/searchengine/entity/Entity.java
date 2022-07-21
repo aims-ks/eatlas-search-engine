@@ -54,6 +54,7 @@ public abstract class Entity {
 
     private String title;
     private String document;
+    private String wkt;
 
     // Search result thumbnail image
     // If there is a cachedThumbnailFilename, call /public/img/v1/{index}/{filename} to get the image.
@@ -127,6 +128,14 @@ public abstract class Entity {
 
     public void setDocument(String document) {
         this.document = document;
+    }
+
+    public String getWkt() {
+        return this.wkt;
+    }
+
+    public void setWkt(String wkt) {
+        this.wkt = wkt;
     }
 
     public String getCachedThumbnailFilename() {
@@ -252,6 +261,7 @@ public abstract class Entity {
             .put("title", this.getTitle())
             // Encode HTML from the document, to allow the search to all highlights as HTML tags
             .put("document", StringEscapeUtils.escapeHtml4(this.getDocument()))
+            .put("wkt", this.getWkt())
             .put("cachedThumbnailFilename", this.getCachedThumbnailFilename())
             .put("thumbnailUrl", thumbnailUrl == null ? null : thumbnailUrl.toString())
             .put("langcode", this.getLangcode());
@@ -264,6 +274,7 @@ public abstract class Entity {
             this.setTitle(json.optString("title", null));
             // Decode HTML since we encoded it in the toJSON method
             this.setDocument(StringEscapeUtils.unescapeHtml4(json.optString("document", null)));
+            this.setWkt(json.optString("wkt", null));
             this.setLangcode(json.optString("langcode", null));
             this.setCachedThumbnailFilename(json.optString("cachedThumbnailFilename", null));
 

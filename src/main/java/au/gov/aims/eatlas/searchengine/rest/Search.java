@@ -29,6 +29,8 @@ import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
+import co.elastic.clients.elasticsearch._types.query_dsl.GeoShapeFieldQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.CountRequest;
@@ -39,6 +41,7 @@ import co.elastic.clients.elasticsearch.core.search.Highlight;
 import co.elastic.clients.elasticsearch.core.search.HighlightField;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
+import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -69,6 +72,7 @@ public class Search {
             @QueryParam("q") String q,
             @QueryParam("start") Integer start,
             @QueryParam("hits") Integer hits,
+            @QueryParam("wkt") String wkt, // Well Known Text, used for GIS search
             @QueryParam("idx") List<String> idx, // List of indexes used for the summary
             @QueryParam("fidx") List<String> fidx // List of indexes to filter the search results (optional)
     ) {
@@ -96,7 +100,7 @@ public class Search {
 
         SearchResults results = null;
         try {
-            results = paginationSearch(q, start, hits, idx, fidx, messages);
+            results = paginationSearch(q, start, hits, wkt, idx, fidx, messages);
 
         } catch(Exception ex) {
             String errorMessageStr = String.format("An exception occurred during the search: %s", ex.getMessage());
@@ -129,6 +133,7 @@ public class Search {
             String q,
             Integer start,
             Integer hits,
+            String wkt,
             List<String> idx,  // List of indexes used for the summary
             List<String> fidx, // List of indexes to filter the search results (optional, default: list all search results for idx)
             Messages messages
@@ -160,14 +165,14 @@ public class Search {
         ) {
             String[] idxArray = idx.toArray(new String[0]);
 
-            Summary searchSummary = Search.searchSummary(client, q, idxArray);
+            Summary searchSummary = Search.searchSummary(client, q, wkt, idxArray);
             results.setSummary(searchSummary);
 
             List<SearchResult> searchResults;
             if (fidx != null && !fidx.isEmpty()) {
-                searchResults = Search.search(client, messages, q, start, hits, fidx.toArray(new String[0]));
+                searchResults = Search.search(client, messages, q, wkt, start, hits, fidx.toArray(new String[0]));
             } else {
-                searchResults = Search.search(client, messages, q, start, hits, idxArray);
+                searchResults = Search.search(client, messages, q, wkt, start, hits, idxArray);
             }
 
             results.setSearchResults(searchResults);
@@ -186,14 +191,14 @@ public class Search {
      *   result in many more search requests than one
      *   count request per index.
      */
-    public static Summary searchSummary(SearchClient client, String needle, String ... indexes)
+    public static Summary searchSummary(SearchClient client, String needle, String wkt, String ... indexes)
             throws IOException {
 
         Summary summary = new Summary();
 
         long totalCount = 0;
         for (String index : indexes) {
-            CountResponse response = client.count(Search.getSearchSummaryRequest(needle, index));
+            CountResponse response = client.count(Search.getSearchSummaryRequest(needle, wkt, index));
             long count = response.count();
             if (count > 0) {
                 totalCount += count;
@@ -210,9 +215,9 @@ public class Search {
         return summary;
     }
 
-    public static CountRequest getSearchSummaryRequest(String needle, String ... indexes) {
+    public static CountRequest getSearchSummaryRequest(String needle, String wkt, String ... indexes) {
         // Create a search query here
-        SearchRequest.Builder sourceBuilder = Search.getBaseSearchQuery(needle);
+        SearchRequest.Builder sourceBuilder = Search.getBaseSearchQuery(needle, wkt);
 
         return new CountRequest.Builder()
                 .index(Arrays.asList(indexes))
@@ -245,10 +250,10 @@ public class Search {
      *
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
-    public static List<SearchResult> search(SearchClient client, Messages messages, String needle, int from, int size, String ... indexes)
+    public static List<SearchResult> search(SearchClient client, Messages messages, String needle, String wkt, int from, int size, String ... indexes)
             throws IOException {
 
-        SearchResponse<Entity> response = client.search(Search.getSearchRequest(needle, from, size, indexes));
+        SearchResponse<Entity> response = client.search(Search.getSearchRequest(needle, wkt, from, size, indexes));
 
         //LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", indexes %s:%n%s",
         //    needle, attribute, Arrays.toString(indexes), response.toString()));
@@ -280,7 +285,7 @@ public class Search {
      * Search in "document" and "title".
      * The title have a 2x ranking boost.
      */
-    public static SearchRequest getSearchRequest(String needle, int from, int size, String ... indexes) {
+    public static SearchRequest getSearchRequest(String needle, String wkt, int from, int size, String ... indexes) {
         // Used to highlight search results in the field that was used with the search
         Highlight.Builder highlightBuilder = new Highlight.Builder()
                 .preTags("<strong class=\"search-highlight\">")
@@ -288,7 +293,7 @@ public class Search {
                 .fields("document", new HighlightField.Builder().build());
 
         // https://discuss.elastic.co/t/8-1-0-java-client-searchrequest-example/299640
-        return Search.getBaseSearchQuery(needle)
+        return Search.getBaseSearchQuery(needle, wkt)
                 .from(from) // Used to continue the search (get next page)
                 .size(size) // Number of results to return. Default = 10
                 .highlight(highlightBuilder.build())
@@ -302,20 +307,84 @@ public class Search {
      * Build the search query.
      * This is done here to ensure both the search and the summary
      *   are based on the same query.
+     * GEO Queries
+     *   https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-queries.html
      */
-    private static SearchRequest.Builder getBaseSearchQuery(String needle) {
-        // Search in document and title by default.
-        // User can still specify a field using "field:keyword".
-        // Example: dataSourceName:legacy
-        List<String> defaultSearchFields = new ArrayList<>();
-        defaultSearchFields.add("title");
-        defaultSearchFields.add("document");
+    private static SearchRequest.Builder getBaseSearchQuery(String needle, String wkt) {
+        // Build the needle query
+        //   The query used to match the words typed in the search field by the user
+        Query needleQuery = null;
+        if (needle != null && !needle.isEmpty()) {
+            // Search in document and title by default.
+            // User can still specify a field using "field:keyword".
+            // Example: dataSourceName:legacy
+            List<String> defaultSearchFields = new ArrayList<>();
+            defaultSearchFields.add("title");
+            defaultSearchFields.add("document");
 
-        Query query = null;
-        if (needle == null || needle.isEmpty()) {
-            query = QueryBuilders.matchAll().build()._toQuery();
+            needleQuery = QueryBuilders.queryString()
+                    .query(needle)
+                    .fields(defaultSearchFields)
+                    .build()
+                    ._toQuery();
+        }
+
+
+        // TODO Implement WKT properly
+
+        // Whole world
+        //wkt = "BBOX (-180.0, 180.0, 90.0, -90.0)";
+
+        // GBR = "BBOX (142.5, 153.0, -10.5, -22.5)"
+        // Not in GBR
+        //wkt = "BBOX (-180.0, 140.0, 90.0, -90.0)";
+
+        // Just touch GBR
+        wkt = "BBOX (-180.0, 143.0, 90.0, -90.0)";
+
+
+
+        // Build the WKT query
+        //   The query used to filter by GEO coordinates, polygons, bbox, etc.
+        Query wktQuery = null;
+        if (wkt != null && !wkt.isEmpty()) {
+            // GeoLocation = Single point.
+            // GeoLocation geoLocation = new GeoLocation.Builder().text(wkt).build();
+
+            // WktGeoBounds = WKT bounding box
+            // WktGeoBounds bounds = new WktGeoBounds.Builder().wkt(wkt).build();
+
+            GeoShapeFieldQuery shapeQuery = new GeoShapeFieldQuery.Builder()
+                    .shape(JsonData.of(wkt))
+                    .relation(GeoShapeRelation.Intersects)
+                    .build();
+
+            wktQuery = QueryBuilders.geoShape()
+                    .shape(shapeQuery)
+                    .field("wkt")
+                    .build()
+                    ._toQuery();
+        }
+
+        // Create a search query using the queries above:
+        //   The needle query and the WKT query
+        Query query;
+        if (needleQuery == null) {
+            if (wktQuery == null) {
+                // Both queries are null - return everything
+                query = QueryBuilders.matchAll().build()._toQuery();
+            } else {
+                // Only KWT query is not null
+                query = wktQuery;
+            }
         } else {
-            query = QueryBuilders.queryString().query(needle).fields(defaultSearchFields).build()._toQuery();
+            if (wktQuery == null) {
+                // Only the needle query is not null
+                query = needleQuery;
+            } else {
+                // Both queries are not null
+                query = QueryBuilders.bool().filter(needleQuery, wktQuery).build()._toQuery();
+            }
         }
 
         return new SearchRequest.Builder()

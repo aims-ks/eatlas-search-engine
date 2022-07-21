@@ -213,6 +213,10 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
                     if (content != null) {
                         this.externalLink.setDocument(content);
 
+                        // TODO Implement WKT
+                        // Set WKT to GBR
+                        this.externalLink.setWkt("BBOX (142.5, 153.0, -10.5, -22.5)");
+
                         // Overwrite fields to make the results look more like an external link
                         this.externalLink.setLink(externalLink);
 

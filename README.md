@@ -72,6 +72,7 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
 - Delete index:
 
   ```
+  $ cd ~/Desktop/projects/Intellij/projects/eatlas-search-engine/
   $ docker-compose down
   $ docker-compose up
   ```
@@ -93,5 +94,3 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   $ tail -f /var/log/tomcat9/catalina.out
   $ journalctl -n 500 -f -u tomcat9.service
   ```
-
-- Change *master* to *main*

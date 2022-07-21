@@ -348,6 +348,10 @@ public class GeoNetworkRecord extends Entity {
         this.setDocument(documentPartList.isEmpty() ? null :
                 String.join(NL + NL, documentPartList));
 
+        // TODO Implement WKT
+        // Set WKT to GBR
+        this.setWkt("BBOX (142.5, 153.0, -10.5, -22.5)");
+
 
         // Set the metadata link to the original GeoNetwork URL.
         // If we find a valid "point-of-truth" URL in the document,
@@ -575,6 +579,10 @@ public class GeoNetworkRecord extends Entity {
 
         this.setDocument(documentPartList.isEmpty() ? null :
                 String.join(NL + NL, documentPartList));
+
+        // TODO Implement WKT
+        // Set WKT to GBR
+        this.setWkt("BBOX (142.5, 153.0, -10.5, -22.5)");
 
 
         // Set the metadata link to the original GeoNetwork URL.

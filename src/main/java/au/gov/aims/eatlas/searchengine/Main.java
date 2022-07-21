@@ -91,7 +91,9 @@ public class Main {
         //idx.add("eatlas_metadata");
         //idx.add("eatlas_layer");
 
-        SearchResults results = Search.paginationSearch(searchQuery, 0, 100, idx, null, messages);
+        String wkt = null;
+
+        SearchResults results = Search.paginationSearch(searchQuery, 0, 100, wkt, idx, null, messages);
         System.out.println(results.toJSON().toString(2));
 
     }

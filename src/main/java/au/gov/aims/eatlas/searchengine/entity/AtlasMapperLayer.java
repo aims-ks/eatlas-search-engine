@@ -112,6 +112,38 @@ public class AtlasMapperLayer extends Entity {
 
             this.setTitle(jsonLayer.optString("title", null));
             this.setDocument(document);
+
+            JSONArray layerBoundingBox = jsonLayer.optJSONArray("layerBoundingBox");
+            boolean validBbox = false;
+            if (layerBoundingBox != null && layerBoundingBox.length() == 4) {
+                // AtlasMapper BBOX follows OpenLayers order:
+                //   West, South, East, North
+                double west = layerBoundingBox.optDouble(0, -180);
+                double south = layerBoundingBox.optDouble(1, -90);
+                double east = layerBoundingBox.optDouble(2, 180);
+                double north = layerBoundingBox.optDouble(3, 90);
+
+                // Validate
+                validBbox = true;
+                if (west < -180 || west > 180) { validBbox = false; }
+                if (east < -180 || east > 180) { validBbox = false; }
+                if (south < -90 || south > 90) { validBbox = false; }
+                if (north < -90 || north > 90) { validBbox = false; }
+                if (west > east) { validBbox = false; }
+                if (south > north) { validBbox = false; }
+
+                if (validBbox) {
+                    // WKT orders:
+                    //   West, East, North, South
+                    String wkt = String.format("BBOX (%.8f, %.8f, %.8f, %.8f)", west, east, north, south);
+                    this.setWkt(wkt);
+                }
+            }
+            if (!validBbox) {
+                // Set bbox for the whole world
+                this.setWkt("BBOX (-180, 180, 90, -90)");
+            }
+
             this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig, messages));
             this.setLangcode("en");
         }
