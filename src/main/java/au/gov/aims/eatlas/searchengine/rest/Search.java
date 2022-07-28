@@ -329,21 +329,6 @@ public class Search {
                     ._toQuery();
         }
 
-
-        // TODO Implement WKT properly
-
-        // Whole world
-        //wkt = "BBOX (-180.0, 180.0, 90.0, -90.0)";
-
-        // GBR = "BBOX (142.5, 153.0, -10.5, -22.5)"
-        // Not in GBR
-        //wkt = "BBOX (-180.0, 140.0, 90.0, -90.0)";
-
-        // Just touch GBR
-        wkt = "BBOX (-180.0, 143.0, 90.0, -90.0)";
-
-
-
         // Build the WKT query
         //   The query used to filter by GEO coordinates, polygons, bbox, etc.
         Query wktQuery = null;

@@ -25,9 +25,27 @@
         <%-- Form send parameter using GET, to make the search query visible in the URL (sharable) --%>
         <form method="get">
             <h3>Query</h3>
-            <label>
-                <input type="text" name="query" value="<c:out value="${it.query}"/>" />
-            </label>
+
+            <div class="field">
+                <label>
+                    <span class="label">Keywords</span>
+                    <input type="text" name="query" value="<c:out value="${it.query}"/>" />
+                </label>
+                <div class="desc">Optional. Default: Returns all documents from the selected indexes.</div>
+                <div class="desc">Elastic search query. Write a search query the same way you would write in on Google.</div>
+            </div>
+
+            <div class="field">
+                <label>
+                    <span class="label">Spacial filter (WKT)</span>
+                    <input type="text" name="wkt" value="<c:out value="${it.wkt}"/>" />
+                </label>
+                <div class="desc">Optional. Default: No spacial filter.</div>
+                <div class="desc">Restrict search to a spacial extent.</div>
+                <div class="desc">Example for GBR: <code>BBOX (-180.0, 143.0, 90.0, -90.0)</code></div>
+                <div class="desc">You can use this <a href="https://clydedacruz.github.io/openstreetmap-wkt-playground/" target="_blank">Online WKT editor</a> to generate the WKT.</div>
+            </div>
+
             <input type="submit" value="Search">
 
             <h3>Indexes</h3>
@@ -113,6 +131,7 @@
                         <c:if test="${it.page > 1}">
                             <c:url value="/admin/search" var="url">
                                 <c:param name="query" value="${it.query}" />
+                                <c:param name="wkt" value="${it.wkt}" />
                                 <c:forEach items="${it.indexes}" var="index">
                                     <c:param name="indexes" value="${index}" />
                                 </c:forEach>
@@ -123,6 +142,7 @@
 
                             <c:url value="/admin/search" var="url">
                                 <c:param name="query" value="${it.query}" />
+                                <c:param name="wkt" value="${it.wkt}" />
                                 <c:forEach items="${it.indexes}" var="index">
                                     <c:param name="indexes" value="${index}" />
                                 </c:forEach>
@@ -151,6 +171,7 @@
                                 <c:otherwise>
                                     <c:url value="/admin/search" var="url">
                                         <c:param name="query" value="${it.query}" />
+                                        <c:param name="wkt" value="${it.wkt}" />
                                         <c:forEach items="${it.indexes}" var="index">
                                             <c:param name="indexes" value="${index}" />
                                         </c:forEach>
@@ -166,6 +187,7 @@
                         <c:if test="${it.page < it.nbPage}">
                             <c:url value="/admin/search" var="url">
                                 <c:param name="query" value="${it.query}" />
+                                <c:param name="wkt" value="${it.wkt}" />
                                 <c:forEach items="${it.indexes}" var="index">
                                     <c:param name="indexes" value="${index}" />
                                 </c:forEach>
@@ -176,6 +198,7 @@
 
                             <c:url value="/admin/search" var="url">
                                 <c:param name="query" value="${it.query}" />
+                                <c:param name="wkt" value="${it.wkt}" />
                                 <c:forEach items="${it.indexes}" var="index">
                                     <c:param name="indexes" value="${index}" />
                                 </c:forEach>

@@ -25,7 +25,7 @@ Pros (over Lucene):
 * Friendly layer of abstraction
 * JSON based documents
 * Distributed indexes (if needed)
-* Support spatial search using GeoJSON
+* Support spacial search using GeoJSON
 * Easy to integrate with Cloud base system such as AWS
 
 See: https://www.trustradius.com/compare-products/apache-lucene-vs-elasticsearch

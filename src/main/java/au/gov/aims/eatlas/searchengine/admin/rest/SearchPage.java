@@ -78,6 +78,7 @@ public class SearchPage {
         model.put("messages", messages);
         model.put("config", config);
         model.put("query", query);
+        model.put("wkt", wkt);
         model.put("page", page);
         model.put("hitsPerPage", hitsPerPage);
         model.put("nbPage", nbPage);
