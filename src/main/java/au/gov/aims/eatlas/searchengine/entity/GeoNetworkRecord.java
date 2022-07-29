@@ -21,6 +21,12 @@ package au.gov.aims.eatlas.searchengine.entity;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import org.json.JSONObject;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.WKTWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -36,6 +42,10 @@ public class GeoNetworkRecord extends Entity {
     // New line used to separate lines in the indexed document.
     // It doesn't really matter which new line scheme is used, as long as it's supported by ElasticSearch.
     private static final String NL = "\n";
+
+    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
+    private static final WKTWriter WKT_WRITER = new WKTWriter(2);
+    private static final double GIS_EPSILON = 0.001; // About 100 metres
 
     private static final Map<String, Locale> LANGCODE_MAP = new HashMap<>();
     static {
@@ -146,7 +156,7 @@ public class GeoNetworkRecord extends Entity {
         this.parentUUID = IndexUtils.parseAttribute(parentMetadata, "uuidref");
 
         // The responsible parties are not always where they are expected.
-        // Lets parse responsible parties where ever they are found and put them in the right category.
+        // Let's parse responsible parties where ever they are found and put them in the right category.
         // Key: role
         Map<String, List<ResponsibleParty>> responsiblePartyMap = new HashMap<>();
 
@@ -251,8 +261,16 @@ public class GeoNetworkRecord extends Entity {
         }
         this.setLangcode(langcode);
 
-        // TODO GIS Information (bbox, points, polygons, etc.
-        // List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:extent");
+
+        // GIS Information (bbox, points, polygons, etc.)
+        List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "mri:extent");
+        String wkt = GeoNetworkRecord.parseIso19115_3_2018ExtentList(extentList);
+        if (wkt != null && !wkt.isEmpty()) {
+            this.setWkt(wkt);
+        } else {
+            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record %s has no extent.", this.getId()));
+        }
+
 
         // Online Resources
         // including pointOfTruthUrlStr
@@ -348,10 +366,6 @@ public class GeoNetworkRecord extends Entity {
         this.setDocument(documentPartList.isEmpty() ? null :
                 String.join(NL + NL, documentPartList));
 
-        // TODO Implement WKT
-        // Set WKT to GBR
-        this.setWkt("BBOX (142.5, 153.0, -10.5, -22.5)");
-
 
         // Set the metadata link to the original GeoNetwork URL.
         // If we find a valid "point-of-truth" URL in the document,
@@ -397,7 +411,7 @@ public class GeoNetworkRecord extends Entity {
         this.parentUUID = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(rootElement, "gmd:parentIdentifier"));
 
         // The responsible parties are not always where they are expected.
-        // Lets parse responsible parties where ever they are found and put them in the right category.
+        // Let's parse responsible parties where ever they are found and put them in the right category.
         // Key: role
         Map<String, List<ResponsibleParty>> responsiblePartyMap = new HashMap<>();
 
@@ -495,8 +509,16 @@ public class GeoNetworkRecord extends Entity {
         }
         this.setLangcode(langcode);
 
-        // TODO GIS Information (bbox, points, polygons, etc.
-        // List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:extent");
+
+        // GIS Information (bbox, points, polygons, etc.)
+        List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:extent");
+        String wkt = GeoNetworkRecord.parseIso19139ExtentList(extentList);
+        if (wkt != null && !wkt.isEmpty()) {
+            this.setWkt(wkt);
+        } else {
+            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record %s has no extent.", this.getId()));
+        }
+
 
         // Online Resources
         // including pointOfTruthUrlStr
@@ -580,10 +602,6 @@ public class GeoNetworkRecord extends Entity {
         this.setDocument(documentPartList.isEmpty() ? null :
                 String.join(NL + NL, documentPartList));
 
-        // TODO Implement WKT
-        // Set WKT to GBR
-        this.setWkt("BBOX (142.5, 153.0, -10.5, -22.5)");
-
 
         // Set the metadata link to the original GeoNetwork URL.
         // If we find a valid "point-of-truth" URL in the document,
@@ -608,6 +626,304 @@ public class GeoNetworkRecord extends Entity {
 
         this.setLink(metadataRecordUrl);
     }
+
+    // GeoNetwork 3
+    private static String parseIso19115_3_2018ExtentList(List<Element> extentList) {
+        List<Polygon> polygons = new ArrayList<Polygon>();
+
+        for (Element extentElement : extentList) {
+            List<Element> exExtentList = IndexUtils.getXMLChildren(extentElement, "gex:EX_Extent");
+            for (Element exExtentElement : exExtentList) {
+                List<Element> geographicElementList = IndexUtils.getXMLChildren(exExtentElement, "gex:geographicElement");
+                for (Element geographicElement : geographicElementList) {
+
+                    List<Element> exGeographicBoundingBoxList = IndexUtils.getXMLChildren(geographicElement, "gex:EX_GeographicBoundingBox");
+                    for (Element exGeographicBoundingBoxElement : exGeographicBoundingBoxList) {
+                        Element northElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:northBoundLatitude");
+                        Element eastElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:eastBoundLongitude");
+                        Element southElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:southBoundLatitude");
+                        Element westElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:westBoundLongitude");
+
+                        Polygon polygon = GeoNetworkRecord.parseBoundingBox(
+                            IndexUtils.parseText(northElement),
+                            IndexUtils.parseText(eastElement),
+                            IndexUtils.parseText(southElement),
+                            IndexUtils.parseText(westElement)
+                        );
+
+                        if (polygon != null) {
+                            polygons.add(polygon);
+                        }
+                    }
+
+                    List<Element> exBoundingPolygonList = IndexUtils.getXMLChildren(geographicElement, "gex:EX_BoundingPolygon");
+                    for (Element exBoundingPolygonElement : exBoundingPolygonList) {
+                        List<Element> gexPolygonList = IndexUtils.getXMLChildren(exBoundingPolygonElement, "gex:polygon");
+                        for (Element gexPolygonElement : gexPolygonList) {
+                            List<Element> multiSurfaceList = IndexUtils.getXMLChildren(gexPolygonElement, "gml:MultiSurface");
+                            for (Element multiSurfaceElement : multiSurfaceList) {
+                                List<Element> surfaceMemberList = IndexUtils.getXMLChildren(multiSurfaceElement, "gml:surfaceMember");
+                                for (Element surfaceMemberElement : surfaceMemberList) {
+                                    List<Element> gmlPolygonList = IndexUtils.getXMLChildren(surfaceMemberElement, "gml:Polygon");
+                                    for (Element gmlPolygonElement : gmlPolygonList) {
+                                        Element exteriorElement = IndexUtils.getXMLChild(gmlPolygonElement, "gml:exterior");
+                                        Element exteriorLinearRingElement = IndexUtils.getXMLChild(exteriorElement, "gml:LinearRing");
+
+                                        LinearRing exteriorLinearRing = null;
+                                        Element exteriorPosListElement = IndexUtils.getXMLChild(exteriorLinearRingElement, "gml:posList");
+                                        if (exteriorPosListElement != null) {
+                                            String srsDimensionStr = IndexUtils.parseAttribute(exteriorPosListElement, "srsDimension");
+
+                                            int dimension = 2;
+                                            if (srsDimensionStr != null) {
+                                                dimension = Integer.parseInt(srsDimensionStr);
+                                            }
+                                            exteriorLinearRing = GeoNetworkRecord.parsePosListLinearRing(IndexUtils.parseText(exteriorPosListElement), dimension, false);
+                                        }
+
+                                        Element coordinatesElement = IndexUtils.getXMLChild(exteriorLinearRingElement, "gml:coordinates");
+                                        if (coordinatesElement != null) {
+                                            exteriorLinearRing = GeoNetworkRecord.parseCoordinatesLinearRing(IndexUtils.parseText(coordinatesElement));
+                                        }
+
+                                        // Holes in polygon
+                                        List<LinearRing> holes = new ArrayList<LinearRing>();
+                                        List<Element> interiorList = IndexUtils.getXMLChildren(gmlPolygonElement, "gml:interior");
+                                        for (Element interiorElement : interiorList) {
+                                            Element interiorLinearRingElement = IndexUtils.getXMLChild(interiorElement, "gml:LinearRing");
+                                            Element interiorPosListElement = IndexUtils.getXMLChild(interiorLinearRingElement, "gml:posList");
+
+                                            LinearRing interiorLinearRing = null;
+
+                                            if (interiorPosListElement != null) {
+                                                String interiorSrsDimensionStr = IndexUtils.parseAttribute(interiorPosListElement, "srsDimension");
+
+                                                int interiorDimension = 2;
+                                                if (interiorSrsDimensionStr != null) {
+                                                    interiorDimension = Integer.parseInt(interiorSrsDimensionStr);
+                                                }
+                                                interiorLinearRing = GeoNetworkRecord.parsePosListLinearRing(IndexUtils.parseText(interiorPosListElement), interiorDimension, false);
+                                            }
+
+                                            Element interiorCoordinatesElement = IndexUtils.getXMLChild(interiorLinearRingElement, "gml:coordinates");
+                                            if (interiorCoordinatesElement != null) {
+                                                interiorLinearRing = GeoNetworkRecord.parseCoordinatesLinearRing(IndexUtils.parseText(interiorCoordinatesElement));
+                                            }
+
+                                            holes.add(interiorLinearRing);
+                                        }
+
+                                        if (exteriorLinearRing != null) {
+                                            Polygon polygon = null;
+                                            if (holes.isEmpty()) {
+                                                polygon = GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(exteriorLinearRing);
+                                            } else {
+                                                polygon = GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(exteriorLinearRing, holes.toArray(new LinearRing[0]));
+                                            }
+
+                                            if (polygon != null) {
+                                                polygons.add(polygon);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return GeoNetworkRecord.polygonsToWKT(polygons);
+    }
+
+    // GeoNetwork 2 - Needs to be tested against a GeoNetwork 2 server
+    private static String parseIso19139ExtentList(List<Element> extentList) {
+        List<Polygon> polygons = new ArrayList<Polygon>();
+
+        for (Element extentElement : extentList) {
+            List<Element> exExtentList = IndexUtils.getXMLChildren(extentElement, "gmd:EX_Extent");
+            for (Element exExtentElement : exExtentList) {
+                List<Element> geographicElementList = IndexUtils.getXMLChildren(exExtentElement, "gmd:geographicElement");
+                for (Element geographicElement : geographicElementList) {
+
+                    List<Element> exGeographicBoundingBoxList = IndexUtils.getXMLChildren(geographicElement, "gmd:EX_GeographicBoundingBox");
+                    for (Element exGeographicBoundingBoxElement : exGeographicBoundingBoxList) {
+                        Element northElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gmd:northBoundLatitude");
+                        Element eastElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gmd:eastBoundLongitude");
+                        Element southElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gmd:southBoundLatitude");
+                        Element westElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gmd:westBoundLongitude");
+
+                        Polygon polygon = GeoNetworkRecord.parseBoundingBox(
+                            IndexUtils.parseText(northElement),
+                            IndexUtils.parseText(eastElement),
+                            IndexUtils.parseText(southElement),
+                            IndexUtils.parseText(westElement)
+                        );
+
+                        if (polygon != null) {
+                            polygons.add(polygon);
+                        }
+                    }
+
+                    List<Element> exBoundingPolygonList = IndexUtils.getXMLChildren(geographicElement, "gmd:EX_BoundingPolygon");
+                    for (Element exBoundingPolygonElement : exBoundingPolygonList) {
+                        List<Element> polygonList = IndexUtils.getXMLChildren(exBoundingPolygonElement, "gmd:polygon");
+                        for (Element polygonElement : polygonList) {
+                            List<Element> gmlPolygonList = IndexUtils.getXMLChildren(polygonElement, "gml:Polygon");
+                            for (Element gmlPolygonElement : gmlPolygonList) {
+                                List<Element> exteriorList = IndexUtils.getXMLChildren(gmlPolygonElement, "gml:exterior");
+                                for (Element exteriorElement : exteriorList) {
+                                    List<Element> linearRingList = IndexUtils.getXMLChildren(exteriorElement, "gml:LinearRing");
+                                    for (Element linearRingElement : linearRingList) {
+
+                                        List<Element> coordinatesList = IndexUtils.getXMLChildren(linearRingElement, "gml:coordinates");
+                                        for (Element coordinatesElement : coordinatesList) {
+                                            LinearRing linearRing = GeoNetworkRecord.parseCoordinatesLinearRing(IndexUtils.parseText(coordinatesElement));
+                                            if (linearRing != null) {
+                                                Polygon polygon = GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(linearRing);
+                                                if (polygon != null) {
+                                                    polygons.add(polygon);
+                                                }
+                                            }
+                                        }
+
+                                        List<Element> posListList = IndexUtils.getXMLChildren(linearRingElement, "gml:posList");
+                                        for (Element posListElement : posListList) {
+                                            LinearRing linearRing = GeoNetworkRecord.parsePosListLinearRing(IndexUtils.parseText(posListElement), 2, true);
+                                            if (linearRing != null) {
+                                                Polygon polygon = GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(linearRing);
+                                                if (polygon != null) {
+                                                    polygons.add(polygon);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return GeoNetworkRecord.polygonsToWKT(polygons);
+    }
+
+    private static Polygon parseBoundingBox(String northStr, String eastStr, String southStr, String westStr) {
+        double north = Double.parseDouble(northStr);
+        double east = Double.parseDouble(eastStr);
+        double south = Double.parseDouble(southStr);
+        double west = Double.parseDouble(westStr);
+
+        // Normalise north and south
+        if (north > 90) { north = 90; }
+        if (south < -90) { south = -90; }
+
+        boolean northSouthEquals = (Math.abs(north - south) < GIS_EPSILON);
+        boolean eastWestEquals = (Math.abs(east - west) < GIS_EPSILON);
+
+        // Elastic Search do not allow bbox with 0 area.
+        // The WKT library does not seem to allow mixing of point, lines and polygons.
+        // The easiest solution is to slightly increase the size of the bbox.
+        if (northSouthEquals) {
+            north += GIS_EPSILON/2;
+            south -= GIS_EPSILON/2;
+
+            // Normalise north and south
+            if (north > 90) { north = 90; }
+            if (south < -90) { south = -90; }
+        }
+        if (eastWestEquals) {
+            west -= GIS_EPSILON/2;
+            east += GIS_EPSILON/2;
+        }
+
+        return GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(new Coordinate[] {
+            new Coordinate(west, north),
+            new Coordinate(east, north),
+            new Coordinate(east, south),
+            new Coordinate(west, south),
+            new Coordinate(west, north)
+        });
+    }
+
+    private static LinearRing parseCoordinatesLinearRing(String coordinatesStr) {
+        // 145.0010529126619,-10.68188894877146,0 142.5315075081651,-10.68756998592151,0 142.7881039791155,-11.08215241694377,0 142.8563635161634,-11.84494938862347,0 ...
+        if (coordinatesStr == null || coordinatesStr.isEmpty()) {
+            return null;
+        }
+
+        List<Coordinate> coordinateList = new ArrayList<Coordinate>();
+        for (String coordinatePoint : coordinatesStr.split(" ")) {
+            String[] coordinateValues = coordinatePoint.split(",");
+            if (coordinateValues.length >= 2) {
+                double lon = Double.parseDouble(coordinateValues[0]);
+                double lat = Double.parseDouble(coordinateValues[1]);
+
+                Coordinate coordinate = new Coordinate(lon, lat);
+                coordinateList.add(coordinate);
+            }
+        }
+
+        if (coordinateList.isEmpty()) {
+            return null;
+        }
+
+        return GeoNetworkRecord.GEOMETRY_FACTORY.createLinearRing(coordinateList.toArray(new Coordinate[0]));
+    }
+
+    private static LinearRing parsePosListLinearRing(String coordinatesStr, int dimension, boolean lonlat) {
+        // 151.083984375 -24.521484375 153.80859375 -24.521484375 153.45703125 -20.830078125 147.12890625 -17.490234375 145.810546875 -13.798828125 144.4921875 -12.832031250000002 ...
+        if (coordinatesStr == null || coordinatesStr.isEmpty() || dimension < 2) {
+            return null;
+        }
+
+        List<Coordinate> coordinateList = new ArrayList<Coordinate>();
+        String[] coordinateValues = coordinatesStr.split(" ");
+        int coordinateValueLength = coordinateValues.length;
+        if (coordinateValueLength > 0 && (coordinateValueLength % dimension) == 0) {
+            for (int i=0; i<coordinateValueLength; i+=dimension) {
+                double lon, lat;
+                if (lonlat) {
+                    lon = Double.parseDouble(coordinateValues[i]);
+                    lat = Double.parseDouble(coordinateValues[i+1]);
+                } else {
+                    lat = Double.parseDouble(coordinateValues[i]);
+                    lon = Double.parseDouble(coordinateValues[i+1]);
+                }
+
+                Coordinate coordinate = new Coordinate(lon, lat);
+                coordinateList.add(coordinate);
+            }
+        }
+
+        if (coordinateList.isEmpty()) {
+            return null;
+        }
+
+        return GeoNetworkRecord.GEOMETRY_FACTORY.createLinearRing(coordinateList.toArray(new Coordinate[0]));
+    }
+
+    private static String polygonsToWKT(List<Polygon> polygons) {
+        if (polygons == null || polygons.isEmpty()) {
+            return null;
+        }
+
+        Geometry multiPolygon = null;
+        if (polygons.size() == 1) {
+            multiPolygon = polygons.get(0);
+        } else {
+            multiPolygon = GeoNetworkRecord.GEOMETRY_FACTORY.createMultiPolygon(polygons.toArray(new Polygon[0]));
+        }
+
+        // norm(): Normalise the geometry. Join intersecting polygons and remove duplicates.
+        // buffer(0): Fix self intersecting polygons by removing parts.
+        //   It's not perfect, but at least the resulting polygon should be valid.
+        //   See: https://stackoverflow.com/questions/31473553/is-there-a-way-to-convert-a-self-intersecting-polygon-to-a-multipolygon-in-jts
+        return GeoNetworkRecord.WKT_WRITER.write(multiPolygon.norm().buffer(0));
+    }
+
 
     private static void addResponsibleParty(ResponsibleParty responsibleParty, Map<String, List<ResponsibleParty>> responsiblePartyMap) {
         if (responsibleParty != null && responsiblePartyMap != null) {

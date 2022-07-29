@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdb:MD_Metadata xmlns:mdb="http://standards.iso.org/iso/19115/-3/mdb/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cat="http://standards.iso.org/iso/19115/-3/cat/1.0" xmlns:gfc="http://standards.iso.org/iso/19110/gfc/1.1" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0" xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0" xmlns:gex="http://standards.iso.org/iso/19115/-3/gex/1.0" xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0" xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.1" xmlns:mas="http://standards.iso.org/iso/19115/-3/mas/1.0" xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:mco="http://standards.iso.org/iso/19115/-3/mco/1.0" xmlns:mda="http://standards.iso.org/iso/19115/-3/mda/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/2.0" xmlns:mex="http://standards.iso.org/iso/19115/-3/mex/1.0" xmlns:mmi="http://standards.iso.org/iso/19115/-3/mmi/1.0" xmlns:mpc="http://standards.iso.org/iso/19115/-3/mpc/1.0" xmlns:mrc="http://standards.iso.org/iso/19115/-3/mrc/2.0" xmlns:mrd="http://standards.iso.org/iso/19115/-3/mrd/1.0" xmlns:mri="http://standards.iso.org/iso/19115/-3/mri/1.0" xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0" xmlns:mrs="http://standards.iso.org/iso/19115/-3/mrs/1.0" xmlns:msr="http://standards.iso.org/iso/19115/-3/msr/2.0" xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0" xmlns:mac="http://standards.iso.org/iso/19115/-3/mac/2.0" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://standards.iso.org/iso/19115/-3/cat/1.0 http://standards.iso.org/iso/19115/-3/cat/1.0/cat.xsd http://standards.iso.org/iso/19115/-3/cit/2.0 http://standards.iso.org/iso/19115/-3/cit/2.0/cit.xsd http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd http://standards.iso.org/iso/19115/-3/gex/1.0 http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd http://standards.iso.org/iso/19115/-3/lan/1.0 http://standards.iso.org/iso/19115/-3/lan/1.0/lan.xsd http://standards.iso.org/iso/19115/-3/srv/2.0 http://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd http://standards.iso.org/iso/19115/-3/mas/1.0 http://standards.iso.org/iso/19115/-3/mas/1.0/mas.xsd http://standards.iso.org/iso/19115/-3/mcc/1.0 http://standards.iso.org/iso/19115/-3/mcc/1.0/mcc.xsd http://standards.iso.org/iso/19115/-3/mco/1.0 http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd http://standards.iso.org/iso/19115/-3/mda/2.0 http://standards.iso.org/iso/19115/-3/mda/2.0/mda.xsd http://standards.iso.org/iso/19115/-3/mdb/2.0 http://standards.iso.org/iso/19115/-3/mdb/2.0/mdb.xsd http://standards.iso.org/iso/19115/-3/mds/2.0 http://standards.iso.org/iso/19115/-3/mds/2.0/mds.xsd http://standards.iso.org/iso/19115/-3/mdt/2.0 http://standards.iso.org/iso/19115/-3/mdt/2.0/mdt.xsd http://standards.iso.org/iso/19115/-3/mex/1.0 http://standards.iso.org/iso/19115/-3/mex/1.0/mex.xsd http://standards.iso.org/iso/19115/-3/mmi/1.0 http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd http://standards.iso.org/iso/19115/-3/mpc/1.0 http://standards.iso.org/iso/19115/-3/mpc/1.0/mpc.xsd http://standards.iso.org/iso/19115/-3/mrc/2.0 http://standards.iso.org/iso/19115/-3/mrc/2.0/mrc.xsd http://standards.iso.org/iso/19115/-3/mrd/1.0 http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd http://standards.iso.org/iso/19115/-3/mri/1.0 http://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd http://standards.iso.org/iso/19115/-3/mrl/2.0 http://standards.iso.org/iso/19115/-3/mrl/2.0/mrl.xsd http://standards.iso.org/iso/19115/-3/mrs/1.0 http://standards.iso.org/iso/19115/-3/mrs/1.0/mrs.xsd http://standards.iso.org/iso/19115/-3/msr/2.0 http://standards.iso.org/iso/19115/-3/msr/2.0/msr.xsd http://standards.iso.org/iso/19157/-2/mdq/1.0 http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd http://standards.iso.org/iso/19115/-3/mac/2.0 http://standards.iso.org/iso/19115/-3/mac/2.0/mac.xsd http://standards.iso.org/iso/19115/-3/gco/1.0 http://standards.iso.org/iso/19115/-3/gco/1.0/gco.xsd http://standards.iso.org/iso/19115/-3/gmw/1.0 http://standards.iso.org/iso/19115/-3/gmw/1.0/gmw.xsd http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd http://www.w3.org/1999/xlink http://www.w3.org/1999/xlink.xsd">
+  <mdb:metadataIdentifier>
+    <mcc:MD_Identifier>
+      <mcc:code>
+        <gco:CharacterString>8cfc0117-678f-4904-b11c-30be6e71ca80</gco:CharacterString>
+      </mcc:code>
+      <mcc:codeSpace>
+        <gco:CharacterString>urn:uuid</gco:CharacterString>
+      </mcc:codeSpace>
+    </mcc:MD_Identifier>
+  </mdb:metadataIdentifier>
+  <mdb:defaultLocale xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0">
+    <lan:PT_Locale id="EN">
+      <lan:language>
+        <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+      </lan:language>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:defaultLocale>
+  <mdb:parentMetadata xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" uuidref="ee7f96b7-ab1e-4b65-87f5-b5632037c1d5" />
+  <mdb:metadataScope xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0">
+    <mdb:MD_MetadataScope>
+      <mdb:resourceScope>
+        <mcc:MD_ScopeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_ScopeCode" codeListValue="fieldSession" />
+      </mdb:resourceScope>
+      <mdb:name>
+        <gco:CharacterString>NESP MaC hub Project 1.16</gco:CharacterString>
+      </mdb:name>
+    </mdb:MD_MetadataScope>
+  </mdb:metadataScope>
+  <mdb:contact xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0">
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+      </cit:role>
+      <cit:party>
+        <cit:CI_Organisation>
+          <cit:name>
+            <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+          </cit:name>
+          <cit:individual>
+            <cit:CI_Individual>
+              <cit:name>
+                <gco:CharacterString>eAtlas Data Manager</gco:CharacterString>
+              </cit:name>
+              <cit:contactInfo>
+                <cit:CI_Contact>
+                  <cit:phone>
+                    <cit:CI_Telephone>
+                      <cit:number>
+                        <gco:CharacterString>+61 7 4753 4444</gco:CharacterString>
+                      </cit:number>
+                      <cit:numberType>
+                        <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                      </cit:numberType>
+                    </cit:CI_Telephone>
+                  </cit:phone>
+                  <cit:address>
+                    <cit:CI_Address>
+                      <cit:deliveryPoint>
+                        <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                      </cit:deliveryPoint>
+                      <cit:city>
+                        <gco:CharacterString>Townsville</gco:CharacterString>
+                      </cit:city>
+                      <cit:administrativeArea>
+                        <gco:CharacterString>Queensland</gco:CharacterString>
+                      </cit:administrativeArea>
+                      <cit:postalCode>
+                        <gco:CharacterString>4810</gco:CharacterString>
+                      </cit:postalCode>
+                      <cit:country>
+                        <gco:CharacterString>Australia</gco:CharacterString>
+                      </cit:country>
+                      <cit:electronicMailAddress>
+                        <gco:CharacterString>e-atlas@aims.gov.au</gco:CharacterString>
+                      </cit:electronicMailAddress>
+                    </cit:CI_Address>
+                  </cit:address>
+                  <cit:onlineResource>
+                    <cit:CI_OnlineResource>
+                      <cit:linkage>
+                        <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
+                      </cit:linkage>
+                      <cit:protocol>
+                        <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                      </cit:protocol>
+                      <cit:name>
+                        <gco:CharacterString>eAtlas portal</gco:CharacterString>
+                      </cit:name>
+                    </cit:CI_OnlineResource>
+                  </cit:onlineResource>
+                </cit:CI_Contact>
+              </cit:contactInfo>
+            </cit:CI_Individual>
+          </cit:individual>
+        </cit:CI_Organisation>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </mdb:contact>
+  <mdb:dateInfo xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0">
+    <cit:CI_Date>
+      <cit:date>
+        <gco:DateTime>2022-05-10T16:08:28</gco:DateTime>
+      </cit:date>
+      <cit:dateType>
+        <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" />
+      </cit:dateType>
+    </cit:CI_Date>
+  </mdb:dateInfo>
+  <mdb:dateInfo>
+    <cit:CI_Date>
+      <cit:date>
+        <gco:DateTime>2022-06-21T01:52:36</gco:DateTime>
+      </cit:date>
+      <cit:dateType>
+        <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="revision" />
+      </cit:dateType>
+    </cit:CI_Date>
+  </mdb:dateInfo>
+  <mdb:metadataStandard xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0">
+    <cit:CI_Citation>
+      <cit:title>
+        <gco:CharacterString>ISO 19115-3:2018</gco:CharacterString>
+      </cit:title>
+    </cit:CI_Citation>
+  </mdb:metadataStandard>
+  <mdb:metadataLinkage xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0">
+    <cit:CI_OnlineResource>
+      <cit:linkage>
+        <gco:CharacterString>https://eatlas.org.au/data/uuid/8cfc0117-678f-4904-b11c-30be6e71ca80</gco:CharacterString>
+      </cit:linkage>
+      <cit:protocol>
+        <gco:CharacterString>WWW:LINK-1.0-http--metadata-URL</gco:CharacterString>
+      </cit:protocol>
+      <cit:description>
+        <gco:CharacterString>Point of truth URL of this metadata record</gco:CharacterString>
+      </cit:description>
+    </cit:CI_OnlineResource>
+  </mdb:metadataLinkage>
+  <mdb:identificationInfo xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0">
+    <mri:MD_DataIdentification>
+      <mri:citation>
+        <cit:CI_Citation>
+          <cit:title>
+            <gco:CharacterString>NESP MaC Project 1.6 – A roadmap for coordinated landscape-scale coastal and marine ecosystem restoration 2021-2022 (CSIRO)</gco:CharacterString>
+          </cit:title>
+          <cit:date>
+            <cit:CI_Date>
+              <cit:date>
+                <gco:DateTime>2022-05-25T15:00:00</gco:DateTime>
+              </cit:date>
+              <cit:dateType>
+                <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" />
+              </cit:dateType>
+            </cit:CI_Date>
+          </cit:date>
+        </cit:CI_Citation>
+      </mri:citation>
+      <mri:abstract>
+        <gco:CharacterString>This record provides an overview of the NESP Marine and Coastal Hub small-scale study "A roadmap for coordinated landscape-scale coastal and marine ecosystem restoration". For specific data outputs from this project, please see child records associated with this metadata.
+
+This project aims to develop a roadmap to guide research and investment into landscape-scale coastal and marine restoration. The project brings together interdisciplinary expertise in coastal engineering, decision theory, marine ecology, modelling and ecosystem services to examine decision support needs and opportunities to restore coastal marine ecosystems at scale. The research will focus on the ecosystem services of coastal protection and climate resilience with the recognition that this Nature-based Solution (NbS) approach provides co-benefits such as biodiversity, fisheries production, carbon sequestration, and nutrient cycling. The research will be accomplished through surveys and workshops/meetings with input from key end user groups in industry, NGO, Indigenous and Governmental organisations
+
+Planned Outputs
+ • Final technical report with analysed data and a short summary of recommendations for policy makers of key findings [written]</gco:CharacterString>
+      </mri:abstract>
+      <mri:credit>
+        <gco:CharacterString>Team members: Megan Saunders (CSIRO), Nathan Waltham (JCU), Toni Cannard (CSIRO), Mibu Fisher (CSIRO), Rebecca Morris (University of Melbourne)</gco:CharacterString>
+      </mri:credit>
+      <mri:credit>
+        <gco:CharacterString>National Environmental Science Program (NESP) Marine and Coastal Hub</gco:CharacterString>
+      </mri:credit>
+      <mri:credit>
+        <gco:CharacterString>Department of Agriculture, Water and the Environment (DAWE), Australian Government</gco:CharacterString>
+      </mri:credit>
+      <mri:credit>
+        <gco:CharacterString>In addition to NESP (DAWE) funding, this project is matched by an equivalent amount of in-kind support and co-investment from project partners and collaborators.</gco:CharacterString>
+      </mri:credit>
+      <mri:pointOfContact>
+        <cit:CI_Responsibility>
+          <cit:role>
+            <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="principalInvestigator" />
+          </cit:role>
+          <cit:party>
+            <cit:CI_Organisation>
+              <cit:name>
+                <gco:CharacterString>CSIRO</gco:CharacterString>
+              </cit:name>
+              <cit:individual>
+                <cit:CI_Individual>
+                  <cit:name>
+                    <gco:CharacterString>Megan Saunders</gco:CharacterString>
+                  </cit:name>
+                  <cit:contactInfo>
+                    <cit:CI_Contact>
+                      <cit:phone>
+                        <cit:CI_Telephone>
+                          <cit:number gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:number>
+                          <cit:numberType>
+                            <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                          </cit:numberType>
+                        </cit:CI_Telephone>
+                      </cit:phone>
+                      <cit:address>
+                        <cit:CI_Address>
+                          <cit:deliveryPoint gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:deliveryPoint>
+                          <cit:city>
+                            <gco:CharacterString>Brisbane</gco:CharacterString>
+                          </cit:city>
+                          <cit:administrativeArea>
+                            <gco:CharacterString>Queensland</gco:CharacterString>
+                          </cit:administrativeArea>
+                          <cit:postalCode gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:postalCode>
+                          <cit:country>
+                            <gco:CharacterString>Australia</gco:CharacterString>
+                          </cit:country>
+                          <cit:electronicMailAddress>
+                            <gco:CharacterString>megan.saunders@csiro.au</gco:CharacterString>
+                          </cit:electronicMailAddress>
+                        </cit:CI_Address>
+                      </cit:address>
+                    </cit:CI_Contact>
+                  </cit:contactInfo>
+                  <cit:positionName>
+                    <gco:CharacterString>Project Leader</gco:CharacterString>
+                  </cit:positionName>
+                </cit:CI_Individual>
+              </cit:individual>
+            </cit:CI_Organisation>
+          </cit:party>
+        </cit:CI_Responsibility>
+      </mri:pointOfContact>
+      <mri:topicCategory>
+        <mri:MD_TopicCategoryCode>biota</mri:MD_TopicCategoryCode>
+      </mri:topicCategory>
+      <mri:extent>
+        <gex:EX_Extent>
+          <gex:description>
+            <gco:CharacterString>Project extent</gco:CharacterString>
+          </gex:description>
+          <gex:geographicElement />
+          <gex:temporalElement>
+            <gex:EX_TemporalExtent>
+              <gex:extent>
+                <gml:TimePeriod gml:id="dbee32e52ee4e3aa28">
+                  <gml:beginPosition>2021-09-01</gml:beginPosition>
+                  <gml:endPosition>2022-09-01</gml:endPosition>
+                </gml:TimePeriod>
+              </gex:extent>
+            </gex:EX_TemporalExtent>
+          </gex:temporalElement>
+        </gex:EX_Extent>
+      </mri:extent>
+      <mri:extent>
+        <gex:EX_Extent>
+          <gex:description>
+            <gco:CharacterString>Marine and coastal region of Australia</gco:CharacterString>
+          </gex:description>
+          <gex:geographicElement>
+            <gex:EX_BoundingPolygon>
+              <gex:polygon>
+                <gml:MultiSurface srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                  <gml:surfaceMember>
+                    <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                      <gml:exterior>
+                        <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                          <gml:posList srsDimension="2">-45.8365967530215 142.237215807045 -41.910605904740294 140.303622057045 -40.7224379051572 138.194247057045 -38.726393013141 133.904085924232 -37.44667866215649 131.662874986732 -35.43174890573939 130.388460924232 -36.03816056606551 127.488070299232 -37.4117814859882 125.202914049232 -37.9356946073266 122.022372057045 -38.3504331680361 115.166903307045 -35.5748491964089 110.964632799232 -32.33373201464669 111.47549705704502 -29.6977744233714 110.157137682045 -25.334281810757304 109.190340807045 -19.857336624747205 110.569124986732 -16.562688834451592 114.72745018204499 -13.3337019587606 118.347445299232 -11.534052879834306 123.252840807045 -9.717380582625935 129.333773424232 -8.893414805390606 133.464632799232 -9.113146801745216 135.381747057045 -10.625717949522098 140.320101549232 -9.286666824257864 142.061434557045 -9.460100960246038 144.610262682045 -12.30800245344399 146.719637682045 -14.019554430356195 151.026278307045 -14.059522494123996 157.32693748673196 -15.633814236359498 158.67276268204503 -18.656848547896104 157.09073143204503 -20.3963152554643 157.09073143204503 -24.2972271512201 158.321200182045 -25.965637066816896 159.787874986732 -27.3792661801181 162.512484361732 -30.152429407470095 163.083773424232 -32.886678752251505 163.083773424232 -35.108842523583 160.403109361732 -34.4591815606572 156.18435936173196 -35.54133294510241 155.157137682045 -40.1181466819116 153.020296861732 -42.04128612503661 153.13565330704498 -45.3445680638606 151.99307518204498 -47.01598342624889 149.065218736732 -46.9878869782666 144.873934557045 -45.8365967530215 142.237215807045</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                      <gml:interior>
+                        <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                          <gml:posList srsDimension="2">-38.45159820024178 143.539095689857 -37.7426472071064 144.582796861732 -37.6991962718184 145.198031236732 -38.2102909064402 145.846224596107 -38.39134671857191 146.813021471107 -37.8034356875888 147.373324205482 -37.5861046093904 148.548861314857 -37.4379558932574 149.614535142982 -36.029276241744 149.889193346107 -34.802695852039 150.548373033607 -33.72222560932061 150.845003892982 -32.757424512230294 151.559115221107 -32.12695286113329 152.273226549232 -30.6640796219217 152.811556627357 -29.7812434183181 152.866488267982 -28.54369293238691 153.196078111732 -27.5839450362973 152.85550193985702 -26.093972243229018 152.78958397110696 -25.1230913315693 152.18533592423202 -24.494833345862702 151.581087877357 -23.903603201060605 150.910921861732 -23.772965167874602 150.427523424232 -23.057177585914303 150.207796861732 -22.631946682263504 149.328890611732 -21.481375727803908 149.010287096107 -20.6304055074923 148.395052721107 -20.3525445259136 148.032503892982 -20.270118922597405 147.208529283607 -19.4331174018606 146.439486314857 -18.935060231585013 145.978060533607 -18.174753862036297 145.802279283607 -17.557823174830204 145.769320299232 -16.707428490879693 145.285921861732 -15.6734849189382 145.110140611732 -15.143915824730598 145.011263658607 -14.655538357404396 144.472933580482 -15.006008628835005 144.132357408607 -14.772424777557703 143.626986314857 -13.696892336485504 143.286410142982 -12.991376275674412 143.231478502357 -12.112037606743087 142.781039049232 -11.315988235094608 142.605257799232 -11.326760785643401 142.396517564857 -12.44482282616309 142.165804674232 -13.728911849699003 141.946078111732 -15.239337490410293 142.143832017982 -16.791590244225304 141.726351549232 -18.091228185729392 141.407748033607 -18.612604481148708 140.979281236732 -18.64383678320729 139.803744127357 -17.91360418366739 138.869906236732 -17.327237934574 138.705111314857 -16.90725173662291 137.760287096107 -16.391492640537507 136.562777330482 -15.789807737191282 135.958529283607 -15.345310798795495 135.134554674232 -14.8149133725164 134.629183580482 -14.059522494123996 135.343294908607 -13.012785594498908 135.738802721107 -12.659297553802105 135.552035142982 -12.927137255684997 134.837923814857 -12.509183993348202 133.871126939857 -12.197957853583404 133.387728502357 -13.216081523190695 132.519808580482 -12.937844909401207 131.487093736732 -13.044896105657585 130.871859361732 -13.867612443087694 130.641146471107 -15.47240777536328 130.454378892982 -16.728472415970316 129.498568346107 -16.812624862705988 128.476839830482 -16.011692865878913 127.773714830482 -15.493583037701697 127.488070299232 -14.751177362393506 127.58694725235702 -14.368371734825985 127.03763084610699 -15.0378412959803 125.90603904923199 -15.9483221151022 125.18094139298199 -16.47579275100439 125.312777330482 -16.823141297195832 124.554720689857 -17.557823174830204 124.10428123673202 -17.997214238201195 123.47806053360699 -18.654246274750392 122.280550767982 -19.526334580745 121.61038475235699 -20.280424522226397 120.050326158607 -20.640686964580382 118.325472642982 -21.112878192934005 117.523470689857 -21.225572593495286 116.51272850235699 -21.981444452141986 115.39212303360699 -22.713045394644297 114.72195701798202 -23.53144261606451 114.205599596107 -24.584779021778402 114.01883201798199 -25.787710955691807 114.469271471107 -26.438789670020505 114.62308006485802 -26.880613356367405 114.16165428360702 -27.933934976957104 114.50223045548199 -28.9578647350286 115.073519517982 -30.180924664139283 115.31521873673199 -31.3139299024419 115.79861717423199 -32.0711117171235 116.534701158607 -33.0986161195277 117.116976549232 -33.61250254144579 119.072542955482 -33.42932009691479 121.247835924232 -33.365114659343 122.97268943985702 -32.8220751414258 124.060335924232 -32.2292395617814 125.752230455482 -32.052490418112 126.37845115860702 -31.800732407899098 128.432894517982 -31.454614241304697 129.410677721107 -31.304543457631112 131.212435533607 -31.716660082179708 132.794466783607 -32.0804209449381 134.123812486732 -33.4109805269413 135.354281236732 -33.986810970251405 135.760775377357 -32.978887967518006 137.232943346107 -31.782056269188303 137.628451158607 -31.884728312929198 138.001986314857 -33.9139037935842 138.727083971107 -33.8956672427574 140.880404283607 -34.5225673363354 140.836458971107 -36.4369163951616 140.188265611732 -37.8294725914858 141.188021471107 -38.2448125598751 142.627230455482 -38.45159820024178 143.539095689857</gml:posList>
+                        </gml:LinearRing>
+                      </gml:interior>
+                      <gml:interior>
+                        <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                          <gml:posList srsDimension="2">-41.2180738848275 144.92886619767 -42.0881838226326 145.642977525795 -42.5269231481506 145.796786119545 -42.7370769204489 145.63199119767 -43.18730447767 146.170321275795 -43.3313205522309 146.70865135392 -42.9143449530853 146.97232322892 -42.66441168871761 147.554598619545 -42.4215802172387 147.80728416642 -41.736631805548 147.972079088295 -40.96968438988691 148.147860338295 -41.1602003485326 147.290926744545 -41.440821003215994 147.093172838295 -41.391387463621705 146.37906151017 -41.2015438088208 145.56607322892 -40.936494848939 144.97281151017 -41.2180738848275 144.92886619767</gml:posList>
+                        </gml:LinearRing>
+                      </gml:interior>
+                    </gml:Polygon>
+                  </gml:surfaceMember>
+                  <gml:surfaceMember>
+                    <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                      <gml:exterior>
+                        <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                          <gml:posList srsDimension="2">-26.478132044632595 170.598421861732 -28.273119780279693 171.74099998673196 -30.909470252182096 171.301546861732 -32.6279823916197 168.137484361732 -31.473356223177213 164.797640611732 -28.890553467287802 164.138460924232 -26.478132044632595 165.061312486732 -25.926121103473207 168.928499986732 -26.478132044632595 170.598421861732</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                    </gml:Polygon>
+                  </gml:surfaceMember>
+                  <gml:surfaceMember>
+                    <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                      <gml:exterior>
+                        <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                          <gml:posList srsDimension="2">-12.734321287453099 100.417757799232 -14.698049753046703 99.31912498673242 -15.758089932802804 96.7263515492324 -14.485410490028698 94.00174217423242 -11.574416739732982 93.16678123673239 -8.980238449017463 94.7488124867324 -8.502456389246419 97.2097499867324 -9.197206190300292 99.1433437367324 -10.92790931688458 100.110140611732 -12.734321287453099 100.417757799232</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                    </gml:Polygon>
+                  </gml:surfaceMember>
+                  <gml:surfaceMember>
+                    <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                      <gml:exterior>
+                        <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                          <gml:posList srsDimension="2">-9.717380582625935 105.99881248673199 -11.186686118066902 109.206820299232 -13.248165469877407 107.976351549232 -14.059522494123996 105.42752342423199 -13.034193064686605 103.01053123673202 -10.92790931688458 102.087679674232 -8.806570569230487 102.615023424232 -9.717380582625935 105.99881248673199</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                    </gml:Polygon>
+                  </gml:surfaceMember>
+                </gml:MultiSurface>
+              </gex:polygon>
+            </gex:EX_BoundingPolygon>
+          </gex:geographicElement>
+        </gex:EX_Extent>
+      </mri:extent>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/8cfc0117-678f-4904-b11c-30be6e71ca80/attachments/NESP-MaC_Project-1.6_NorfolkBeach_CoochiemudloIsland_2.jpg</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>Norfolk Beach, Coochiemudlo Island, beach restoration.  The restoration was conducted to recover from a storm surge erosion event following ex-Cyclone Oswald in 2013. The sand bags were put in place 2014. Image: Toni Cannard, CC-BY</gco:CharacterString>
+          </mcc:fileDescription>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/8cfc0117-678f-4904-b11c-30be6e71ca80/attachments/NESP-MaC_Project-1.6_coastal%20erosion%20noosa.jpg</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>A fallen tree on the shoreline of the Noosa River estuary signals that shoreline erosion is occuring. Coasts and estuaries are naturally dynamic places. Human activities such as coastal development and land use change, as well as climate change affect coastal processes and erosion. Image: Megan Saunders, CC-BY</gco:CharacterString>
+          </mcc:fileDescription>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/8cfc0117-678f-4904-b11c-30be6e71ca80/attachments/NESP-MaC_Project-1.6_Noosa_rockwall.jpg</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>Rock walls and other coastal engineering structures are use to prevent shorelines from moving in response to tides, river flows, and wind. This shoreline hardening can have negative impacts on biodiversity and delivery of ecosystem services. 'Nature-based solutions' such as using living ecosystems in shoreline protection, are being developed which protect shorelines while ensure that biodiversity persists. Image: Megan Saunders, CC-BY</gco:CharacterString>
+          </mcc:fileDescription>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/8cfc0117-678f-4904-b11c-30be6e71ca80/attachments/NESP-MaC_Project-1.6_Damian_Leeding_Memorial_Parklands_Foreshore_Restoration_2020.jpg</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>A coastal restoration project in Damian Leeding Memorial Parklands Foreshore on the Gold Coast, Qld provides a Nature-based solution to shoreline erosion. Image: Copyright: Kristopher Boody. Permission from Kristopher Boody, Gold Coast City Council</gco:CharacterString>
+          </mcc:fileDescription>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/8cfc0117-678f-4904-b11c-30be6e71ca80/attachments/NESP-MaC_Project-1.6_Cleveland%20Image.jpg</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>Coastal land reclamation and shoreline modification have increased due to growing human population and the need to protect coastal assets from inundation. In this image, there are numerous examples of built coastal structures including seawalls, breakwaters and groynes. Land reclamation and construction of coastal structures can have significant detrimental impacts on natural coastal habitats (i.e. sediment, seagrass, mangrove). Where these works are absolutely necessary or built structures already exist, nature-informed designs can be incorporated into their design to improve their ecological value and minimise some of the impacts of these structures. Image: Maria Vozzo / Google Earth, CC-BY</gco:CharacterString>
+          </mcc:fileDescription>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/8cfc0117-678f-4904-b11c-30be6e71ca80/attachments/NESP-MaC_Project-1.6_BroadwaterParklands_Mangroves.jpg</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>A mangrove restoration project iat the Broadwater Parklands on the Gold Coast, Qld, provides a Nature-based solution to shoreline erosion and stormwater run-off. Copyright: Angus Martin Photography 2017. Permission from Kristopher Boody, Gold Coast City Council.</gco:CharacterString>
+          </mcc:fileDescription>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/8cfc0117-678f-4904-b11c-30be6e71ca80/attachments/NESP-MaC-logo.png</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>NESP-MaC-logo.png</gco:CharacterString>
+          </mcc:fileDescription>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:descriptiveKeywords>
+        <mri:MD_Keywords>
+          <mri:keyword>
+            <gco:CharacterString>National Environmental Science Program (NESP) Marine and Coastal Hub</gco:CharacterString>
+          </mri:keyword>
+          <mri:type>
+            <mri:MD_KeywordTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_KeywordTypeCode" codeListValue="dataSource" />
+          </mri:type>
+        </mri:MD_Keywords>
+      </mri:descriptiveKeywords>
+      <mri:descriptiveKeywords>
+        <mri:MD_Keywords>
+          <mri:keyword>
+            <gco:CharacterString>marine</gco:CharacterString>
+          </mri:keyword>
+          <mri:type>
+            <mri:MD_KeywordTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_KeywordTypeCode" codeListValue="theme" />
+          </mri:type>
+        </mri:MD_Keywords>
+      </mri:descriptiveKeywords>
+      <mri:descriptiveKeywords>
+        <mri:MD_Keywords>
+          <mri:keyword>
+            <gco:CharacterString>MARINE</gco:CharacterString>
+          </mri:keyword>
+          <mri:type>
+            <mri:MD_KeywordTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_KeywordTypeCode" codeListValue="theme" />
+          </mri:type>
+          <mri:thesaurusName>
+            <cit:CI_Citation>
+              <cit:title>
+                <gcx:Anchor xlink:href="https://registry.geonetwork-opensource.org/concept#">theme.sciencekeywords-8.1_.rdf</gcx:Anchor>
+              </cit:title>
+              <cit:date>
+                <cit:CI_Date>
+                  <cit:date>
+                    <gco:Date>2022-05-09</gco:Date>
+                  </cit:date>
+                  <cit:dateType>
+                    <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="publication" />
+                  </cit:dateType>
+                </cit:CI_Date>
+              </cit:date>
+              <cit:identifier>
+                <mcc:MD_Identifier>
+                  <mcc:code>
+                    <gcx:Anchor xlink:href="https://eatlas.org.au/geonetwork/srv/api/registries/vocabularies/external.theme.sciencekeywords-8.1_">geonetwork.thesaurus.external.theme.sciencekeywords-8.1_</gcx:Anchor>
+                  </mcc:code>
+                </mcc:MD_Identifier>
+              </cit:identifier>
+            </cit:CI_Citation>
+          </mri:thesaurusName>
+        </mri:MD_Keywords>
+      </mri:descriptiveKeywords>
+      <mri:descriptiveKeywords>
+        <mri:MD_Keywords>
+          <mri:keyword>
+            <gco:CharacterString>Coastal Waters (Australia)</gco:CharacterString>
+          </mri:keyword>
+          <mri:type>
+            <mri:MD_KeywordTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_KeywordTypeCode" codeListValue="place" />
+          </mri:type>
+          <mri:thesaurusName>
+            <cit:CI_Citation>
+              <cit:title>
+                <gcx:Anchor xlink:href="http://vocab.aodn.org.au/def/geographicextents/1">AODN Geographic Extents Vocabulary</gcx:Anchor>
+              </cit:title>
+              <cit:date>
+                <cit:CI_Date>
+                  <cit:date>
+                    <gco:Date>2022-05-09</gco:Date>
+                  </cit:date>
+                  <cit:dateType>
+                    <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="publication" />
+                  </cit:dateType>
+                </cit:CI_Date>
+              </cit:date>
+              <cit:identifier>
+                <mcc:MD_Identifier>
+                  <mcc:code>
+                    <gcx:Anchor xlink:href="https://eatlas.org.au/geonetwork/srv/api/registries/vocabularies/external.place.aodn_aodn-geographic-extents-vocabulary_version-4-0(1)">geonetwork.thesaurus.external.place.aodn_aodn-geographic-extents-vocabulary_version-4-0(1)</gcx:Anchor>
+                  </mcc:code>
+                </mcc:MD_Identifier>
+              </cit:identifier>
+            </cit:CI_Citation>
+          </mri:thesaurusName>
+        </mri:MD_Keywords>
+      </mri:descriptiveKeywords>
+      <mri:resourceConstraints>
+        <mco:MD_SecurityConstraints>
+          <mco:classification>
+            <mco:MD_ClassificationCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_ClassificationCode" codeListValue="unclassified" />
+          </mco:classification>
+        </mco:MD_SecurityConstraints>
+      </mri:resourceConstraints>
+      <mri:resourceConstraints>
+        <mco:MD_Constraints>
+          <mco:useLimitation>
+            <gco:CharacterString>The data collections described in this record are funded by the Australian Government Department of Agriculture, Water and the Environment (DAWE) through the NESP Marine and Coastal Hub.</gco:CharacterString>
+          </mco:useLimitation>
+        </mco:MD_Constraints>
+      </mri:resourceConstraints>
+      <mri:resourceConstraints>
+        <mco:MD_LegalConstraints>
+          <mco:graphic>
+            <mcc:MD_BrowseGraphic>
+              <mcc:fileName gco:nilReason="inapplicable" />
+              <mcc:linkage>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>http://i.creativecommons.org/l/by/4.0/88x31.png</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:description>
+                    <gco:CharacterString>License Graphic</gco:CharacterString>
+                  </cit:description>
+                </cit:CI_OnlineResource>
+              </mcc:linkage>
+            </mcc:MD_BrowseGraphic>
+          </mco:graphic>
+          <mco:reference>
+            <cit:CI_Citation>
+              <cit:title>
+                <gco:CharacterString>Creative Commons Attribution 4.0 International License</gco:CharacterString>
+              </cit:title>
+              <cit:citedResponsibleParty>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="principalInvestigator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:electronicMailAddress gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                          <cit:onlineResource>
+                            <cit:CI_OnlineResource>
+                              <cit:linkage>
+                                <gco:CharacterString>http://creativecommons.org/international/</gco:CharacterString>
+                              </cit:linkage>
+                              <cit:protocol>
+                                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                              </cit:protocol>
+                              <cit:name gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:name>
+                              <cit:description gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:description>
+                            </cit:CI_OnlineResource>
+                          </cit:onlineResource>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+              </cit:citedResponsibleParty>
+              <cit:onlineResource>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>http://creativecommons.org/licenses/by/4.0/</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:description>
+                    <gco:CharacterString>License Text</gco:CharacterString>
+                  </cit:description>
+                </cit:CI_OnlineResource>
+              </cit:onlineResource>
+            </cit:CI_Citation>
+          </mco:reference>
+        </mco:MD_LegalConstraints>
+      </mri:resourceConstraints>
+      <mri:defaultLocale>
+        <lan:PT_Locale>
+          <lan:language>
+            <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+          </lan:language>
+          <lan:characterEncoding>
+            <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+          </lan:characterEncoding>
+        </lan:PT_Locale>
+      </mri:defaultLocale>
+    </mri:MD_DataIdentification>
+  </mdb:identificationInfo>
+  <mdb:distributionInfo>
+    <mrd:MD_Distribution>
+      <mrd:transferOptions>
+        <mrd:MD_DigitalTransferOptions>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://www.nespmarinecoastal.edu.au/project-1-6/</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>Project page on NESP Marine and Coastal Hub website</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://nespmarinecoastal.edu.au/</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>NESP Marine and Coastal Hub website</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://www.awe.gov.au/science-research/nesp/hub-marine-coastal</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>Department of Agriculture, Water and the Environment NESP website</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+        </mrd:MD_DigitalTransferOptions>
+      </mrd:transferOptions>
+    </mrd:MD_Distribution>
+  </mdb:distributionInfo>
+</mdb:MD_Metadata>

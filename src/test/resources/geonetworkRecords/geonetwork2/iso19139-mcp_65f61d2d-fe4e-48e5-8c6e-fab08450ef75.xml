@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mcp:MD_Metadata xmlns:mcp="http://bluenet3.antcrc.utas.edu.au/mcp" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gml="http://www.opengis.net/gml" xmlns:geonet="http://www.fao.org/geonetwork" gco:isoType="gmd:MD_Metadata" xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://www.isotc211.org/2005/gmd/gmd.xsd http://www.isotc211.org/2005/srv http://schemas.opengis.net/iso/19139/20060504/srv/srv.xsd http://bluenet3.antcrc.utas.edu.au/mcp http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema.xsd">
+  <gmd:fileIdentifier>
+    <gco:CharacterString>65f61d2d-fe4e-48e5-8c6e-fab08450ef75</gco:CharacterString>
+  </gmd:fileIdentifier>
+  <gmd:language>
+    <gco:CharacterString>eng</gco:CharacterString>
+  </gmd:language>
+  <gmd:characterSet>
+    <gmd:MD_CharacterSetCode codeListValue="utf8" codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode">utf8</gmd:MD_CharacterSetCode>
+  </gmd:characterSet>
+  <gmd:parentIdentifier>
+    <gco:CharacterString>18386963-6960-4eb9-889b-d0964069ce13</gco:CharacterString>
+  </gmd:parentIdentifier>
+  <gmd:hierarchyLevel>
+    <gmd:MD_ScopeCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset">dataset</gmd:MD_ScopeCode>
+  </gmd:hierarchyLevel>
+  <gmd:hierarchyLevelName gco:nilReason="missing">
+    <gco:CharacterString />
+  </gmd:hierarchyLevelName>
+  <gmd:contact>
+    <gmd:CI_ResponsibleParty>
+      <gmd:individualName>
+        <gco:CharacterString>eAtlas Data Manager</gco:CharacterString>
+      </gmd:individualName>
+      <gmd:organisationName>
+        <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+      </gmd:organisationName>
+      <gmd:contactInfo>
+        <gmd:CI_Contact>
+          <gmd:phone>
+            <gmd:CI_Telephone>
+              <gmd:voice>
+                <gco:CharacterString>+61 7 4753 4444</gco:CharacterString>
+              </gmd:voice>
+              <gmd:facsimile gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:facsimile>
+            </gmd:CI_Telephone>
+          </gmd:phone>
+          <gmd:address>
+            <gmd:CI_Address>
+              <gmd:deliveryPoint>
+                <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+              </gmd:deliveryPoint>
+              <gmd:city>
+                <gco:CharacterString>Townsville</gco:CharacterString>
+              </gmd:city>
+              <gmd:administrativeArea>
+                <gco:CharacterString>Queensland</gco:CharacterString>
+              </gmd:administrativeArea>
+              <gmd:postalCode>
+                <gco:CharacterString>4810</gco:CharacterString>
+              </gmd:postalCode>
+              <gmd:country>
+                <gco:CharacterString>Australia</gco:CharacterString>
+              </gmd:country>
+              <gmd:electronicMailAddress>
+                <gco:CharacterString>e-atlas@aims.gov.au</gco:CharacterString>
+              </gmd:electronicMailAddress>
+            </gmd:CI_Address>
+          </gmd:address>
+          <gmd:onlineResource>
+            <gmd:CI_OnlineResource>
+              <gmd:linkage>
+                <gmd:URL>https://eatlas.org.au</gmd:URL>
+              </gmd:linkage>
+              <gmd:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+              </gmd:protocol>
+              <gmd:name>
+                <gco:CharacterString>eAtlas portal</gco:CharacterString>
+              </gmd:name>
+              <gmd:description gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:description>
+            </gmd:CI_OnlineResource>
+          </gmd:onlineResource>
+        </gmd:CI_Contact>
+      </gmd:contactInfo>
+      <gmd:role>
+        <gmd:CI_RoleCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="metadataContact">metadataContact</gmd:CI_RoleCode>
+      </gmd:role>
+    </gmd:CI_ResponsibleParty>
+  </gmd:contact>
+  <gmd:dateStamp>
+    <gco:DateTime>2021-01-18T22:26:15</gco:DateTime>
+  </gmd:dateStamp>
+  <gmd:metadataStandardName>
+    <gco:CharacterString>Australian Marine Community Profile of ISO 19115:2005/19139</gco:CharacterString>
+  </gmd:metadataStandardName>
+  <gmd:metadataStandardVersion>
+    <gco:CharacterString>1.4</gco:CharacterString>
+  </gmd:metadataStandardVersion>
+  <gmd:identificationInfo>
+    <mcp:MD_DataIdentification gco:isoType="gmd:MD_DataIdentification">
+      <gmd:citation>
+        <gmd:CI_Citation>
+          <gmd:title>
+            <gco:CharacterString>Climate change doubles sedimentation-induced coral recruit mortality (NESP TWQ 5.2, AIMS, JCU and AIMS@JCU)</gco:CharacterString>
+          </gmd:title>
+          <gmd:date>
+            <gmd:CI_Date>
+              <gmd:date>
+                <gco:DateTime>2021-01-06</gco:DateTime>
+              </gmd:date>
+              <gmd:dateType>
+                <gmd:CI_DateTypeCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+              </gmd:dateType>
+            </gmd:CI_Date>
+          </gmd:date>
+          <gmd:date>
+            <gmd:CI_Date>
+              <gmd:date>
+                <gco:Date>2021-01-07</gco:Date>
+              </gmd:date>
+              <gmd:dateType>
+                <gmd:CI_DateTypeCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+              </gmd:dateType>
+            </gmd:CI_Date>
+          </gmd:date>
+          <gmd:citedResponsibleParty>
+            <gmd:CI_ResponsibleParty>
+              <gmd:individualName>
+                <gco:CharacterString>Brunner, Christopher A, MSc</gco:CharacterString>
+              </gmd:individualName>
+              <gmd:organisationName>
+                <gco:CharacterString>James Cook University, Coral Reef Studies ARC Centre of Excellence, AIMS@JCU, Australian Institute of Marine Science</gco:CharacterString>
+              </gmd:organisationName>
+              <gmd:positionName gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:positionName>
+              <gmd:contactInfo>
+                <gmd:CI_Contact>
+                  <gmd:phone>
+                    <gmd:CI_Telephone>
+                      <gmd:voice>
+                        <gco:CharacterString>+61 7 4753 4189</gco:CharacterString>
+                      </gmd:voice>
+                      <gmd:facsimile gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </gmd:facsimile>
+                    </gmd:CI_Telephone>
+                  </gmd:phone>
+                  <gmd:address>
+                    <gmd:CI_Address>
+                      <gmd:deliveryPoint>
+                        <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                      </gmd:deliveryPoint>
+                      <gmd:city>
+                        <gco:CharacterString>Townsville</gco:CharacterString>
+                      </gmd:city>
+                      <gmd:administrativeArea>
+                        <gco:CharacterString>Queensland</gco:CharacterString>
+                      </gmd:administrativeArea>
+                      <gmd:postalCode>
+                        <gco:CharacterString>4810</gco:CharacterString>
+                      </gmd:postalCode>
+                      <gmd:country>
+                        <gco:CharacterString>Australia</gco:CharacterString>
+                      </gmd:country>
+                      <gmd:electronicMailAddress>
+                        <gco:CharacterString>c.brunner@aims.gov.au</gco:CharacterString>
+                      </gmd:electronicMailAddress>
+                    </gmd:CI_Address>
+                  </gmd:address>
+                </gmd:CI_Contact>
+              </gmd:contactInfo>
+              <gmd:role>
+                <gmd:CI_RoleCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+              </gmd:role>
+            </gmd:CI_ResponsibleParty>
+          </gmd:citedResponsibleParty>
+          <gmd:citedResponsibleParty>
+            <gmd:CI_ResponsibleParty>
+              <gmd:individualName>
+                <gco:CharacterString>Uthicke, Sven, Dr</gco:CharacterString>
+              </gmd:individualName>
+              <gmd:organisationName>
+                <gco:CharacterString>Australian Institute of Marine Science</gco:CharacterString>
+              </gmd:organisationName>
+              <gmd:positionName gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:positionName>
+              <gmd:contactInfo>
+                <gmd:CI_Contact>
+                  <gmd:phone>
+                    <gmd:CI_Telephone>
+                      <gmd:voice>
+                        <gco:CharacterString>+61 7 4753 4483</gco:CharacterString>
+                      </gmd:voice>
+                      <gmd:facsimile gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </gmd:facsimile>
+                    </gmd:CI_Telephone>
+                  </gmd:phone>
+                  <gmd:address>
+                    <gmd:CI_Address>
+                      <gmd:deliveryPoint>
+                        <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                      </gmd:deliveryPoint>
+                      <gmd:city>
+                        <gco:CharacterString>Townsville</gco:CharacterString>
+                      </gmd:city>
+                      <gmd:administrativeArea>
+                        <gco:CharacterString>Queensland</gco:CharacterString>
+                      </gmd:administrativeArea>
+                      <gmd:postalCode>
+                        <gco:CharacterString>4810</gco:CharacterString>
+                      </gmd:postalCode>
+                      <gmd:country>
+                        <gco:CharacterString>Australia</gco:CharacterString>
+                      </gmd:country>
+                      <gmd:electronicMailAddress>
+                        <gco:CharacterString>s.uthicke@aims.gov.au</gco:CharacterString>
+                      </gmd:electronicMailAddress>
+                    </gmd:CI_Address>
+                  </gmd:address>
+                </gmd:CI_Contact>
+              </gmd:contactInfo>
+              <gmd:role>
+                <gmd:CI_RoleCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="coInvestigator">coInvestigator</gmd:CI_RoleCode>
+              </gmd:role>
+            </gmd:CI_ResponsibleParty>
+          </gmd:citedResponsibleParty>
+          <gmd:citedResponsibleParty>
+            <gmd:CI_ResponsibleParty>
+              <gmd:individualName>
+                <gco:CharacterString>Ricardo, Gerard, F, Dr</gco:CharacterString>
+              </gmd:individualName>
+              <gmd:organisationName>
+                <gco:CharacterString>Australian Institute of Marine Science</gco:CharacterString>
+              </gmd:organisationName>
+              <gmd:positionName gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:positionName>
+              <gmd:contactInfo>
+                <gmd:CI_Contact>
+                  <gmd:phone>
+                    <gmd:CI_Telephone>
+                      <gmd:voice gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </gmd:voice>
+                      <gmd:facsimile gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </gmd:facsimile>
+                    </gmd:CI_Telephone>
+                  </gmd:phone>
+                  <gmd:address>
+                    <gmd:CI_Address>
+                      <gmd:deliveryPoint>
+                        <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                      </gmd:deliveryPoint>
+                      <gmd:city>
+                        <gco:CharacterString>Townsville</gco:CharacterString>
+                      </gmd:city>
+                      <gmd:administrativeArea>
+                        <gco:CharacterString>Queensland</gco:CharacterString>
+                      </gmd:administrativeArea>
+                      <gmd:postalCode>
+                        <gco:CharacterString>4810</gco:CharacterString>
+                      </gmd:postalCode>
+                      <gmd:country>
+                        <gco:CharacterString>Australia</gco:CharacterString>
+                      </gmd:country>
+                      <gmd:electronicMailAddress>
+                        <gco:CharacterString>g.ricardo@aims.gov.au</gco:CharacterString>
+                      </gmd:electronicMailAddress>
+                    </gmd:CI_Address>
+                  </gmd:address>
+                </gmd:CI_Contact>
+              </gmd:contactInfo>
+              <gmd:role>
+                <gmd:CI_RoleCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="coInvestigator">coInvestigator</gmd:CI_RoleCode>
+              </gmd:role>
+            </gmd:CI_ResponsibleParty>
+          </gmd:citedResponsibleParty>
+          <gmd:citedResponsibleParty>
+            <gmd:CI_ResponsibleParty>
+              <gmd:individualName>
+                <gco:CharacterString>Negri, Andrew, P, Dr</gco:CharacterString>
+              </gmd:individualName>
+              <gmd:organisationName>
+                <gco:CharacterString>Australian Institute of Marine Science</gco:CharacterString>
+              </gmd:organisationName>
+              <gmd:positionName gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:positionName>
+              <gmd:contactInfo>
+                <gmd:CI_Contact>
+                  <gmd:phone>
+                    <gmd:CI_Telephone>
+                      <gmd:voice>
+                        <gco:CharacterString>+61 7 4753 4322</gco:CharacterString>
+                      </gmd:voice>
+                      <gmd:facsimile gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </gmd:facsimile>
+                    </gmd:CI_Telephone>
+                  </gmd:phone>
+                  <gmd:address>
+                    <gmd:CI_Address>
+                      <gmd:deliveryPoint>
+                        <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                      </gmd:deliveryPoint>
+                      <gmd:city>
+                        <gco:CharacterString>Townsville</gco:CharacterString>
+                      </gmd:city>
+                      <gmd:administrativeArea>
+                        <gco:CharacterString>Queensland</gco:CharacterString>
+                      </gmd:administrativeArea>
+                      <gmd:postalCode>
+                        <gco:CharacterString>4810</gco:CharacterString>
+                      </gmd:postalCode>
+                      <gmd:country>
+                        <gco:CharacterString>Australia</gco:CharacterString>
+                      </gmd:country>
+                      <gmd:electronicMailAddress>
+                        <gco:CharacterString>a.negri@aims.gov.au</gco:CharacterString>
+                      </gmd:electronicMailAddress>
+                    </gmd:CI_Address>
+                  </gmd:address>
+                </gmd:CI_Contact>
+              </gmd:contactInfo>
+              <gmd:role>
+                <gmd:CI_RoleCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="coInvestigator">coInvestigator</gmd:CI_RoleCode>
+              </gmd:role>
+            </gmd:CI_ResponsibleParty>
+          </gmd:citedResponsibleParty>
+        </gmd:CI_Citation>
+      </gmd:citation>
+      <gmd:abstract>
+        <gco:CharacterString>This dataset consists of one spreadsheet, which shows the survival, number of polyps and ability to remove sediment of up to fourteen weeks old Acropora millepora coral recruits while being exposed to three different climate scenarios resembling current climate conditions and conditions expected by mid and end of the century. Coral recruit resilience towards sedimentation was tested by exposing the recruits either five- and ten-weeks following settlement (experiment 1) or only ten-weeks following settlement (experiment 2). Additional tabs show temperature, pCO2 and sediment loads used in the experiment. The study was conducted at the National Sea Simulator.
+
+The aim of this study was to 1) identify lethal concentration thresholds for coral recruits under simultaneous exposure to climate stress (temperature and pCO2) and sedimentation and 2) identify survival mechanisms (i.e., number of polyps, sediment removal capability).
+
+This data will inform the development of water-quality management guidelines, a key aim of NESP project 5.2. The full research report can be found at:
+Brunner CA, Uthicke S, Ricardo GF, Hoogenboom MO, Negri AP (2020) Climate change doubles sedimentation-induced coral recruit mortality. Science of the Total Environment, doi.org/10.1016/j.scitotenv.2020.143897
+
+
+Methods:
+Coral recruits of Acropora millepora, a branching coral species abundant in shallow reefs on the Great Barrier Reef, were raised for 14 weeks in ‘current’ and realistic ‘medium’ and ‘high’ climate scenarios (increased temperature and acidification), and were exposed to six environmentally relevant sediment deposition loads typical of flood plumes and dredging operations. The sedimentation events were simulated at different recruit ages: (1) five- and ten-weeks following settlement, and (2) after ten weeks only. One-hour following sediment exposures, sediment removal capabilities were photographically quantified. After a four-week recovery phase, survival and polyp numbers were documented photographically and the data are presented here.
+
+Specific details of the methodology may be found in:
+Brunner CA, Uthicke S, Ricardo GF, Hoogenboom MO, Negri AP (2020) Climate change doubles sedimentation-induced coral recruit mortality. Science of the Total Environment, doi.org/10.1016/j.scitotenv.2020.143897
+
+
+Format:
+
+This dataset consists of one excel workbook xlsx.
+
+Data Dictionary:
+
+Experiment tab
+DATE SETTLEMENT - Date of coral larvae settlement, t0
+DATE MEASUREMENT - Date survival and polyp numbers were documented
+AGE - age in weeks following settlement
+EXPERIMENT - (1): Coral recruits were exposed for three days to sedimentation when 5 and 10 weeks old; (2): Coral recruits were exposed for three days to sedimentation when 10 weeks old, see also "date sediment exposure"
+CLIMATE SCENARIO - climate scenarios based on manipulated temperature and pCO2, see "Temperatures" and "pCO2" tab for details
+ID TANK - identification number of climate controllable aquarium
+ID DISC TRAY - identification number of tray where the discs were mounted
+ID DISC - identification number of discs where coral recruits settled on
+ID RECRUIT PER DISC - identification number of each recruit on each disc
+SEDIMENT (mg / cm²) - sediment load
+NUMBER OF POLYPS - number of alive polyps
+CORAL ALIVE - (1): coral is alive, (0): coral is dead
+DATE SEDIMENT EXPOSURE - timeframe of sedimentation, NA shows that no sediment was applied in this period
+SEDIMENT FREE AFTER 1 HOUR - (1): coral was sediment free 1h after sediment was applied, (0): coral was not sediment free
+
+Temperature tab
+DATE - date of temperature measurement
+TIME - time of temperature measurement
+CORAL AGE (WEEKS AFTER SETTLEMENT) - age in weeks following settlement
+CURRENT TEMPERATURE  (°C) - 26.2 – 28.7
+MEDIUM TEMPERATURE  (°C) - Current + 0.6
+HIGH TEMPERATURE  (°C) - Current + 1.2
+
+pCO2 tab
+DATE - date of pCO2 measurement
+TIME - time of pCO2 measurement
+CORAL AGE (WEEKS AFTER SETTLEMENT) - age in weeks following settlement
+CURRENT pCO2 (ppm) - 410 ± 50
+MEDIUM pCO2 (ppm) - 680 ± 50
+HIGH pCO2 (ppm) - 940 ± 50
+
+Sediment tab
+CLIMATE SCENARIO - climate scenarios based on manipulated temperature and pCO2, see "Temperatures" and "pCO2" tab for details
+ID TANK -  identification number of climate controllable aquarium
+ID DISC TRAY - identification number of tray where the discs were mounted
+ID DISC -identification number of discs where coral recruits settled on
+FILTER PREMASS (g) - Weight of 0.4 µm polycarbonate filters
+FILTER WITH SEDIMENT (g) - weight of dried (60 °C for greater than or equal to 24 hours) 0.4 µm polycarbonate filters with sediment
+SEDIMENT ON FILTER (g) - weight of filter with sediment - filter premass
+DISC SURFACE (cm²) - disc surface area based on 2 cm diameter
+SEDIMENT INITIALLY APPLIED (mg / cm²) - sediment load at the beginning of the sediment deposition experiment
+SEDIMENT REMAINING AFTER THREE DAYS (mg/cm²) - sediment load at the end of the sediment deposition experiment
+
+
+
+References:
+Brunner CA, Uthicke S, Ricardo GF, Hoogenboom MO, Negri AP (2020) Climate change doubles sedimentation-induced coral recruit mortality. Science of the Total Environment, doi.org/10.1016/j.scitotenv.2020.143897
+
+
+Data Location:
+
+This dataset is filed in the eAtlas enduring data repository at: data\nesp5\5.2_Cumulative-impacts</gco:CharacterString>
+      </gmd:abstract>
+      <gmd:pointOfContact>
+        <gmd:CI_ResponsibleParty>
+          <gmd:individualName>
+            <gco:CharacterString>Brunner, Christopher A, MSc</gco:CharacterString>
+          </gmd:individualName>
+          <gmd:organisationName>
+            <gco:CharacterString>James Cook University, Coral Reef Studies ARC Centre of Excellence, AIMS@JCU, Australian Institute of Marine Science</gco:CharacterString>
+          </gmd:organisationName>
+          <gmd:contactInfo>
+            <gmd:CI_Contact>
+              <gmd:phone>
+                <gmd:CI_Telephone>
+                  <gmd:voice>
+                    <gco:CharacterString>+61 7 4753 4444</gco:CharacterString>
+                  </gmd:voice>
+                  <gmd:facsimile gco:nilReason="missing">
+                    <gco:CharacterString />
+                  </gmd:facsimile>
+                </gmd:CI_Telephone>
+              </gmd:phone>
+              <gmd:address>
+                <gmd:CI_Address>
+                  <gmd:deliveryPoint>
+                    <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                  </gmd:deliveryPoint>
+                  <gmd:city>
+                    <gco:CharacterString>Townsville</gco:CharacterString>
+                  </gmd:city>
+                  <gmd:administrativeArea>
+                    <gco:CharacterString>Queensland</gco:CharacterString>
+                  </gmd:administrativeArea>
+                  <gmd:postalCode>
+                    <gco:CharacterString>4810</gco:CharacterString>
+                  </gmd:postalCode>
+                  <gmd:country>
+                    <gco:CharacterString>Australia</gco:CharacterString>
+                  </gmd:country>
+                  <gmd:electronicMailAddress>
+                    <gco:CharacterString>c.brunner@aims.gov.au</gco:CharacterString>
+                  </gmd:electronicMailAddress>
+                </gmd:CI_Address>
+              </gmd:address>
+              <gmd:onlineResource>
+                <gmd:CI_OnlineResource>
+                  <gmd:linkage>
+                    <gmd:URL>https://eatlas.org.au</gmd:URL>
+                  </gmd:linkage>
+                  <gmd:protocol>
+                    <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                  </gmd:protocol>
+                  <gmd:name>
+                    <gco:CharacterString>eAtlas portal</gco:CharacterString>
+                  </gmd:name>
+                  <gmd:description gco:nilReason="missing">
+                    <gco:CharacterString />
+                  </gmd:description>
+                </gmd:CI_OnlineResource>
+              </gmd:onlineResource>
+            </gmd:CI_Contact>
+          </gmd:contactInfo>
+          <gmd:role>
+            <gmd:CI_RoleCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+          </gmd:role>
+        </gmd:CI_ResponsibleParty>
+      </gmd:pointOfContact>
+      <gmd:graphicOverview>
+        <gmd:MD_BrowseGraphic>
+          <gmd:fileName>
+            <gco:CharacterString>Coral-recruits_s.png</gco:CharacterString>
+          </gmd:fileName>
+          <gmd:fileDescription>
+            <gco:CharacterString>thumbnail</gco:CharacterString>
+          </gmd:fileDescription>
+          <gmd:fileType>
+            <gco:CharacterString>png</gco:CharacterString>
+          </gmd:fileType>
+        </gmd:MD_BrowseGraphic>
+      </gmd:graphicOverview>
+      <gmd:graphicOverview>
+        <gmd:MD_BrowseGraphic>
+          <gmd:fileName>
+            <gco:CharacterString>Coral-recruits.png</gco:CharacterString>
+          </gmd:fileName>
+          <gmd:fileDescription>
+            <gco:CharacterString>large_thumbnail</gco:CharacterString>
+          </gmd:fileDescription>
+          <gmd:fileType>
+            <gco:CharacterString>png</gco:CharacterString>
+          </gmd:fileType>
+        </gmd:MD_BrowseGraphic>
+      </gmd:graphicOverview>
+      <gmd:resourceConstraints>
+        <mcp:MD_Commons mcp:commonsType="Creative Commons" gco:isoType="gmd:MD_Constraints">
+          <mcp:jurisdictionLink>
+            <gmd:URL>http://creativecommons.org/international/au/</gmd:URL>
+          </mcp:jurisdictionLink>
+          <mcp:licenseLink>
+            <gmd:URL>http://creativecommons.org/licenses/by/3.0/au/</gmd:URL>
+          </mcp:licenseLink>
+          <mcp:imageLink>
+            <gmd:URL>http://i.creativecommons.org/l/by/3.0/au/88x31.png</gmd:URL>
+          </mcp:imageLink>
+          <mcp:licenseName>
+            <gco:CharacterString>Attribution 3.0 Australia</gco:CharacterString>
+          </mcp:licenseName>
+          <mcp:attributionConstraints>
+            <gco:CharacterString>Citation: Brunner, C., Uthicke, S., Ricardo, G., &amp; Negri, A. (2021). Climate change doubles sedimentation-induced coral recruit mortality (NESP TWQ 5.2, AIMS, JCU AND AIMS@JCU) [Data set]. eAtlas. https://doi.org/10.25909/zkst-2h38</gco:CharacterString>
+          </mcp:attributionConstraints>
+        </mcp:MD_Commons>
+      </gmd:resourceConstraints>
+      <gmd:spatialRepresentationType>
+        <gmd:MD_SpatialRepresentationTypeCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="" />
+      </gmd:spatialRepresentationType>
+      <gmd:language>
+        <gco:CharacterString>eng</gco:CharacterString>
+      </gmd:language>
+      <gmd:characterSet>
+        <gmd:MD_CharacterSetCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+      </gmd:characterSet>
+      <gmd:topicCategory>
+        <gmd:MD_TopicCategoryCode>biota</gmd:MD_TopicCategoryCode>
+      </gmd:topicCategory>
+      <gmd:extent>
+        <gmd:EX_Extent>
+          <gmd:description>
+            <gco:CharacterString>Great Barrier Reef, Australia</gco:CharacterString>
+          </gmd:description>
+          <gmd:geographicElement>
+            <gmd:EX_BoundingPolygon>
+              <gmd:polygon>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList>151.083984375 -24.521484375 153.80859375 -24.521484375 153.45703125 -20.830078125 147.12890625 -17.490234375 145.810546875 -13.798828125 144.4921875 -12.832031250000002 144.228515625 -9.84375 142.119140625 -9.931640625 142.3828125 -11.77734375 143.61328125000003 -14.765625 144.755859375 -14.94140625 146.337890625 -19.599609375 148.447265625 -21.005859375000004 151.083984375 -24.521484375</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gmd:polygon>
+            </gmd:EX_BoundingPolygon>
+          </gmd:geographicElement>
+          <gmd:temporalElement>
+            <mcp:EX_TemporalExtent gco:isoType="gmd:EX_TemporalExtent">
+              <gmd:extent>
+                <gml:TimePeriod gml:id="d941276e512a1050910">
+                  <gml:beginPosition>2017-11-30</gml:beginPosition>
+                  <gml:endPosition>2018-03-03</gml:endPosition>
+                </gml:TimePeriod>
+              </gmd:extent>
+            </mcp:EX_TemporalExtent>
+          </gmd:temporalElement>
+        </gmd:EX_Extent>
+      </gmd:extent>
+    </mcp:MD_DataIdentification>
+  </gmd:identificationInfo>
+  <gmd:distributionInfo>
+    <gmd:MD_Distribution>
+      <gmd:transferOptions>
+        <gmd:MD_DigitalTransferOptions>
+          <gmd:onLine>
+            <gmd:CI_OnlineResource>
+              <gmd:linkage>
+                <gmd:URL>https://eatlas.org.au/data/uuid/65f61d2d-fe4e-48e5-8c6e-fab08450ef75</gmd:URL>
+              </gmd:linkage>
+              <gmd:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--metadata-URL</gco:CharacterString>
+              </gmd:protocol>
+              <gmd:description>
+                <gco:CharacterString>Point of truth URL of this metadata record</gco:CharacterString>
+              </gmd:description>
+            </gmd:CI_OnlineResource>
+          </gmd:onLine>
+          <gmd:onLine>
+            <gmd:CI_OnlineResource>
+              <gmd:linkage>
+                <gmd:URL>https://nesptropical.edu.au/index.php/round-5-projects/project-5-2/</gmd:URL>
+              </gmd:linkage>
+              <gmd:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </gmd:protocol>
+              <gmd:name gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:name>
+              <gmd:description>
+                <gco:CharacterString>NESP TWQ page</gco:CharacterString>
+              </gmd:description>
+            </gmd:CI_OnlineResource>
+          </gmd:onLine>
+          <gmd:onLine>
+            <gmd:CI_OnlineResource>
+              <gmd:linkage>
+                <gmd:URL>https://eatlas.org.au/data/uuid/71127e4d-9f14-4c57-9845-1dce0b541d8d</gmd:URL>
+              </gmd:linkage>
+              <gmd:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </gmd:protocol>
+              <gmd:name gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:name>
+              <gmd:description>
+                <gco:CharacterString>eAtlas Web Mapping Service (WMS) (AIMS)</gco:CharacterString>
+              </gmd:description>
+            </gmd:CI_OnlineResource>
+          </gmd:onLine>
+          <gmd:onLine>
+            <gmd:CI_OnlineResource>
+              <gmd:linkage>
+                <gmd:URL>https://eatlas.org.au/nesp-twq-5/gbr-cumulative-impacts-5-2</gmd:URL>
+              </gmd:linkage>
+              <gmd:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </gmd:protocol>
+              <gmd:name gco:nilReason="missing">
+                <gco:CharacterString />
+              </gmd:name>
+              <gmd:description>
+                <gco:CharacterString>Project web site</gco:CharacterString>
+              </gmd:description>
+            </gmd:CI_OnlineResource>
+          </gmd:onLine>
+          <gmd:onLine>
+            <gmd:CI_OnlineResource>
+              <gmd:linkage>
+                <gmd:URL>https://eatlas.org.au/pydio/public/gbr-nesp-twq-5-2-aims-cumulative-impacts-coral-recruits-20210106</gmd:URL>
+              </gmd:linkage>
+              <gmd:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--downloaddata</gco:CharacterString>
+              </gmd:protocol>
+              <gmd:name>
+                <gmx:MimeFileType xmlns:gmx="http://www.isotc211.org/2005/gmx" type="application/octet-stream" />
+              </gmd:name>
+              <gmd:description>
+                <gco:CharacterString>Excel workbook + image + Metadata [Zip 1810 kB]</gco:CharacterString>
+              </gmd:description>
+            </gmd:CI_OnlineResource>
+          </gmd:onLine>
+        </gmd:MD_DigitalTransferOptions>
+      </gmd:transferOptions>
+    </gmd:MD_Distribution>
+  </gmd:distributionInfo>
+  <gmd:dataQualityInfo>
+    <gmd:DQ_DataQuality>
+      <gmd:scope>
+        <gmd:DQ_Scope>
+          <gmd:level>
+            <gmd:MD_ScopeCode codeList="http://bluenet3.antcrc.utas.edu.au/mcp-1.4/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset">dataset</gmd:MD_ScopeCode>
+          </gmd:level>
+        </gmd:DQ_Scope>
+      </gmd:scope>
+    </gmd:DQ_DataQuality>
+  </gmd:dataQualityInfo>
+  <gmd:metadataConstraints>
+    <mcp:MD_Commons mcp:commonsType="Creative Commons" gco:isoType="gmd:MD_Constraints">
+      <mcp:jurisdictionLink>
+        <gmd:URL>http://creativecommons.org/international/au/</gmd:URL>
+      </mcp:jurisdictionLink>
+      <mcp:licenseLink>
+        <gmd:URL>http://creativecommons.org/licenses/by/3.0/au/</gmd:URL>
+      </mcp:licenseLink>
+      <mcp:imageLink>
+        <gmd:URL>http://i.creativecommons.org/l/by/3.0/au/88x31.png</gmd:URL>
+      </mcp:imageLink>
+      <mcp:licenseName>
+        <gco:CharacterString>Attribution 3.0 Australia</gco:CharacterString>
+      </mcp:licenseName>
+    </mcp:MD_Commons>
+  </gmd:metadataConstraints>
+  <mcp:revisionDate>
+    <gco:DateTime>2021-01-18T22:26:15</gco:DateTime>
+  </mcp:revisionDate>
+</mcp:MD_Metadata>

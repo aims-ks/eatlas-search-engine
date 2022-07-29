@@ -142,6 +142,13 @@
             <version>2.10.14</version>
         </dependency>
 
+        <!-- Geometry tool, used to write WKT -->
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.19.0</version>
+        </dependency>
+
         <!-- ############## -->
         <!-- # Unit tests # -->
         <!-- ############## -->
@@ -149,6 +156,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- The elasticsearch test class is broken. Java throws error: "cannot access org.elasticsearch..." -->

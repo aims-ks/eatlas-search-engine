@@ -163,7 +163,7 @@ public class ESClient implements SearchClient {
                             .properties("wkt", new Property.Builder()
                                     .geoShape(new GeoShapeProperty.Builder()
                                             .coerce(true) // Automatically close polygons
-                                            //.ignoreMalformed(true) // Enable if indexation struggle with malformed WKT
+                                            .ignoreMalformed(true) // Enable if indexation struggle with malformed WKT
                                             //.orientation(GeoOrientation.Right) // Default: right
                                             .build())
                                     .build())
