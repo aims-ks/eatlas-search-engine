@@ -955,7 +955,7 @@ public class GeoNetworkRecord extends Entity {
     // Add the parent title at the end of the document
     //     to index it with the record.
     // NOTE: This method generate a document for indexation. It doesn't need to look pretty.
-    //     It just need to look good enough for the generated search highlights.
+    //     It just needs to look good enough for the generated search highlights.
     @Override
     public String getDocument() {
         String document = super.getDocument();

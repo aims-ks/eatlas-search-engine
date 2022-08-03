@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import au.gov.aims.eatlas.searchengine.index.UnsupportedWktException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpSession;
@@ -152,8 +153,29 @@ public class Messages {
             this.message = message;
         }
 
+        public String getDetails() {
+            if (this.exception != null && (this.exception instanceof UnsupportedWktException)) {
+                UnsupportedWktException wktException = (UnsupportedWktException)this.exception;
+                return String.format("Unsupported WKT: %s", wktException.getWkt());
+            }
+            return null;
+        }
+
         public Throwable getException() {
             return this.exception;
+        }
+
+        // Helper function, because JSTL template do not have a "while" loop.
+        public List<Throwable> getCauses() {
+            List<Throwable> causes = new ArrayList<Throwable>();
+            if (this.exception != null) {
+                Throwable cause = this.exception.getCause();
+                while (cause != null) {
+                    causes.add(cause);
+                    cause = cause.getCause();
+                }
+            }
+            return causes;
         }
 
         public void setException(Throwable exception) {

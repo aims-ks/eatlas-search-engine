@@ -28,6 +28,7 @@ import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Conflicts;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.CountRequest;
@@ -266,7 +267,25 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
     public IndexResponse indexEntity(SearchClient client, E entity, boolean incrementIndexedCount) throws IOException {
         entity.setLastIndexed(System.currentTimeMillis());
-        IndexResponse indexResponse = client.index(this.getIndexRequest(entity));
+
+        IndexResponse indexResponse = null;
+        try {
+            indexResponse = client.index(this.getIndexRequest(entity));
+        } catch(ElasticsearchException ex) {
+            String message = ex.getMessage();
+            if (message != null && message.contains("failed to parse field [wkt] of type [geo_shape]")) {
+                String oldWkt = entity.getWkt();
+
+                // TODO Fallback to BBox of the polygon
+                // TODO Fallback to whole world
+                // TODO Send a warning message (Invalid WKT, replaced by this WKT)
+
+                throw new UnsupportedWktException("Unsupported WKT", oldWkt, ex);
+            } else {
+                throw ex;
+            }
+        }
+
         if (incrementIndexedCount) {
             this.incrementIndexed();
         }

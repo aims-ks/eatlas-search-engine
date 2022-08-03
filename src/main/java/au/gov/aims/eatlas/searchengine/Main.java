@@ -59,7 +59,6 @@ public class Main {
         // TODO Implement LEMMATIZATION (mice => mouse, foot => feet, tooth => teeth, etc):
         //     https://apprize.best/data/elasticsearch_1/23.html
         // TODO Fix JUnit tests
-        // TODO Implement UI - Configure, reindex button, try search
 
         DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
         //Index.internalReindex(drupalNodeIndexer, fullHarvest, messages);

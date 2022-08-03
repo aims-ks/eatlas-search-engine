@@ -30,9 +30,9 @@ import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
-import co.elastic.clients.elasticsearch._types.query_dsl.GeoShapeFieldQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch._types.query_dsl.ShapeFieldQuery;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -339,12 +339,26 @@ public class Search {
             // WktGeoBounds = WKT bounding box
             // WktGeoBounds bounds = new WktGeoBounds.Builder().wkt(wkt).build();
 
+            /*
             GeoShapeFieldQuery shapeQuery = new GeoShapeFieldQuery.Builder()
                     .shape(JsonData.of(wkt))
                     .relation(GeoShapeRelation.Intersects)
                     .build();
 
             wktQuery = QueryBuilders.geoShape()
+                    .shape(shapeQuery)
+                    .field("wkt")
+                    .build()
+                    ._toQuery();
+            */
+
+
+            ShapeFieldQuery shapeQuery = new ShapeFieldQuery.Builder()
+                    .shape(JsonData.of(wkt))
+                    .relation(GeoShapeRelation.Intersects)
+                    .build();
+
+            wktQuery = QueryBuilders.shape()
                     .shape(shapeQuery)
                     .field("wkt")
                     .build()
@@ -368,6 +382,7 @@ public class Search {
                 query = needleQuery;
             } else {
                 // Both queries are not null
+                // NOTE: "filter()" act as a "AND"
                 query = QueryBuilders.bool().filter(needleQuery, wktQuery).build()._toQuery();
             }
         }
