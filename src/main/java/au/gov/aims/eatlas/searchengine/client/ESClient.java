@@ -22,8 +22,8 @@ import au.gov.aims.eatlas.searchengine.entity.Entity;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.analysis.Analyzer;
 import co.elastic.clients.elasticsearch._types.analysis.CustomAnalyzer;
+import co.elastic.clients.elasticsearch._types.mapping.GeoShapeProperty;
 import co.elastic.clients.elasticsearch._types.mapping.Property;
-import co.elastic.clients.elasticsearch._types.mapping.ShapeProperty;
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty;
 import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 import co.elastic.clients.elasticsearch.cat.IndicesResponse;
@@ -160,16 +160,28 @@ public class ESClient implements SearchClient {
                                             .store(true)
                                             .build())
                                     .build())
+
+                            .properties("wkt", new Property.Builder()
+                                    .geoShape(new GeoShapeProperty.Builder()
+                                            .ignoreZValue(true)
+                                            .coerce(true) // Automatically close polygons
+                                            //.ignoreMalformed(true) // Enable if indexation struggle with malformed WKT
+                                            //.orientation(GeoOrientation.Left) // Default: right (counter-clockwise)
+                                            .build())
+                                    .build())
+
                             // Using Shape instead of GeoShape because of the following bug:
                             //   https://github.com/elastic/elasticsearch/issues/89059
+                            /*
                             .properties("wkt", new Property.Builder()
                                     .shape(new ShapeProperty.Builder()
                                             .ignoreZValue(true)
                                             .coerce(true) // Automatically close polygons
                                             //.ignoreMalformed(true) // Enable if indexation struggle with malformed WKT
-                                            //.orientation(GeoOrientation.Right) // Default: right
+                                            .orientation(GeoOrientation.Left) // Default: right (counter-clockwise)
                                             .build())
                                     .build())
+                            */
                             .build())
                     .settings(new IndexSettings.Builder()
                             .analysis(new IndexSettingsAnalysis.Builder()

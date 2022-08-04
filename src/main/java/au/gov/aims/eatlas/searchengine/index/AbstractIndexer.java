@@ -46,6 +46,7 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.elasticsearch.client.RestClient;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import java.io.File;
@@ -271,13 +272,30 @@ public abstract class AbstractIndexer<E extends Entity> {
         entity.setLastIndexed(System.currentTimeMillis());
 
         IndexResponse indexResponse = null;
+
+        // Fix geometry
+        String originalWkt = entity.getWkt();
+        if (originalWkt == null || originalWkt.isEmpty()) {
+            originalWkt = null;
+            entity.setWkt(null);
+        } else {
+            try {
+                entity.setWkt(WktUtils.fixWkt(originalWkt));
+            } catch(ParseException ex) {
+                // The Reader may throw an exception.
+                // We assume the WKT is parsable by JTS since it was generated using the JTS library.
+                Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. WKT is not parsable.", entity.getId()), ex);
+                messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
+            }
+        }
+
         try {
             indexResponse = client.index(this.getIndexRequest(entity));
         } catch(ElasticsearchException ex) {
             String message = ex.getMessage();
-            if (message != null && message.contains("failed to parse field [wkt] of type")) {
+            if (originalWkt != null && message != null && message.contains("failed to parse field [wkt] of type")) {
                 // Fallback to the BBox of the WKT geometry
-                indexResponse = this.indexEntityBboxFallback(client, entity, entity.getWkt(), messages);
+                indexResponse = this.indexEntityBboxFallback(client, entity, originalWkt, messages);
             } else {
                 throw ex;
             }
@@ -301,7 +319,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             WKTReader reader = new WKTReader();
             Geometry geometry = reader.read(originalWkt);
             Geometry bbox = geometry.getEnvelope();
-            newWkt = IndexUtils.WKT_WRITER.write(bbox);
+            newWkt = WktUtils.WKT_WRITER.write(bbox);
         } catch (Exception ex) {
             // The Reader may throw an exception.
             // We assume the WKT is parsable by JTS since it was generated using the JTS library.

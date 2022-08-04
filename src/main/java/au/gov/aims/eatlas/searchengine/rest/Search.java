@@ -30,9 +30,9 @@ import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
+import co.elastic.clients.elasticsearch._types.query_dsl.GeoShapeFieldQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
-import co.elastic.clients.elasticsearch._types.query_dsl.ShapeFieldQuery;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -339,7 +339,6 @@ public class Search {
             // WktGeoBounds = WKT bounding box
             // WktGeoBounds bounds = new WktGeoBounds.Builder().wkt(wkt).build();
 
-            /*
             GeoShapeFieldQuery shapeQuery = new GeoShapeFieldQuery.Builder()
                     .shape(JsonData.of(wkt))
                     .relation(GeoShapeRelation.Intersects)
@@ -350,9 +349,8 @@ public class Search {
                     .field("wkt")
                     .build()
                     ._toQuery();
-            */
 
-
+            /*
             ShapeFieldQuery shapeQuery = new ShapeFieldQuery.Builder()
                     .shape(JsonData.of(wkt))
                     .relation(GeoShapeRelation.Intersects)
@@ -363,6 +361,7 @@ public class Search {
                     .field("wkt")
                     .build()
                     ._toQuery();
+            */
         }
 
         // Create a search query using the queries above:
