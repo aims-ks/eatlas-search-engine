@@ -7,3 +7,6 @@ target/
 
 # Ignore the symbolic link, placed in here to make things easier to find
 data/
+
+# OpenJDK bug: https://bugs.openjdk.java.net/browse/JDK-8214300
+.attach_pid*

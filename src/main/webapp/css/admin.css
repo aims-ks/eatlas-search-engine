@@ -323,12 +323,19 @@ button.reload {
   font-weight: bold;
 }
 
-.content .message .error .exception {
+.content .message .details,
+.content .message .exception {
   font-weight: normal;
 }
 
-.content .message .error .exception .stacktrace {
+.content .message .details .detailList,
+.content .message .exception .stacktrace {
+  font-size: 0.8em;
+  color: #666666;
   overflow: auto;
+}
+.content .message .exception .stacktrace {
+  font-family: monospace;
 }
 
 .main .main-menu {

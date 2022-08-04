@@ -278,7 +278,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     geoNetworkRecord.setParentTitle(parentRecord.getTitle());
 
                     try {
-                        IndexResponse indexResponse = this.indexEntity(client, geoNetworkRecord, false);
+                        IndexResponse indexResponse = this.indexEntity(client, geoNetworkRecord, messages, false);
 
                         LOGGER.debug(String.format("Reindexing GeoNetwork metadata record: %s with parent title: %s, status: %s",
                                 geoNetworkRecord.getId(),
@@ -356,7 +356,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 }
 
                 try {
-                    IndexResponse indexResponse = GeoNetworkIndexer.this.indexEntity(this.client, geoNetworkRecord);
+                    IndexResponse indexResponse = GeoNetworkIndexer.this.indexEntity(this.client, geoNetworkRecord, this.messages);
 
                     LOGGER.debug(String.format("[%d/%d] Indexing GeoNetwork metadata record: %s, index response status: %s",
                             this.current, GeoNetworkIndexer.this.getTotal(),

@@ -43,8 +43,6 @@ public class GeoNetworkRecord extends Entity {
     // It doesn't really matter which new line scheme is used, as long as it's supported by ElasticSearch.
     private static final String NL = "\n";
 
-    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
-    private static final WKTWriter WKT_WRITER = new WKTWriter(2);
     private static final double GIS_EPSILON = 0.001; // About 100 metres
 
     private static final Map<String, Locale> LANGCODE_MAP = new HashMap<>();
@@ -716,9 +714,9 @@ public class GeoNetworkRecord extends Entity {
                                         if (exteriorLinearRing != null) {
                                             Polygon polygon = null;
                                             if (holes.isEmpty()) {
-                                                polygon = GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(exteriorLinearRing);
+                                                polygon = IndexUtils.GEOMETRY_FACTORY.createPolygon(exteriorLinearRing);
                                             } else {
-                                                polygon = GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(exteriorLinearRing, holes.toArray(new LinearRing[0]));
+                                                polygon = IndexUtils.GEOMETRY_FACTORY.createPolygon(exteriorLinearRing, holes.toArray(new LinearRing[0]));
                                             }
 
                                             if (polygon != null) {
@@ -781,7 +779,7 @@ public class GeoNetworkRecord extends Entity {
                                         for (Element coordinatesElement : coordinatesList) {
                                             LinearRing linearRing = GeoNetworkRecord.parseCoordinatesLinearRing(IndexUtils.parseText(coordinatesElement));
                                             if (linearRing != null) {
-                                                Polygon polygon = GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(linearRing);
+                                                Polygon polygon = IndexUtils.GEOMETRY_FACTORY.createPolygon(linearRing);
                                                 if (polygon != null) {
                                                     polygons.add(polygon);
                                                 }
@@ -792,7 +790,7 @@ public class GeoNetworkRecord extends Entity {
                                         for (Element posListElement : posListList) {
                                             LinearRing linearRing = GeoNetworkRecord.parsePosListLinearRing(IndexUtils.parseText(posListElement), 2, true);
                                             if (linearRing != null) {
-                                                Polygon polygon = GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(linearRing);
+                                                Polygon polygon = IndexUtils.GEOMETRY_FACTORY.createPolygon(linearRing);
                                                 if (polygon != null) {
                                                     polygons.add(polygon);
                                                 }
@@ -824,8 +822,8 @@ public class GeoNetworkRecord extends Entity {
         boolean eastWestEquals = (Math.abs(east - west) < GIS_EPSILON);
 
         // Elastic Search do not allow bbox with 0 area.
-        // The WKT library does not seem to allow mixing of point, lines and polygons.
-        // The easiest solution is to slightly increase the size of the bbox.
+        // We could use WKT GEOMETRYCOLLECTION to mix of points, lines and polygons.
+        // But the easiest solution is to slightly increase the size of the bbox.
         if (northSouthEquals) {
             north += GIS_EPSILON/2;
             south -= GIS_EPSILON/2;
@@ -839,7 +837,7 @@ public class GeoNetworkRecord extends Entity {
             east += GIS_EPSILON/2;
         }
 
-        return GeoNetworkRecord.GEOMETRY_FACTORY.createPolygon(new Coordinate[] {
+        return IndexUtils.GEOMETRY_FACTORY.createPolygon(new Coordinate[] {
             new Coordinate(west, north),
             new Coordinate(east, north),
             new Coordinate(east, south),
@@ -870,7 +868,7 @@ public class GeoNetworkRecord extends Entity {
             return null;
         }
 
-        return GeoNetworkRecord.GEOMETRY_FACTORY.createLinearRing(coordinateList.toArray(new Coordinate[0]));
+        return IndexUtils.GEOMETRY_FACTORY.createLinearRing(coordinateList.toArray(new Coordinate[0]));
     }
 
     private static LinearRing parsePosListLinearRing(String coordinatesStr, int dimension, boolean lonlat) {
@@ -902,7 +900,7 @@ public class GeoNetworkRecord extends Entity {
             return null;
         }
 
-        return GeoNetworkRecord.GEOMETRY_FACTORY.createLinearRing(coordinateList.toArray(new Coordinate[0]));
+        return IndexUtils.GEOMETRY_FACTORY.createLinearRing(coordinateList.toArray(new Coordinate[0]));
     }
 
     private static String polygonsToWKT(List<Polygon> polygons) {
@@ -914,14 +912,14 @@ public class GeoNetworkRecord extends Entity {
         if (polygons.size() == 1) {
             multiPolygon = polygons.get(0);
         } else {
-            multiPolygon = GeoNetworkRecord.GEOMETRY_FACTORY.createMultiPolygon(polygons.toArray(new Polygon[0]));
+            multiPolygon = IndexUtils.GEOMETRY_FACTORY.createMultiPolygon(polygons.toArray(new Polygon[0]));
         }
 
         // norm(): Normalise the geometry. Join intersecting polygons and remove duplicates.
         // buffer(0): Fix self intersecting polygons by removing parts.
         //   It's not perfect, but at least the resulting polygon should be valid.
         //   See: https://stackoverflow.com/questions/31473553/is-there-a-way-to-convert-a-self-intersecting-polygon-to-a-multipolygon-in-jts
-        return GeoNetworkRecord.WKT_WRITER.write(multiPolygon.norm().buffer(0));
+        return IndexUtils.WKT_WRITER.write(multiPolygon.norm().buffer(0));
     }
 
 

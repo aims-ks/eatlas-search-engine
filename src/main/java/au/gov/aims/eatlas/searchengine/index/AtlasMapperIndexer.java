@@ -428,14 +428,14 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             }
 
             try {
-                IndexResponse indexResponse = AtlasMapperIndexer.this.indexEntity(this.client, layerEntity);
+                IndexResponse indexResponse = AtlasMapperIndexer.this.indexEntity(this.client, layerEntity, this.messages);
 
                 LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, index response status: %s",
                         this.current, AtlasMapperIndexer.this.getTotal(),
                         this.atlasMapperLayerId,
                         indexResponse.result()));
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.WARNING,
+                this.messages.addMessage(Messages.Level.WARNING,
                         String.format("Exception occurred while indexing an AtlasMapper layer: %s", this.atlasMapperLayerId), ex);
             }
 

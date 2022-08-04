@@ -18,9 +18,11 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
+import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
@@ -31,14 +33,12 @@ import org.junit.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class GeoShapeTestManual {
-    private static final WKTWriter WKT_WRITER = new WKTWriter(2);
 
     // Attempting to isolate and resolve the GeoShape bug
     @Test
@@ -48,6 +48,8 @@ public class GeoShapeTestManual {
         record.setId("00000000-0000-0000-0000-000000000000");
         record.setTitle("Dummy record");
         record.setDocument("Dummy record content.");
+
+        Messages messages = Messages.getInstance(null);
 
         // Polygon
         // 2                      3
@@ -100,10 +102,43 @@ public class GeoShapeTestManual {
 
         //this.setWkt(record, "POLYGON ((-91 9, 0 80, 90 10, -90 9, -91 9))");
         //this.setWkt(record, "POLYGON ((-175 -31, -171 36, 171 39, 175 -30, -32 -34, -175 -31))");
-        //this.setWkt(record, "POLYGON ((-175.4736328125 -31.245117187500004, -171.2548828125 36.9580078125, 171.8701171875 39.0673828125, 175.3857421875 -30.5419921875, -32.0361328125 -34.0576171875, -175.4736328125 -31.245117187500004))");
+        this.setWkt(record, "POLYGON ((-175.4736328125 -31.245117187500004, -171.2548828125 36.9580078125, 171.8701171875 39.0673828125, 175.3857421875 -30.5419921875, -32.0361328125 -34.0576171875, -175.4736328125 -31.245117187500004))");
+
+        // Indexation
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(index, "http://domain.com/geonetwork", "3.0");
+        try(
+                RestClient restClient = RestClient.builder(
+                    new HttpHost[]{
+                        new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9300, "http")
+                    }
+                ).build();
+
+                // Create the transport with a Jackson mapper
+                ElasticsearchTransport transport = new RestClientTransport(
+                        restClient, new JacksonJsonpMapper());
+
+                // And create the API client
+                SearchClient client = new ESClient(new ElasticsearchClient(transport))
+        ) {
+            client.createIndex(index);
+
+            indexer.indexEntity(client, record, messages);
+        }
+    }
+
+    @Test
+    public void testNaturalEarthData() throws Exception {
+        String index = "unit_test";
+        GeoNetworkRecord record = new GeoNetworkRecord(index);
+        record.setId("00000000-0000-0000-0000-000000000000");
+        record.setTitle("Dummy record");
+        record.setDocument("Dummy record content.");
+
+        Messages messages = Messages.getInstance(null);
 
         try {
-            String bigWkt = new String(Files.readAllBytes(Paths.get(GeoNetworkRecord.class.getClassLoader().getResource("big_wkt.txt").toURI())));
+            String bigWkt = new String(Files.readAllBytes(Paths.get(GeoNetworkRecord.class.getClassLoader().getResource("ne_10m.wkt").toURI())));
             this.setWkt(record, bigWkt);
         } catch(Exception ex) {
             ex.printStackTrace();
@@ -128,7 +163,47 @@ public class GeoShapeTestManual {
         ) {
             client.createIndex(index);
 
-            indexer.indexEntity(client, record);
+            indexer.indexEntity(client, record, messages);
+        }
+    }
+
+    @Test
+    public void testCAPAD() throws Exception {
+        String index = "unit_test";
+        GeoNetworkRecord record = new GeoNetworkRecord(index);
+        record.setId("00000000-0000-0000-0000-000000000000");
+        record.setTitle("Dummy CAPAD record");
+        record.setDocument("Dummy CAPAD record content.");
+
+        Messages messages = Messages.getInstance(null);
+
+        try {
+            String bigWkt = new String(Files.readAllBytes(Paths.get(GeoNetworkRecord.class.getClassLoader().getResource("capad_2020.wkt").toURI())));
+            this.setWkt(record, bigWkt);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+
+        // Indexation
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(index, "http://domain.com/geonetwork", "3.0");
+        try(
+                RestClient restClient = RestClient.builder(
+                    new HttpHost[]{
+                        new HttpHost("localhost", 9200, "http"),
+                        new HttpHost("localhost", 9300, "http")
+                    }
+                ).build();
+
+                // Create the transport with a Jackson mapper
+                ElasticsearchTransport transport = new RestClientTransport(
+                        restClient, new JacksonJsonpMapper());
+
+                // And create the API client
+                SearchClient client = new ESClient(new ElasticsearchClient(transport))
+        ) {
+            client.createIndex(index);
+
+            indexer.indexEntity(client, record, messages);
         }
     }
 
@@ -137,7 +212,7 @@ public class GeoShapeTestManual {
         Geometry multiPolygon = reader.read(wkt);
         //Geometry fixed = DouglasPeuckerSimplifier.simplify(multiPolygon.buffer(0).norm(), 5.0);
         Geometry fixed = multiPolygon.buffer(0).norm();
-        entity.setWkt(GeoShapeTestManual.WKT_WRITER.write(fixed));
+        entity.setWkt(IndexUtils.WKT_WRITER.write(fixed));
     }
 
 }

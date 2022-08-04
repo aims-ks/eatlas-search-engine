@@ -445,7 +445,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
                 if (this.postProcess()) {
                     try {
-                        IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.client, this.drupalEntity);
+                        IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.client, this.drupalEntity, this.messages);
 
                         // NOTE: We don't know how many entities (or pages of entities) there is.
                         //     We index until we reach the bottom of the barrel...

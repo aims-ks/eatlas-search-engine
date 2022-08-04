@@ -24,6 +24,8 @@ import org.joda.time.format.DateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.WKTWriter;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -36,6 +38,10 @@ import java.util.Locale;
 import java.util.Map;
 
 public class IndexUtils {
+    // Useful tools to work with WKT
+    public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
+    public static final WKTWriter WKT_WRITER = new WKTWriter(2);
+
     public static Map<String, Object> JSONObjectToMap(JSONObject jsonObject) {
         if (jsonObject == null || jsonObject.isEmpty()) {
             return null;

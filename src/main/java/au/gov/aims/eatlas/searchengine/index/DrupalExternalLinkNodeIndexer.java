@@ -266,7 +266,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
                         }
 
                         try {
-                            IndexResponse indexResponse = DrupalExternalLinkNodeIndexer.this.indexEntity(client, this.externalLink);
+                            IndexResponse indexResponse = DrupalExternalLinkNodeIndexer.this.indexEntity(client, this.externalLink, this.messages);
 
                             LOGGER.debug(String.format("[Page %d: %d/%d] Indexing Drupal node external link %s, id: %s, URL: %s, index response status: %s",
                                     this.page, this.current, this.pageTotal,

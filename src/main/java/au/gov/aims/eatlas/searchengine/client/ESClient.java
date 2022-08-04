@@ -160,16 +160,6 @@ public class ESClient implements SearchClient {
                                             .store(true)
                                             .build())
                                     .build())
-                            /*
-                            .properties("wkt", new Property.Builder()
-                                    .geoShape(new GeoShapeProperty.Builder()
-                                            .ignoreZValue(true)
-                                            .coerce(true) // Automatically close polygons
-                                            //.ignoreMalformed(true) // Enable if indexation struggle with malformed WKT
-                                            //.orientation(GeoOrientation.Right) // Default: right
-                                            .build())
-                                    .build())
-                            */
                             // Using Shape instead of GeoShape because of the following bug:
                             //   https://github.com/elastic/elasticsearch/issues/89059
                             .properties("wkt", new Property.Builder()

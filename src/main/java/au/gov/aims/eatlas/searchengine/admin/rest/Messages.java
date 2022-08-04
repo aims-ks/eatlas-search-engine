@@ -18,7 +18,6 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
-import au.gov.aims.eatlas.searchengine.index.UnsupportedWktException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpSession;
@@ -58,32 +57,43 @@ public class Messages {
         }
     }
 
-    public void addMessage(Level level, String message) {
-        this.addMessage(level, message, null);
+    public Message addMessage(Level level, String message) {
+        Message messageObj = new Message(level, message);
+        this.addMessage(messageObj);
+        return messageObj;
+    }
+    public Message addMessage(Level level, String message, Throwable exception) {
+        Message messageObj = new Message(level, message, exception);
+        this.addMessage(messageObj);
+        return messageObj;
     }
 
-    public void addMessage(Level level, String message, Throwable exception) {
+    public void addMessage(Message messageObj) {
         if (this.session != null) {
             if (this.messages == null) {
                 this.messages = Collections.synchronizedList(new ArrayList<>());
             }
 
-            this.messages.add(new Message(level, message, exception));
+            this.messages.add(messageObj);
             this.save();
         } else {
+            Level level = messageObj.getLevel();
+            Throwable exception = messageObj.getException();
+            String messageStr = messageObj.getMessage();
+
             // There is no session. No one will ever see those messages. Better display them in the console.
             switch (level) {
                 case INFO:
-                    LOGGER.info(message, exception);
+                    LOGGER.info(messageStr, exception);
                     break;
 
                 case WARNING:
-                    LOGGER.warn(message, exception);
+                    LOGGER.warn(messageStr, exception);
                     break;
 
                 case ERROR:
                 default:
-                    LOGGER.error(message, exception);
+                    LOGGER.error(messageStr, exception);
                     break;
             }
         }
@@ -120,7 +130,12 @@ public class Messages {
         private long timestamp;
         private Level level;
         private String message;
+        private List<String> details;
         private Throwable exception;
+
+        public Message(Level level, String message) {
+            this(level, message, null);
+        }
 
         public Message(Level level, String message, Throwable exception) {
             this.timestamp = System.currentTimeMillis();
@@ -153,12 +168,15 @@ public class Messages {
             this.message = message;
         }
 
-        public String getDetails() {
-            if (this.exception != null && (this.exception instanceof UnsupportedWktException)) {
-                UnsupportedWktException wktException = (UnsupportedWktException)this.exception;
-                return String.format("Unsupported WKT: %s", wktException.getWkt());
+        public void addDetail(String detail) {
+            if (this.details == null) {
+                this.details = new ArrayList<>();
             }
-            return null;
+            this.details.add(detail);
+        }
+
+        public List<String> getDetails() {
+            return this.details;
         }
 
         public Throwable getException() {

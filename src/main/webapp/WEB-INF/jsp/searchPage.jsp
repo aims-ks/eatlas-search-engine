@@ -37,11 +37,11 @@
 
             <div class="field">
                 <label>
-                    <span class="label">Spacial filter (WKT)</span>
+                    <span class="label">Spatial filter (WKT)</span>
                     <input type="text" name="wkt" value="<c:out value="${it.wkt}"/>" />
                 </label>
-                <div class="desc">Optional. Default: No spacial filter.</div>
-                <div class="desc">Restrict search to a spacial extent.</div>
+                <div class="desc">Optional. Default: No spatial filter.</div>
+                <div class="desc">Restrict search to a spatial extent.</div>
                 <div class="desc">Example for GBR: <code>BBOX (142.0, 153.0, -9.5, -22.5)</code></div>
                 <div class="desc">You can use this <a href="https://clydedacruz.github.io/openstreetmap-wkt-playground/" target="_blank">Online WKT editor</a> to generate the WKT.</div>
             </div>

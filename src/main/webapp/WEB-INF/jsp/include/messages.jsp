@@ -5,7 +5,23 @@
         <c:set var="messages" value="${requestScope.messages.consume()}"/>
         <c:forEach items="${messages}" var="message">
             <div class="${message.level.cssClass}">
-                <c:out value="${message.message}"/>
+
+                <c:if test="${empty message.details}">
+                    <c:out value="${message.message}"/>
+                </c:if>
+
+                <c:if test="${not empty message.details}">
+                    <div class="details hover">
+                        <span class="clickable"><c:out value="${message.message}"/></span>
+                        <ul class="detailList collapsible">
+                            <c:if test="${not empty message.details}">
+                                <c:forEach var="detail" items="${message.details}">
+                                    <li><c:out value="${detail}"/></li>
+                                </c:forEach>
+                            </c:if>
+                        </ul>
+                    </div>
+                </c:if>
 
                 <c:if test="${not empty message.exception}">
                     <div class="exception hover">
@@ -17,15 +33,8 @@
                             </c:if>
                         </span>
                         <ul class="stacktrace collapsible">
-                            <c:if test="${not empty message.details}">
-                                <li>
-                                    <c:out value="${message.details}"/>
-                                </li>
-                            </c:if>
                             <c:forEach var="stacktraceElement" items="${message.exception.stackTrace}">
-                                <li>
-                                    <c:out value="${stacktraceElement}"/>
-                                </li>
+                                <li><c:out value="${stacktraceElement}"/></li>
                             </c:forEach>
                             <c:forEach var="cause" items="${message.causes}">
                                 <li>
