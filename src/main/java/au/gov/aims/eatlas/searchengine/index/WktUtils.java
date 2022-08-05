@@ -20,15 +20,18 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.util.GeometryTransformer;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.WKTWriter;
 
 import java.util.List;
+import java.util.Random;
 
 public class WktUtils {
     // Useful tools to work with WKT
@@ -75,6 +78,16 @@ public class WktUtils {
     }
 
     public static String fixWkt(String wkt) throws ParseException {
+        if (wkt == null || wkt.isEmpty()) {
+            return null;
+        }
+        wkt = wkt.trim();
+
+        if (wkt.startsWith("BBOX")) {
+            // JTS doesn't support BBOX.
+            return wkt;
+        }
+
         WKTReader reader = new WKTReader();
 
         // norm(): Normalise the geometry. Join intersecting polygons and remove duplicates.
@@ -88,6 +101,49 @@ public class WktUtils {
         }
 
         return WktUtils.WKT_WRITER.write(geometry.reverse());
+    }
+
+
+    private static Random rand = null;
+    public static Geometry jiggle(Geometry geometry) {
+        if (rand == null) {
+            rand = new Random(8541266);
+        }
+
+        GeometryTransformer transformer = new GeometryTransformer() {
+            @Override
+            protected CoordinateSequence transformCoordinates(CoordinateSequence coords, Geometry parent) {
+                int nbCoord = coords.size();
+                for (int i = 1; i<nbCoord-1; i++) {
+                    // Docs says:
+                    //   Returns (possibly a copy of) the i'th coordinate in this sequence.
+                    // It's not returning a copy, so we are good. But that could be an issue if that was real code...
+                    Coordinate coord = coords.getCoordinate(i);
+
+                    // n = [-999, 999]
+                    int nx = rand.nextInt(1998) - 999;
+                    int ny = rand.nextInt(1998) - 999;
+                    // 0.00001 degree =~ 1.11m
+                    // jiggle = [-0.00000999, 0.00000999 degree] =~ [-1.1m, 1.1m]
+                    double jiggleX = nx * 0.00000001;
+                    double jiggleY = ny * 0.00000001;
+
+                    double newX = coord.getX() + jiggleX;
+                    if (newX > 180) { newX = 180; }
+                    if (newX < -180) { newX = -180; }
+
+                    double newY = coord.getY() + jiggleY;
+                    if (newY > 90) { newY = 90; }
+                    if (newY < -90) { newY = -90; }
+
+                    coord.setX(newX);
+                    coord.setY(newY);
+                }
+
+                return coords;
+            }
+        };
+        return transformer.transform(geometry).norm().buffer(0);
     }
 
     public static String polygonsToWKT(List<Polygon> polygons) {

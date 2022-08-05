@@ -23,8 +23,15 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.text.DecimalFormat;
 
 public class AtlasMapperLayer extends Entity {
+    // Used to format numbers in error messages.
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0");
+    static {
+        DECIMAL_FORMAT.setMaximumFractionDigits(7);
+    }
+
     private String dataSourceName;
 
     private AtlasMapperLayer() {}
@@ -113,39 +120,116 @@ public class AtlasMapperLayer extends Entity {
             this.setTitle(jsonLayer.optString("title", null));
             this.setDocument(document);
 
-            JSONArray layerBoundingBox = jsonLayer.optJSONArray("layerBoundingBox");
-            boolean validBbox = false;
-            if (layerBoundingBox != null && layerBoundingBox.length() == 4) {
-                // AtlasMapper BBOX follows OpenLayers order:
-                //   West, South, East, North
-                double west = layerBoundingBox.optDouble(0, -180);
-                double south = layerBoundingBox.optDouble(1, -90);
-                double east = layerBoundingBox.optDouble(2, 180);
-                double north = layerBoundingBox.optDouble(3, 90);
-
-                // Validate
-                validBbox = true;
-                if (west < -180 || west > 180) { validBbox = false; }
-                if (east < -180 || east > 180) { validBbox = false; }
-                if (south < -90 || south > 90) { validBbox = false; }
-                if (north < -90 || north > 90) { validBbox = false; }
-                if (west > east) { validBbox = false; }
-                if (south > north) { validBbox = false; }
-
-                if (validBbox) {
-                    // WKT orders:
-                    //   West, East, North, South
-                    String wkt = String.format("BBOX (%.8f, %.8f, %.8f, %.8f)", west, east, north, south);
-                    this.setWkt(wkt);
-                }
-            }
-            if (!validBbox) {
-                // Set bbox for the whole world
-                this.setWkt("BBOX (-180, 180, 90, -90)");
-            }
+            this.parseWkt(jsonLayer, messages);
+            //this.parseFakeWkt(jsonLayer, messages);
 
             this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig, messages));
             this.setLangcode("en");
+        }
+    }
+
+    private void parseWkt(JSONObject jsonLayer, Messages messages) {
+        JSONArray layerBoundingBox = jsonLayer.optJSONArray("layerBoundingBox");
+
+        if (layerBoundingBox != null && layerBoundingBox.length() == 4) {
+            boolean validBbox = false;
+
+            // AtlasMapper BBOX follows OpenLayers order:
+            //   West, South, East, North
+            double west = layerBoundingBox.optDouble(0, -180);
+            double south = layerBoundingBox.optDouble(1, -90);
+            double east = layerBoundingBox.optDouble(2, 180);
+            double north = layerBoundingBox.optDouble(3, 90);
+
+            // Validate bbox
+            validBbox = true;
+
+            // NOTE: Allow some wiggle room for BBOX which are slightly outside of acceptable range.
+            double bboxTolerance = 0.1;
+
+            // West
+            if (west > 180) {
+                if (west > 180+bboxTolerance) {
+                    validBbox = false;
+                } else {
+                    west = 180;
+                }
+            }
+            if (west < -180) {
+                if (west < -(180+bboxTolerance)) {
+                    validBbox = false;
+                } else {
+                    west = -180;
+                }
+            }
+            // East
+            if (east > 180) {
+                if (east > 180+bboxTolerance) {
+                    validBbox = false;
+                } else {
+                    east = 180;
+                }
+            }
+            if (east < -180) {
+                if (east < -(180+bboxTolerance)) {
+                    validBbox = false;
+                } else {
+                    east = -180;
+                }
+            }
+            // South
+            if (south > 90) {
+                if (south > 90+bboxTolerance) {
+                    validBbox = false;
+                } else {
+                    south = 90;
+                }
+            }
+            if (south < -90) {
+                if (south < -(90+bboxTolerance)) {
+                    validBbox = false;
+                } else {
+                    south = -90;
+                }
+            }
+            // North
+            if (north > 90) {
+                if (north > 90+bboxTolerance) {
+                    validBbox = false;
+                } else {
+                    north = 90;
+                }
+            }
+            if (north < -90) {
+                if (north < -(90+bboxTolerance)) {
+                    validBbox = false;
+                } else {
+                    north = -90;
+                }
+            }
+
+            if (west > east) { validBbox = false; }
+            if (south > north) { validBbox = false; }
+
+            if (validBbox) {
+                // WKT orders:
+                //   West, East, North, South
+                String wkt = String.format("BBOX (%.8f, %.8f, %.8f, %.8f)", west, east, north, south);
+                this.setWkt(wkt);
+            } else {
+                // Set bbox for the whole world
+                Messages.Message messageObj =
+                    messages.addMessage(Messages.Level.WARNING, String.format("Layer: %s. Invalid bounding box. Fallback to whole world.", this.getId()));
+                messageObj.addDetail(String.format("Invalid bbox: [W: %s, E: %s, N: %s, S: %s]",
+                        DECIMAL_FORMAT.format(west), DECIMAL_FORMAT.format(east),
+                        DECIMAL_FORMAT.format(north), DECIMAL_FORMAT.format(south)));
+
+                this.setWkt("BBOX (-180, 180, 90, -90)");
+            }
+        } else {
+            // Set bbox for the whole world
+            messages.addMessage(Messages.Level.WARNING, String.format("Layer: %s. No bounding box. Fallback to whole world.", this.getId()));
+            this.setWkt("BBOX (-180, 180, 90, -90)");
         }
     }
 

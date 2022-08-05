@@ -28,6 +28,7 @@ import java.util.List;
 
 public class Messages {
     private static final Logger LOGGER = Logger.getLogger(Messages.class.getName());
+    private static final int MAX_CONSUME_MESSAGE = 100;
 
     private List<Message> messages;
 
@@ -104,6 +105,16 @@ public class Messages {
     }
 
     public List<Message> consume() {
+        return consume(MAX_CONSUME_MESSAGE);
+    }
+    public List<Message> consume(int max) {
+        if (this.messages.size() > max) {
+            List<Message> deletedMessages = this.messages.subList(0, max-1);
+            this.messages = this.messages.subList(max, this.messages.size() - 1);
+            this.save();
+            return deletedMessages;
+        }
+
         List<Message> deletedMessages = this.messages;
         this.messages = null;
         this.save();
