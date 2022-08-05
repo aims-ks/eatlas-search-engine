@@ -55,8 +55,16 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             .put("drupalDescriptionField", this.drupalDescriptionField);
     }
 
+    @Override
     public DrupalMedia load(JSONObject json, Messages messages) {
         return DrupalMedia.load(json, messages);
+    }
+
+    @Override
+    protected DrupalMedia harvestEntity(SearchClient client, String id, Messages messages) {
+        // TODO Implement
+        messages.addMessage(Messages.Level.ERROR, "RE-INDEX NOT IMPLEMENTED");
+        return null;
     }
 
     /**

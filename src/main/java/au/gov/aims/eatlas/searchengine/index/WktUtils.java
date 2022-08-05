@@ -158,6 +158,6 @@ public class WktUtils {
             multiPolygon = WktUtils.GEOMETRY_FACTORY.createMultiPolygon(polygons.toArray(new Polygon[0]));
         }
 
-        return WktUtils.WKT_WRITER.write(multiPolygon);
+        return WktUtils.WKT_WRITER.write(multiPolygon.norm().buffer(0));
     }
 }

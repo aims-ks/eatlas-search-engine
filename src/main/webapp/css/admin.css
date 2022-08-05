@@ -342,6 +342,22 @@ button.reload {
   flex-shrink: 0;
 }
 
+.main .content .submit-search input {
+  font-size: 1.2em;
+  margin: 1em auto;
+}
+
+.main .content .result .title {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+.main .content .result .title .reindex {
+  /* Prevent re-index button from wrapping */
+  flex: 0 0 auto;
+}
+
 .main .content .result .preview {
   overflow: auto;
 }
@@ -379,19 +395,21 @@ button.reload {
   margin: 0;
   padding: 1em;
 }
-.main .content .pager li span,
-.main .content .pager li a {
+
+.main .content .button {
   display: block;
   padding: 0.5em 1em;
   text-decoration: none;
   font-weight: bold;
   color: #FFFFFF;
   background-color: #3366DD;
+  border: none;
 }
-.main .content .pager li span {
+.main .content span.button {
   background-color: #999999;
 }
-.main .content .pager li a:hover {
+.main .content input.button:hover,
+.main .content a.button:hover {
   background-color: #3377EE;
 }
 

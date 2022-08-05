@@ -60,8 +60,16 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             .put("drupalContentOverwriteField", this.drupalContentOverwriteField);
     }
 
+    @Override
     public ExternalLink load(JSONObject json, Messages messages) {
         return ExternalLink.load(json, messages);
+    }
+
+    @Override
+    protected ExternalLink harvestEntity(SearchClient client, String id, Messages messages) {
+        // TODO Implement
+        messages.addMessage(Messages.Level.ERROR, "RE-INDEX NOT IMPLEMENTED");
+        return null;
     }
 
     /**

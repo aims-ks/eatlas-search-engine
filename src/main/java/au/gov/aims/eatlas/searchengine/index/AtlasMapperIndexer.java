@@ -81,8 +81,16 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         return true;
     }
 
+    @Override
     public AtlasMapperLayer load(JSONObject json, Messages messages) {
         return AtlasMapperLayer.load(json, messages);
+    }
+
+    @Override
+    protected AtlasMapperLayer harvestEntity(SearchClient client, String id, Messages messages) {
+        // TODO Implement
+        messages.addMessage(Messages.Level.ERROR, "RE-INDEX NOT IMPLEMENTED");
+        return null;
     }
 
     /**

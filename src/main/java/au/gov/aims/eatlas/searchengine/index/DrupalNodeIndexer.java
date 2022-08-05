@@ -46,8 +46,16 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             .put("drupalNodeType", this.getDrupalBundleId());
     }
 
+    @Override
     public DrupalNode load(JSONObject json, Messages messages) {
         return DrupalNode.load(json, messages);
+    }
+
+    @Override
+    protected DrupalNode harvestEntity(SearchClient client, String id, Messages messages) {
+        // TODO Implement
+        messages.addMessage(Messages.Level.ERROR, "RE-INDEX NOT IMPLEMENTED");
+        return null;
     }
 
     /**

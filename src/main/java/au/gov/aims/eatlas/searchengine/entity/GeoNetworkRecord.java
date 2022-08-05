@@ -73,6 +73,7 @@ public class GeoNetworkRecord extends Entity {
         ROLE_LABEL_MAP.put("metadataContact", "Metadata contact");
     }
 
+    private String metadataSchema;
     private String parentUUID;
     // TODO Get from index after the harvest, if we decide that it's needed
     private String parentTitle;
@@ -81,11 +82,10 @@ public class GeoNetworkRecord extends Entity {
 
     // geoNetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
-    public GeoNetworkRecord(String index) {
+    public GeoNetworkRecord(String index, String metadataRecordUUID, String metadataSchema) {
         this.setIndex(index);
-    }
+        this.metadataSchema = metadataSchema;
 
-    public void parseRecord(String metadataRecordUUID, String metadataSchema, String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
         if (metadataRecordUUID != null) {
             metadataRecordUUID = metadataRecordUUID.trim();
             if (metadataRecordUUID.isEmpty()) {
@@ -93,7 +93,15 @@ public class GeoNetworkRecord extends Entity {
             }
         }
 
-        if (metadataSchema == null || metadataSchema.isEmpty()) {
+        if (metadataRecordUUID != null) {
+            this.setId(metadataRecordUUID);
+        }
+    }
+
+    public void parseRecord(String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
+        String metadataRecordUUID = this.getId();
+
+        if (this.metadataSchema == null || this.metadataSchema.isEmpty()) {
             messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has no defined metadata schema.", metadataRecordUUID));
             return;
         }
@@ -111,16 +119,16 @@ public class GeoNetworkRecord extends Entity {
             return;
         }
 
-        switch(metadataSchema) {
+        switch(this.metadataSchema) {
             case "iso19139":
             case "iso19139.anzlic":
             case "iso19139.mcp":
             case "iso19139.mcp-1.4":
-                this.parse_ISO19139_Record(metadataRecordUUID, geoNetworkUrlStr, root, messages);
+                this.parse_ISO19139_Record(geoNetworkUrlStr, root, messages);
                 break;
 
             case "iso19115-3.2018":
-                this.parse_ISO19115_3_2018_Record(metadataRecordUUID, geoNetworkUrlStr, root, messages);
+                this.parse_ISO19115_3_2018_Record(geoNetworkUrlStr, root, messages);
                 break;
 
             default:
@@ -134,11 +142,7 @@ public class GeoNetworkRecord extends Entity {
      * ISO 19115-3.2018 (GeoNetwork 3.x)
      */
 
-    private void parse_ISO19115_3_2018_Record(String metadataRecordUUID, String geoNetworkUrlStr, Element rootElement, Messages messages) {
-        if (metadataRecordUUID != null) {
-            this.setId(metadataRecordUUID);
-        }
-
+    private void parse_ISO19115_3_2018_Record(String geoNetworkUrlStr, Element rootElement, Messages messages) {
         // UUID
         // NOTE: Get it from the XML document if not provided already
         if (this.getId() == null) {
@@ -392,11 +396,7 @@ public class GeoNetworkRecord extends Entity {
      * ISO 19139 (GeoNetwork 2.x)
      */
 
-    private void parse_ISO19139_Record(String metadataRecordUUID, String geoNetworkUrlStr, Element rootElement, Messages messages) {
-        if (metadataRecordUUID != null) {
-            this.setId(metadataRecordUUID);
-        }
-
+    private void parse_ISO19139_Record(String geoNetworkUrlStr, Element rootElement, Messages messages) {
         // UUID
         // NOTE: Get it from the XML document if not provided already
         if (this.getId() == null) {
@@ -917,6 +917,10 @@ public class GeoNetworkRecord extends Entity {
         }
     }
 
+    public String getMetadataSchema() {
+        return this.metadataSchema;
+    }
+
     public String getParentUUID() {
         return this.parentUUID;
     }
@@ -945,6 +949,7 @@ public class GeoNetworkRecord extends Entity {
     public static GeoNetworkRecord load(JSONObject json, Messages messages) {
         GeoNetworkRecord record = new GeoNetworkRecord();
         record.loadJSON(json, messages);
+        record.metadataSchema = json.optString("metadataSchema", null);
         record.parentUUID = json.optString("parentUUID", null);
         record.parentTitle = json.optString("parent", null);
 
@@ -954,6 +959,7 @@ public class GeoNetworkRecord extends Entity {
     @Override
     public JSONObject toJSON() {
         return super.toJSON()
+            .put("metadataSchema", this.metadataSchema)
             .put("parentUUID", this.parentUUID)
             .put("parent", this.parentTitle);
     }

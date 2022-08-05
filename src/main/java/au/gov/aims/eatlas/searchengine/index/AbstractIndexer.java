@@ -70,7 +70,8 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     protected abstract void internalIndex(SearchClient client, Long lastIndexed, Messages messages);
-    public abstract Entity load(JSONObject json, Messages messages);
+    protected abstract E harvestEntity(SearchClient client, String id, Messages messages);
+    public abstract E load(JSONObject json, Messages messages);
     public abstract JSONObject toJSON();
 
     public boolean validate() {
@@ -263,6 +264,29 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     public void setBrokenThumbnailTTL(Long brokenThumbnailTTL) {
         this.brokenThumbnailTTL = brokenThumbnailTTL;
+    }
+
+    public IndexResponse reindex(String id, Messages messages) throws IOException {
+        IndexResponse indexResponse = null;
+
+        try(
+                RestClient restClient = SearchUtils.buildRestClient();
+
+                // Create the transport with a Jackson mapper
+                ElasticsearchTransport transport = new RestClientTransport(
+                        restClient, new JacksonJsonpMapper());
+
+                // And create the API client
+                SearchClient client = new ESClient(new ElasticsearchClient(transport))
+        ) {
+            client.createIndex(index);
+            E entity = this.harvestEntity(client, id, messages);
+            if (entity != null) {
+                indexResponse = this.indexEntity(client, entity, messages, false);
+            }
+        }
+
+        return indexResponse;
     }
 
     public IndexResponse indexEntity(SearchClient client, E entity, Messages messages) throws IOException {

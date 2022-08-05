@@ -61,7 +61,9 @@
                 </c:forEach>
             </ul>
 
-            <input type="submit" value="Search">
+            <div class="submit-search">
+                <input type="submit" class="button" value="Search">
+            </div>
         </form>
     </div>
 
@@ -88,6 +90,19 @@
                             <a href="${searchResult.entity.link}" target="_blank">
                                 <c:out value="${searchResult.entity.title}"/>
                             </a>
+
+                            <c:url value="/admin/search" var="url">
+                                <c:param name="query" value="${it.query}" />
+                                <c:param name="wkt" value="${it.wkt}" />
+                                <c:forEach items="${it.indexes}" var="index">
+                                    <c:param name="indexes" value="${index}" />
+                                </c:forEach>
+                                <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
+                                <c:param name="page" value="${it.page}" />
+                                <c:param name="reindex-idx" value="${searchResult.entity.index}" />
+                                <c:param name="reindex-id" value="${searchResult.entity.id}" />
+                            </c:url>
+                            <a class="reindex button" href="${url}">Reindex</a>
                         </h3>
 
                         <div class="preview">
@@ -138,7 +153,7 @@
                                 <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
                                 <c:param name="page" value="1" />
                             </c:url>
-                            <li><a href="${url}" title="First">«</a></li>
+                            <li><a class="button" href="${url}" title="First">«</a></li>
 
                             <c:url value="/admin/search" var="url">
                                 <c:param name="query" value="${it.query}" />
@@ -149,7 +164,7 @@
                                 <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
                                 <c:param name="page" value="${it.page - 1}" />
                             </c:url>
-                            <li><a href="${url}" title="Previous">‹</a></li>
+                            <li><a class="button" href="${url}" title="Previous">‹</a></li>
                         </c:if>
 
                         <c:set var="pagerBegin" value="${it.page - 1}" />
@@ -165,7 +180,7 @@
                             <c:choose>
                                 <%-- Image downloaded, cached and served by the search engine --%>
                                 <c:when test="${page.index == it.page}">
-                                    <li><span>${page.index}</span></li>
+                                    <li><span class="button">${page.index}</span></li>
                                 </c:when>
 
                                 <c:otherwise>
@@ -179,7 +194,7 @@
                                         <c:param name="page" value="${page.index}" />
                                     </c:url>
 
-                                    <li><a href="${url}">${page.index}</a></li>
+                                    <li><a class="button" href="${url}">${page.index}</a></li>
                                 </c:otherwise>
                             </c:choose>
                         </c:forEach>
@@ -194,7 +209,7 @@
                                 <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
                                 <c:param name="page" value="${it.page + 1}" />
                             </c:url>
-                            <li><a href="${url}" title="Next">›</a></li>
+                            <li><a class="button" href="${url}" title="Next">›</a></li>
 
                             <c:url value="/admin/search" var="url">
                                 <c:param name="query" value="${it.query}" />
@@ -205,7 +220,7 @@
                                 <c:param name="hitsPerPage" value="${it.hitsPerPage}" />
                                 <c:param name="page" value="${it.nbPage}" />
                             </c:url>
-                            <li><a href="${url}" title="Last">»</a></li>
+                            <li><a class="button" href="${url}" title="Last">»</a></li>
                         </c:if>
                     </ul>
                 </div>

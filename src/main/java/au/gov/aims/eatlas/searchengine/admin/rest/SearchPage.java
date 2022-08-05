@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import org.glassfish.jersey.server.mvc.Viewable;
@@ -46,12 +47,26 @@ public class SearchPage {
         @QueryParam("indexes") List<String> indexes,
         @QueryParam("hitsPerPage") Integer hitsPerPage,
         @QueryParam("wkt") String wkt,
-        @QueryParam("page") Integer page
+        @QueryParam("page") Integer page,
+        @QueryParam("reindex-idx") String reindexIdx,
+        @QueryParam("reindex-id") String reindexId
     ) {
         HttpSession session = httpRequest.getSession(true);
         Messages messages = Messages.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+
+        if (reindexIdx != null && reindexId != null) {
+            try {
+                AbstractIndexer indexer = config.getIndexer(reindexIdx);
+                indexer.reindex(reindexId, messages);
+                // Wait 1 sec, to be sure the updated document is in the index.
+                Thread.sleep(1000);
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR,
+                    "An exception occurred during the re-indexation of the document.", ex);
+            }
+        }
 
         if (hitsPerPage == null || hitsPerPage <= 0) {
             hitsPerPage = 10;
