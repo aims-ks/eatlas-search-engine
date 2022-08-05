@@ -25,7 +25,7 @@ import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
+import org.joda.time.format.DateTimeFormat;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -107,12 +107,13 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
         String lastHarvestedISODateStr = null;
         if (lastHarvested != null) {
-            // NOTE: GeoNetwork last modified date (aka dateFrom) are rounded to second,
-            //     and can be a bit off. Use a 10s margin for safety.
-            DateTime lastHarvestedDate = new DateTime(lastHarvested + 10000);
-            if (lastHarvestedDate != null) {
-                lastHarvestedISODateStr = lastHarvestedDate.toString(ISODateTimeFormat.dateTimeNoMillis());
-            }
+            // Date format: YYYY-MM-DD, according to the doc for Q search (which is the same as xml.search)
+            //     https://geonetwork-opensource.org/manuals/3.10.x/en/api/q-search.html#date-searches
+            // NOTE: GeoNetwork last modified date (aka dateFrom) is quantised to the day.
+            //     Use a 1 day margin for safety. A record might get harvested 2x,
+            //     but it's better than not been harvested.
+            DateTime lastHarvestedDate = new DateTime(lastHarvested).minusDays(1);
+            lastHarvestedISODateStr = lastHarvestedDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd"));
         }
         boolean fullHarvest = lastHarvestedISODateStr == null;
 
