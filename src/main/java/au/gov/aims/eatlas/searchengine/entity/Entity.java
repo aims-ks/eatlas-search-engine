@@ -19,10 +19,13 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.index.WktUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONObject;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 
 import java.io.File;
 import java.net.URL;
@@ -55,6 +58,7 @@ public abstract class Entity {
     private String title;
     private String document;
     private String wkt;
+    private Double wktArea;
 
     // Search result thumbnail image
     // If there is a cachedThumbnailFilename, call /public/img/v1/{index}/{filename} to get the image.
@@ -136,6 +140,28 @@ public abstract class Entity {
 
     public void setWkt(String wkt) {
         this.wkt = wkt;
+    }
+
+    public Double getWktArea() {
+        return this.wktArea;
+    }
+
+    public void setWktArea(Double area) {
+        this.wktArea = area;
+    }
+
+    public void setWktAndArea(String wkt, Double area) {
+        this.wkt = wkt;
+        this.wktArea = area;
+    }
+
+    public void setWktAndArea(String wkt) throws ParseException {
+        this.wkt = wkt;
+
+        // Set area
+        Geometry geometry = WktUtils.wktToGeometry(wkt);
+        this.wktArea = geometry == null ? null :
+            geometry.getArea();
     }
 
     public String getCachedThumbnailFilename() {
@@ -262,6 +288,7 @@ public abstract class Entity {
             // Encode HTML from the document, to allow the search to all highlights as HTML tags
             .put("document", StringEscapeUtils.escapeHtml4(this.getDocument()))
             .put("wkt", this.getWkt())
+            .put("wktArea", this.getWktArea())
             .put("cachedThumbnailFilename", this.getCachedThumbnailFilename())
             .put("thumbnailUrl", thumbnailUrl == null ? null : thumbnailUrl.toString())
             .put("langcode", this.getLangcode());
@@ -275,6 +302,9 @@ public abstract class Entity {
             // Decode HTML since we encoded it in the toJSON method
             this.setDocument(StringEscapeUtils.unescapeHtml4(json.optString("document", null)));
             this.setWkt(json.optString("wkt", null));
+            if (json.has("wktArea")) {
+                this.setWktArea(json.optDouble("wktArea"));
+            }
             this.setLangcode(json.optString("langcode", null));
             this.setCachedThumbnailFilename(json.optString("cachedThumbnailFilename", null));
 

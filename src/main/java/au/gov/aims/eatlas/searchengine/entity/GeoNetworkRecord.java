@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -266,7 +267,12 @@ public class GeoNetworkRecord extends Entity {
         List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "mri:extent");
         String wkt = GeoNetworkRecord.parseIso19115_3_2018ExtentList(extentList);
         if (wkt != null && !wkt.isEmpty()) {
-            this.setWkt(wkt);
+            try {
+                this.setWktAndArea(wkt);
+            } catch(ParseException ex) {
+                Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+                message.addDetail(wkt);
+            }
         } else {
             messages.addMessage(Messages.Level.WARNING, String.format("Metadata record %s has no extent.", this.getId()));
         }
@@ -510,7 +516,12 @@ public class GeoNetworkRecord extends Entity {
         List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:extent");
         String wkt = GeoNetworkRecord.parseIso19139ExtentList(extentList);
         if (wkt != null && !wkt.isEmpty()) {
-            this.setWkt(wkt);
+            try {
+                this.setWktAndArea(wkt);
+            } catch(ParseException ex) {
+                Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+                message.addDetail(wkt);
+            }
         } else {
             messages.addMessage(Messages.Level.WARNING, String.format("Metadata record %s has no extent.", this.getId()));
         }

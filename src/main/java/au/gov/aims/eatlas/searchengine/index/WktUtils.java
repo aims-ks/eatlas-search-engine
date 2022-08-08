@@ -32,6 +32,8 @@ import org.locationtech.jts.io.WKTWriter;
 
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WktUtils {
     // Useful tools to work with WKT
@@ -88,13 +90,10 @@ public class WktUtils {
             return wkt;
         }
 
-        WKTReader reader = new WKTReader();
-
-        // norm(): Normalise the geometry. Join intersecting polygons and remove duplicates.
-        // buffer(0): Fix self intersecting polygons by removing parts.
-        //   It's not perfect, but at least the resulting polygon should be valid.
-        //   See: https://stackoverflow.com/questions/31473553/is-there-a-way-to-convert-a-self-intersecting-polygon-to-a-multipolygon-in-jts
-        Geometry geometry = reader.read(wkt).norm().buffer(0);
+        Geometry geometry = WktUtils.wktToGeometry(wkt);
+        if (geometry == null) {
+            return null;
+        }
 
         if (Orientation.isCCW(geometry.getCoordinates())) {
             return wkt;
@@ -103,6 +102,67 @@ public class WktUtils {
         return WktUtils.WKT_WRITER.write(geometry.reverse());
     }
 
+    public static Geometry wktToGeometry(String wkt) throws ParseException {
+        if (wkt == null || wkt.isEmpty()) {
+            return null;
+        }
+        wkt = wkt.trim();
+
+        // JTS doesn't support BBOX.
+        if (wkt.startsWith("BBOX")) {
+            return WktUtils.bboxToPolygon(wkt);
+        }
+
+        WKTReader reader = new WKTReader();
+
+        // norm(): Normalise the geometry. Join intersecting polygons and remove duplicates.
+        // buffer(0): Fix self intersecting polygons by removing parts.
+        //   It's not perfect, but at least the resulting polygon should be valid.
+        //   See: https://stackoverflow.com/questions/31473553/is-there-a-way-to-convert-a-self-intersecting-polygon-to-a-multipolygon-in-jts
+        return reader.read(wkt).norm().buffer(0);
+    }
+
+    public static Polygon bboxToPolygon(String wkt) {
+        LinearRing bboxLinearRing = WktUtils.bboxToLinearRing(wkt);
+        return bboxLinearRing == null ? null :
+            WktUtils.GEOMETRY_FACTORY.createPolygon(bboxLinearRing);
+    }
+
+    public static LinearRing bboxToLinearRing(String wkt) {
+        if (wkt == null || wkt.isEmpty()) {
+            return null;
+        }
+        wkt = wkt.trim();
+
+        if (!wkt.startsWith("BBOX")) {
+            return null;
+        }
+
+        Pattern pattern = Pattern.compile("BBOX\\(([\\-\\d.]+),([\\-\\d.]+),([\\-\\d.]+),([\\-\\d.]+)\\)");
+        Matcher matcher = pattern.matcher(
+            // Remove all whitespaces
+            wkt.replaceAll("\\s+","")
+        );
+
+        if (matcher.matches()) {
+            double west = Double.parseDouble(matcher.group(1));
+            double east = Double.parseDouble(matcher.group(2));
+            double north = Double.parseDouble(matcher.group(3));
+            double south = Double.parseDouble(matcher.group(4));
+
+            Coordinate[] coordinates = new Coordinate[] {
+                new Coordinate(north, west),
+                new Coordinate(south, west),
+                new Coordinate(south, east),
+                new Coordinate(north, east),
+                new Coordinate(north, west)
+            };
+
+            return WktUtils.GEOMETRY_FACTORY.createLinearRing(coordinates);
+        }
+
+        return null;
+    }
 
     private static Random rand = null;
     public static Geometry jiggle(Geometry geometry) {

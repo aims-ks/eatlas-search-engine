@@ -301,10 +301,10 @@ public abstract class AbstractIndexer<E extends Entity> {
         String originalWkt = entity.getWkt();
         if (originalWkt == null || originalWkt.isEmpty()) {
             originalWkt = null;
-            entity.setWkt(null);
+            entity.setWktAndArea(null, null);
         } else {
             try {
-                entity.setWkt(WktUtils.fixWkt(originalWkt));
+                entity.setWktAndArea(WktUtils.fixWkt(originalWkt));
             } catch(ParseException ex) {
                 // The Reader may throw an exception.
                 // We assume the WKT is parsable by JTS since it was generated using the JTS library.
@@ -355,8 +355,8 @@ public abstract class AbstractIndexer<E extends Entity> {
             // Fallback to the BBox of whole world
             indexResponse = this.indexEntityWholeWorldFallback(client, entity, entity.getWkt(), messages);
         } else {
-            entity.setWkt(newWkt);
             try {
+                entity.setWktAndArea(newWkt);
                 indexResponse = client.index(this.getIndexRequest(entity));
 
                 // The Geometry bbox is valid.
@@ -364,6 +364,8 @@ public abstract class AbstractIndexer<E extends Entity> {
                 Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to bounding box of the geometry.", entity.getId()));
                 messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
                 messageObj.addDetail(String.format("Replaced with: %s", newWkt));
+            } catch(ParseException ex) {
+                indexResponse = this.indexEntityWholeWorldFallback(client, entity, entity.getWkt(), messages);
             } catch(ElasticsearchException ex) {
                 String message = ex.getMessage();
                 if (message != null && message.contains("failed to parse field [wkt] of type")) {
@@ -380,13 +382,24 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     // Fallback to the BBox of whole world
     private IndexResponse indexEntityWholeWorldFallback(SearchClient client, E entity, String originalWkt, Messages messages) throws IOException {
+        IndexResponse indexResponse = null;
         String newWkt = "BBOX (-180, 180, 90, -90)";
-        entity.setWkt(newWkt);
-        IndexResponse indexResponse = client.index(this.getIndexRequest(entity));
+        try {
+            entity.setWktAndArea(newWkt);
+            indexResponse = client.index(this.getIndexRequest(entity));
 
-        Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to whole world.", entity.getId()));
-        messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
-        messageObj.addDetail(String.format("Replaced with: %s", newWkt));
+            Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to whole world.", entity.getId()));
+            messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
+            messageObj.addDetail(String.format("Replaced with: %s", newWkt));
+
+        } catch (ParseException ex) {
+            entity.setWktAndArea(null, null);
+            indexResponse = client.index(this.getIndexRequest(entity));
+
+            Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+            message.addDetail(String.format("Invalid WKT: %s", originalWkt));
+            message.addDetail(String.format("Invalid replacement WKT: %s", newWkt));
+        }
 
         return indexResponse;
     }

@@ -106,7 +106,8 @@ public class SearchResult {
         return new JSONObject()
             .put("id", this.id)
             .put("index", this.index)
-            .put("score", this.score)
+            // Score can be "NaN" sometimes. JSON doesn't like that.
+            .put("score", this.score == null ? null : this.score.toString())
             .put("entity", this.entity.toJSON())
             .put("highlights", this.highlights);
     }

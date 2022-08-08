@@ -96,7 +96,7 @@ public class GeoShapeTestManual {
 
         //this.setWkt(record, "POLYGON ((-91 9, 0 80, 90 10, -90 9, -91 9))");
         //this.setWkt(record, "POLYGON ((-175 -31, -171 36, 171 39, 175 -30, -32 -34, -175 -31))");
-        record.setWkt("POLYGON ((-175.4736328125 -31.245117187500004, -171.2548828125 36.9580078125, 171.8701171875 39.0673828125, 175.3857421875 -30.5419921875, -32.0361328125 -34.0576171875, -175.4736328125 -31.245117187500004))");
+        record.setWktAndArea("POLYGON ((-175.4736328125 -31.245117187500004, -171.2548828125 36.9580078125, 171.8701171875 39.0673828125, 175.3857421875 -30.5419921875, -32.0361328125 -34.0576171875, -175.4736328125 -31.245117187500004))");
 
         // Indexation
         GeoNetworkIndexer indexer = new GeoNetworkIndexer(index, "http://domain.com/geonetwork", "3.0");
@@ -132,7 +132,7 @@ public class GeoShapeTestManual {
 
         try {
             String bigWkt = new String(Files.readAllBytes(Paths.get(GeoNetworkRecord.class.getClassLoader().getResource("ne_10m.wkt").toURI())));
-            record.setWkt(bigWkt);
+            record.setWktAndArea(bigWkt);
         } catch(Exception ex) {
             ex.printStackTrace();
         }
@@ -171,7 +171,7 @@ public class GeoShapeTestManual {
 
         try {
             String bigWkt = new String(Files.readAllBytes(Paths.get(GeoNetworkRecord.class.getClassLoader().getResource("capad_2020.wkt").toURI())));
-            record.setWkt(bigWkt);
+            record.setWktAndArea(bigWkt);
         } catch(Exception ex) {
             ex.printStackTrace();
         }

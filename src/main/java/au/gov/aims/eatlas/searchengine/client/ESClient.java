@@ -22,6 +22,7 @@ import au.gov.aims.eatlas.searchengine.entity.Entity;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.analysis.Analyzer;
 import co.elastic.clients.elasticsearch._types.analysis.CustomAnalyzer;
+import co.elastic.clients.elasticsearch._types.mapping.DoubleNumberProperty;
 import co.elastic.clients.elasticsearch._types.mapping.GeoShapeProperty;
 import co.elastic.clients.elasticsearch._types.mapping.Property;
 import co.elastic.clients.elasticsearch._types.mapping.TextProperty;
@@ -167,6 +168,11 @@ public class ESClient implements SearchClient {
                                             .coerce(true) // Automatically close polygons
                                             //.ignoreMalformed(true) // Enable if indexation struggle with malformed WKT
                                             //.orientation(GeoOrientation.Left) // Default: right (counter-clockwise)
+                                            .build())
+                                    .build())
+
+                            .properties("wktArea", new Property.Builder()
+                                    .double_(new DoubleNumberProperty.Builder()
                                             .build())
                                     .build())
 

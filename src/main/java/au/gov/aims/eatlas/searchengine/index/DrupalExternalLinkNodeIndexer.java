@@ -27,6 +27,7 @@ import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.locationtech.jts.io.ParseException;
 
 import java.io.File;
 import java.net.URL;
@@ -221,9 +222,15 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
                     if (content != null) {
                         this.externalLink.setDocument(content);
 
+
                         // TODO Implement WKT
-                        // Set WKT to GBR
-                        this.externalLink.setWkt("BBOX (142.5, 153.0, -10.5, -22.5)");
+                        String wkt = "BBOX (142.5, 153.0, -10.5, -22.5)";
+                        try {
+                            this.externalLink.setWktAndArea(wkt);
+                        } catch(ParseException ex) {
+                            Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+                            message.addDetail(wkt);
+                        }
 
                         // Overwrite fields to make the results look more like an external link
                         this.externalLink.setLink(externalLink);

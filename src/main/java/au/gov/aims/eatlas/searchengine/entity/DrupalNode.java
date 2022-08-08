@@ -23,6 +23,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONObject;
+import org.locationtech.jts.io.ParseException;
 
 import java.net.URL;
 
@@ -84,7 +85,13 @@ public class DrupalNode extends Entity {
             String title = this.getTitle();
             if (title != null && !title.contains("again")) {
                 // Set WKT to GBR
-                this.setWkt("BBOX (142.5, 153.0, -10.5, -22.5)");
+                String wkt = "BBOX (142.5, 153.0, -10.5, -22.5)";
+                try {
+                    this.setWktAndArea(wkt);
+                } catch(ParseException ex) {
+                    Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+                    message.addDetail(wkt);
+                }
             }
 
         }

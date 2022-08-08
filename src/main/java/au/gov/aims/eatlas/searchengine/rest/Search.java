@@ -23,6 +23,7 @@ import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
+import au.gov.aims.eatlas.searchengine.index.WktUtils;
 import au.gov.aims.eatlas.searchengine.search.ErrorMessage;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
@@ -30,6 +31,13 @@ import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
+import co.elastic.clients.elasticsearch._types.InlineScript;
+import co.elastic.clients.elasticsearch._types.Script;
+import co.elastic.clients.elasticsearch._types.ScriptLanguage;
+import co.elastic.clients.elasticsearch._types.ScriptSort;
+import co.elastic.clients.elasticsearch._types.ScriptSortType;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.GeoShapeFieldQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
@@ -46,6 +54,8 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.elasticsearch.client.RestClient;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -137,7 +147,7 @@ public class Search {
             List<String> idx,  // List of indexes used for the summary
             List<String> fidx, // List of indexes to filter the search results (optional, default: list all search results for idx)
             Messages messages
-    ) throws IOException {
+    ) throws IOException, ParseException {
         if (
             idx == null || idx.isEmpty()
         ) {
@@ -192,7 +202,7 @@ public class Search {
      *   count request per index.
      */
     public static Summary searchSummary(SearchClient client, String needle, String wkt, String ... indexes)
-            throws IOException {
+            throws IOException, ParseException {
 
         Summary summary = new Summary();
 
@@ -215,7 +225,7 @@ public class Search {
         return summary;
     }
 
-    public static CountRequest getSearchSummaryRequest(String needle, String wkt, String ... indexes) {
+    public static CountRequest getSearchSummaryRequest(String needle, String wkt, String ... indexes) throws ParseException {
         // Create a search query here
         SearchRequest.Builder sourceBuilder = Search.getBaseSearchQuery(needle, wkt);
 
@@ -251,7 +261,7 @@ public class Search {
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
     public static List<SearchResult> search(SearchClient client, Messages messages, String needle, String wkt, int from, int size, String ... indexes)
-            throws IOException {
+            throws IOException, ParseException {
 
         SearchResponse<Entity> response = client.search(Search.getSearchRequest(needle, wkt, from, size, indexes));
 
@@ -285,7 +295,7 @@ public class Search {
      * Search in "document" and "title".
      * The title have a 2x ranking boost.
      */
-    public static SearchRequest getSearchRequest(String needle, String wkt, int from, int size, String ... indexes) {
+    public static SearchRequest getSearchRequest(String needle, String wkt, int from, int size, String ... indexes) throws ParseException {
         // Used to highlight search results in the field that was used with the search
         Highlight.Builder highlightBuilder = new Highlight.Builder()
                 .preTags("<strong class=\"search-highlight\">")
@@ -310,7 +320,7 @@ public class Search {
      * GEO Queries
      *   https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-queries.html
      */
-    private static SearchRequest.Builder getBaseSearchQuery(String needle, String wkt) {
+    private static SearchRequest.Builder getBaseSearchQuery(String needle, String wkt) throws ParseException {
         // Build the needle query
         //   The query used to match the words typed in the search field by the user
         Query needleQuery = null;
@@ -386,8 +396,46 @@ public class Search {
             }
         }
 
-        return new SearchRequest.Builder()
+        SearchRequest.Builder searchRequest = new SearchRequest.Builder()
                 .query(query)
                 .timeout("60s"); // Wild guess, there is no doc, no example for this!!
+
+        if (wktQuery != null) {
+            Geometry geometry = WktUtils.wktToGeometry(wkt);
+
+            if (geometry != null) {
+                /*
+                Point centroid = geometry.getCentroid();
+
+                List<Double> esCentroidPoint = new ArrayList<>();
+                esCentroidPoint.add(centroid.getX());
+                esCentroidPoint.add(centroid.getY());
+                GeoLocation esCentroid = new GeoLocation.Builder().coords(esCentroidPoint).build();
+                GeoDistanceSort geoDistanceSort = SortOptionsBuilders
+                        .geoDistance()
+                        .unit(DistanceUnit.Meters)
+                        .distanceType(GeoDistanceType.Plane)
+                        .location(esCentroid).build();
+                SortOptions distanceSort = new SortOptions(geoDistanceSort);
+
+                searchRequest.sort(new SortOptions(new GeoDistanceSort.Builder().build()));
+                */
+
+                double searchArea = geometry.getArea();
+                searchRequest.sort(new SortOptions(new ScriptSort.Builder()
+                        .type(ScriptSortType.Number)
+                        .order(SortOrder.Asc)
+                        .script(new Script.Builder()
+                                .inline(new InlineScript.Builder()
+                                        .lang(ScriptLanguage.Painless)
+                                        .source("Math.abs(doc['wktArea'].value - params.searchArea)")
+                                        .params("searchArea", JsonData.of(searchArea))
+                                        .build())
+                                .build())
+                        .build()));
+            }
+        }
+
+        return searchRequest;
     }
 }

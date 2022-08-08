@@ -21,6 +21,7 @@ package au.gov.aims.eatlas.searchengine.entity;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.locationtech.jts.io.ParseException;
 
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -131,6 +132,7 @@ public class AtlasMapperLayer extends Entity {
     private void parseWkt(JSONObject jsonLayer, Messages messages) {
         JSONArray layerBoundingBox = jsonLayer.optJSONArray("layerBoundingBox");
 
+        String wkt = null;
         if (layerBoundingBox != null && layerBoundingBox.length() == 4) {
             boolean validBbox = false;
 
@@ -214,8 +216,7 @@ public class AtlasMapperLayer extends Entity {
             if (validBbox) {
                 // WKT orders:
                 //   West, East, North, South
-                String wkt = String.format("BBOX (%.8f, %.8f, %.8f, %.8f)", west, east, north, south);
-                this.setWkt(wkt);
+                wkt = String.format("BBOX (%.8f, %.8f, %.8f, %.8f)", west, east, north, south);
             } else {
                 // Set bbox for the whole world
                 Messages.Message messageObj =
@@ -224,12 +225,20 @@ public class AtlasMapperLayer extends Entity {
                         DECIMAL_FORMAT.format(west), DECIMAL_FORMAT.format(east),
                         DECIMAL_FORMAT.format(north), DECIMAL_FORMAT.format(south)));
 
-                this.setWkt("BBOX (-180, 180, 90, -90)");
+                wkt = "BBOX (-180, 180, 90, -90)";
             }
         } else {
             // Set bbox for the whole world
             messages.addMessage(Messages.Level.WARNING, String.format("Layer: %s. No bounding box. Fallback to whole world.", this.getId()));
-            this.setWkt("BBOX (-180, 180, 90, -90)");
+            wkt = "BBOX (-180, 180, 90, -90)";
+        }
+
+        // Set WKT
+        try {
+            this.setWktAndArea(wkt);
+        } catch(ParseException ex) {
+            Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+            message.addDetail(wkt);
         }
     }
 
