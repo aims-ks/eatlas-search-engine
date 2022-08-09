@@ -226,6 +226,7 @@ public class SettingsPage {
 
                 atlasMapperIndexer.setAtlasMapperClientUrl(FormUtils.getFormStringValue(form, index + "_atlasMapperClientUrl"));
                 atlasMapperIndexer.setAtlasMapperVersion(FormUtils.getFormStringValue(form, index + "_atlasMapperVersion"));
+                atlasMapperIndexer.setBaseLayerUrl(FormUtils.getFormStringValue(form, index + "_baseLayerUrl"));
 
             } else {
                 messages.addMessage(Messages.Level.WARNING,

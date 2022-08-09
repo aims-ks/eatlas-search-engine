@@ -50,8 +50,10 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private static final int THUMBNAIL_MAX_HEIGHT = 200;
     private static final float THUMBNAIL_MARGIN = 0.1f; // Margin, in percentage
 
+    // Example: https://maps.eatlas.org.au
     private String atlasMapperClientUrl;
     private String atlasMapperVersion;
+    private String baseLayerUrl;
 
     public static AtlasMapperIndexer fromJSON(String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
@@ -61,13 +63,15 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         return new AtlasMapperIndexer(
             index,
             json.optString("atlasMapperClientUrl", null),
-            json.optString("atlasMapperVersion", null));
+            json.optString("atlasMapperVersion", null),
+            json.optString("baseLayerUrl", null));
     }
 
     public JSONObject toJSON() {
         return this.getJsonBase()
             .put("atlasMapperClientUrl", this.atlasMapperClientUrl)
-            .put("atlasMapperVersion", this.atlasMapperVersion);
+            .put("atlasMapperVersion", this.atlasMapperVersion)
+            .put("baseLayerUrl", this.baseLayerUrl);
     }
 
     @Override
@@ -87,10 +91,59 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    protected AtlasMapperLayer harvestEntity(SearchClient client, String id, Messages messages) {
-        // TODO Implement
-        messages.addMessage(Messages.Level.ERROR, "RE-INDEX NOT IMPLEMENTED");
-        return null;
+    protected AtlasMapperLayer harvestEntity(SearchClient client, String layerId, Messages messages) {
+        // If we have a layerInfoService, use that to get info about the layer.
+        // If not, pull the whole list of layer and find the info about that single layer.
+
+        String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
+        JsonResponse mainResponse = AtlasMapperIndexer.getJsonResponse(mainUrlStr, messages);
+        if (mainResponse == null) {
+            return null;
+        }
+        JSONObject jsonMainConfig = mainResponse.getJson();
+
+        // Example: /atlasmapper/public/layersInfo.jsp
+        String layerInfoServiceUrl = jsonMainConfig.optString("layerInfoServiceUrl", null);
+        String clientId = jsonMainConfig.optString("clientId", null);
+
+        JSONObject jsonLayer = null;
+        if (layerInfoServiceUrl != null && !layerInfoServiceUrl.isEmpty()) {
+            // Get the layer info using the layer info service.
+            // The service is much faster than requesting the list of all layers.
+            String layerInfoUrlStr = String.format("%s%s?client=%s&layerIds=%s",
+                        this.atlasMapperClientUrl, layerInfoServiceUrl, clientId, layerId);
+
+            JsonResponse layerInfoResponse = AtlasMapperIndexer.getJsonResponse(layerInfoUrlStr, messages);
+            if (layerInfoResponse != null) {
+                JSONObject jsonLayerResponse = layerInfoResponse.getJson();
+                if (jsonLayerResponse != null) {
+                    JSONObject jsonLayerData = jsonLayerResponse.optJSONObject("data");
+                    if (jsonLayerData != null) {
+                        jsonLayer = jsonLayerData.optJSONObject(layerId);
+                    }
+                }
+            }
+
+        } else {
+            // Get the layer info from the list of all layers.
+            // The list can be pretty long, that might take a while...
+            String layersUrlStr = String.format("%s/config/layers.json", this.atlasMapperClientUrl);
+            JsonResponse layersResponse = AtlasMapperIndexer.getJsonResponse(layersUrlStr, messages);
+            if (layersResponse != null) {
+                JSONObject jsonLayers = layersResponse.getJson();
+                jsonLayer = jsonLayers.optJSONObject(layerId);
+            }
+        }
+
+        AtlasMapperLayer layerEntity = new AtlasMapperLayer(
+                this.getIndex(), this.atlasMapperClientUrl, layerId,
+                jsonLayer, jsonMainConfig, messages);
+
+        AtlasMapperIndexer.updateThumbnail(
+                layerId, this.getIndex(), jsonLayer,
+                this.baseLayerUrl, jsonMainConfig, layerEntity, messages);
+
+        return layerEntity;
     }
 
     /**
@@ -98,48 +151,39 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
      * atlasMapperClientUrl: https://maps.eatlas.org.au
      * atlasMapperVersion: 2.2.0
      */
-    public AtlasMapperIndexer(String index, String atlasMapperClientUrl, String atlasMapperVersion) {
+    public AtlasMapperIndexer(String index, String atlasMapperClientUrl, String atlasMapperVersion, String baseLayerUrl) {
         super(index);
         this.atlasMapperClientUrl = atlasMapperClientUrl;
         this.atlasMapperVersion = atlasMapperVersion;
+        this.baseLayerUrl = baseLayerUrl;
     }
 
     @Override
     protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
         // There is no way to get last modified layers from AtlasMapper.
-        // Therefore, we only perform an harvest if the JSON files are more recent than lastHarvested.
+        // Therefore, we only perform a harvest if the JSON files are more recent than lastHarvested.
 
         // Get the main configuration file, containing the map of data sources
         // "https://maps.eatlas.org.au/config/main.json"
         String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
-
-        Connection.Response mainResponse = null;
-        try {
-            mainResponse = EntityUtils.jsoupExecuteWithRetry(mainUrlStr, messages);
-        } catch(Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper main configuration file: %s",
-                    mainUrlStr), ex);
+        JsonResponse mainResponse = AtlasMapperIndexer.getJsonResponse(mainUrlStr, messages);
+        if (mainResponse == null) {
             return;
         }
-        Long mainLastModified = IndexUtils.parseHttpLastModifiedHeader(mainResponse, messages);
+        Long mainLastModified = mainResponse.getLastModified();
 
         // Get the list of layers
         // "https://maps.eatlas.org.au/config/layers.json"
         String layersUrlStr = String.format("%s/config/layers.json", this.atlasMapperClientUrl);
-
-        Connection.Response layersResponse = null;
-        try {
-            layersResponse = EntityUtils.jsoupExecuteWithRetry(layersUrlStr, messages);
-        } catch(Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper layers file: %s",
-                    layersUrlStr), ex);
+        JsonResponse layersResponse = AtlasMapperIndexer.getJsonResponse(layersUrlStr, messages);
+        if (layersResponse == null) {
             return;
         }
-        Long layersLastModified = IndexUtils.parseHttpLastModifiedHeader(layersResponse, messages);
+        Long layersLastModified = layersResponse.getLastModified();
 
         if (lastHarvested != null) {
             // If a file have no last modified in the header,
-            // we can't tell if the index is outdated. Lets assume it is.
+            // we can't tell if the index is outdated. Let's assume it is.
             if (mainLastModified != null && layersLastModified != null) {
                 boolean indexOutDated = false;
                 if (mainLastModified > lastHarvested - 10000) {
@@ -157,22 +201,10 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             }
         }
 
-        String mainResponseStr = mainResponse.body();
-        if (mainResponseStr == null || mainResponseStr.isEmpty()) {
-            return;
-        }
-        JSONObject jsonMainConfig = new JSONObject(mainResponseStr);
-
-        String layersResponseStr = layersResponse.body();
-        if (layersResponseStr == null || layersResponseStr.isEmpty()) {
-            return;
-        }
-        JSONObject jsonLayersConfig = new JSONObject(layersResponseStr);
+        JSONObject jsonMainConfig = mainResponse.getJson();
+        JSONObject jsonLayersConfig = layersResponse.getJson();
 
         long harvestStart = System.currentTimeMillis();
-
-        // Get URL of the base layer
-        String baseLayerId = AtlasMapperLayer.getWMSBaseLayer(jsonMainConfig, jsonLayersConfig);
 
         Set<String> usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         this.setTotal((long)jsonLayersConfig.length());
@@ -183,7 +215,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             current++;
 
             Thread thread = new AtlasMapperIndexerThread(
-                    client, messages, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig, baseLayerId, usedThumbnails, current);
+                    client, messages, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig,
+                    this.getBaseLayerUrl(), usedThumbnails, current);
 
             threadPool.execute(thread);
         }
@@ -215,23 +248,33 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         this.atlasMapperVersion = atlasMapperVersion;
     }
 
+    public String getBaseLayerUrl() {
+        return this.baseLayerUrl;
+    }
+
+    public void setBaseLayerUrl(String baseLayerUrl) {
+        this.baseLayerUrl = baseLayerUrl;
+    }
+
 
     // Static methods, use by AtlasMapperIndexerThread
 
     public static URL getLayerUrl(JSONObject dataSource, JSONObject jsonLayer, JSONArray bbox) throws Exception {
-        if (dataSource == null || jsonLayer == null) {
-            return null;
-        }
+        // Parse bbox
+        BboxInfo bboxInfo = BboxInfo.parse(bbox);
+        return AtlasMapperIndexer.getLayerUrl(dataSource, jsonLayer, bboxInfo);
+    }
 
+    public static URL getLayerUrl(JSONObject dataSource, JSONObject jsonLayer, BboxInfo bboxInfo) throws Exception {
         if (AtlasMapperLayer.isWMS(dataSource)) {
-            return AtlasMapperIndexer.getWMSLayerUrl(dataSource, jsonLayer, bbox);
+            return AtlasMapperIndexer.getWMSLayerUrl(dataSource, jsonLayer, bboxInfo);
         }
 
         return null;
     }
 
-    public static URL getWMSLayerUrl(JSONObject dataSource, JSONObject jsonLayer, JSONArray bbox) throws Exception {
-        if (dataSource == null || jsonLayer == null) {
+    public static URL getWMSLayerUrl(JSONObject dataSource, JSONObject jsonLayer, BboxInfo bboxInfo) throws Exception {
+        if (dataSource == null || jsonLayer == null || bboxInfo == null) {
             return null;
         }
 
@@ -268,83 +311,6 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             transparent = "false";
         }
 
-        // Parse bbox
-        float west = -180;
-        float south = -90;
-        float east = 180;
-        float north = 90;
-        if (bbox != null) {
-            west = bbox.optFloat(0, west);
-            south = bbox.optFloat(1, south);
-            east = bbox.optFloat(2, east);
-            north = bbox.optFloat(3, north);
-
-            if (west > east) {
-                float temp = east;
-                east = west;
-                west = temp;
-            }
-
-            if (south > north) {
-                float temp = south;
-                south = north;
-                north = temp;
-            }
-
-            // If bbox have ridiculous values, don't even try...
-            if (west < -200 || west > 200) { return null; }
-            if (south < -100 || south > 100) { return null; }
-            if (east < -200 || east > 200) { return null; }
-            if (north < -100 || north > 100) { return null; }
-
-            // Fix very small bbox (single point)
-            float _bboxWidth = east - west;
-            float _bboxHeight = north - south;
-            if (_bboxWidth < 0.01) {
-                west -= 0.005;
-                east += 0.005;
-            }
-            if (_bboxHeight < 0.01) {
-                south -= 0.005;
-                north += 0.005;
-            }
-
-            // Add layer margin
-            west = west - _bboxWidth * THUMBNAIL_MARGIN;
-            south = south - _bboxHeight * THUMBNAIL_MARGIN;
-            east = east + _bboxWidth * THUMBNAIL_MARGIN;
-            north = north + _bboxHeight * THUMBNAIL_MARGIN;
-
-            // Fix out-of-bounds bbox
-            if (west < -180) { west = -180; }
-            if (west > 180) { west = 180; }
-            if (south < -90) { south = -90; }
-            if (south > 90) { south = 90; }
-            if (east < -180) { east = -180; }
-            if (east > 180) { east = 180; }
-            if (north < -90) { north = -90; }
-            if (north > 90) { north = 90; }
-        }
-
-        float bboxWidth = east - west;
-        float bboxHeight = north - south;
-
-        // Calculate width x height, respecting max width and max height,
-        //     and respecting layer aspect ratio.
-        // It's hard to visualise, but the math are very simple.
-
-        float bboxRatio = bboxWidth / bboxHeight;
-        float thumbnailRatio = (float)THUMBNAIL_MAX_WIDTH / THUMBNAIL_MAX_HEIGHT;
-
-        int width = THUMBNAIL_MAX_WIDTH;
-        int height = THUMBNAIL_MAX_HEIGHT;
-        if (bboxRatio > thumbnailRatio) {
-            height = (int)(THUMBNAIL_MAX_WIDTH / bboxRatio);
-        } else {
-            width = (int)(THUMBNAIL_MAX_HEIGHT * bboxRatio);
-        }
-
-
         // Set query parameters for the WMS GetMap query
         queryMap.put("SERVICE", "WMS");
         queryMap.put("REQUEST", "GetMap");
@@ -356,9 +322,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         queryMap.put("SRS", "EPSG:4326");
         // CRS is only necessary with WMS 1.3.0, but some WMS server do not interpret "version" properly.
         queryMap.put("CRS", "EPSG:4326");
-        queryMap.put("BBOX", String.format("%.12f,%.12f,%.12f,%.12f", west, south, east, north));
-        queryMap.put("WIDTH", "" + width);
-        queryMap.put("HEIGHT", "" + height);
+        queryMap.put("BBOX", bboxInfo.getBbox());
+        queryMap.put("WIDTH", bboxInfo.getWidth());
+        queryMap.put("HEIGHT", bboxInfo.getHeight());
 
         StringBuilder querySb = new StringBuilder();
         for (Map.Entry<String, String> queryParameter : queryMap.entrySet()) {
@@ -375,13 +341,224 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             serviceUri.getPath() + "?" + querySb.toString());
     }
 
+    public static void updateThumbnail(
+            String layerId, String index,
+            JSONObject jsonLayer,
+            String baseLayerUrl,
+            JSONObject jsonMainConfig,
+            AtlasMapperLayer layerEntity,
+            Messages messages) {
+
+        try {
+            File cachedThumbnailFile = AtlasMapperIndexer.createLayerThumbnail(
+                    layerId, index, jsonLayer, baseLayerUrl, jsonMainConfig, messages);
+
+            if (cachedThumbnailFile != null) {
+                layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+            }
+        } catch(Exception ex) {
+            messages.addMessage(Messages.Level.WARNING,
+                    String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s",
+                    layerEntity.getId()), ex);
+        }
+        layerEntity.setThumbnailLastIndexed(System.currentTimeMillis());
+    }
+
+    private static File createLayerThumbnail(
+            String layerId, String index,
+            JSONObject jsonLayer,
+            String baseLayerUrlStr,
+            JSONObject jsonMainConfig,
+            Messages messages) throws Exception {
+
+        if (layerId == null || jsonMainConfig == null) {
+            return null;
+        }
+
+        // Get list of data source
+        JSONObject dataSources = jsonMainConfig.optJSONObject("dataSources");
+
+        // Get layer configuration
+        if (jsonLayer == null || dataSources == null) {
+            return null;
+        }
+
+        // Get layer data source
+        JSONObject dataSource = AtlasMapperLayer.getDataSourceConfig(jsonLayer, jsonMainConfig);
+
+        JSONArray bbox = jsonLayer.optJSONArray("layerBoundingBox");
+        BboxInfo bboxInfo = BboxInfo.parse(bbox);
+
+        // Get URL of the layer
+        URL layerUrl = AtlasMapperIndexer.getLayerUrl(dataSource, jsonLayer, bboxInfo);
+
+        boolean isBaseLayer = jsonLayer.optBoolean("isBaseLayer", false);
+
+        URL baseLayerUrl = null;
+        if (bboxInfo != null && !isBaseLayer) {
+            // Get URL of the base layer
+            baseLayerUrl = new URL(baseLayerUrlStr.replace("{BBOX}", bboxInfo.getBbox())
+                .replace("{WIDTH}", bboxInfo.getWidth())
+                .replace("{HEIGHT}", bboxInfo.getHeight()));
+        }
+
+        // If layer is a base layer (or can't find a WMS base layer), simply call cache with the layer URL.
+        if (baseLayerUrl == null) {
+            return ImageCache.cache(layerUrl, index, layerId, messages);
+        }
+
+        // Combine layers and cache them.
+        return ImageCache.cacheLayer(baseLayerUrl, layerUrl, index, layerId, messages);
+    }
+
+    public static JsonResponse getJsonResponse(String url, Messages messages) {
+        Connection.Response response = null;
+        try {
+            response = EntityUtils.jsoupExecuteWithRetry(url, messages);
+        } catch(Exception ex) {
+            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper configuration file: %s",
+                    url), ex);
+            return null;
+        }
+        Long lastModified = IndexUtils.parseHttpLastModifiedHeader(response, messages);
+
+        String responseStr = response.body();
+        JSONObject json = null;
+        if (responseStr != null && !responseStr.isEmpty()) {
+            json = new JSONObject(responseStr);
+        }
+
+        return new JsonResponse(json, lastModified);
+    }
+
+    private static class BboxInfo {
+        private String bbox;
+        private String width;
+        private String height;
+
+        public static BboxInfo parse(JSONArray bbox) {
+            // Parse bbox
+            float west = -180;
+            float south = -90;
+            float east = 180;
+            float north = 90;
+            if (bbox != null) {
+                west = bbox.optFloat(0, west);
+                south = bbox.optFloat(1, south);
+                east = bbox.optFloat(2, east);
+                north = bbox.optFloat(3, north);
+
+                if (west > east) {
+                    float temp = east;
+                    east = west;
+                    west = temp;
+                }
+
+                if (south > north) {
+                    float temp = south;
+                    south = north;
+                    north = temp;
+                }
+
+                // If bbox have ridiculous values, don't even try...
+                if (west < -200 || west > 200) { return null; }
+                if (south < -100 || south > 100) { return null; }
+                if (east < -200 || east > 200) { return null; }
+                if (north < -100 || north > 100) { return null; }
+
+                // Fix very small bbox (single point)
+                float _bboxWidth = east - west;
+                float _bboxHeight = north - south;
+                if (_bboxWidth < 0.01) {
+                    west -= 0.005;
+                    east += 0.005;
+                }
+                if (_bboxHeight < 0.01) {
+                    south -= 0.005;
+                    north += 0.005;
+                }
+
+                // Add layer margin
+                west = west - _bboxWidth * THUMBNAIL_MARGIN;
+                south = south - _bboxHeight * THUMBNAIL_MARGIN;
+                east = east + _bboxWidth * THUMBNAIL_MARGIN;
+                north = north + _bboxHeight * THUMBNAIL_MARGIN;
+
+                // Fix out-of-bounds bbox
+                if (west < -180) { west = -180; }
+                if (west > 180) { west = 180; }
+                if (south < -90) { south = -90; }
+                if (south > 90) { south = 90; }
+                if (east < -180) { east = -180; }
+                if (east > 180) { east = 180; }
+                if (north < -90) { north = -90; }
+                if (north > 90) { north = 90; }
+            }
+
+            float bboxWidth = east - west;
+            float bboxHeight = north - south;
+
+            // Calculate width x height, respecting max width and max height,
+            //     and respecting layer aspect ratio.
+            // It's hard to visualise, but the math are very simple.
+
+            float bboxRatio = bboxWidth / bboxHeight;
+            float thumbnailRatio = (float)THUMBNAIL_MAX_WIDTH / THUMBNAIL_MAX_HEIGHT;
+
+            int width = THUMBNAIL_MAX_WIDTH;
+            int height = THUMBNAIL_MAX_HEIGHT;
+            if (bboxRatio > thumbnailRatio) {
+                height = (int)(THUMBNAIL_MAX_WIDTH / bboxRatio);
+            } else {
+                width = (int)(THUMBNAIL_MAX_HEIGHT * bboxRatio);
+            }
+
+            BboxInfo bboxInfo = new BboxInfo();
+            bboxInfo.width = "" + width;
+            bboxInfo.height = "" + height;
+            bboxInfo.bbox = String.format("%.12f,%.12f,%.12f,%.12f", west, south, east, north);
+
+            return bboxInfo;
+        }
+
+        public String getBbox() {
+            return bbox;
+        }
+
+        public String getWidth() {
+            return width;
+        }
+
+        public String getHeight() {
+            return height;
+        }
+    }
+
+    private static class JsonResponse {
+        private Long lastModified;
+        private JSONObject json;
+
+        public JsonResponse(JSONObject json, Long lastModified) {
+            this.lastModified = lastModified;
+            this.json = json;
+        }
+
+        public Long getLastModified() {
+            return this.lastModified;
+        }
+
+        public JSONObject getJson() {
+            return this.json;
+        }
+    }
+
     public class AtlasMapperIndexerThread extends Thread {
         private final SearchClient client;
         private final Messages messages;
         private final String atlasMapperLayerId;
         private final JSONObject jsonMainConfig;
         private final JSONObject jsonLayersConfig;
-        private final String baseLayerId;
+        private final String baseLayerUrl;
         private final Set<String> usedThumbnails;
         private final int current;
 
@@ -391,7 +568,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 String atlasMapperLayerId,
                 JSONObject jsonMainConfig,
                 JSONObject jsonLayersConfig,
-                String baseLayerId,
+                String baseLayerUrl,
                 Set<String> usedThumbnails,
                 int current
         ) {
@@ -400,7 +577,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             this.atlasMapperLayerId = atlasMapperLayerId;
             this.jsonMainConfig = jsonMainConfig;
             this.jsonLayersConfig = jsonLayersConfig;
-            this.baseLayerId = baseLayerId;
+            this.baseLayerUrl = baseLayerUrl;
             this.usedThumbnails = usedThumbnails;
             this.current = current;
         }
@@ -410,22 +587,16 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             JSONObject jsonLayer = this.jsonLayersConfig.optJSONObject(this.atlasMapperLayerId);
 
             AtlasMapperLayer layerEntity = new AtlasMapperLayer(
-                    AtlasMapperIndexer.this.getIndex(), AtlasMapperIndexer.this.atlasMapperClientUrl, this.atlasMapperLayerId, jsonLayer, this.jsonMainConfig, this.messages);
+                    AtlasMapperIndexer.this.getIndex(), AtlasMapperIndexer.this.atlasMapperClientUrl,
+                    this.atlasMapperLayerId, jsonLayer, this.jsonMainConfig, this.messages);
 
             // Create the thumbnail if it's missing or outdated
             AtlasMapperLayer oldLayer = AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId, this.messages);
             if (layerEntity.isThumbnailOutdated(oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(), AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
-                try {
-                    File cachedThumbnailFile = this.createLayerThumbnail(jsonLayer);
-                    if (cachedThumbnailFile != null) {
-                        layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                    }
-                } catch(Exception ex) {
-                    messages.addMessage(Messages.Level.WARNING,
-                            String.format("Exception occurred while creating a thumbnail image for AtlasMapper layer: %s",
-                            this.atlasMapperLayerId), ex);
-                }
-                layerEntity.setThumbnailLastIndexed(System.currentTimeMillis());
+                AtlasMapperIndexer.updateThumbnail(
+                        this.atlasMapperLayerId, AtlasMapperIndexer.this.getIndex(),
+                        jsonLayer, this.baseLayerUrl, this.jsonMainConfig,
+                        layerEntity, this.messages);
             } else {
                 layerEntity.useCachedThumbnail(oldLayer);
             }
@@ -448,48 +619,6 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             }
 
             AtlasMapperIndexer.this.incrementCompleted();
-        }
-
-        private File createLayerThumbnail(JSONObject jsonLayer) throws Exception {
-            if (this.atlasMapperLayerId == null || this.jsonLayersConfig == null || this.jsonMainConfig == null) {
-                return null;
-            }
-
-            // Get list of data source
-            JSONObject dataSources = this.jsonMainConfig.optJSONObject("dataSources");
-
-            // Get layer configuration
-            if (jsonLayer == null || dataSources == null) {
-                return null;
-            }
-
-            // Get layer data source
-            JSONObject dataSource = AtlasMapperLayer.getDataSourceConfig(jsonLayer, this.jsonMainConfig);
-
-            JSONArray bbox = jsonLayer.optJSONArray("layerBoundingBox");
-
-            // Get URL of the layer
-            URL layerUrl = AtlasMapperIndexer.getLayerUrl(dataSource, jsonLayer, bbox);
-
-            boolean isBaseLayer = jsonLayer.optBoolean("isBaseLayer", false);
-
-            URL baseLayerUrl = null;
-            if (!isBaseLayer) {
-                // Get URL of the base layer
-                JSONObject jsonBaseLayer = this.baseLayerId == null ? null : this.jsonLayersConfig.optJSONObject(this.baseLayerId);
-                String baseLayerDataSourceId = jsonBaseLayer == null ? null : jsonBaseLayer.optString("dataSourceId", null);
-                JSONObject baseLayerDataSource = dataSources.optJSONObject(baseLayerDataSourceId);
-
-                baseLayerUrl = AtlasMapperIndexer.getLayerUrl(baseLayerDataSource, jsonBaseLayer, bbox);
-            }
-
-            // If layer is a base layer (or can't find a WMS base layer), simply call cache with the layer URL.
-            if (baseLayerUrl == null) {
-                return ImageCache.cache(layerUrl, AtlasMapperIndexer.this.getIndex(), this.atlasMapperLayerId, this.messages);
-            }
-
-            // Combine layers and cache them.
-            return ImageCache.cacheLayer(baseLayerUrl, layerUrl, AtlasMapperIndexer.this.getIndex(), this.atlasMapperLayerId, this.messages);
         }
     }
 }

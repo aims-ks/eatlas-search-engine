@@ -189,7 +189,7 @@ public class ImageCache {
     }
 
     public static File cacheLayer(URL baseLayerImageUrl, URL layerImageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
-        if (baseLayerImageUrl == null || layerImageUrl == null || index == null) {
+        if (layerImageUrl == null || index == null) {
             return null;
         }
 
@@ -215,39 +215,48 @@ public class ImageCache {
         }
 
         // Get base layer image (using JSoup to benefit from the retry feature)
-        String baseLayerUrlStr = baseLayerImageUrl.toString();
-        Connection.Response baseLayerImageResponse = EntityUtils.jsoupExecuteWithRetry(baseLayerUrlStr, messages);
-        if (baseLayerImageResponse == null) {
-            return null;
-        }
-        int baseLayerStatusCode = baseLayerImageResponse.statusCode();
-        if (baseLayerStatusCode < 200 || baseLayerStatusCode >= 300) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Invalid base layer URL: %s status code: %d", baseLayerUrlStr, baseLayerStatusCode));
-            return null;
+        BufferedImage baseLayerImage = null;
+        if (baseLayerImageUrl != null) {
+            String baseLayerUrlStr = baseLayerImageUrl.toString();
+            Connection.Response baseLayerImageResponse = EntityUtils.jsoupExecuteWithRetry(baseLayerUrlStr, messages);
+            if (baseLayerImageResponse == null) {
+                return null;
+            }
+
+            int baseLayerStatusCode = baseLayerImageResponse.statusCode();
+            if (baseLayerStatusCode < 200 || baseLayerStatusCode >= 300) {
+                messages.addMessage(Messages.Level.WARNING, String.format("Invalid base layer URL: %s status code: %d", baseLayerUrlStr, baseLayerStatusCode));
+                return null;
+            }
+
+            baseLayerImage = createImageFromResponse(baseLayerImageResponse);
         }
 
+        BufferedImage layerImage = createImageFromResponse(layerImageResponse);
+
+        BufferedImage combined = layerImage;
+        if (baseLayerImage != null) {
+            combined = new BufferedImage(baseLayerImage.getWidth(), baseLayerImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+            Graphics2D graphics = (Graphics2D)combined.getGraphics();
+            // Fill the image with white paint
+            graphics.setColor(new Color(255, 255, 255));
+            graphics.fillRect(0, 0, combined.getWidth(), combined.getHeight());
+
+            // Draw the background image (50% opacity)
+            Composite defaultComposite = graphics.getComposite();
+            graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, BASE_LAYER_ALPHA));
+            graphics.drawImage(baseLayerImage, 0, 0, null);
+            graphics.setComposite(defaultComposite);
+
+            // Draw the layer on top
+            graphics.drawImage(layerImage, 0, 0, null);
+        }
+
+        // Saved image to disk
         String extension = "jpg";
         File cacheFile = getUniqueFile(cacheDir, layerImageUrl, filenamePrefix, extension);
 
-        BufferedImage baseLayerImage = createImageFromResponse(baseLayerImageResponse);
-        BufferedImage layerImage = createImageFromResponse(layerImageResponse);
-
-        BufferedImage combined = new BufferedImage(baseLayerImage.getWidth(), baseLayerImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics = (Graphics2D)combined.getGraphics();
-        // Fill the image with white paint
-        graphics.setColor(new Color(255, 255, 255));
-        graphics.fillRect(0, 0, combined.getWidth(), combined.getHeight());
-
-        // Draw the background image (50% opacity)
-        Composite defaultComposite = graphics.getComposite();
-        graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, BASE_LAYER_ALPHA));
-        graphics.drawImage(baseLayerImage, 0, 0, null);
-        graphics.setComposite(defaultComposite);
-
-        // Draw the layer on top
-        graphics.drawImage(layerImage, 0, 0, null);
-
-        // Saved image to disk
         LOGGER.debug(String.format("Caching layer preview image %s to %s", layerImageUrl, cacheFile));
         ImageIO.write(combined, "jpg", cacheFile);
 

@@ -208,7 +208,7 @@ public class SearchUtils {
 
             case "AtlasMapperIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("atlasmapper");
-                newIndexer = new AtlasMapperIndexer(newIndex, null, null);
+                newIndexer = new AtlasMapperIndexer(newIndex, null, null, null);
                 break;
 
             default:

@@ -519,6 +519,20 @@
                                             <div class="desc">Version of AtlasMapper.</div>
                                             <div class="desc">Used to properly parse the configuration.</div>
                                         </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_baseLayerUrl">
+                                                <span class="label">Base layer URL</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_baseLayerUrl"
+                                                    name="${indexer.index}_baseLayerUrl"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.baseLayerUrl}" />" />
+                                            </label>
+                                            <div class="desc">Base layer URL, used to generate layer thumbnail.</div>
+                                            <div class="desc">It must include the placeholders {BBOX}, {WIDTH} and {HEIGHT}</div>
+                                            <div class="desc">Example: https://maps.eatlas.org.au/maps/wms?SERVICE=WMS&REQUEST=GetMap&LAYERS=ea-be:World_Bright-Earth-e-Atlas-basemap&FORMAT=image/jpeg&TRANSPARENT=false&VERSION=1.1.1&SRS=EPSG:4326&BBOX={BBOX}&WIDTH={WIDTH}&HEIGHT={HEIGHT}</div>
+                                        </div>
                                     </div>
                                 </c:when>
                             </c:choose>

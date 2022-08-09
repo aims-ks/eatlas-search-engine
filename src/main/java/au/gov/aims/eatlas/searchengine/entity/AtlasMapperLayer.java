@@ -313,66 +313,6 @@ public class AtlasMapperLayer extends Entity {
         return null;
     }
 
-    public static String getWMSBaseLayer(JSONObject jsonMainConfig, JSONObject jsonLayersConfig) {
-        if (jsonMainConfig == null) {
-            return null;
-        }
-
-        JSONArray jsonDefaultLayers = jsonMainConfig.optJSONArray("defaultLayers");
-        if (jsonDefaultLayers == null) {
-            return null;
-        }
-
-        JSONObject dataSources = jsonMainConfig.optJSONObject("dataSources");
-        if (dataSources == null) {
-            return null;
-        }
-
-        for (int i=0; i<jsonDefaultLayers.length(); i++) {
-            JSONObject jsonDefaultLayer = jsonDefaultLayers.getJSONObject(i);
-            if (isWMSBaseLayer(jsonDefaultLayer, dataSources)) {
-                String atlasMapperLayerId = jsonDefaultLayer.optString("layerId", null);
-                if (atlasMapperLayerId != null) {
-                    return atlasMapperLayerId;
-                }
-            }
-        }
-
-        // There is no WMS base layers in default layers. Look for a WMS base layer in the list of layer.
-        // NOTE: This could be expensive (lots of CPU). Hopefully that won't happen often.
-        for (String atlasMapperLayerId : jsonLayersConfig.keySet()) {
-            JSONObject jsonLayer = jsonLayersConfig.optJSONObject(atlasMapperLayerId);
-            if (isWMSBaseLayer(jsonLayer, dataSources)) {
-                return atlasMapperLayerId;
-            }
-        }
-
-        return null;
-    }
-
-    private static boolean isWMSBaseLayer(JSONObject jsonLayer, JSONObject dataSources) {
-        if (jsonLayer == null || dataSources == null) {
-            return false;
-        }
-
-        boolean isBaseLayer = jsonLayer.optBoolean("isBaseLayer", false);
-        if (!isBaseLayer) {
-            return false;
-        }
-
-        String dataSourceId = jsonLayer.optString("dataSourceId", null);
-        if (dataSourceId == null) {
-            return false;
-        }
-
-        JSONObject dataSource = dataSources.optJSONObject(dataSourceId);
-        if (dataSource == null) {
-            return false;
-        }
-
-        return AtlasMapperLayer.isWMS(dataSource);
-    }
-
     public static boolean isWMS(JSONObject dataSource) {
         if (dataSource == null) {
             return false;
