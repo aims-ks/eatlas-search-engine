@@ -51,7 +51,7 @@ import java.net.URL;
 /**
  * Class used to cache preview images, thumbnails, etc.
  * Input: Image URL and a search index (string representing the subfolder where the image will be saved on disk).
- * Process: Download the image, saved in on the server.
+ * Process: Download the image, saved it on the server.
  * Output: File of the cache image, or null if the image could not be downloaded.
  */
 @Path("/img/v1")

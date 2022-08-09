@@ -32,7 +32,7 @@
                     <input type="text" name="query" value="<c:out value="${it.query}"/>" />
                 </label>
                 <div class="desc">Optional. Default: Returns all documents from the selected indexes.</div>
-                <div class="desc">Elastic search query. Write a search query the same way you would write in on Google.</div>
+                <div class="desc">Elastic search query. Write a search query the same way you would write it in Google.</div>
             </div>
 
             <div class="field">
