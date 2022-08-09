@@ -395,7 +395,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         boolean isBaseLayer = jsonLayer.optBoolean("isBaseLayer", false);
 
         URL baseLayerUrl = null;
-        if (bboxInfo != null && !isBaseLayer) {
+        if (baseLayerUrlStr != null && bboxInfo != null && !isBaseLayer) {
             // Get URL of the base layer
             baseLayerUrl = new URL(baseLayerUrlStr.replace("{BBOX}", bboxInfo.getBbox())
                 .replace("{WIDTH}", bboxInfo.getWidth())
