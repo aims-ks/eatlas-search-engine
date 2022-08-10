@@ -23,17 +23,19 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONObject;
-import org.locationtech.jts.io.ParseException;
 
 import java.net.URL;
 
-public class DrupalNode extends Entity {
+public class DrupalNode extends AbstractDrupalEntity {
     private Integer nid;
 
-    protected DrupalNode() {}
+    protected DrupalNode() {
+        super();
+    }
 
     // Load from Drupal JSON:API output
     public DrupalNode(String index, JSONObject jsonApiNode, Messages messages) {
+        super(jsonApiNode, messages);
         this.setIndex(index);
 
         if (jsonApiNode != null) {
@@ -78,22 +80,6 @@ public class DrupalNode extends Entity {
             JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
             this.setDocument(jsonBody == null ? null :
                 EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
-
-
-            // TODO Implement WKT
-            // Do set WKT for node with "again" in the title.
-            String title = this.getTitle();
-            if (title != null && !title.contains("again")) {
-                // Set WKT to GBR
-                String wkt = "BBOX (142.5, 153.0, -10.5, -22.5)";
-                try {
-                    this.setWktAndArea(wkt);
-                } catch(ParseException ex) {
-                    Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
-                    message.addDetail(wkt);
-                }
-            }
-
         }
     }
 

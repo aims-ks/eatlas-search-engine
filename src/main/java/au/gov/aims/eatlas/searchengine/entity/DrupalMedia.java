@@ -26,13 +26,16 @@ import org.json.JSONObject;
 
 import java.net.URL;
 
-public class DrupalMedia extends Entity {
+public class DrupalMedia extends AbstractDrupalEntity {
     private Integer mid;
 
-    private DrupalMedia() {}
+    private DrupalMedia() {
+        super();
+    }
 
     // Load from Drupal JSON:API output
     public DrupalMedia(String index, JSONObject jsonApiMedia, Messages messages) {
+        super(jsonApiMedia, messages);
         this.setIndex(index);
 
         if (jsonApiMedia != null) {

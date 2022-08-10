@@ -71,15 +71,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     }
 
     public abstract E createDrupalEntity(JSONObject jsonApiEntity, Messages messages);
-
-    public abstract Thread createIndexerThread(
-            SearchClient client,
-            Messages messages,
-            E drupalEntity,
-            JSONObject jsonApiEntity,
-            JSONArray jsonIncluded,
-            Set<String> usedThumbnails,
-            int page, int current, int entityFound);
+    public abstract E getIndexedDrupalEntity(SearchClient client, String id, Messages messages);
 
     protected JSONObject getJsonBase() {
         return super.getJsonBase()
@@ -102,6 +94,59 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         if (this.drupalBundleId == null || this.drupalBundleId.isEmpty()) {
             return false;
         }
+        return true;
+    }
+
+    @Override
+    protected E harvestEntity(SearchClient client, String entityUUID, Messages messages) {
+        URIBuilder uriBuilder = this.buildDrupalApiEntityUrl(entityUUID, messages);
+        if (uriBuilder == null) {
+            return null;
+        }
+
+        String url;
+        try {
+            url = uriBuilder.build().toURL().toString();
+        } catch(Exception ex) {
+            // Should not happen
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("Invalid Drupal URL. Exception occurred while building a URL starting with: %s", this.getDrupalApiUrlBase()), ex);
+            return null;
+        }
+
+        String responseStr = null;
+        try {
+            responseStr = EntityUtils.harvestGetURL(url, messages);
+        } catch(Exception ex) {
+            messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting the Drupal %s, type: %s, UUID: %s",
+                    this.getDrupalEntityType(), this.getDrupalBundleId(), entityUUID), ex);
+        }
+
+        if (responseStr != null && !responseStr.isEmpty()) {
+            JSONObject jsonResponse = new JSONObject(responseStr);
+
+            JSONArray jsonErrors = jsonResponse.optJSONArray("errors");
+            if (jsonErrors != null && !jsonErrors.isEmpty()) {
+                this.handleDrupalApiErrors(jsonErrors, messages);
+            } else {
+                JSONObject jsonApiEntity = jsonResponse.optJSONObject("data");
+                JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
+
+                E drupalEntity = this.createDrupalEntity(jsonApiEntity, messages);
+
+                if (this.parseJsonDrupalEntity(client, jsonApiEntity, jsonIncluded, drupalEntity, messages)) {
+                    return drupalEntity;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // Overwrite in sub-classes when more work needs to be done.
+    // Return false to prevent the entity from been indexed.
+    protected boolean parseJsonDrupalEntity(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
+        this.updateThumbnail(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
         return true;
     }
 
@@ -131,7 +176,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         boolean stop = false;
         boolean crashed = false;
         do {
-            URIBuilder uriBuilder = buildDrupalApiUrl(page, messages);
+            URIBuilder uriBuilder = this.buildDrupalApiPageUrl(page, messages);
             if (uriBuilder == null) {
                 return;
             }
@@ -162,19 +207,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
                 JSONArray jsonErrors = jsonResponse.optJSONArray("errors");
                 if (jsonErrors != null && !jsonErrors.isEmpty()) {
-                    // Handle errors returned by Drupal.
-                    for (int i=0; i<jsonErrors.length(); i++) {
-                        JSONObject jsonError = jsonErrors.optJSONObject(i);
-                        String errorTitle = jsonError.optString("title", "Untitled error");
-                        String errorDetail = jsonError.optString("detail", "No details");
-
-                        messages.addMessage(Messages.Level.ERROR,
-                                String.format("An error occurred during the indexation of %s type %s - %s: %s",
-                                        this.getDrupalEntityType(), this.getDrupalBundleId(),
-                                        errorTitle, errorDetail));
-                    }
+                    this.handleDrupalApiErrors(jsonErrors, messages);
                     crashed = true;
-
                 } else {
                     JSONArray jsonEntities = jsonResponse.optJSONArray("data");
                     JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
@@ -201,7 +235,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                             break;
                         }
 
-                        Thread thread = this.createIndexerThread(
+                        Thread thread = new DrupalEntityIndexerThread(
                             client, messages, drupalEntity, jsonApiEntity, jsonIncluded, usedThumbnails, page+1, i+1, entityFound);
 
                         threadPool.execute(thread);
@@ -235,7 +269,23 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return String.format("%s/jsonapi/%s/%s", this.getDrupalUrl(), this.getDrupalEntityType(), this.getDrupalBundleId());
     }
 
-    public URIBuilder buildDrupalApiUrl(int page, Messages messages) {
+    public URIBuilder buildDrupalApiEntityUrl(String entityUUID, Messages messages) {
+        String urlBase = this.getDrupalApiUrlBase();
+        URIBuilder uriBuilder;
+        try {
+            uriBuilder = new URIBuilder(String.format("%s/%s", urlBase, entityUUID));
+        } catch(URISyntaxException ex) {
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
+            return null;
+        }
+        uriBuilder.setParameter("include", this.drupalPreviewImageField);
+        uriBuilder.setParameter("filter[status]", "1");
+
+        return uriBuilder;
+    }
+
+    public URIBuilder buildDrupalApiPageUrl(int page, Messages messages) {
         // Ordered by lastModified (changed).
         // If the parameter lastHarvested is set, harvest entities (nodes)
         //     until we found an entity that was last modified before the lastHarvested parameter.
@@ -259,6 +309,20 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         uriBuilder.setParameter("filter[status]", "1");
 
         return uriBuilder;
+    }
+
+    public void handleDrupalApiErrors(JSONArray jsonErrors, Messages messages) {
+        // Handle errors returned by Drupal.
+        for (int i=0; i<jsonErrors.length(); i++) {
+            JSONObject jsonError = jsonErrors.optJSONObject(i);
+            String errorTitle = jsonError.optString("title", "Untitled error");
+            String errorDetail = jsonError.optString("detail", "No details");
+
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("An error occurred during the indexation of %s type %s - %s: %s",
+                            this.getDrupalEntityType(), this.getDrupalBundleId(),
+                            errorTitle, errorDetail));
+        }
     }
 
     public static String getPreviewImageUUID(JSONObject jsonApiEntity, String previewImageField) {
@@ -329,9 +393,52 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalPreviewImageField = drupalPreviewImageField;
     }
 
+    public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
+        URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiEntity, messages);
+        if (baseUrl != null && this.getDrupalPreviewImageField() != null) {
+            String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(jsonApiEntity, this.getDrupalPreviewImageField());
+            if (previewImageUUID != null) {
+                String previewImageRelativePath = AbstractDrupalEntityIndexer.findPreviewImageRelativePath(previewImageUUID, jsonIncluded);
+                if (previewImageRelativePath != null) {
+                    URL thumbnailUrl = null;
+                    try {
+                        thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
+                    } catch(Exception ex) {
+                        messages.addMessage(Messages.Level.WARNING,
+                                String.format("Exception occurred while creating a thumbnail URL for Drupal %s type %s, id: %s",
+                                        this.getDrupalEntityType(),
+                                        this.getDrupalBundleId(),
+                                        drupalEntity.getId()), ex);
+                    }
+                    drupalEntity.setThumbnailUrl(thumbnailUrl);
+
+                    // Create the thumbnail if it's missing or outdated
+                    E oldEntity = this.getIndexedDrupalEntity(client, drupalEntity.getId(), messages);
+                    if (drupalEntity.isThumbnailOutdated(oldEntity, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), messages)) {
+                        try {
+                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), drupalEntity.getId(), messages);
+                            if (cachedThumbnailFile != null) {
+                                drupalEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                            }
+                        } catch(Exception ex) {
+                            messages.addMessage(Messages.Level.WARNING,
+                                    String.format("Exception occurred while creating a thumbnail for Drupal %s type %s, id: %s",
+                                            AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
+                                            AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
+                                            drupalEntity.getId()), ex);
+                        }
+                        drupalEntity.setThumbnailLastIndexed(System.currentTimeMillis());
+                    } else {
+                        drupalEntity.useCachedThumbnail(oldEntity);
+                    }
+                }
+            }
+        }
+    }
+
     // Thread class, which does typical entity indexing (node, media, etc).
     // It can be extended in the indexer and used as a starting point.
-    public abstract class AbstractDrupalEntityIndexerThread extends Thread {
+    public class DrupalEntityIndexerThread extends Thread {
         private final SearchClient client;
         private final Messages messages;
         private final E drupalEntity;
@@ -342,7 +449,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         private final int current;
         private final int pageTotal;
 
-        public AbstractDrupalEntityIndexerThread(
+        public DrupalEntityIndexerThread(
                 SearchClient client,
                 Messages messages,
                 E drupalEntity,
@@ -362,8 +469,6 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             this.pageTotal = pageTotal;
         }
 
-        public abstract E getIndexedDrupalEntity();
-
         public SearchClient getClient() {
             return this.client;
         }
@@ -376,92 +481,33 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             return this.drupalEntity;
         }
 
-        // This method can be overwritten to add some processing.
-        // Return false to stop the processing.
-        // It is called before any processing is done.
-        public boolean preProcess() {
-            return true;
-        }
-
-        // This method can be overwritten to add some processing.
-        // Return false to stop the processing.
-        // It is called after parsing jsonApiEntity, just before indexing the entity.
-        public boolean postProcess() {
-            return true;
-        }
-
         @Override
         public void run() {
-            if (this.preProcess()) {
-
-                // Thumbnail (aka preview image)
-                URL baseUrl = DrupalNode.getDrupalBaseUrl(this.jsonApiEntity, this.messages);
-                if (baseUrl != null && AbstractDrupalEntityIndexer.this.getDrupalPreviewImageField() != null) {
-                    String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(this.jsonApiEntity, AbstractDrupalEntityIndexer.this.getDrupalPreviewImageField());
-                    if (previewImageUUID != null) {
-                        String previewImageRelativePath = AbstractDrupalEntityIndexer.findPreviewImageRelativePath(previewImageUUID, this.jsonIncluded);
-                        if (previewImageRelativePath != null) {
-                            URL thumbnailUrl = null;
-                            try {
-                                thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
-                            } catch(Exception ex) {
-                                this.messages.addMessage(Messages.Level.WARNING,
-                                        String.format("Exception occurred while creating a thumbnail URL for Drupal %s type %s, id: %s",
-                                                AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
-                                                AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
-                                                this.drupalEntity.getId()), ex);
-                            }
-                            this.drupalEntity.setThumbnailUrl(thumbnailUrl);
-
-                            // Create the thumbnail if it's missing or outdated
-                            E oldEntity = this.getIndexedDrupalEntity();
-                            if (this.drupalEntity.isThumbnailOutdated(oldEntity, AbstractDrupalEntityIndexer.this.getSafeThumbnailTTL(), AbstractDrupalEntityIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
-                                try {
-                                    File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, AbstractDrupalEntityIndexer.this.getIndex(), this.drupalEntity.getId(), this.messages);
-                                    if (cachedThumbnailFile != null) {
-                                        this.drupalEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
-                                    }
-                                } catch(Exception ex) {
-                                    this.messages.addMessage(Messages.Level.WARNING,
-                                            String.format("Exception occurred while creating a thumbnail for Drupal %s type %s, id: %s",
-                                                    AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
-                                                    AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
-                                                    this.drupalEntity.getId()), ex);
-                                }
-                                this.drupalEntity.setThumbnailLastIndexed(System.currentTimeMillis());
-                            } else {
-                                this.drupalEntity.useCachedThumbnail(oldEntity);
-                            }
-                        }
-                    }
-                }
-
+            if (AbstractDrupalEntityIndexer.this.parseJsonDrupalEntity(this.client, this.jsonApiEntity, this.jsonIncluded, this.drupalEntity, this.messages)) {
                 if (this.usedThumbnails != null) {
-                    String thumbnailFilename = drupalEntity.getCachedThumbnailFilename();
+                    String thumbnailFilename = this.drupalEntity.getCachedThumbnailFilename();
                     if (thumbnailFilename != null) {
                         this.usedThumbnails.add(thumbnailFilename);
                     }
                 }
 
-                if (this.postProcess()) {
-                    try {
-                        IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.client, this.drupalEntity, this.messages);
+                try {
+                    IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.client, this.drupalEntity, this.messages);
 
-                        // NOTE: We don't know how many entities (or pages of entities) there is.
-                        //     We index until we reach the bottom of the barrel...
-                        LOGGER.debug(String.format("[Page %d: %d/%d] Indexing drupal %s type %s, id: %s, index response status: %s",
-                                this.page, this.current, this.pageTotal,
-                                AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
-                                AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
-                                this.drupalEntity.getId(),
-                                indexResponse.result()));
-                    } catch(Exception ex) {
-                        this.messages.addMessage(Messages.Level.WARNING,
-                                String.format("Exception occurred while indexing a Drupal %s type %s, id: %s",
-                                        AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
-                                        AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
-                                        this.drupalEntity.getId()), ex);
-                    }
+                    // NOTE: We don't know how many entities (or pages of entities) there is.
+                    //     We index until we reach the bottom of the barrel...
+                    LOGGER.debug(String.format("[Page %d: %d/%d] Indexing Drupal %s type %s, id: %s, index response status: %s",
+                            this.page, this.current, this.pageTotal,
+                            AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
+                            AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
+                            this.drupalEntity.getId(),
+                            indexResponse.result()));
+                } catch(Exception ex) {
+                    this.messages.addMessage(Messages.Level.WARNING,
+                            String.format("Exception occurred while indexing a Drupal %s type %s, id: %s",
+                                    AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
+                                    AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
+                                    this.drupalEntity.getId()), ex);
                 }
             }
 

@@ -21,10 +21,7 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.Set;
 
 public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
 
@@ -49,13 +46,6 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
     @Override
     public DrupalNode load(JSONObject json, Messages messages) {
         return DrupalNode.load(json, messages);
-    }
-
-    @Override
-    protected DrupalNode harvestEntity(SearchClient client, String id, Messages messages) {
-        // TODO Implement
-        messages.addMessage(Messages.Level.ERROR, "RE-INDEX NOT IMPLEMENTED");
-        return null;
     }
 
     /**
@@ -85,34 +75,7 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
     }
 
     @Override
-    public Thread createIndexerThread(
-            SearchClient client,
-            Messages messages,
-            DrupalNode drupalNode,
-            JSONObject jsonApiNode,
-            JSONArray jsonIncluded,
-            Set<String> usedThumbnails,
-            int page, int current, int nodeFound) {
-
-        return new DrupalNodeIndexer.DrupalNodeIndexerThread(
-            client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page, current, nodeFound);
-    }
-
-    public class DrupalNodeIndexerThread extends AbstractDrupalEntityIndexerThread {
-        public DrupalNodeIndexerThread(
-                SearchClient client,
-                Messages messages,
-                DrupalNode drupalNode,
-                JSONObject jsonApiNode,
-                JSONArray jsonIncluded,
-                Set<String> usedThumbnails,
-                int page, int current, int pageTotal
-        ) {
-            super(client, messages, drupalNode, jsonApiNode, jsonIncluded, usedThumbnails, page, current, pageTotal);
-        }
-
-        public DrupalNode getIndexedDrupalEntity() {
-            return DrupalNodeIndexer.this.safeGet(this.getClient(), DrupalNode.class, this.getDrupalEntity().getId(), this.getMessages());
-        }
+    public DrupalNode getIndexedDrupalEntity(SearchClient client, String id, Messages messages) {
+        return this.safeGet(client, DrupalNode.class, id, messages);
     }
 }

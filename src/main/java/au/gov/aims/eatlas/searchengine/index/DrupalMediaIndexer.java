@@ -22,10 +22,7 @@ import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.Set;
 
 public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia> {
     private static final String DEFAULT_PREVIEW_IMAGE_FIELD = "thumbnail";
@@ -58,13 +55,6 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
     @Override
     public DrupalMedia load(JSONObject json, Messages messages) {
         return DrupalMedia.load(json, messages);
-    }
-
-    @Override
-    protected DrupalMedia harvestEntity(SearchClient client, String id, Messages messages) {
-        // TODO Implement
-        messages.addMessage(Messages.Level.ERROR, "RE-INDEX NOT IMPLEMENTED");
-        return null;
     }
 
     /**
@@ -100,17 +90,8 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
     }
 
     @Override
-    public Thread createIndexerThread(
-            SearchClient client,
-            Messages messages,
-            DrupalMedia drupalMedia,
-            JSONObject jsonApiMedia,
-            JSONArray jsonIncluded,
-            Set<String> usedThumbnails,
-            int page, int current, int mediaFound) {
-
-        return new DrupalMediaIndexerThread(
-            client, messages, drupalMedia, jsonApiMedia, jsonIncluded, usedThumbnails, page, current, mediaFound);
+    public DrupalMedia getIndexedDrupalEntity(SearchClient client, String id, Messages messages) {
+        return this.safeGet(client, DrupalMedia.class, id, messages);
     }
 
     private static String getDrupalTitle(JSONObject jsonApiMedia, String drupalTitleField) {
@@ -145,23 +126,5 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
 
     public void setDrupalDescriptionField(String drupalDescriptionField) {
         this.drupalDescriptionField = drupalDescriptionField;
-    }
-
-    public class DrupalMediaIndexerThread extends AbstractDrupalEntityIndexerThread {
-        public DrupalMediaIndexerThread(
-                SearchClient client,
-                Messages messages,
-                DrupalMedia drupalMedia,
-                JSONObject jsonApiNode,
-                JSONArray jsonIncluded,
-                Set<String> usedThumbnails,
-                int page, int current, int pageTotal
-        ) {
-            super(client, messages, drupalMedia, jsonApiNode, jsonIncluded, usedThumbnails, page, current, pageTotal);
-        }
-
-        public DrupalMedia getIndexedDrupalEntity() {
-            return DrupalMediaIndexer.this.safeGet(this.getClient(), DrupalMedia.class, this.getDrupalEntity().getId(), this.getMessages());
-        }
     }
 }
