@@ -583,6 +583,8 @@ public abstract class AbstractIndexer<E extends Entity> {
             IndexerState state = AbstractIndexer.this.getState();
             String index = AbstractIndexer.this.getIndex();
 
+            boolean fullIndexation = this.fullIndex || state.getLastIndexed() == null;
+
             try(
                     RestClient restClient = SearchUtils.buildRestClient();
 
@@ -594,11 +596,11 @@ public abstract class AbstractIndexer<E extends Entity> {
                     SearchClient client = new ESClient(new ElasticsearchClient(transport))
             ) {
                 client.createIndex(index);
-                AbstractIndexer.this.internalIndex(client, this.fullIndex ? null : state.getLastIndexed(), this.messages);
+                AbstractIndexer.this.internalIndex(client, fullIndexation ? null : state.getLastIndexed(), this.messages);
                 AbstractIndexer.this.refreshCount(client);
 
                 long indexed = AbstractIndexer.this.indexed;
-                if (!this.fullIndex && indexed == 0) {
+                if (!fullIndexation && indexed == 0) {
                     messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", index));
                 } else {
                     messages.addMessage(Messages.Level.INFO, String.format("Index %s %d document indexed.", index, indexed));
@@ -611,7 +613,12 @@ public abstract class AbstractIndexer<E extends Entity> {
             }
 
             long lastIndexedEnds = System.currentTimeMillis();
-            state.setLastIndexRuntime(lastIndexedEnds - lastIndexedStarts);
+
+            // Only save the indexation runtime when it's doing a full reindexation.
+            // "Index latest" should always only take a few seconds. It's not worth recording the runtime.
+            if (fullIndexation) {
+                state.setLastIndexRuntime(lastIndexedEnds - lastIndexedStarts);
+            }
 
             try {
                 SearchEngineState.getInstance().save();

@@ -159,6 +159,13 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
+    public boolean supportsIndexLatest() {
+        // In this case, index latest re-index everything but doesn't refresh thumbnails (preview images).
+        // It's not as quick as only indexing the latest layers, but it's good enough.
+        return true;
+    }
+
+    @Override
     protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
         // There is no way to get last modified layers from AtlasMapper.
         // Therefore, we only perform a harvest if the JSON files are more recent than lastHarvested.
@@ -181,6 +188,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         }
         Long layersLastModified = layersResponse.getLastModified();
 
+        boolean refreshThumbnails = true;
         if (lastHarvested != null) {
             // If a file have no last modified in the header,
             // we can't tell if the index is outdated. Let's assume it is.
@@ -199,6 +207,10 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                     return;
                 }
             }
+
+            // The atlas mapper files were changed.
+            // Re-harvest the layers, but do not attempt to re-generate the thumbnails.
+            refreshThumbnails = false;
         }
 
         JSONObject jsonMainConfig = mainResponse.getJson();
@@ -216,7 +228,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
             Thread thread = new AtlasMapperIndexerThread(
                     client, messages, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig,
-                    this.getBaseLayerUrl(), usedThumbnails, current);
+                    this.getBaseLayerUrl(), usedThumbnails, refreshThumbnails, current);
 
             threadPool.execute(thread);
         }
@@ -431,6 +443,24 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         return new JsonResponse(json, lastModified);
     }
 
+    private static class JsonResponse {
+        private Long lastModified;
+        private JSONObject json;
+
+        public JsonResponse(JSONObject json, Long lastModified) {
+            this.lastModified = lastModified;
+            this.json = json;
+        }
+
+        public Long getLastModified() {
+            return this.lastModified;
+        }
+
+        public JSONObject getJson() {
+            return this.json;
+        }
+    }
+
     private static class BboxInfo {
         private String bbox;
         private String width;
@@ -534,24 +564,6 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         }
     }
 
-    private static class JsonResponse {
-        private Long lastModified;
-        private JSONObject json;
-
-        public JsonResponse(JSONObject json, Long lastModified) {
-            this.lastModified = lastModified;
-            this.json = json;
-        }
-
-        public Long getLastModified() {
-            return this.lastModified;
-        }
-
-        public JSONObject getJson() {
-            return this.json;
-        }
-    }
-
     public class AtlasMapperIndexerThread extends Thread {
         private final SearchClient client;
         private final Messages messages;
@@ -560,6 +572,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         private final JSONObject jsonLayersConfig;
         private final String baseLayerUrl;
         private final Set<String> usedThumbnails;
+        private final boolean refreshThumbnails;
         private final int current;
 
         public AtlasMapperIndexerThread(
@@ -570,6 +583,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 JSONObject jsonLayersConfig,
                 String baseLayerUrl,
                 Set<String> usedThumbnails,
+                boolean refreshThumbnails,
                 int current
         ) {
             this.client = client;
@@ -579,6 +593,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             this.jsonLayersConfig = jsonLayersConfig;
             this.baseLayerUrl = baseLayerUrl;
             this.usedThumbnails = usedThumbnails;
+            this.refreshThumbnails = refreshThumbnails;
             this.current = current;
         }
 
@@ -591,8 +606,21 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                     this.atlasMapperLayerId, jsonLayer, this.jsonMainConfig, this.messages);
 
             // Create the thumbnail if it's missing or outdated
-            AtlasMapperLayer oldLayer = AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId, this.messages);
-            if (layerEntity.isThumbnailOutdated(oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(), AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL(), this.messages)) {
+            AtlasMapperLayer oldLayer =
+                    AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId, this.messages);
+
+            // Figure out if the thumbnail (preview image) needs to be created or updated:
+            //   If the layer is new (not in the index yet), we need to generate its thumbnail.
+            //   If the layer have a thumbnail, re-generate it if:
+            //     refreshThumbnails is set to true and
+            //     the thumbnail image is old enough (outdated).
+            boolean newLayer = oldLayer == null;
+            boolean outdatedThumbnail = layerEntity.isThumbnailOutdated(
+                    oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(),
+                    AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL(), this.messages);
+
+            boolean thumbnailNeedsUpdate = newLayer || (outdatedThumbnail && this.refreshThumbnails);
+            if (thumbnailNeedsUpdate) {
                 AtlasMapperIndexer.updateThumbnail(
                         this.atlasMapperLayerId, AtlasMapperIndexer.this.getIndex(),
                         jsonLayer, this.baseLayerUrl, this.jsonMainConfig,
@@ -601,6 +629,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 layerEntity.useCachedThumbnail(oldLayer);
             }
 
+            // Keep a list of used thumbnails, so we can delete unused ones at the end of the indexation.
             String thumbnailFilename = layerEntity.getCachedThumbnailFilename();
             if (thumbnailFilename != null) {
                 this.usedThumbnails.add(thumbnailFilename);
