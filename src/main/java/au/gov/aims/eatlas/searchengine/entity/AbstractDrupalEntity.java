@@ -26,9 +26,9 @@ public abstract class AbstractDrupalEntity extends Entity {
 
     protected AbstractDrupalEntity() {}
 
-    public AbstractDrupalEntity(JSONObject jsonApiNode, Messages messages) {
+    public AbstractDrupalEntity(JSONObject jsonApiEntity, Messages messages) {
 
-        // TODO Implement WKT
+        // TODO Extract WKT from jsonApiEntity (node / media)
         String wkt = "BBOX (142.5, 153.0, -10.5, -22.5)";
         try {
             this.setWktAndArea(wkt);

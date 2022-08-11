@@ -34,13 +34,13 @@ import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
 import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.ScriptLanguage;
-import co.elastic.clients.elasticsearch._types.ScriptSort;
-import co.elastic.clients.elasticsearch._types.ScriptSortType;
-import co.elastic.clients.elasticsearch._types.SortOptions;
-import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScore;
+import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScoreQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.GeoShapeFieldQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.GeoShapeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch._types.query_dsl.ScriptScoreFunction;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -201,14 +201,14 @@ public class Search {
      *   result in many more search requests than one
      *   count request per index.
      */
-    public static Summary searchSummary(SearchClient client, String needle, String wkt, String ... indexes)
+    public static Summary searchSummary(SearchClient client, String searchText, String wkt, String ... indexes)
             throws IOException, ParseException {
 
         Summary summary = new Summary();
 
         long totalCount = 0;
         for (String index : indexes) {
-            CountResponse response = client.count(Search.getSearchSummaryRequest(needle, wkt, index));
+            CountResponse response = client.count(Search.getSearchSummaryRequest(searchText, wkt, index));
             long count = response.count();
             if (count > 0) {
                 totalCount += count;
@@ -225,9 +225,9 @@ public class Search {
         return summary;
     }
 
-    public static CountRequest getSearchSummaryRequest(String needle, String wkt, String ... indexes) throws ParseException {
+    public static CountRequest getSearchSummaryRequest(String searchText, String wkt, String ... indexes) throws ParseException {
         // Create a search query here
-        SearchRequest.Builder sourceBuilder = Search.getBaseSearchQuery(needle, wkt);
+        SearchRequest.Builder sourceBuilder = Search.getBaseSearchQuery(searchText, wkt);
 
         return new CountRequest.Builder()
                 .index(Arrays.asList(indexes))
@@ -260,13 +260,13 @@ public class Search {
      *
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
-    public static List<SearchResult> search(SearchClient client, Messages messages, String needle, String wkt, int from, int size, String ... indexes)
+    public static List<SearchResult> search(SearchClient client, Messages messages, String searchText, String wkt, int from, int size, String ... indexes)
             throws IOException, ParseException {
 
-        SearchResponse<Entity> response = client.search(Search.getSearchRequest(needle, wkt, from, size, indexes));
+        SearchResponse<Entity> response = client.search(Search.getSearchRequest(searchText, wkt, from, size, indexes));
 
         //LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", indexes %s:%n%s",
-        //    needle, attribute, Arrays.toString(indexes), response.toString()));
+        //    searchText, attribute, Arrays.toString(indexes), response.toString()));
 
         List<SearchResult> results = new ArrayList<>();
 
@@ -295,7 +295,7 @@ public class Search {
      * Search in "document" and "title".
      * The title have a 2x ranking boost.
      */
-    public static SearchRequest getSearchRequest(String needle, String wkt, int from, int size, String ... indexes) throws ParseException {
+    public static SearchRequest getSearchRequest(String searchText, String wkt, int from, int size, String ... indexes) throws ParseException {
         // Used to highlight search results in the field that was used with the search
         Highlight.Builder highlightBuilder = new Highlight.Builder()
                 .preTags("<strong class=\"search-highlight\">")
@@ -303,7 +303,7 @@ public class Search {
                 .fields("document", new HighlightField.Builder().build());
 
         // https://discuss.elastic.co/t/8-1-0-java-client-searchrequest-example/299640
-        return Search.getBaseSearchQuery(needle, wkt)
+        return Search.getBaseSearchQuery(searchText, wkt)
                 .from(from) // Used to continue the search (get next page)
                 .size(size) // Number of results to return. Default = 10
                 .highlight(highlightBuilder.build())
@@ -320,11 +320,12 @@ public class Search {
      * GEO Queries
      *   https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-queries.html
      */
-    private static SearchRequest.Builder getBaseSearchQuery(String needle, String wkt) throws ParseException {
-        // Build the needle query
+    private static SearchRequest.Builder getBaseSearchQuery(String searchText, String wkt) throws ParseException {
+        ArrayList<Query> queries = new ArrayList<>();
+
+        // Build the text query
         //   The query used to match the words typed in the search field by the user
-        Query needleQuery = null;
-        if (needle != null && !needle.isEmpty()) {
+        if (searchText != null && !searchText.isEmpty()) {
             // Search in document and title by default.
             // User can still specify a field using "field:keyword".
             // Example: dataSourceName:legacy
@@ -332,16 +333,17 @@ public class Search {
             defaultSearchFields.add("title");
             defaultSearchFields.add("document");
 
-            needleQuery = QueryBuilders.queryString()
-                    .query(needle)
+            Query textQuery = QueryBuilders.queryString()
+                    .query(searchText)
                     .fields(defaultSearchFields)
                     .build()
                     ._toQuery();
+
+            queries.add(textQuery);
         }
 
         // Build the WKT query
         //   The query used to filter by GEO coordinates, polygons, bbox, etc.
-        Query wktQuery = null;
         if (wkt != null && !wkt.isEmpty()) {
             // GeoLocation = Single point.
             // GeoLocation geoLocation = new GeoLocation.Builder().text(wkt).build();
@@ -349,93 +351,59 @@ public class Search {
             // WktGeoBounds = WKT bounding box
             // WktGeoBounds bounds = new WktGeoBounds.Builder().wkt(wkt).build();
 
-            GeoShapeFieldQuery shapeQuery = new GeoShapeFieldQuery.Builder()
-                    .shape(JsonData.of(wkt))
-                    .relation(GeoShapeRelation.Intersects)
-                    .build();
-
-            wktQuery = QueryBuilders.geoShape()
-                    .shape(shapeQuery)
+            Query wktQuery = new GeoShapeQuery.Builder()
+                    .shape(new GeoShapeFieldQuery.Builder()
+                            .shape(JsonData.of(wkt))
+                            .relation(GeoShapeRelation.Intersects)
+                            .build())
                     .field("wkt")
                     .build()
                     ._toQuery();
 
-            /*
-            ShapeFieldQuery shapeQuery = new ShapeFieldQuery.Builder()
-                    .shape(JsonData.of(wkt))
-                    .relation(GeoShapeRelation.Intersects)
-                    .build();
+            queries.add(wktQuery);
 
-            wktQuery = QueryBuilders.shape()
-                    .shape(shapeQuery)
-                    .field("wkt")
-                    .build()
-                    ._toQuery();
-            */
+            Geometry geometry = WktUtils.wktToGeometry(wkt);
+            if (geometry != null) {
+                double searchArea = geometry.getArea();
+
+                Query scoreQuery = new FunctionScoreQuery.Builder()
+                        .functions(new FunctionScore.Builder()
+                                .scriptScore(new ScriptScoreFunction.Builder()
+                                        .script(new Script.Builder()
+                                                .inline(new InlineScript.Builder()
+                                                        .lang(ScriptLanguage.Painless)
+                                                        .source("(64800 - Math.abs(doc['wktArea'].value - params.searchArea)) * _score")
+                                                        .params("searchArea", JsonData.of(searchArea))
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build()
+                        ._toQuery();
+
+                queries.add(scoreQuery);
+            }
         }
 
         // Create a search query using the queries above:
-        //   The needle query and the WKT query
+        //   The text query and the WKT query
         Query query;
-        if (needleQuery == null) {
-            if (wktQuery == null) {
-                // Both queries are null - return everything
-                query = QueryBuilders.matchAll().build()._toQuery();
-            } else {
-                // Only KWT query is not null
-                query = wktQuery;
-            }
+        if (queries.isEmpty()) {
+            // There is no query.
+            // Create a query that returns every document in the index.
+            query = QueryBuilders.matchAll().build()._toQuery();
+        } else if (queries.size() == 1) {
+            // There is only one query.
+            // Execute that one.
+            query = queries.get(0);
         } else {
-            if (wktQuery == null) {
-                // Only the needle query is not null
-                query = needleQuery;
-            } else {
-                // Both queries are not null
-                // NOTE: "filter()" act as a "AND"
-                query = QueryBuilders.bool().filter(needleQuery, wktQuery).build()._toQuery();
-            }
+            // There are multiple queries.
+            // Join them using a boolean query.
+            query = QueryBuilders.bool().must(queries).build()._toQuery();
         }
 
-        SearchRequest.Builder searchRequest = new SearchRequest.Builder()
+        return new SearchRequest.Builder()
                 .query(query)
                 .timeout("60s"); // Wild guess, there is no doc, no example for this!!
-
-        if (wktQuery != null) {
-            Geometry geometry = WktUtils.wktToGeometry(wkt);
-
-            if (geometry != null) {
-                /*
-                Point centroid = geometry.getCentroid();
-
-                List<Double> esCentroidPoint = new ArrayList<>();
-                esCentroidPoint.add(centroid.getX());
-                esCentroidPoint.add(centroid.getY());
-                GeoLocation esCentroid = new GeoLocation.Builder().coords(esCentroidPoint).build();
-                GeoDistanceSort geoDistanceSort = SortOptionsBuilders
-                        .geoDistance()
-                        .unit(DistanceUnit.Meters)
-                        .distanceType(GeoDistanceType.Plane)
-                        .location(esCentroid).build();
-                SortOptions distanceSort = new SortOptions(geoDistanceSort);
-
-                searchRequest.sort(new SortOptions(new GeoDistanceSort.Builder().build()));
-                */
-
-                double searchArea = geometry.getArea();
-                searchRequest.sort(new SortOptions(new ScriptSort.Builder()
-                        .type(ScriptSortType.Number)
-                        .order(SortOrder.Asc)
-                        .script(new Script.Builder()
-                                .inline(new InlineScript.Builder()
-                                        .lang(ScriptLanguage.Painless)
-                                        .source("Math.abs(doc['wktArea'].value - params.searchArea)")
-                                        .params("searchArea", JsonData.of(searchArea))
-                                        .build())
-                                .build())
-                        .build()));
-            }
-        }
-
-        return searchRequest;
     }
 }
