@@ -39,7 +39,7 @@ public class GeoShapeTestManual {
     @Test
     public void testGeoShapeBug() throws Exception {
         String index = "unit_test";
-        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018");
+        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy record");
         record.setDocument("Dummy record content.");
 
@@ -124,7 +124,7 @@ public class GeoShapeTestManual {
     @Test
     public void testNaturalEarthData() throws Exception {
         String index = "unit_test";
-        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018");
+        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy record");
         record.setDocument("Dummy record content.");
 
@@ -163,7 +163,7 @@ public class GeoShapeTestManual {
     @Test
     public void testCAPAD() throws Exception {
         String index = "unit_test";
-        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018");
+        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy CAPAD record");
         record.setDocument("Dummy CAPAD record content.");
 

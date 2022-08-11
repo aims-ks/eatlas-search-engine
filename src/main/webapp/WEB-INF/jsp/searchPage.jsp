@@ -48,7 +48,7 @@
 
             <h3>Indexes</h3>
             <ul>
-                <c:forEach items="${it.config.indexers}" var="indexer">
+                <c:forEach items="${it.config.getEnabledIndexers()}" var="indexer">
                     <li>
                         <label>
                             <input type="checkbox" name="indexes" value="${indexer.index}"

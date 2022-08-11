@@ -141,7 +141,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 }
 
                 Document document = builder.parse(input);
-                GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), metadataRecordUUID, metadataSchema);
+                GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), metadataRecordUUID, metadataSchema, this.geoNetworkVersion);
                 geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
                 if (geoNetworkRecord.getId() != null) {

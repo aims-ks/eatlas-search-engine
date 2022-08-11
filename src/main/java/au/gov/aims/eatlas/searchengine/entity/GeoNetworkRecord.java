@@ -30,6 +30,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,6 +76,7 @@ public class GeoNetworkRecord extends Entity {
     }
 
     private String metadataSchema;
+    private String geoNetworkVersion;
     private String parentUUID;
     // TODO Get from index after the harvest, if we decide that it's needed
     private String parentTitle;
@@ -83,9 +85,10 @@ public class GeoNetworkRecord extends Entity {
 
     // geoNetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
-    public GeoNetworkRecord(String index, String metadataRecordUUID, String metadataSchema) {
+    public GeoNetworkRecord(String index, String metadataRecordUUID, String metadataSchema, String geonetworkVersion) {
         this.setIndex(index);
         this.metadataSchema = metadataSchema;
+        this.geoNetworkVersion = geonetworkVersion;
 
         if (metadataRecordUUID != null) {
             metadataRecordUUID = metadataRecordUUID.trim();
@@ -386,16 +389,141 @@ public class GeoNetworkRecord extends Entity {
         }
 
         if (metadataRecordUrl == null) {
-            String geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrlStr, this.getId());
             try {
-                metadataRecordUrl = new URL(geonetworkMetadataUrlStr);
+                metadataRecordUrl = this.getMetadataLink(geoNetworkUrlStr);
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", this.getId(), geonetworkMetadataUrlStr), ex);
+                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", this.getId(), geoNetworkUrlStr), ex);
             }
         }
 
         this.setLink(metadataRecordUrl);
     }
+
+    private static String parseIso19115_3_2018ExtentList(List<Element> extentList) {
+        List<Polygon> polygons = new ArrayList<Polygon>();
+
+        for (Element extentElement : extentList) {
+            List<Element> exExtentList = IndexUtils.getXMLChildren(extentElement, "gex:EX_Extent");
+            for (Element exExtentElement : exExtentList) {
+                List<Element> geographicElementList = IndexUtils.getXMLChildren(exExtentElement, "gex:geographicElement");
+                for (Element geographicElement : geographicElementList) {
+
+                    List<Element> exGeographicBoundingBoxList = IndexUtils.getXMLChildren(geographicElement, "gex:EX_GeographicBoundingBox");
+                    for (Element exGeographicBoundingBoxElement : exGeographicBoundingBoxList) {
+                        Element northElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:northBoundLatitude");
+                        Element eastElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:eastBoundLongitude");
+                        Element southElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:southBoundLatitude");
+                        Element westElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:westBoundLongitude");
+
+                        Polygon polygon = GeoNetworkRecord.parseBoundingBox(
+                            IndexUtils.parseText(northElement),
+                            IndexUtils.parseText(eastElement),
+                            IndexUtils.parseText(southElement),
+                            IndexUtils.parseText(westElement)
+                        );
+
+                        if (polygon != null) {
+                            polygons.add(polygon);
+                        }
+                    }
+
+                    List<Element> exBoundingPolygonList = IndexUtils.getXMLChildren(geographicElement, "gex:EX_BoundingPolygon");
+                    for (Element exBoundingPolygonElement : exBoundingPolygonList) {
+                        List<Element> gexPolygonList = IndexUtils.getXMLChildren(exBoundingPolygonElement, "gex:polygon");
+                        for (Element gexPolygonElement : gexPolygonList) {
+
+                            List<Element> gmlPolygonList = IndexUtils.getXMLChildren(gexPolygonElement, "gml:Polygon");
+                            for (Element gmlPolygonElement : gmlPolygonList) {
+                                Polygon polygon = parseIso19115_3_2018GmlPolygon(gmlPolygonElement);
+                                if (polygon != null) {
+                                    polygons.add(polygon);
+                                }
+                            }
+
+                            List<Element> multiSurfaceList = IndexUtils.getXMLChildren(gexPolygonElement, "gml:MultiSurface");
+                            for (Element multiSurfaceElement : multiSurfaceList) {
+                                List<Element> surfaceMemberList = IndexUtils.getXMLChildren(multiSurfaceElement, "gml:surfaceMember");
+                                for (Element surfaceMemberElement : surfaceMemberList) {
+                                    List<Element> gmlPolygonSubList = IndexUtils.getXMLChildren(surfaceMemberElement, "gml:Polygon");
+                                    for (Element gmlPolygonElement : gmlPolygonSubList) {
+                                        Polygon polygon = parseIso19115_3_2018GmlPolygon(gmlPolygonElement);
+                                        if (polygon != null) {
+                                            polygons.add(polygon);
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        return WktUtils.polygonsToWKT(polygons);
+    }
+    private static Polygon parseIso19115_3_2018GmlPolygon(Element gmlPolygonElement) {
+        Element exteriorElement = IndexUtils.getXMLChild(gmlPolygonElement, "gml:exterior");
+        Element exteriorLinearRingElement = IndexUtils.getXMLChild(exteriorElement, "gml:LinearRing");
+
+        LinearRing exteriorLinearRing = null;
+        Element exteriorPosListElement = IndexUtils.getXMLChild(exteriorLinearRingElement, "gml:posList");
+        if (exteriorPosListElement != null) {
+            String srsDimensionStr = IndexUtils.parseAttribute(exteriorPosListElement, "srsDimension");
+
+            int dimension = 2;
+            if (srsDimensionStr != null) {
+                dimension = Integer.parseInt(srsDimensionStr);
+            }
+            exteriorLinearRing = GeoNetworkRecord.parsePosListLinearRing(IndexUtils.parseText(exteriorPosListElement), dimension, false);
+        }
+
+        Element coordinatesElement = IndexUtils.getXMLChild(exteriorLinearRingElement, "gml:coordinates");
+        if (coordinatesElement != null) {
+            exteriorLinearRing = GeoNetworkRecord.parseCoordinatesLinearRing(IndexUtils.parseText(coordinatesElement));
+        }
+
+        // Holes in polygon
+        List<LinearRing> holes = new ArrayList<LinearRing>();
+        List<Element> interiorList = IndexUtils.getXMLChildren(gmlPolygonElement, "gml:interior");
+        for (Element interiorElement : interiorList) {
+            Element interiorLinearRingElement = IndexUtils.getXMLChild(interiorElement, "gml:LinearRing");
+            Element interiorPosListElement = IndexUtils.getXMLChild(interiorLinearRingElement, "gml:posList");
+
+            LinearRing interiorLinearRing = null;
+
+            if (interiorPosListElement != null) {
+                String interiorSrsDimensionStr = IndexUtils.parseAttribute(interiorPosListElement, "srsDimension");
+
+                int interiorDimension = 2;
+                if (interiorSrsDimensionStr != null) {
+                    interiorDimension = Integer.parseInt(interiorSrsDimensionStr);
+                }
+                interiorLinearRing = GeoNetworkRecord.parsePosListLinearRing(IndexUtils.parseText(interiorPosListElement), interiorDimension, false);
+            }
+
+            Element interiorCoordinatesElement = IndexUtils.getXMLChild(interiorLinearRingElement, "gml:coordinates");
+            if (interiorCoordinatesElement != null) {
+                interiorLinearRing = GeoNetworkRecord.parseCoordinatesLinearRing(IndexUtils.parseText(interiorCoordinatesElement));
+            }
+
+            holes.add(interiorLinearRing);
+        }
+
+        Polygon polygon = null;
+        if (exteriorLinearRing != null) {
+            if (holes.isEmpty()) {
+                polygon = WktUtils.createPolygon(exteriorLinearRing);
+            } else {
+                polygon = WktUtils.createPolygon(exteriorLinearRing, holes);
+            }
+        }
+
+        return polygon;
+    }
+
+
+
 
 
     /**
@@ -623,139 +751,14 @@ public class GeoNetworkRecord extends Entity {
         }
 
         if (metadataRecordUrl == null) {
-            String geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrlStr, this.getId());
             try {
-                metadataRecordUrl = new URL(geonetworkMetadataUrlStr);
+                metadataRecordUrl = this.getMetadataLink(geoNetworkUrlStr);
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", this.getId(), geonetworkMetadataUrlStr), ex);
+                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", this.getId(), geoNetworkUrlStr), ex);
             }
         }
 
         this.setLink(metadataRecordUrl);
-    }
-
-    // GeoNetwork 3
-    private static String parseIso19115_3_2018ExtentList(List<Element> extentList) {
-        List<Polygon> polygons = new ArrayList<Polygon>();
-
-        for (Element extentElement : extentList) {
-            List<Element> exExtentList = IndexUtils.getXMLChildren(extentElement, "gex:EX_Extent");
-            for (Element exExtentElement : exExtentList) {
-                List<Element> geographicElementList = IndexUtils.getXMLChildren(exExtentElement, "gex:geographicElement");
-                for (Element geographicElement : geographicElementList) {
-
-                    List<Element> exGeographicBoundingBoxList = IndexUtils.getXMLChildren(geographicElement, "gex:EX_GeographicBoundingBox");
-                    for (Element exGeographicBoundingBoxElement : exGeographicBoundingBoxList) {
-                        Element northElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:northBoundLatitude");
-                        Element eastElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:eastBoundLongitude");
-                        Element southElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:southBoundLatitude");
-                        Element westElement = IndexUtils.getXMLChild(exGeographicBoundingBoxElement, "gex:westBoundLongitude");
-
-                        Polygon polygon = GeoNetworkRecord.parseBoundingBox(
-                            IndexUtils.parseText(northElement),
-                            IndexUtils.parseText(eastElement),
-                            IndexUtils.parseText(southElement),
-                            IndexUtils.parseText(westElement)
-                        );
-
-                        if (polygon != null) {
-                            polygons.add(polygon);
-                        }
-                    }
-
-                    List<Element> exBoundingPolygonList = IndexUtils.getXMLChildren(geographicElement, "gex:EX_BoundingPolygon");
-                    for (Element exBoundingPolygonElement : exBoundingPolygonList) {
-                        List<Element> gexPolygonList = IndexUtils.getXMLChildren(exBoundingPolygonElement, "gex:polygon");
-                        for (Element gexPolygonElement : gexPolygonList) {
-
-                            List<Element> gmlPolygonList = IndexUtils.getXMLChildren(gexPolygonElement, "gml:Polygon");
-                            for (Element gmlPolygonElement : gmlPolygonList) {
-                                Polygon polygon = parseIso19115_3_2018GmlPolygon(gmlPolygonElement);
-                                if (polygon != null) {
-                                    polygons.add(polygon);
-                                }
-                            }
-
-                            List<Element> multiSurfaceList = IndexUtils.getXMLChildren(gexPolygonElement, "gml:MultiSurface");
-                            for (Element multiSurfaceElement : multiSurfaceList) {
-                                List<Element> surfaceMemberList = IndexUtils.getXMLChildren(multiSurfaceElement, "gml:surfaceMember");
-                                for (Element surfaceMemberElement : surfaceMemberList) {
-                                    List<Element> gmlPolygonSubList = IndexUtils.getXMLChildren(surfaceMemberElement, "gml:Polygon");
-                                    for (Element gmlPolygonElement : gmlPolygonSubList) {
-                                        Polygon polygon = parseIso19115_3_2018GmlPolygon(gmlPolygonElement);
-                                        if (polygon != null) {
-                                            polygons.add(polygon);
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-
-        return WktUtils.polygonsToWKT(polygons);
-    }
-    private static Polygon parseIso19115_3_2018GmlPolygon(Element gmlPolygonElement) {
-        Element exteriorElement = IndexUtils.getXMLChild(gmlPolygonElement, "gml:exterior");
-        Element exteriorLinearRingElement = IndexUtils.getXMLChild(exteriorElement, "gml:LinearRing");
-
-        LinearRing exteriorLinearRing = null;
-        Element exteriorPosListElement = IndexUtils.getXMLChild(exteriorLinearRingElement, "gml:posList");
-        if (exteriorPosListElement != null) {
-            String srsDimensionStr = IndexUtils.parseAttribute(exteriorPosListElement, "srsDimension");
-
-            int dimension = 2;
-            if (srsDimensionStr != null) {
-                dimension = Integer.parseInt(srsDimensionStr);
-            }
-            exteriorLinearRing = GeoNetworkRecord.parsePosListLinearRing(IndexUtils.parseText(exteriorPosListElement), dimension, false);
-        }
-
-        Element coordinatesElement = IndexUtils.getXMLChild(exteriorLinearRingElement, "gml:coordinates");
-        if (coordinatesElement != null) {
-            exteriorLinearRing = GeoNetworkRecord.parseCoordinatesLinearRing(IndexUtils.parseText(coordinatesElement));
-        }
-
-        // Holes in polygon
-        List<LinearRing> holes = new ArrayList<LinearRing>();
-        List<Element> interiorList = IndexUtils.getXMLChildren(gmlPolygonElement, "gml:interior");
-        for (Element interiorElement : interiorList) {
-            Element interiorLinearRingElement = IndexUtils.getXMLChild(interiorElement, "gml:LinearRing");
-            Element interiorPosListElement = IndexUtils.getXMLChild(interiorLinearRingElement, "gml:posList");
-
-            LinearRing interiorLinearRing = null;
-
-            if (interiorPosListElement != null) {
-                String interiorSrsDimensionStr = IndexUtils.parseAttribute(interiorPosListElement, "srsDimension");
-
-                int interiorDimension = 2;
-                if (interiorSrsDimensionStr != null) {
-                    interiorDimension = Integer.parseInt(interiorSrsDimensionStr);
-                }
-                interiorLinearRing = GeoNetworkRecord.parsePosListLinearRing(IndexUtils.parseText(interiorPosListElement), interiorDimension, false);
-            }
-
-            Element interiorCoordinatesElement = IndexUtils.getXMLChild(interiorLinearRingElement, "gml:coordinates");
-            if (interiorCoordinatesElement != null) {
-                interiorLinearRing = GeoNetworkRecord.parseCoordinatesLinearRing(IndexUtils.parseText(interiorCoordinatesElement));
-            }
-
-            holes.add(interiorLinearRing);
-        }
-
-        Polygon polygon = null;
-        if (exteriorLinearRing != null) {
-            if (holes.isEmpty()) {
-                polygon = WktUtils.createPolygon(exteriorLinearRing);
-            } else {
-                polygon = WktUtils.createPolygon(exteriorLinearRing, holes);
-            }
-        }
-
-        return polygon;
     }
 
     // GeoNetwork 2 - Needs to be tested against a GeoNetwork 2 server
@@ -829,6 +832,33 @@ public class GeoNetworkRecord extends Entity {
         }
 
         return WktUtils.polygonsToWKT(polygons);
+    }
+
+
+    private URL getMetadataLink(String geoNetworkUrlStr) throws MalformedURLException {
+        int geoNetworkMajorVersion = -1;
+
+        if (this.geoNetworkVersion != null) {
+            if (this.geoNetworkVersion.startsWith("2.")) {
+                geoNetworkMajorVersion = 2;
+            } else if (this.geoNetworkVersion.startsWith("3.")) {
+                geoNetworkMajorVersion = 3;
+            }
+        }
+
+        String geonetworkMetadataUrlStr = null;
+        switch (geoNetworkMajorVersion) {
+            case 2:
+                geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrlStr, this.getId());
+                break;
+
+            case 3:
+            default:
+                geonetworkMetadataUrlStr = String.format("%s/srv/eng/catalog.search#/metadata/%s", geoNetworkUrlStr, this.getId());
+                break;
+        }
+
+        return new URL(geonetworkMetadataUrlStr);
     }
 
     private static Polygon parseBoundingBox(String northStr, String eastStr, String southStr, String westStr) {
@@ -946,6 +976,10 @@ public class GeoNetworkRecord extends Entity {
         return this.metadataSchema;
     }
 
+    public String getGeoNetworkVersion() {
+        return this.geoNetworkVersion;
+    }
+
     public String getParentUUID() {
         return this.parentUUID;
     }
@@ -975,6 +1009,7 @@ public class GeoNetworkRecord extends Entity {
         GeoNetworkRecord record = new GeoNetworkRecord();
         record.loadJSON(json, messages);
         record.metadataSchema = json.optString("metadataSchema", null);
+        record.geoNetworkVersion = json.optString("geoNetworkVersion", null);
         record.parentUUID = json.optString("parentUUID", null);
         record.parentTitle = json.optString("parent", null);
 
@@ -985,6 +1020,7 @@ public class GeoNetworkRecord extends Entity {
     public JSONObject toJSON() {
         return super.toJSON()
             .put("metadataSchema", this.metadataSchema)
+            .put("geoNetworkVersion", this.geoNetworkVersion)
             .put("parentUUID", this.parentUUID)
             .put("parent", this.parentTitle);
     }

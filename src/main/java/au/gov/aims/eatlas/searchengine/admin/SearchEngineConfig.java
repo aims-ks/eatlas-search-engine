@@ -143,6 +143,16 @@ public class SearchEngineConfig {
         return this.indexers;
     }
 
+    public List<AbstractIndexer> getEnabledIndexers() {
+        List<AbstractIndexer> enabledIndexers = new ArrayList<>();
+        for (AbstractIndexer indexer : this.indexers) {
+            if (indexer.isEnabled()) {
+                enabledIndexers.add(indexer);
+            }
+        }
+        return enabledIndexers;
+    }
+
     public AbstractIndexer getIndexer(String index) {
         if (index != null && this.indexers != null) {
             for (AbstractIndexer foundIndexer : this.indexers) {

@@ -38,6 +38,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "65f61d2d-fe4e-48e5-8c6e-fab08450ef75";
         String metadataSchema = "iso19139.mcp";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -53,7 +54,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -65,6 +66,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "87263960-92f0-4836-b8c5-8486660ddfe0";
         String metadataSchema = "iso19139.mcp";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -79,7 +81,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -91,6 +93,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "ce58a4c2-c993-434a-aa57-62cfa919a2ab";
         String metadataSchema = "iso19139.mcp";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -105,7 +108,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -117,6 +120,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "{96C8FB9D-C3C4-11DE-3FCD-EA228444A7C1}";
         String metadataSchema = "iso19139";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -131,7 +135,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -147,6 +151,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "8cfc0117-678f-4904-b11c-30be6e71ca80";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -161,7 +166,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -173,6 +178,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "09ac8e36-5d65-40f9-9bb7-c32a0dd9f24f";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -187,7 +193,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -199,6 +205,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -213,7 +220,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -225,6 +232,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "0fd70612-a07a-492a-bacf-8e0b7951da4d";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -239,7 +247,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -251,6 +259,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "74f6e33f-9347-4446-9185-488bcd7be964";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -265,7 +274,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -277,6 +286,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "053f0b32-47cc-4a3f-8325-b37feb33c0e3";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -291,7 +301,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -303,6 +313,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "a7828f28-402c-4ef7-beac-6c0f61852072";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -317,7 +328,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -333,6 +344,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "16904861-53e6-4123-a7bb-781f2429629f";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -347,7 +359,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -363,6 +375,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "b67d8331-6505-450b-bc64-ee4b57ee35a3";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -377,7 +390,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
@@ -393,6 +406,7 @@ public class GeoNetworkRecordTest {
         String index = "gn-test";
         String metadataRecordUUID = "ac57aa5a-233b-4c2c-bd52-1fb40a31f639";
         String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
         String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
 
         Messages messages = Messages.getInstance(null);
@@ -407,7 +421,7 @@ public class GeoNetworkRecordTest {
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 
             Document document = builder.parse(recordInputStream);
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
             Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
