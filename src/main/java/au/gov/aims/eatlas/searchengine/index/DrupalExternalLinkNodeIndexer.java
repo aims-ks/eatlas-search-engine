@@ -46,7 +46,8 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             json.optString("drupalNodeType", null),
             json.optString("drupalPreviewImageField", null),
             json.optString("drupalExternalUrlField", null),
-            json.optString("drupalContentOverwriteField", null));
+            json.optString("drupalContentOverwriteField", null),
+            json.optString("drupalWktField", null));
     }
 
     public JSONObject toJSON() {
@@ -74,9 +75,10 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             String drupalNodeType,
             String drupalPreviewImageField,
             String drupalExternalUrlField,
-            String drupalContentOverwriteField
+            String drupalContentOverwriteField,
+            String drupalWktField
     ) {
-        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField);
+        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalWktField);
         this.drupalExternalUrlField = drupalExternalUrlField;
         this.drupalContentOverwriteField = drupalContentOverwriteField;
     }

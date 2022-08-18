@@ -20,23 +20,9 @@ package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.json.JSONObject;
-import org.locationtech.jts.io.ParseException;
 
 public abstract class AbstractDrupalEntity extends Entity {
-
     protected AbstractDrupalEntity() {}
 
-    public AbstractDrupalEntity(JSONObject jsonApiEntity, Messages messages) {
-
-        // TODO Extract WKT from jsonApiEntity (node / media)
-        String wkt = "BBOX (142.5, 153.0, -10.5, -22.5)";
-        try {
-            this.setWktAndArea(wkt);
-        } catch(ParseException ex) {
-            Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
-            message.addDetail(wkt);
-        }
-
-    }
-
+    public AbstractDrupalEntity(JSONObject jsonApiEntity, Messages messages) {}
 }

@@ -35,7 +35,8 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
-            json.optString("drupalPreviewImageField", null));
+            json.optString("drupalPreviewImageField", null),
+            json.optString("drupalWktField", null));
     }
 
     public JSONObject toJSON() {
@@ -59,9 +60,10 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             String drupalUrl,
             String drupalVersion,
             String drupalNodeType,
-            String drupalPreviewImageField) {
+            String drupalPreviewImageField,
+            String drupalWktField) {
 
-        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField);
+        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalWktField);
     }
 
     @Override

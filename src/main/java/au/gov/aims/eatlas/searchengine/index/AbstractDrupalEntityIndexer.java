@@ -29,6 +29,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.locationtech.jts.io.ParseException;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -53,6 +54,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     private String drupalEntityType; // Entity type. Example: node, media, user, etc
     private String drupalBundleId; // Content type (node type) or media type. Example: article, image, etc
     private String drupalPreviewImageField;
+    private String drupalWktField;
 
     public AbstractDrupalEntityIndexer(
             String index,
@@ -60,7 +62,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String drupalVersion,
             String drupalEntityType,
             String drupalBundleId,
-            String drupalPreviewImageField) {
+            String drupalPreviewImageField,
+            String drupalWktField) {
 
         super(index);
         this.drupalUrl = drupalUrl;
@@ -68,6 +71,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalEntityType = drupalEntityType;
         this.drupalBundleId = drupalBundleId;
         this.drupalPreviewImageField = drupalPreviewImageField;
+        this.drupalWktField = drupalWktField;
     }
 
     public abstract E createDrupalEntity(JSONObject jsonApiEntity, Messages messages);
@@ -77,7 +81,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return super.getJsonBase()
             .put("drupalUrl", this.drupalUrl)
             .put("drupalVersion", this.drupalVersion)
-            .put("drupalPreviewImageField", this.drupalPreviewImageField);
+            .put("drupalPreviewImageField", this.drupalPreviewImageField)
+            .put("drupalWktField", this.drupalWktField);
     }
 
     @Override
@@ -147,6 +152,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     // Return false to prevent the entity from been indexed.
     protected boolean parseJsonDrupalEntity(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
         this.updateThumbnail(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
+        this.updateWkt(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
         return true;
     }
 
@@ -302,7 +308,9 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
-        uriBuilder.setParameter("include", this.drupalPreviewImageField);
+        if (this.drupalPreviewImageField != null) {
+            uriBuilder.setParameter("include", this.drupalPreviewImageField);
+        }
         uriBuilder.setParameter("sort", "-changed");
         uriBuilder.setParameter("page[limit]", String.format("%d", INDEX_PAGE_SIZE));
         uriBuilder.setParameter("page[offset]", String.format("%d", page * INDEX_PAGE_SIZE));
@@ -393,6 +401,14 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalPreviewImageField = drupalPreviewImageField;
     }
 
+    public String getDrupalWktField() {
+        return this.drupalWktField;
+    }
+
+    public void setDrupalWktField(String drupalWktField) {
+        this.drupalWktField = drupalWktField;
+    }
+
     public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
         URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiEntity, messages);
         if (baseUrl != null && this.getDrupalPreviewImageField() != null) {
@@ -432,6 +448,32 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                         drupalEntity.useCachedThumbnail(oldEntity);
                     }
                 }
+            }
+        }
+    }
+
+    public void updateWkt(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
+        if (this.getDrupalWktField() != null) {
+            // Extract WKT from jsonApiEntity (node / media)
+            JSONObject jsonAttributes = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("attributes");
+            String wkt = jsonAttributes == null ? null : jsonAttributes.optString(this.getDrupalWktField(), null);
+
+            if (wkt != null) {
+                wkt = wkt.trim();
+                if (wkt.isEmpty()) {
+                    wkt = null;
+                }
+            }
+
+            if (wkt == null) {
+                wkt = AbstractIndexer.DEFAULT_WKT;
+            }
+
+            try {
+                drupalEntity.setWktAndArea(wkt);
+            } catch(ParseException ex) {
+                Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+                message.addDetail(wkt);
             }
         }
     }

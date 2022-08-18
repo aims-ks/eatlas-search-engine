@@ -42,7 +42,8 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             json.optString("drupalMediaType", null),
             json.optString("drupalPreviewImageField", null),
             json.optString("drupalTitleField", null),
-            json.optString("drupalDescriptionField", null));
+            json.optString("drupalDescriptionField", null),
+            json.optString("drupalWktField", null));
     }
 
     public JSONObject toJSON() {
@@ -70,11 +71,13 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String drupalMediaType,
             String drupalPreviewImageField,
             String drupalTitleField,
-            String drupalDescriptionField
+            String drupalDescriptionField,
+            String drupalWktField
     ) {
 
         super(index, drupalUrl, drupalVersion, "media", drupalMediaType,
-                (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField);
+                (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
+                drupalWktField);
         this.drupalTitleField = drupalTitleField;
         this.drupalDescriptionField = drupalDescriptionField;
     }

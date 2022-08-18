@@ -54,6 +54,10 @@ import java.io.IOException;
 import java.util.Set;
 
 public abstract class AbstractIndexer<E extends Entity> {
+    public static final String WHOLE_WORLD_WKT = "BBOX (-180, 180, 90, -90)";
+    // WKT used when the indexed document does not have a defined WKT.
+    public static final String DEFAULT_WKT = WHOLE_WORLD_WKT;
+
     private boolean enabled;
     private String index;
     private Long thumbnailTTL; // TTL, in days
@@ -383,7 +387,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     // Fallback to the BBox of whole world
     private IndexResponse indexEntityWholeWorldFallback(SearchClient client, E entity, String originalWkt, Messages messages) throws IOException {
         IndexResponse indexResponse = null;
-        String newWkt = "BBOX (-180, 180, 90, -90)";
+        String newWkt = AbstractIndexer.WHOLE_WORLD_WKT;
         try {
             entity.setWktAndArea(newWkt);
             indexResponse = client.index(this.getIndexRequest(entity));

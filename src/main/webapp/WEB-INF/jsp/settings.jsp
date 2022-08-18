@@ -275,6 +275,20 @@
                                             <div class="desc">Drupal field type: Image</div>
                                             <div class="desc">Example: field_image</div>
                                         </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalWktField">
+                                                <span class="label">Drupal WKT field ID</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalWktField"
+                                                    name="${indexer.index}_drupalWktField"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalWktField}" />" />
+                                            </label>
+                                            <div class="desc">Drupal internal field ID for WKT.</div>
+                                            <div class="desc">Drupal field type: <a href="https://github.com/aims-ks/eatlas-drupal8-modules-eatlas_map_field" target="_blank">map_field</a> or Text</div>
+                                            <div class="desc">Example: field_mud_map</div>
+                                        </div>
                                     </div>
                                 </c:when>
 
@@ -362,6 +376,20 @@
                                             <div class="desc">Drupal internal field ID for the media's description.</div>
                                             <div class="desc">Drupal field type: Text (formatted, long)</div>
                                             <div class="desc">Example: field_description</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalWktField">
+                                                <span class="label">Drupal WKT field ID</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalWktField"
+                                                    name="${indexer.index}_drupalWktField"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalWktField}" />" />
+                                            </label>
+                                            <div class="desc">Drupal internal field ID for WKT.</div>
+                                            <div class="desc">Drupal field type: <a href="https://github.com/aims-ks/eatlas-drupal8-modules-eatlas_map_field" target="_blank">map_field</a> or Text</div>
+                                            <div class="desc">Example: field_mud_map</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -452,6 +480,20 @@
                                                 because it's created by JavaScript, hidden behind a disclaimer page, requires authentication, etc.</div>
                                             <div class="desc">Drupal field type: Text (plain, long)</div>
                                             <div class="desc">Example: field_content_overwrite</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalWktField">
+                                                <span class="label">Drupal WKT field ID</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalWktField"
+                                                    name="${indexer.index}_drupalWktField"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalWktField}" />" />
+                                            </label>
+                                            <div class="desc">Drupal internal field ID for WKT.</div>
+                                            <div class="desc">Drupal field type: <a href="https://github.com/aims-ks/eatlas-drupal8-modules-eatlas_map_field" target="_blank">map_field</a> or Text</div>
+                                            <div class="desc">Example: field_mud_map</div>
                                         </div>
                                     </div>
                                 </c:when>

@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.locationtech.jts.io.ParseException;
@@ -225,12 +226,12 @@ public class AtlasMapperLayer extends Entity {
                         DECIMAL_FORMAT.format(west), DECIMAL_FORMAT.format(east),
                         DECIMAL_FORMAT.format(north), DECIMAL_FORMAT.format(south)));
 
-                wkt = "BBOX (-180, 180, 90, -90)";
+                wkt = AbstractIndexer.DEFAULT_WKT;
             }
         } else {
             // Set bbox for the whole world
             messages.addMessage(Messages.Level.WARNING, String.format("Layer: %s. No bounding box. Fallback to whole world.", this.getId()));
-            wkt = "BBOX (-180, 180, 90, -90)";
+            wkt = AbstractIndexer.DEFAULT_WKT;
         }
 
         // Set WKT

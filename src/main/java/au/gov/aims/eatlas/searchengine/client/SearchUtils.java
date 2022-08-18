@@ -188,17 +188,17 @@ public class SearchUtils {
         switch (newIndexType) {
             case "DrupalNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-node");
-                newIndexer = new DrupalNodeIndexer(newIndex, null, null, null, null);
+                newIndexer = new DrupalNodeIndexer(newIndex, null, null, null, null, null);
                 break;
 
             case "DrupalMediaIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-media");
-                newIndexer = new DrupalMediaIndexer(newIndex, null, null, null, null, null, null);
+                newIndexer = new DrupalMediaIndexer(newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "DrupalExternalLinkNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-extlink");
-                newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, null, null, null, null, null, null);
+                newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "GeoNetworkIndexer":

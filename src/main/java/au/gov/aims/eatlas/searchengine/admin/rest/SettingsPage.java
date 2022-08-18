@@ -190,6 +190,7 @@ public class SettingsPage {
                 drupalNodeIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
                 drupalNodeIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
                 drupalNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
+                drupalNodeIndexer.setDrupalWktField(FormUtils.getFormStringValue(form, index + "_drupalWktField"));
 
             } else if (indexer instanceof DrupalMediaIndexer) {
                 // DrupalMediaIndexer
@@ -201,6 +202,7 @@ public class SettingsPage {
                 drupalMediaIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
                 drupalMediaIndexer.setDrupalTitleField(FormUtils.getFormStringValue(form, index + "_drupalTitleField"));
                 drupalMediaIndexer.setDrupalDescriptionField(FormUtils.getFormStringValue(form, index + "_drupalDescriptionField"));
+                drupalMediaIndexer.setDrupalWktField(FormUtils.getFormStringValue(form, index + "_drupalWktField"));
 
             } else if (indexer instanceof DrupalExternalLinkNodeIndexer) {
                 // DrupalExternalLinkNodeIndexer
@@ -212,6 +214,7 @@ public class SettingsPage {
                 drupalExternalLinkNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
                 drupalExternalLinkNodeIndexer.setDrupalExternalUrlField(FormUtils.getFormStringValue(form, index + "_drupalExternalUrlField"));
                 drupalExternalLinkNodeIndexer.setDrupalContentOverwriteField(FormUtils.getFormStringValue(form, index + "_drupalContentOverwriteField"));
+                drupalExternalLinkNodeIndexer.setDrupalWktField(FormUtils.getFormStringValue(form, index + "_drupalWktField"));
 
             } else if (indexer instanceof GeoNetworkIndexer) {
                 // GeoNetworkIndexer
