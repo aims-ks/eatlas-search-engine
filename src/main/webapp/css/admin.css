@@ -329,12 +329,12 @@ button.reload {
 }
 
 .content .message .details .detailList,
-.content .message .exception .stacktrace {
+.content .message .exception .stacktrace-box {
   font-size: 0.8em;
   color: #666666;
   overflow: auto;
 }
-.content .message .exception .stacktrace {
+.content .message .exception .stacktrace-box {
   font-family: monospace;
 }
 

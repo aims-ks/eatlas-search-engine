@@ -122,9 +122,19 @@ public class Search {
             return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
         }
 
+        if (results == null) {
+            String errorMessageStr = "The search engine returned and empty response";
+            messages.addMessage(Messages.Level.ERROR, errorMessageStr);
+            Response.Status status = Response.Status.BAD_REQUEST;
+            ErrorMessage errorMessage = new ErrorMessage()
+                .setErrorMessage(errorMessageStr)
+                .setStatus(status);
+            return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
+        }
+
         String responseTxt = results.toString();
 
-        // Return the JSON array with a OK status.
+        // Return the JSON array with an OK status.
         return Response.ok(responseTxt).cacheControl(noCache).build();
     }
 

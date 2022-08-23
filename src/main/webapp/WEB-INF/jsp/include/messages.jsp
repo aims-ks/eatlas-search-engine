@@ -32,26 +32,28 @@
                                 - <c:out value="${message.exception.message}"/>
                             </c:if>
                         </span>
-                        <ul class="stacktrace collapsible">
-                            <c:forEach var="stacktraceElement" items="${message.exception.stackTrace}">
-                                <li><c:out value="${stacktraceElement}"/></li>
-                            </c:forEach>
-                            <c:forEach var="cause" items="${message.causes}">
-                                <li>
-                                    Caused by: <c:out value="${cause.getClass().name}"/>
-                                    <c:if test="${not empty cause.message}">
-                                        - <c:out value="${cause.message}"/>
-                                    </c:if>
-                                    <ul class="stacktrace">
-                                        <c:forEach var="causeStacktraceElement" items="${cause.stackTrace}">
-                                            <li>
-                                                <c:out value="${causeStacktraceElement}"/>
-                                            </li>
-                                        </c:forEach>
-                                    </ul>
-                                </li>
-                            </c:forEach>
-                        </ul>
+                        <div class="stacktrace-box collapsible">
+                            <ul class="stacktrace">
+                                <c:forEach var="stacktraceElement" items="${message.exception.stackTrace}">
+                                    <li><c:out value="${stacktraceElement}"/></li>
+                                </c:forEach>
+                                <c:forEach var="cause" items="${message.causes}">
+                                    <li>
+                                        Caused by: <c:out value="${cause.getClass().name}"/>
+                                        <c:if test="${not empty cause.message}">
+                                            - <c:out value="${cause.message}"/>
+                                        </c:if>
+                                        <ul class="stacktrace">
+                                            <c:forEach var="causeStacktraceElement" items="${cause.stackTrace}">
+                                                <li>
+                                                    <c:out value="${causeStacktraceElement}"/>
+                                                </li>
+                                            </c:forEach>
+                                        </ul>
+                                    </li>
+                                </c:forEach>
+                            </ul>
+                        </div>
                     </div>
                 </c:if>
 
