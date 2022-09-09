@@ -92,13 +92,6 @@ public class Search {
         CacheControl noCache = new CacheControl();
         noCache.setNoCache(true);
 
-        if (q == null) {
-            Response.Status status = Response.Status.BAD_REQUEST;
-            ErrorMessage errorMessage = new ErrorMessage()
-                .setErrorMessage("Invalid request. Missing parameter q")
-                .setStatus(status);
-            return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
-        }
         if (idx == null) {
             Response.Status status = Response.Status.BAD_REQUEST;
             ErrorMessage errorMessage = new ErrorMessage()
