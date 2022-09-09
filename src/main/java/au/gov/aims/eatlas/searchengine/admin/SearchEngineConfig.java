@@ -64,6 +64,8 @@ public class SearchEngineConfig {
     private long globalThumbnailTTL = DEFAULT_GLOBAL_THUMBNAIL_TTL; // TTL, in days
     private long globalBrokenThumbnailTTL = DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL; // TTL, in days
     private String imageCacheDirectory;
+    // Used to craft URL to preview images
+    private String searchEngineBaseUrl;
     private List<AbstractIndexer> indexers;
 
     private String reindexToken;
@@ -209,6 +211,14 @@ public class SearchEngineConfig {
 
     public void setImageCacheDirectory(String imageCacheDirectory) {
         this.imageCacheDirectory = imageCacheDirectory;
+    }
+
+    public String getSearchEngineBaseUrl() {
+        return this.searchEngineBaseUrl;
+    }
+
+    public void setSearchEngineBaseUrl(String searchEngineBaseUrl) {
+        this.searchEngineBaseUrl = searchEngineBaseUrl;
     }
 
     public long getGlobalThumbnailTTL() {
@@ -441,6 +451,7 @@ public class SearchEngineConfig {
                 .put("globalThumbnailTTL", this.globalThumbnailTTL)
                 .put("globalBrokenThumbnailTTL", this.globalBrokenThumbnailTTL)
                 .put("imageCacheDirectory", this.imageCacheDirectory)
+                .put("searchEngineBaseUrl", this.searchEngineBaseUrl)
                 .put("reindexToken", this.reindexToken)
                 .put("indexers", jsonIndexers);
     }
@@ -455,6 +466,7 @@ public class SearchEngineConfig {
         this.globalThumbnailTTL = json.optLong("globalThumbnailTTL", DEFAULT_GLOBAL_THUMBNAIL_TTL);
         this.globalBrokenThumbnailTTL = json.optLong("globalBrokenThumbnailTTL", DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL);
         this.imageCacheDirectory = json.optString("imageCacheDirectory", null);
+        this.searchEngineBaseUrl = json.optString("searchEngineBaseUrl", null);
         this.reindexToken = json.optString("reindexToken", null);
 
         JSONArray jsonElasticSearchUrls = json.optJSONArray("elasticSearchUrls");

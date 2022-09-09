@@ -5,6 +5,7 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
 <c:set var="baseURL" value="${pageContext.request.scheme}://${pageContext.request.localName}:${pageContext.request.localPort}" />
+<c:set var="defaultSearchEngineBaseURL" value="${baseURL}${pageContext.request.contextPath}" />
 
 <%-- Variables accessible in templates --%>
 <c:set var="title" value="Settings" scope="request"/>
@@ -108,6 +109,20 @@
                         <c:param name="token" value="${it.config.reindexToken}" />
                     </c:url>
                 </div>
+            </div>
+
+            <div class="field">
+                <label for="searchEngineBaseUrl">
+                    <span class="label required">Search engine base URL</span>
+                    <input type="text"
+                        id="searchEngineBaseUrl"
+                        name="searchEngineBaseUrl"
+                        data-lpignore="true"
+                        required="required"
+                        value="<c:out value="${it.config.searchEngineBaseUrl}" default="${defaultSearchEngineBaseURL}" />" />
+                </label>
+                <div class="desc">Base URL used to craft URL to preview image in search results.</div>
+                <div class="desc">Default: ${defaultSearchEngineBaseURL}</div>
             </div>
         </div>
 

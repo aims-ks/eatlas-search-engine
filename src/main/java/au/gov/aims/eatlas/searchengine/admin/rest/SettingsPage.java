@@ -159,6 +159,7 @@ public class SettingsPage {
         config.setGlobalBrokenThumbnailTTL(FormUtils.getFormLongValue(form, "globalBrokenThumbnailTTL"));
         config.setElasticSearchUrls(FormUtils.getFormStringValues(form, "elasticSearchUrl"));
         config.setReindexToken(FormUtils.getFormStringValue(form, "reindexToken"));
+        config.setSearchEngineBaseUrl(FormUtils.getFormStringValue(form, "searchEngineBaseUrl"));
 
         boolean valid = true;
         for (AbstractIndexer indexer : config.getIndexers()) {

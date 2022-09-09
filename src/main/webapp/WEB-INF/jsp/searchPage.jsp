@@ -109,8 +109,8 @@
                             <div class="thumbnail">
                                 <c:choose>
                                     <%-- Image downloaded, cached and served by the search engine --%>
-                                    <c:when test="${not empty searchResult.entity.cachedThumbnailFilename}">
-                                        <img src="<c:url value="/public/img/v1/${searchResult.entity.index}/${searchResult.entity.cachedThumbnailFilename}" />" alt="Thumbnail" />
+                                    <c:when test="${not empty searchResult.entity.cachedThumbnailUrl}">
+                                        <img src="<c:url value="${searchResult.entity.cachedThumbnailUrl}" />" alt="Thumbnail" />
                                     </c:when>
 
                                     <%-- External preview image --%>

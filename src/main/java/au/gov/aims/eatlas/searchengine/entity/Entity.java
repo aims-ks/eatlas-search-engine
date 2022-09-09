@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.index.WktUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
@@ -172,6 +173,13 @@ public abstract class Entity {
         this.cachedThumbnailFilename = cachedThumbnailFilename;
     }
 
+    public String getCachedThumbnailUrl() {
+        String searchEngineBaseUrl = SearchEngineConfig.getInstance().getSearchEngineBaseUrl();
+        return this.cachedThumbnailFilename == null ? null :
+                String.format("%s/public/img/v1/%s/%s",
+                        searchEngineBaseUrl, this.index, this.cachedThumbnailFilename);
+    }
+
     public URL getThumbnailUrl() {
         return this.thumbnailUrl;
     }
@@ -218,12 +226,12 @@ public abstract class Entity {
         long thumbnailIndexAgeMs = now - thumbnailLastIndexed;
         long thumbnailIndexAgeDays = thumbnailIndexAgeMs / DAY_MS;
 
-        // Lets check if the file on disk exists
+        // Let's check if the file on disk exists
         String cachedThumbnailFilename = oldEntity.getCachedThumbnailFilename();
         if (cachedThumbnailFilename == null) {
             // Broken thumbnail
 
-            // The last download attempt was less more 1 day ago (broken thumbnail TTL),
+            // The last download attempt was more than 1 day ago (broken thumbnail TTL),
             // and there was no thumbnail to download (or download failed).
             return thumbnailIndexAgeDays >= brokenThumbnailTTL;
 
@@ -290,6 +298,7 @@ public abstract class Entity {
             .put("wkt", this.getWkt())
             .put("wktArea", this.getWktArea())
             .put("cachedThumbnailFilename", this.getCachedThumbnailFilename())
+            .put("cachedThumbnailUrl", this.getCachedThumbnailUrl())
             .put("thumbnailUrl", thumbnailUrl == null ? null : thumbnailUrl.toString())
             .put("langcode", this.getLangcode());
     }
