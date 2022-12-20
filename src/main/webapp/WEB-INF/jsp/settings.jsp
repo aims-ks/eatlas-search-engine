@@ -278,6 +278,20 @@
                                         </div>
 
                                         <div class="field">
+                                            <label for="${indexer.index}_drupalPreviewImageFieldType">
+                                                <span class="label">Drupal preview image field type</span>
+                                                <select id="${indexer.index}_drupalPreviewImageFieldType"
+                                                        name="${indexer.index}_drupalPreviewImageFieldType"
+                                                        data-lpignore="true">
+                                                    <option value="none" ${indexer.drupalPreviewImageFieldType == 'none' ? 'selected="selected"':''}>-- No preview --</option>
+                                                    <option value="file" ${indexer.drupalPreviewImageFieldType == 'image' ? 'selected="selected"':''}>Image</option>
+                                                    <option value="media" ${indexer.drupalPreviewImageFieldType == 'media' ? 'selected="selected"':''}>Media</option>
+                                                </select>
+                                            </label>
+                                            <div class="desc">Drupal field type for the preview image.</div>
+                                        </div>
+
+                                        <div class="field">
                                             <label for="${indexer.index}_drupalPreviewImageField">
                                                 <span class="label">Drupal preview image field ID</span>
                                                 <input type="text"
@@ -287,7 +301,7 @@
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
-                                            <div class="desc">Drupal field type: Image</div>
+                                            <div class="desc">Drupal field type: Image or Media</div>
                                             <div class="desc">Example: field_image</div>
                                         </div>
 
@@ -454,6 +468,20 @@
                                         </div>
 
                                         <div class="field">
+                                            <label for="${indexer.index}_drupalPreviewImageFieldType">
+                                                <span class="label">Drupal preview image field type</span>
+                                                <select id="${indexer.index}_drupalPreviewImageFieldType"
+                                                        name="${indexer.index}_drupalPreviewImageFieldType"
+                                                        data-lpignore="true">
+                                                    <option value="none" ${indexer.drupalPreviewImageFieldType == 'none' ? 'selected="selected"':''}>-- No preview --</option>
+                                                    <option value="file" ${indexer.drupalPreviewImageFieldType == 'image' ? 'selected="selected"':''}>Image</option>
+                                                    <option value="media" ${indexer.drupalPreviewImageFieldType == 'media' ? 'selected="selected"':''}>Media</option>
+                                                </select>
+                                            </label>
+                                            <div class="desc">Drupal field type for the preview image.</div>
+                                        </div>
+
+                                        <div class="field">
                                             <label for="${indexer.index}_drupalPreviewImageField">
                                                 <span class="label">Drupal preview image field ID</span>
                                                 <input type="text"
@@ -463,7 +491,7 @@
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
-                                            <div class="desc">Drupal field type: Image</div>
+                                            <div class="desc">Drupal field type: Image or Media</div>
                                             <div class="desc">Example: field_image</div>
                                         </div>
 

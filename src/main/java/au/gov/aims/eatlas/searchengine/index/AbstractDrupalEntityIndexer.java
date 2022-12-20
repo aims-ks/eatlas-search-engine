@@ -53,6 +53,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     private String drupalVersion;
     private String drupalEntityType; // Entity type. Example: node, media, user, etc
     private String drupalBundleId; // Content type (node type) or media type. Example: article, image, etc
+    private String drupalPreviewImageFieldType;
     private String drupalPreviewImageField;
     private String drupalWktField;
 
@@ -62,6 +63,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String drupalVersion,
             String drupalEntityType,
             String drupalBundleId,
+            String drupalPreviewImageFieldType,
             String drupalPreviewImageField,
             String drupalWktField) {
 
@@ -70,6 +72,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalVersion = drupalVersion;
         this.drupalEntityType = drupalEntityType;
         this.drupalBundleId = drupalBundleId;
+        this.drupalPreviewImageFieldType = drupalPreviewImageFieldType;
         this.drupalPreviewImageField = drupalPreviewImageField;
         this.drupalWktField = drupalWktField;
     }
@@ -81,6 +84,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return super.getJsonBase()
             .put("drupalUrl", this.drupalUrl)
             .put("drupalVersion", this.drupalVersion)
+            .put("drupalPreviewImageFieldType", this.drupalPreviewImageFieldType)
             .put("drupalPreviewImageField", this.drupalPreviewImageField)
             .put("drupalWktField", this.drupalWktField);
     }
@@ -285,7 +289,15 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
-        uriBuilder.setParameter("include", this.drupalPreviewImageField);
+        if (this.drupalPreviewImageFieldType != null) {
+            if ("file".equals(this.drupalPreviewImageFieldType)) {
+                // include=field_preview
+                uriBuilder.setParameter("include", this.drupalPreviewImageField);
+            } else if ("media".equals(this.drupalPreviewImageFieldType)) {
+                // include=field_preview,field_preview.field_media_image
+                uriBuilder.setParameter("include", String.format("%s,%s.field_media_image", this.drupalPreviewImageField, this.drupalPreviewImageField));
+            }
+        }
         uriBuilder.setParameter("filter[status]", "1");
 
         return uriBuilder;
@@ -308,8 +320,14 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
-        if (this.drupalPreviewImageField != null) {
-            uriBuilder.setParameter("include", this.drupalPreviewImageField);
+        if (this.drupalPreviewImageFieldType != null) {
+            if ("file".equals(this.drupalPreviewImageFieldType)) {
+                // include=field_preview
+                uriBuilder.setParameter("include", this.drupalPreviewImageField);
+            } else if ("media".equals(this.drupalPreviewImageFieldType)) {
+                // include=field_preview,field_preview.field_media_image
+                uriBuilder.setParameter("include", String.format("%s,%s.field_media_image", this.drupalPreviewImageField, this.drupalPreviewImageField));
+            }
         }
         uriBuilder.setParameter("sort", "-changed");
         uriBuilder.setParameter("page[limit]", String.format("%d", INDEX_PAGE_SIZE));
@@ -343,7 +361,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
     }
 
-    public static String findPreviewImageRelativePath(String imageUUID, JSONArray included) {
+    public static String findPreviewImageRelativePath(String previewImageFieldType, String imageUUID, JSONArray included) {
         if (imageUUID == null || included == null) {
             return null;
         }
@@ -352,9 +370,19 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             JSONObject jsonInclude = included.optJSONObject(i);
             String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
             if (imageUUID.equals(includeId)) {
-                JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
-                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
-                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
+                if ("media".equals(previewImageFieldType)) {
+                    // File the file UUID associated with the media UUID,
+                    // then resolve the URL of the file UUID using recursion.
+                    JSONObject jsonIncludeRelationships = jsonInclude == null ? null : jsonInclude.optJSONObject("relationships");
+                    JSONObject jsonIncludeRelationshipsFieldMediaImage = jsonIncludeRelationships == null ? null : jsonIncludeRelationships.optJSONObject("field_media_image");
+                    JSONObject jsonIncludeRelationshipsFieldMediaImageData = jsonIncludeRelationshipsFieldMediaImage == null ? null : jsonIncludeRelationshipsFieldMediaImage.optJSONObject("data");
+                    String fileUUID = jsonIncludeRelationshipsFieldMediaImageData == null ? null : jsonIncludeRelationshipsFieldMediaImageData.optString("id", null);
+                    return AbstractDrupalEntityIndexer.findPreviewImageRelativePath("file", fileUUID, included);
+                } else {
+                    JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
+                    JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
+                    return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
+                }
             }
         }
 
@@ -393,6 +421,14 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalBundleId = drupalBundleId;
     }
 
+    public String getDrupalPreviewImageFieldType() {
+        return this.drupalPreviewImageFieldType;
+    }
+
+    public void setDrupalPreviewImageFieldType(String drupalPreviewImageFieldType) {
+        this.drupalPreviewImageFieldType = drupalPreviewImageFieldType;
+    }
+
     public String getDrupalPreviewImageField() {
         return this.drupalPreviewImageField;
     }
@@ -411,10 +447,12 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
     public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
         URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiEntity, messages);
-        if (baseUrl != null && this.getDrupalPreviewImageField() != null) {
+        String previewImageFieldType = this.getDrupalPreviewImageFieldType();
+        if (previewImageFieldType != null && !"none".equals(previewImageFieldType) &&
+                baseUrl != null && this.getDrupalPreviewImageField() != null) {
             String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(jsonApiEntity, this.getDrupalPreviewImageField());
             if (previewImageUUID != null) {
-                String previewImageRelativePath = AbstractDrupalEntityIndexer.findPreviewImageRelativePath(previewImageUUID, jsonIncluded);
+                String previewImageRelativePath = AbstractDrupalEntityIndexer.findPreviewImageRelativePath(previewImageFieldType, previewImageUUID, jsonIncluded);
                 if (previewImageRelativePath != null) {
                     URL thumbnailUrl = null;
                     try {

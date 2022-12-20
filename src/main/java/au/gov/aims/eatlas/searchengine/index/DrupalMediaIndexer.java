@@ -75,7 +75,7 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String drupalWktField
     ) {
 
-        super(index, drupalUrl, drupalVersion, "media", drupalMediaType,
+        super(index, drupalUrl, drupalVersion, "media", drupalMediaType, "file",
                 (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
                 drupalWktField);
         this.drupalTitleField = drupalTitleField;
