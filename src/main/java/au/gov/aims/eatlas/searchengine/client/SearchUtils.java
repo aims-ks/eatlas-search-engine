@@ -198,7 +198,7 @@ public class SearchUtils {
 
             case "DrupalExternalLinkNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-extlink");
-                newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, null, null, null, null, null, null, null, null);
+                newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "GeoNetworkIndexer":

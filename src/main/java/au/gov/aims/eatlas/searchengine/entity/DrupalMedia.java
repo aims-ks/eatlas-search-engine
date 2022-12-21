@@ -19,9 +19,7 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
+import au.gov.aims.eatlas.searchengine.index.AbstractDrupalEntityIndexer;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -50,14 +48,7 @@ public class DrupalMedia extends AbstractDrupalEntity {
             this.mid = midStr == null ? null : Integer.parseInt(midStr);
 
             // Last modified
-            String changedDateStr = jsonAttributes == null ? null : jsonAttributes.optString("changed", null);
-            if (changedDateStr != null && !changedDateStr.isEmpty()) {
-                DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
-                DateTime changedDate = dateParser.parseDateTime(changedDateStr);
-                if (changedDate != null) {
-                    this.setLastModified(changedDate.getMillis());
-                }
-            }
+            this.setLastModified(AbstractDrupalEntityIndexer.parseLastModified(jsonApiMedia));
 
             // Media URL
             String mediaRelativePath = DrupalMedia.getMediaRelativeUrl(jsonApiMedia);

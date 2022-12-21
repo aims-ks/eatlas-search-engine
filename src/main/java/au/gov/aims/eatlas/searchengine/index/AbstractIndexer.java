@@ -162,7 +162,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             return null;
         }
 
-        String type = json.optString("type");
+        String type = json.optString("type", null);
         if (type == null) {
             messages.addMessage(Messages.Level.WARNING,
                     String.format("Invalid indexer JSON Object. Property \"type\" missing.%n%s", json.toString(2)));

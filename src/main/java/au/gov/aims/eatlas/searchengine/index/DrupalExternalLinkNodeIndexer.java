@@ -23,10 +23,10 @@ import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.util.Map;
 
 public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<ExternalLink> {
     private static final Logger LOGGER = Logger.getLogger(DrupalExternalLinkNodeIndexer.class.getName());
@@ -44,7 +44,6 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
-            json.optString("drupalPreviewImageFieldType", null),
             json.optString("drupalPreviewImageField", null),
             json.optString("drupalExternalUrlField", null),
             json.optString("drupalContentOverwriteField", null),
@@ -74,13 +73,12 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             String drupalUrl,
             String drupalVersion,
             String drupalNodeType,
-            String drupalPreviewImageFieldType,
             String drupalPreviewImageField,
             String drupalExternalUrlField,
             String drupalContentOverwriteField,
             String drupalWktField
     ) {
-        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageFieldType, drupalPreviewImageField, drupalWktField);
+        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalWktField);
         this.drupalExternalUrlField = drupalExternalUrlField;
         this.drupalContentOverwriteField = drupalContentOverwriteField;
     }
@@ -91,12 +89,12 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     }
 
     @Override
-    public ExternalLink createDrupalEntity(JSONObject jsonApiNode, Messages messages) {
+    public ExternalLink createDrupalEntity(JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, Messages messages) {
         return new ExternalLink(this.getIndex(), jsonApiNode, messages);
     }
 
     @Override
-    protected boolean parseJsonDrupalEntity(SearchClient client, JSONObject jsonApiNode, JSONArray jsonIncluded, ExternalLink externalLink, Messages messages) {
+    protected boolean parseJsonDrupalEntity(SearchClient client, JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, ExternalLink externalLink, Messages messages) {
         if (this.drupalExternalUrlField != null) {
             String externalLinkStr = DrupalExternalLinkNodeIndexer.getExternalLink(jsonApiNode, this.drupalExternalUrlField);
             if (externalLinkStr != null && !externalLinkStr.isEmpty()) {

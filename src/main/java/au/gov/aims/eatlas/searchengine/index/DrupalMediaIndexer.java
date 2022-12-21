@@ -24,6 +24,8 @@ import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import org.json.JSONObject;
 
+import java.util.Map;
+
 public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia> {
     private static final String DEFAULT_PREVIEW_IMAGE_FIELD = "thumbnail";
 
@@ -75,8 +77,9 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String drupalWktField
     ) {
 
-        super(index, drupalUrl, drupalVersion, "media", drupalMediaType, "file",
+        super(index, drupalUrl, drupalVersion, "media", drupalMediaType,
                 (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
+                null,
                 drupalWktField);
         this.drupalTitleField = drupalTitleField;
         this.drupalDescriptionField = drupalDescriptionField;
@@ -88,7 +91,7 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
     }
 
     @Override
-    public DrupalMedia createDrupalEntity(JSONObject jsonApiMedia, Messages messages) {
+    public DrupalMedia createDrupalEntity(JSONObject jsonApiMedia, Map<String, JSONObject> jsonIncluded, Messages messages) {
         return new DrupalMedia(this.getIndex(), jsonApiMedia, messages);
     }
 

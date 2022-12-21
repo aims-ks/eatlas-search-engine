@@ -27,6 +27,9 @@ import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.locationtech.jts.io.ParseException;
@@ -34,8 +37,12 @@ import org.locationtech.jts.io.ParseException;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -53,8 +60,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     private String drupalVersion;
     private String drupalEntityType; // Entity type. Example: node, media, user, etc
     private String drupalBundleId; // Content type (node type) or media type. Example: article, image, etc
-    private String drupalPreviewImageFieldType;
     private String drupalPreviewImageField;
+    private String drupalIndexedFields;
     private String drupalWktField;
 
     public AbstractDrupalEntityIndexer(
@@ -63,8 +70,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String drupalVersion,
             String drupalEntityType,
             String drupalBundleId,
-            String drupalPreviewImageFieldType,
             String drupalPreviewImageField,
+            String drupalIndexedFields,
             String drupalWktField) {
 
         super(index);
@@ -72,20 +79,20 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalVersion = drupalVersion;
         this.drupalEntityType = drupalEntityType;
         this.drupalBundleId = drupalBundleId;
-        this.drupalPreviewImageFieldType = drupalPreviewImageFieldType;
         this.drupalPreviewImageField = drupalPreviewImageField;
+        this.drupalIndexedFields = drupalIndexedFields;
         this.drupalWktField = drupalWktField;
     }
 
-    public abstract E createDrupalEntity(JSONObject jsonApiEntity, Messages messages);
+    public abstract E createDrupalEntity(JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, Messages messages);
     public abstract E getIndexedDrupalEntity(SearchClient client, String id, Messages messages);
 
     protected JSONObject getJsonBase() {
         return super.getJsonBase()
             .put("drupalUrl", this.drupalUrl)
             .put("drupalVersion", this.drupalVersion)
-            .put("drupalPreviewImageFieldType", this.drupalPreviewImageFieldType)
             .put("drupalPreviewImageField", this.drupalPreviewImageField)
+            .put("drupalIndexedFields", this.drupalIndexedFields)
             .put("drupalWktField", this.drupalWktField);
     }
 
@@ -108,11 +115,44 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
     @Override
     protected E harvestEntity(SearchClient client, String entityUUID, Messages messages) {
+        // First, request the node without includes (to find out the node's structure)
         URIBuilder uriBuilder = this.buildDrupalApiEntityUrl(entityUUID, messages);
         if (uriBuilder == null) {
             return null;
         }
 
+        JSONObject jsonResponse = this.getJsonResponse(entityUUID, uriBuilder, messages);
+        return this.harvestEntity(client, jsonResponse, entityUUID, messages);
+    }
+
+    protected E harvestEntity(SearchClient client, JSONObject jsonResponse, String entityUUID, Messages messages) {
+        E drupalEntity = null;
+        if (jsonResponse != null) {
+            JSONObject jsonApiEntity = jsonResponse.optJSONObject("data");
+            List<String> includes = this.getIncludes(jsonApiEntity);
+
+            if (includes == null || includes.isEmpty()) {
+                // No field needs to be included in the query.
+                // No need to send another query, just use the previous response. It contains all the information we need.
+                drupalEntity = this.harvestEntityWithIncludes(client, jsonResponse, messages);
+            } else {
+                // Now that we know what fields need to be included in the request,
+                // request the node again, with the includes.
+                URIBuilder uriWithIncludesBuilder = this.buildDrupalApiEntityUrlWithIncludes(entityUUID, includes, messages);
+                if (uriWithIncludesBuilder == null) {
+                    return null;
+                }
+
+                JSONObject jsonResponseWithIncludes = this.getJsonResponse(entityUUID, uriWithIncludesBuilder, messages);
+                drupalEntity = this.harvestEntityWithIncludes(client, jsonResponseWithIncludes, messages);
+            }
+        }
+
+        return drupalEntity;
+    }
+
+
+    protected JSONObject getJsonResponse(String entityUUID, URIBuilder uriBuilder, Messages messages) {
         String url;
         try {
             url = uriBuilder.build().toURL().toString();
@@ -138,23 +178,53 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             if (jsonErrors != null && !jsonErrors.isEmpty()) {
                 this.handleDrupalApiErrors(jsonErrors, messages);
             } else {
-                JSONObject jsonApiEntity = jsonResponse.optJSONObject("data");
-                JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
-
-                E drupalEntity = this.createDrupalEntity(jsonApiEntity, messages);
-
-                if (this.parseJsonDrupalEntity(client, jsonApiEntity, jsonIncluded, drupalEntity, messages)) {
-                    return drupalEntity;
-                }
+                return jsonResponse;
             }
         }
 
         return null;
     }
 
-    // Overwrite in sub-classes when more work needs to be done.
+    protected E harvestEntityWithIncludes(SearchClient client, JSONObject jsonResponse, Messages messages) {
+        JSONObject jsonApiEntity = jsonResponse.optJSONObject("data");
+        JSONArray jsonIncludedArray = jsonResponse.optJSONArray("included");
+
+        Map<String, JSONObject> jsonIncluded = parseJsonIncluded(jsonIncludedArray);
+
+        E drupalEntity = this.createDrupalEntity(jsonApiEntity, jsonIncluded, messages);
+
+        if (this.parseJsonDrupalEntity(client, jsonApiEntity, jsonIncluded, drupalEntity, messages)) {
+            return drupalEntity;
+        }
+
+        return null;
+    }
+
+    public static Map<String, JSONObject> parseJsonIncluded(JSONArray jsonIncludedArray) {
+        Map<String, JSONObject> jsonIncluded = new HashMap<>();
+        if (jsonIncludedArray != null) {
+            for (int i=0; i<jsonIncludedArray.length(); i++) {
+                JSONObject jsonIncludedEl = jsonIncludedArray.optJSONObject(i);
+                if (jsonIncludedEl != null) {
+                    String uuid = jsonIncludedEl.optString("id", null);
+                    if (uuid != null) {
+                        jsonIncluded.put(uuid, jsonIncludedEl);
+                    }
+                }
+            }
+        }
+        return jsonIncluded;
+    }
+
+    // Overwrite in subclasses when more work needs to be done.
     // Return false to prevent the entity from been indexed.
-    protected boolean parseJsonDrupalEntity(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
+    protected boolean parseJsonDrupalEntity(
+            SearchClient client,
+            JSONObject jsonApiEntity,
+            Map<String, JSONObject> jsonIncluded,
+            E drupalEntity,
+            Messages messages) {
+
         this.updateThumbnail(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
         this.updateWkt(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
         return true;
@@ -221,7 +291,6 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     crashed = true;
                 } else {
                     JSONArray jsonEntities = jsonResponse.optJSONArray("data");
-                    JSONArray jsonIncluded = jsonResponse.optJSONArray("included");
 
                     entityFound = jsonEntities == null ? 0 : jsonEntities.length();
                     totalFound += entityFound;
@@ -236,17 +305,22 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     for (int i=0; i<entityFound; i++) {
                         JSONObject jsonApiEntity = jsonEntities.optJSONObject(i);
 
-                        E drupalEntity = this.createDrupalEntity(jsonApiEntity, messages);
-
+                        // Stop the harvest as soon as we find a Drupal node with a last modified date older
+                        //     than the last harvest.
+                        //     The nodes are ordered by modified dates.
                         // NOTE: Drupal last modified date (aka changed date) are rounded to second,
                         //     and can be a bit off. Use a 10s margin for safety.
-                        if (!fullHarvest && lastHarvested != null && drupalEntity.getLastModified() < lastHarvested + 10000) {
+                        Long lastModified = AbstractDrupalEntityIndexer.parseLastModified(jsonApiEntity);
+                        if (!fullHarvest &&
+                                lastHarvested != null && lastModified != null &&
+                                lastModified < lastHarvested + 10000) {
+
                             stop = true;
                             break;
                         }
 
                         Thread thread = new DrupalEntityIndexerThread(
-                            client, messages, drupalEntity, jsonApiEntity, jsonIncluded, usedThumbnails, page+1, i+1, entityFound);
+                            client, messages, jsonApiEntity, usedThumbnails, page+1, i+1, entityFound);
 
                         threadPool.execute(thread);
                     }
@@ -289,15 +363,6 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
-        if (this.drupalPreviewImageFieldType != null) {
-            if ("file".equals(this.drupalPreviewImageFieldType)) {
-                // include=field_preview
-                uriBuilder.setParameter("include", this.drupalPreviewImageField);
-            } else if ("media".equals(this.drupalPreviewImageFieldType)) {
-                // include=field_preview,field_preview.field_media_image
-                uriBuilder.setParameter("include", String.format("%s,%s.field_media_image", this.drupalPreviewImageField, this.drupalPreviewImageField));
-            }
-        }
         uriBuilder.setParameter("filter[status]", "1");
 
         return uriBuilder;
@@ -320,18 +385,66 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
-        if (this.drupalPreviewImageFieldType != null) {
-            if ("file".equals(this.drupalPreviewImageFieldType)) {
-                // include=field_preview
-                uriBuilder.setParameter("include", this.drupalPreviewImageField);
-            } else if ("media".equals(this.drupalPreviewImageFieldType)) {
-                // include=field_preview,field_preview.field_media_image
-                uriBuilder.setParameter("include", String.format("%s,%s.field_media_image", this.drupalPreviewImageField, this.drupalPreviewImageField));
-            }
-        }
         uriBuilder.setParameter("sort", "-changed");
         uriBuilder.setParameter("page[limit]", String.format("%d", INDEX_PAGE_SIZE));
         uriBuilder.setParameter("page[offset]", String.format("%d", page * INDEX_PAGE_SIZE));
+        uriBuilder.setParameter("filter[status]", "1");
+
+        return uriBuilder;
+    }
+
+    protected List<String> getIncludes(JSONObject jsonApiEntity) {
+        List<String> includes = new ArrayList<>();
+
+        // Parse jsonApiEntity to find out which fields need to be included in the query
+
+        // Preview image field
+        String previewImageFieldType = AbstractDrupalEntityIndexer.getPreviewImageType(jsonApiEntity, this.getDrupalPreviewImageField());
+        if (previewImageFieldType != null) {
+            if ("media--image".equals(previewImageFieldType)) {
+                // include=field_preview,field_preview.field_media_image
+                includes.add(this.drupalPreviewImageField);
+                includes.add(this.drupalPreviewImageField + ".field_media_image");
+            } else if ("file--file".equals(previewImageFieldType)) {
+                // include=field_preview
+                includes.add(this.drupalPreviewImageField);
+            }
+        }
+
+        // Indexed fields (i.e. node body)
+        List<String> indexedFields = AbstractDrupalEntityIndexer.splitIndexedFields(this.getDrupalIndexedFields());
+        if (!indexedFields.isEmpty()) {
+            for (String indexedField : indexedFields) {
+                String indexedFieldType = AbstractDrupalEntityIndexer.getFieldType(jsonApiEntity, indexedField);
+                if (indexedFieldType != null) {
+                    if ("paragraph".equals(indexedFieldType)) {
+                        includes.add(indexedField);
+                    }
+                }
+            }
+        }
+
+        return includes;
+    }
+
+    public URIBuilder buildDrupalApiEntityUrlWithIncludes(String entityUUID, List<String> includes, Messages messages) {
+        String urlBase = this.getDrupalApiUrlBase();
+        URIBuilder uriBuilder;
+        try {
+            uriBuilder = new URIBuilder(String.format("%s/%s", urlBase, entityUUID));
+        } catch(URISyntaxException ex) {
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
+            return null;
+        }
+
+        if (includes != null && !includes.isEmpty()) {
+            // Add the include parameter.
+            // Example:
+            //     include=field_preview,field_preview.field_media_image
+            uriBuilder.setParameter("include", String.join(",", includes));
+        }
+
         uriBuilder.setParameter("filter[status]", "1");
 
         return uriBuilder;
@@ -351,38 +464,102 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         }
     }
 
+    public static String getPreviewImageType(JSONObject jsonApiEntity, String previewImageField) {
+        if (previewImageField == null || previewImageField.isEmpty()) {
+            return null;
+        }
+        // Returns: relationships.field_preview.data.type
+        JSONObject jsonRelationships = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("relationships");
+        JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
+        JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
+        return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("type", null);
+    }
+
     public static String getPreviewImageUUID(JSONObject jsonApiEntity, String previewImageField) {
         if (previewImageField == null || previewImageField.isEmpty()) {
             return null;
         }
+        // Returns: relationships.field_preview.data.id
         JSONObject jsonRelationships = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("relationships");
         JSONObject jsonRelFieldImage = jsonRelationships == null ? null : jsonRelationships.optJSONObject(previewImageField);
         JSONObject jsonRelFieldImageData = jsonRelFieldImage == null ? null : jsonRelFieldImage.optJSONObject("data");
         return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
     }
 
-    public static String findPreviewImageRelativePath(String previewImageFieldType, String imageUUID, JSONArray included) {
-        if (imageUUID == null || included == null) {
+    public static String getFieldType(JSONObject jsonApiEntity, String field) {
+        if (field == null || field.isEmpty()) {
+            return null;
+        }
+        // Returns null if: relationships.field_body == null
+        JSONObject jsonRelationships = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("relationships");
+        JSONObject jsonRelField = jsonRelationships == null ? null : jsonRelationships.optJSONObject(field);
+        Object jsonRelFieldDataObj = jsonRelField == null ? null : jsonRelField.opt("data");
+        if (jsonRelFieldDataObj == null) {
             return null;
         }
 
-        for (int i=0; i < included.length(); i++) {
-            JSONObject jsonInclude = included.optJSONObject(i);
-            String includeId = jsonInclude == null ? null : jsonInclude.optString("id", null);
-            if (imageUUID.equals(includeId)) {
-                if ("media".equals(previewImageFieldType)) {
-                    // File the file UUID associated with the media UUID,
-                    // then resolve the URL of the file UUID using recursion.
-                    JSONObject jsonIncludeRelationships = jsonInclude == null ? null : jsonInclude.optJSONObject("relationships");
-                    JSONObject jsonIncludeRelationshipsFieldMediaImage = jsonIncludeRelationships == null ? null : jsonIncludeRelationships.optJSONObject("field_media_image");
-                    JSONObject jsonIncludeRelationshipsFieldMediaImageData = jsonIncludeRelationshipsFieldMediaImage == null ? null : jsonIncludeRelationshipsFieldMediaImage.optJSONObject("data");
-                    String fileUUID = jsonIncludeRelationshipsFieldMediaImageData == null ? null : jsonIncludeRelationshipsFieldMediaImageData.optString("id", null);
-                    return AbstractDrupalEntityIndexer.findPreviewImageRelativePath("file", fileUUID, included);
-                } else {
-                    JSONObject jsonIncludeAttributes = jsonInclude == null ? null : jsonInclude.optJSONObject("attributes");
-                    JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
-                    return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
+        // Type: Paragraph
+        if (jsonRelFieldDataObj instanceof JSONArray) {
+            JSONArray jsonRelFieldDataArray = (JSONArray)jsonRelFieldDataObj;
+            if (jsonRelFieldDataArray.isEmpty()) {
+                return null;
+            }
+            JSONObject jsonRelFieldDataEl = jsonRelFieldDataArray.optJSONObject(0);
+            String jsonRelFieldDataElType = jsonRelFieldDataEl.optString("type", null);
+            if (jsonRelFieldDataElType != null && jsonRelFieldDataElType.startsWith("paragraph--")) {
+                return "paragraph";
+            }
+        }
+
+        return null;
+    }
+
+    public static String findPreviewImageRelativePath(String previewImageFieldType, String imageUUID, Map<String, JSONObject> jsonIncluded) {
+        if (imageUUID == null || jsonIncluded == null) {
+            return null;
+        }
+
+        JSONObject jsonImage = jsonIncluded.get(imageUUID);
+        if (jsonImage != null) {
+            if ("media--image".equals(previewImageFieldType)) {
+                // File the file UUID associated with the media UUID,
+                // then resolve the URL of the file UUID using recursion.
+                JSONObject jsonIncludeRelationships = jsonImage.optJSONObject("relationships");
+                JSONObject jsonIncludeRelationshipsFieldMediaImage = jsonIncludeRelationships == null ? null : jsonIncludeRelationships.optJSONObject("field_media_image");
+                JSONObject jsonIncludeRelationshipsFieldMediaImageData = jsonIncludeRelationshipsFieldMediaImage == null ? null : jsonIncludeRelationshipsFieldMediaImage.optJSONObject("data");
+                String fileUUID = jsonIncludeRelationshipsFieldMediaImageData == null ? null : jsonIncludeRelationshipsFieldMediaImageData.optString("id", null);
+                return AbstractDrupalEntityIndexer.findPreviewImageRelativePath("file", fileUUID, jsonIncluded);
+            } else {
+                JSONObject jsonIncludeAttributes = jsonImage.optJSONObject("attributes");
+                JSONObject jsonIncludeAttributesUri = jsonIncludeAttributes == null ? null : jsonIncludeAttributes.optJSONObject("uri");
+                return jsonIncludeAttributesUri == null ? null : jsonIncludeAttributesUri.optString("url", null);
+            }
+        }
+
+        return null;
+    }
+
+    public static List<String> splitIndexedFields(String indexedFieldsStr) {
+        List<String> indexedFieldList = new ArrayList<String>();
+        if (indexedFieldsStr != null && !indexedFieldsStr.isEmpty()) {
+            for (String indexedField : indexedFieldsStr.split(",")) {
+                indexedField = indexedField.trim();
+                if (!indexedField.isEmpty()) {
+                    indexedFieldList.add(indexedField);
                 }
+            }
+        }
+        return indexedFieldList;
+    }
+
+    public static Long parseLastModified(JSONObject jsonApiEntity) {
+        JSONObject jsonAttributes = jsonApiEntity.optJSONObject("attributes");
+        String changedDateStr = jsonAttributes == null ? null : jsonAttributes.optString("changed", null);
+        if (changedDateStr != null && !changedDateStr.isEmpty()) {
+            DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
+            DateTime changedDate = dateParser.parseDateTime(changedDateStr);
+            if (changedDate != null) {
+                return changedDate.getMillis();
             }
         }
 
@@ -421,20 +598,20 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalBundleId = drupalBundleId;
     }
 
-    public String getDrupalPreviewImageFieldType() {
-        return this.drupalPreviewImageFieldType;
-    }
-
-    public void setDrupalPreviewImageFieldType(String drupalPreviewImageFieldType) {
-        this.drupalPreviewImageFieldType = drupalPreviewImageFieldType;
-    }
-
     public String getDrupalPreviewImageField() {
         return this.drupalPreviewImageField;
     }
 
     public void setDrupalPreviewImageField(String drupalPreviewImageField) {
         this.drupalPreviewImageField = drupalPreviewImageField;
+    }
+
+    public String getDrupalIndexedFields() {
+        return this.drupalIndexedFields;
+    }
+
+    public void setDrupalIndexedFields(String drupalIndexedFields) {
+        this.drupalIndexedFields = drupalIndexedFields;
     }
 
     public String getDrupalWktField() {
@@ -445,11 +622,10 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalWktField = drupalWktField;
     }
 
-    public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
+    public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
         URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiEntity, messages);
-        String previewImageFieldType = this.getDrupalPreviewImageFieldType();
-        if (previewImageFieldType != null && !"none".equals(previewImageFieldType) &&
-                baseUrl != null && this.getDrupalPreviewImageField() != null) {
+        String previewImageFieldType = AbstractDrupalEntityIndexer.getPreviewImageType(jsonApiEntity, this.getDrupalPreviewImageField());
+        if (previewImageFieldType != null && baseUrl != null && this.getDrupalPreviewImageField() != null) {
             String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(jsonApiEntity, this.getDrupalPreviewImageField());
             if (previewImageUUID != null) {
                 String previewImageRelativePath = AbstractDrupalEntityIndexer.findPreviewImageRelativePath(previewImageFieldType, previewImageUUID, jsonIncluded);
@@ -490,7 +666,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         }
     }
 
-    public void updateWkt(SearchClient client, JSONObject jsonApiEntity, JSONArray jsonIncluded, E drupalEntity, Messages messages) {
+    public void updateWkt(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
         if (this.getDrupalWktField() != null) {
             // Extract WKT from jsonApiEntity (node / media)
             JSONObject jsonAttributes = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("attributes");
@@ -521,28 +697,23 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     public class DrupalEntityIndexerThread extends Thread {
         private final SearchClient client;
         private final Messages messages;
-        private final E drupalEntity;
         private final JSONObject jsonApiEntity;
-        private final JSONArray jsonIncluded;
         private final Set<String> usedThumbnails;
         private final int page;
         private final int current;
         private final int pageTotal;
+        private E drupalEntity;
 
         public DrupalEntityIndexerThread(
                 SearchClient client,
                 Messages messages,
-                E drupalEntity,
                 JSONObject jsonApiEntity,
-                JSONArray jsonIncluded,
                 Set<String> usedThumbnails,
                 int page, int current, int pageTotal
         ) {
             this.client = client;
             this.messages = messages;
-            this.drupalEntity = drupalEntity;
             this.jsonApiEntity = jsonApiEntity;
-            this.jsonIncluded = jsonIncluded;
             this.usedThumbnails = usedThumbnails;
             this.page = page;
             this.current = current;
@@ -563,7 +734,17 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
         @Override
         public void run() {
-            if (AbstractDrupalEntityIndexer.this.parseJsonDrupalEntity(this.client, this.jsonApiEntity, this.jsonIncluded, this.drupalEntity, this.messages)) {
+
+            JSONObject jsonResponse = new JSONObject()
+                    .put("data", this.jsonApiEntity);
+
+            String entityUUID = this.jsonApiEntity == null ? null : this.jsonApiEntity.optString("id", null);
+
+            this.drupalEntity = AbstractDrupalEntityIndexer.this.harvestEntity(
+                    this.client, jsonResponse, entityUUID, this.messages);
+
+
+            if (this.drupalEntity != null) {
                 if (this.usedThumbnails != null) {
                     String thumbnailFilename = this.drupalEntity.getCachedThumbnailFilename();
                     if (thumbnailFilename != null) {

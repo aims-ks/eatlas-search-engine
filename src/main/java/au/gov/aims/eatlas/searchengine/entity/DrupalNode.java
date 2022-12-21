@@ -19,12 +19,11 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
+import au.gov.aims.eatlas.searchengine.index.AbstractDrupalEntityIndexer;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.util.List;
 
 public class DrupalNode extends AbstractDrupalEntity {
     private Integer nid;
@@ -53,14 +52,7 @@ public class DrupalNode extends AbstractDrupalEntity {
             this.setTitle(jsonAttributes == null ? null : jsonAttributes.optString("title", null));
 
             // Last modified
-            String changedDateStr = jsonAttributes == null ? null : jsonAttributes.optString("changed", null);
-            if (changedDateStr != null && !changedDateStr.isEmpty()) {
-                DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeNoMillis();
-                DateTime changedDate = dateParser.parseDateTime(changedDateStr);
-                if (changedDate != null) {
-                    this.setLastModified(changedDate.getMillis());
-                }
-            }
+            this.setLastModified(AbstractDrupalEntityIndexer.parseLastModified(jsonApiNode));
 
             // Node URL
             String nodeRelativePath = DrupalNode.getNodeRelativeUrl(jsonApiNode);
@@ -75,11 +67,6 @@ public class DrupalNode extends AbstractDrupalEntity {
 
             // Lang code
             this.setLangcode(jsonAttributes == null ? null : jsonAttributes.optString("langcode", null));
-
-            // Body
-            JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject("body");
-            this.setDocument(jsonBody == null ? null :
-                EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
         }
     }
 
