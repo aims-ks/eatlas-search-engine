@@ -393,7 +393,7 @@
                                             </label>
                                             <div class="desc">Drupal internal field ID for the media's title.</div>
                                             <div class="desc">Drupal field type: Text (plain)</div>
-                                            <div class="desc">Example: field_title</div>
+                                            <div class="desc">Example: name</div>
                                         </div>
 
                                         <div class="field">
