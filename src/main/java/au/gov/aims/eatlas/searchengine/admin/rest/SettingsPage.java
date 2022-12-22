@@ -164,7 +164,6 @@ public class SettingsPage {
         boolean valid = true;
         for (AbstractIndexer indexer : config.getIndexers()) {
             String index = indexer.getIndex();
-            valid = valid && indexer.validate();
 
             String newIndex = FormUtils.getFormStringValue(form, index + "_index");
             if (newIndex != null && !newIndex.equals(index)) {
@@ -237,6 +236,8 @@ public class SettingsPage {
                 messages.addMessage(Messages.Level.WARNING,
                     String.format("Unsupported settings sent to the server. Unknown indexer type: %s", indexer.getClass().getSimpleName()));
             }
+
+            valid = valid && indexer.validate();
         }
 
         if (!valid) {
