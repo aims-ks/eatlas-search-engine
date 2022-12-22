@@ -21,16 +21,15 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
-import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Map;
 
 public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia> {
     private static final String DEFAULT_PREVIEW_IMAGE_FIELD = "thumbnail";
 
     private String drupalTitleField;
-    private String drupalDescriptionField;
 
     public static DrupalMediaIndexer fromJSON(String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
@@ -44,15 +43,14 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             json.optString("drupalMediaType", null),
             json.optString("drupalPreviewImageField", null),
             json.optString("drupalTitleField", null),
-            json.optString("drupalDescriptionField", null),
+            json.optString("drupalIndexedFields", null),
             json.optString("drupalWktField", null));
     }
 
     public JSONObject toJSON() {
         return this.getJsonBase()
             .put("drupalMediaType", this.getDrupalBundleId())
-            .put("drupalTitleField", this.drupalTitleField)
-            .put("drupalDescriptionField", this.drupalDescriptionField);
+            .put("drupalTitleField", this.drupalTitleField);
     }
 
     @Override
@@ -73,16 +71,15 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String drupalMediaType,
             String drupalPreviewImageField,
             String drupalTitleField,
-            String drupalDescriptionField,
+            String drupalIndexedFields,
             String drupalWktField
     ) {
 
         super(index, drupalUrl, drupalVersion, "media", drupalMediaType,
                 (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
-                null,
-                drupalWktField);
+                drupalIndexedFields, drupalWktField);
+
         this.drupalTitleField = drupalTitleField;
-        this.drupalDescriptionField = drupalDescriptionField;
     }
 
     @Override
@@ -92,7 +89,19 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
 
     @Override
     public DrupalMedia createDrupalEntity(JSONObject jsonApiMedia, Map<String, JSONObject> jsonIncluded, Messages messages) {
-        return new DrupalMedia(this.getIndex(), jsonApiMedia, messages);
+        DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia, messages);
+
+        if (jsonApiMedia == null) {
+            return drupalMedia;
+        }
+
+        drupalMedia.setTitle(this.parseDrupalTitle(jsonApiMedia, this.getDrupalTitleField()));
+
+        List<String> textChunks = this.getIndexedFieldsContent(jsonApiMedia, jsonIncluded);
+        drupalMedia.setDocument(String.join(" ", textChunks));
+
+        return drupalMedia;
+
     }
 
     @Override
@@ -100,22 +109,12 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
         return this.safeGet(client, DrupalMedia.class, id, messages);
     }
 
-    private static String getDrupalTitle(JSONObject jsonApiMedia, String drupalTitleField) {
+    private String parseDrupalTitle(JSONObject jsonApiMedia, String drupalTitleField) {
         if (drupalTitleField == null || drupalTitleField.isEmpty()) {
             return null;
         }
         JSONObject jsonAttributes = jsonApiMedia == null ? null : jsonApiMedia.optJSONObject("attributes");
         return jsonAttributes == null ? null : jsonAttributes.optString(drupalTitleField, null);
-    }
-
-    private static String getDrupalDescription(JSONObject jsonApiMedia, String drupalDescriptionField) {
-        if (drupalDescriptionField == null || drupalDescriptionField.isEmpty()) {
-            return null;
-        }
-        JSONObject jsonAttributes = jsonApiMedia == null ? null : jsonApiMedia.optJSONObject("attributes");
-        JSONObject jsonDesc = jsonAttributes == null ? null : jsonAttributes.optJSONObject(drupalDescriptionField);
-        return jsonDesc == null ? null :
-            EntityUtils.extractHTMLTextContent(jsonDesc.optString("processed", null));
     }
 
     public String getDrupalTitleField() {
@@ -124,13 +123,5 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
 
     public void setDrupalTitleField(String drupalTitleField) {
         this.drupalTitleField = drupalTitleField;
-    }
-
-    public String getDrupalDescriptionField() {
-        return this.drupalDescriptionField;
-    }
-
-    public void setDrupalDescriptionField(String drupalDescriptionField) {
-        this.drupalDescriptionField = drupalDescriptionField;
     }
 }

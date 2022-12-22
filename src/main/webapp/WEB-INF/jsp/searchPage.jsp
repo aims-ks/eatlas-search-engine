@@ -88,7 +88,12 @@
                     <div class="box result">
                         <h3 class="title">
                             <a href="${searchResult.entity.link}" target="_blank">
-                                <c:out value="${searchResult.entity.title}"/>
+                                <c:if test="${not empty searchResult.entity.title}">
+                                    <c:out value="${searchResult.entity.title}"/>
+                                </c:if>
+                                <c:if test="${empty searchResult.entity.title}">
+                                    <em>Untitled</em>
+                                </c:if>
                             </a>
 
                             <c:url value="/admin/search" var="url">

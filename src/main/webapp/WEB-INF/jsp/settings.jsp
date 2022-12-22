@@ -300,8 +300,10 @@
                                                     data-lpignore="true"
                                                     value="<c:out value="${indexer.drupalIndexedFields}" />" />
                                             </label>
-                                            <div class="desc">Drupal internal field IDs to index.</div>
-                                            <div class="desc">Multiple fields can be specified, using a comma separated list.</div>
+                                            <div class="desc">
+                                                Drupal internal field IDs to index.
+                                                Multiple fields can be specified, using a comma separated list.
+                                            </div>
                                             <div class="desc">Drupal field type: Text or Paragraph</div>
                                             <div class="desc">Example: field_body, field_references</div>
                                         </div>
@@ -395,17 +397,20 @@
                                         </div>
 
                                         <div class="field">
-                                            <label for="${indexer.index}_drupalDescriptionField">
-                                                <span class="label">Drupal description field ID</span>
+                                            <label for="${indexer.index}_drupalIndexedFields">
+                                                <span class="label">Drupal indexed field IDs</span>
                                                 <input type="text"
-                                                    id="${indexer.index}_drupalDescriptionField"
-                                                    name="${indexer.index}_drupalDescriptionField"
+                                                    id="${indexer.index}_drupalIndexedFields"
+                                                    name="${indexer.index}_drupalIndexedFields"
                                                     data-lpignore="true"
-                                                    value="<c:out value="${indexer.drupalDescriptionField}" />" />
+                                                    value="<c:out value="${indexer.drupalIndexedFields}" />" />
                                             </label>
-                                            <div class="desc">Drupal internal field ID for the media's description.</div>
-                                            <div class="desc">Drupal field type: Text (formatted, long)</div>
-                                            <div class="desc">Example: field_description</div>
+                                            <div class="desc">
+                                                Drupal internal field IDs to index.
+                                                Multiple fields can be specified, using a comma separated list.
+                                            </div>
+                                            <div class="desc">Drupal field type: Text or Paragraph</div>
+                                            <div class="desc">Example: field_description, field_author</div>
                                         </div>
 
                                         <div class="field">

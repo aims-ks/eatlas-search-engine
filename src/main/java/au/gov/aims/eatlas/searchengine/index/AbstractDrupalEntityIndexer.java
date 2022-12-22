@@ -486,6 +486,123 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return jsonRelFieldImageData == null ? null : jsonRelFieldImageData.optString("id", null);
     }
 
+    protected List<String> getIndexedFieldsContent(JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded) {
+        // Indexed fields (i.e. body)
+        List<String> textChunks = new ArrayList<>();
+        List<String> indexedFields = AbstractDrupalEntityIndexer.splitIndexedFields(this.getDrupalIndexedFields());
+        if (!indexedFields.isEmpty()) {
+            JSONObject jsonAttributes = jsonApiEntity.optJSONObject("attributes");
+
+            for (String indexedField : indexedFields) {
+                // Standard body field
+                if ("body".equals(indexedField)) {
+                    JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject(indexedField);
+                    if (jsonBody != null) {
+                        textChunks.add(EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
+                    }
+                } else {
+                    // Other fields
+                    String fieldType = AbstractDrupalEntityIndexer.getFieldType(jsonApiEntity, indexedField);
+                    if (fieldType == null) {
+                        Object jsonField = null;
+                        // Look for the field in attributes
+                        // NOTE: Media fields tends to be in attributes. Node fields tends to be in relationships.
+                        if (jsonAttributes != null) {
+                            jsonField = jsonAttributes.opt(indexedField);
+                        }
+                        // Look for the field in relationships
+                        if (jsonField == null) {
+                            JSONObject jsonRelationships = jsonApiEntity.optJSONObject("relationships");
+                            jsonField = jsonRelationships == null ? null : jsonRelationships.opt(indexedField);
+                        }
+                        if (jsonField != null) {
+                            List<String> texts = this.parseFieldTexts(jsonField);
+                            if (texts != null && !texts.isEmpty()) {
+                                textChunks.addAll(texts);
+                            }
+                        }
+                    } else if ("paragraph".equals(fieldType)) {
+                        // The field is type Paragraphs.
+                        // It contains an array of Paragraph fields.
+                        // Loop through each paragraph field, extract the texts and add them to the list of chunks.
+                        List<String> paragraphsTexts = this.parseParagraphsField(jsonApiEntity, jsonIncluded, indexedField);
+                        if (paragraphsTexts != null && !paragraphsTexts.isEmpty()) {
+                            textChunks.addAll(paragraphsTexts);
+                        }
+                    }
+                }
+            }
+        }
+
+        return textChunks;
+    }
+
+    private List<String> parseParagraphsField(JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, String field) {
+        List<String> texts = new ArrayList<>();
+
+        // Returns: relationships.field_preview.data.id
+        JSONObject jsonRelationships = jsonApiEntity.optJSONObject("relationships");
+        JSONObject jsonRelField = jsonRelationships == null ? null : jsonRelationships.optJSONObject(field);
+        JSONArray jsonRelFieldDataArray = jsonRelField == null ? null : jsonRelField.optJSONArray("data");
+        if (jsonRelFieldDataArray != null) {
+            for (int i=0; i<jsonRelFieldDataArray.length(); i++) {
+                JSONObject jsonRelFieldData = jsonRelFieldDataArray.optJSONObject(i);
+                String jsonRelFieldDataUUID = jsonRelFieldData == null ? null : jsonRelFieldData.optString("id", null);
+                List<String> paragraphTexts = this.parseParagraphFromJsonIncluded(jsonRelFieldDataUUID, jsonIncluded);
+                if (paragraphTexts != null && !paragraphTexts.isEmpty()) {
+                    texts.addAll(paragraphTexts);
+                }
+            }
+        }
+
+        return texts;
+    }
+
+    private List<String> parseParagraphFromJsonIncluded(String paragraphUUID, Map<String, JSONObject> jsonIncluded) {
+        List<String> texts = new ArrayList<>();
+
+        JSONObject jsonParagraph = jsonIncluded.get(paragraphUUID);
+        if (jsonParagraph != null) {
+            JSONObject jsonParAttributes = jsonParagraph.optJSONObject("attributes");
+            if (jsonParAttributes != null) {
+                for (String key : jsonParAttributes.keySet()) {
+                    if (key != null && key.startsWith("field_")) {
+                        List<String> paragraphFieldTexts = this.parseFieldTexts(jsonParAttributes.opt(key));
+                        if (paragraphFieldTexts != null && !paragraphFieldTexts.isEmpty()) {
+                            texts.addAll(paragraphFieldTexts);
+                        }
+                    }
+                }
+            }
+        }
+
+        return texts;
+    }
+
+    private List<String> parseFieldTexts(Object fieldObj) {
+        List<String> texts = new ArrayList<>();
+
+        if (fieldObj instanceof JSONArray) {
+            JSONArray fieldArray = (JSONArray)fieldObj;
+            for (int i=0; i<fieldArray.length(); i++) {
+                Object fieldSubObj = fieldArray.opt(i);
+                texts.addAll(this.parseFieldTexts(fieldSubObj));
+            }
+
+        } else if (fieldObj instanceof JSONObject) {
+            JSONObject jsonField = (JSONObject)fieldObj;
+            String ckeditorText = jsonField.optString("processed", null);
+            if (ckeditorText != null) {
+                texts.add(EntityUtils.extractHTMLTextContent(ckeditorText));
+            }
+
+        } else if (fieldObj instanceof String) {
+            texts.add((String)fieldObj);
+        }
+
+        return texts;
+    }
+
     public static String getFieldType(JSONObject jsonApiEntity, String field) {
         if (field == null || field.isEmpty()) {
             return null;

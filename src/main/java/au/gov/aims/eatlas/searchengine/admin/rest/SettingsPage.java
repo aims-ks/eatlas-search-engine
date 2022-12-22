@@ -202,7 +202,7 @@ public class SettingsPage {
                 drupalMediaIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalMediaType"));
                 drupalMediaIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
                 drupalMediaIndexer.setDrupalTitleField(FormUtils.getFormStringValue(form, index + "_drupalTitleField"));
-                drupalMediaIndexer.setDrupalDescriptionField(FormUtils.getFormStringValue(form, index + "_drupalDescriptionField"));
+                drupalMediaIndexer.setDrupalIndexedFields(FormUtils.getFormStringValue(form, index + "_drupalIndexedFields"));
                 drupalMediaIndexer.setDrupalWktField(FormUtils.getFormStringValue(form, index + "_drupalWktField"));
 
             } else if (indexer instanceof DrupalExternalLinkNodeIndexer) {
