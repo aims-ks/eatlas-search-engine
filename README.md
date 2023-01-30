@@ -1,19 +1,3 @@
-TODO:
-
-- Create files:
-  - resources/eatlas_search_engine_default.json
-
-- Fix tests
-
-- Settings page
-  - Commit to Git repo (repo dedicated for the search engine config)
-
-- Index GIS polygons / points
-
-NOTE: Application name: ${pageContext.servletContext.contextPath}
-
-Example of URL that can't be harvested: https://doi.org/10.1002/aqc.3115
-
 ## What is the eAtlasSearchEngine
 
 ## Indexation library

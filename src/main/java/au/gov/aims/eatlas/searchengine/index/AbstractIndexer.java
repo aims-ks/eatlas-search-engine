@@ -305,10 +305,10 @@ public abstract class AbstractIndexer<E extends Entity> {
         String originalWkt = entity.getWkt();
         if (originalWkt == null || originalWkt.isEmpty()) {
             originalWkt = null;
-            entity.setWktAndArea(null, null);
+            entity.setWktAndAttributes(null, null, null);
         } else {
             try {
-                entity.setWktAndArea(WktUtils.fixWkt(originalWkt));
+                entity.setWktAndAttributes(WktUtils.fixWkt(originalWkt));
             } catch(ParseException ex) {
                 // The Reader may throw an exception.
                 // We assume the WKT is parsable by JTS since it was generated using the JTS library.
@@ -360,7 +360,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             indexResponse = this.indexEntityWholeWorldFallback(client, entity, entity.getWkt(), messages);
         } else {
             try {
-                entity.setWktAndArea(newWkt);
+                entity.setWktAndAttributes(newWkt);
                 indexResponse = client.index(this.getIndexRequest(entity));
 
                 // The Geometry bbox is valid.
@@ -389,7 +389,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         IndexResponse indexResponse = null;
         String newWkt = AbstractIndexer.WHOLE_WORLD_WKT;
         try {
-            entity.setWktAndArea(newWkt);
+            entity.setWktAndAttributes(newWkt);
             indexResponse = client.index(this.getIndexRequest(entity));
 
             Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to whole world.", entity.getId()));
@@ -397,7 +397,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             messageObj.addDetail(String.format("Replaced with: %s", newWkt));
 
         } catch (ParseException ex) {
-            entity.setWktAndArea(null, null);
+            entity.setWktAndAttributes(null, null, null);
             indexResponse = client.index(this.getIndexRequest(entity));
 
             Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);

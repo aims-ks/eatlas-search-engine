@@ -22,6 +22,7 @@ import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
+import au.gov.aims.eatlas.searchengine.entity.Bbox;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.index.WktUtils;
 import au.gov.aims.eatlas.searchengine.search.ErrorMessage;
@@ -368,6 +369,40 @@ public class Search {
             Geometry geometry = WktUtils.wktToGeometry(wkt);
             if (geometry != null) {
                 double searchArea = geometry.getArea();
+                Bbox searchBbox = new Bbox(geometry);
+
+                // Rank using bounding box intersection area
+                // BBOX from the search:
+                //     North: sr_n
+                //     East: sr_e
+                //     South: sr_s
+                //     West: sr_w
+                //     Search area = sr_area
+                //
+                // BBOX found in the index:
+                //     North: ix_n
+                //     East: ix_e
+                //     South: ix_s
+                //     West: ix_w
+                //     Area in the index: ix_area
+                //
+                // Calculate intersection area of BBOX:
+                //     Idea: (min(North) - max(South)) * (min(East) - max(West))
+                //     Code: (min(sr_n, ix_n) - max(sr_s, ix_s)) * (min(sr_e, ix_e) - max(sr_w, ix_w))
+                //
+                // If the polygons do not intersect, we want the area to be 0:
+                //     intersect_area = max(0, (min(sr_n, ix_n) - max(sr_s, ix_s))) * max(0, (min(sr_e, ix_e) - max(sr_w, ix_w)))
+                //
+                // Smaller polygon with more intersection should rank higher
+                //     not_intersect_area = max(ix_area, sr_area) - intersect_area
+                //
+                // Smaller "not_intersect_area" is better. Higher number rank higher, so we need to "invert" the number
+                //     by subtracting with the area of the whole world (64800):
+                //     64800 - not_intersect_area
+                String rankingFormula = "(64800 - (Math.max(params.searchBbox.area, doc['wktBbox.area'].value) - Math.max(0, (Math.min(params.searchBbox.north, doc['wktBbox.north'].value) - Math.max(params.searchBbox.south, doc['wktBbox.south'].value))) * Math.max(0, (Math.min(params.searchBbox.east, doc['wktBbox.east'].value) - Math.max(params.searchBbox.west, doc['wktBbox.west'].value))))) * _score";
+
+                // Rank using search area difference
+                //String rankingFormula = "(64800 - Math.abs(doc['wktArea'].value - params.searchArea)) * _score";
 
                 Query scoreQuery = new FunctionScoreQuery.Builder()
                         .functions(new FunctionScore.Builder()
@@ -375,8 +410,9 @@ public class Search {
                                         .script(new Script.Builder()
                                                 .inline(new InlineScript.Builder()
                                                         .lang(ScriptLanguage.Painless)
-                                                        .source("(64800 - Math.abs(doc['wktArea'].value - params.searchArea)) * _score")
+                                                        .source(rankingFormula)
                                                         .params("searchArea", JsonData.of(searchArea))
+                                                        .params("searchBbox", JsonData.of(searchBbox))
                                                         .build())
                                                 .build())
                                         .build())

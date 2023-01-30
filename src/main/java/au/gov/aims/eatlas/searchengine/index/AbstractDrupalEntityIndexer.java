@@ -801,7 +801,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             }
 
             try {
-                drupalEntity.setWktAndArea(wkt);
+                drupalEntity.setWktAndAttributes(wkt);
             } catch(ParseException ex) {
                 Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
                 message.addDetail(wkt);

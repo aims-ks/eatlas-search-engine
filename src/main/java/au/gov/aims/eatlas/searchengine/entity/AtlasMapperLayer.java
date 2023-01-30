@@ -236,7 +236,7 @@ public class AtlasMapperLayer extends Entity {
 
         // Set WKT
         try {
-            this.setWktAndArea(wkt);
+            this.setWktAndAttributes(wkt);
         } catch(ParseException ex) {
             Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
             message.addDetail(wkt);

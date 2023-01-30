@@ -60,6 +60,7 @@ public abstract class Entity {
     private String document;
     private String wkt;
     private Double wktArea;
+    private Bbox wktBbox;
 
     // Search result thumbnail image
     // If there is a cachedThumbnailFilename, call /public/img/v1/{index}/{filename} to get the image.
@@ -151,18 +152,34 @@ public abstract class Entity {
         this.wktArea = area;
     }
 
-    public void setWktAndArea(String wkt, Double area) {
-        this.wkt = wkt;
-        this.wktArea = area;
+    public Bbox getWktBbox() {
+        return this.wktBbox;
     }
 
-    public void setWktAndArea(String wkt) throws ParseException {
-        this.wkt = wkt;
+    public void setWktBbox(Bbox wktBbox) {
+        this.wktBbox = wktBbox;
+    }
 
-        // Set area
-        Geometry geometry = WktUtils.wktToGeometry(wkt);
-        this.wktArea = geometry == null ? null :
-            geometry.getArea();
+    public void setWktAndAttributes(String wkt, Double area, Bbox bbox) {
+        this.wkt = wkt;
+        this.wktArea = area;
+        this.wktBbox = bbox;
+    }
+
+    public void setWktAndAttributes(String wkt) throws ParseException {
+        Double area = null;
+        Bbox bbox = null;
+
+        if (wkt != null) {
+            // Set area
+            Geometry geometry = WktUtils.wktToGeometry(wkt);
+            if (geometry != null) {
+                area = geometry.getArea();
+                bbox = new Bbox(geometry);
+            }
+        }
+
+        this.setWktAndAttributes(wkt, area, bbox);
     }
 
     public String getCachedThumbnailFilename() {
@@ -297,6 +314,7 @@ public abstract class Entity {
             .put("document", StringEscapeUtils.escapeHtml4(this.getDocument()))
             .put("wkt", this.getWkt())
             .put("wktArea", this.getWktArea())
+            .put("wktBbox", this.wktBbox == null ? null : this.wktBbox.toJSON())
             .put("cachedThumbnailFilename", this.getCachedThumbnailFilename())
             .put("cachedThumbnailUrl", this.getCachedThumbnailUrl())
             .put("thumbnailUrl", thumbnailUrl == null ? null : thumbnailUrl.toString())
@@ -314,6 +332,12 @@ public abstract class Entity {
             if (json.has("wktArea")) {
                 this.setWktArea(json.optDouble("wktArea"));
             }
+            JSONObject jsonWktBbox = json.optJSONObject("wktBbox");
+            if (jsonWktBbox != null) {
+                this.wktBbox = new Bbox();
+                this.wktBbox.loadJSON(jsonWktBbox, messages);
+            }
+
             this.setLangcode(json.optString("langcode", null));
             this.setCachedThumbnailFilename(json.optString("cachedThumbnailFilename", null));
 

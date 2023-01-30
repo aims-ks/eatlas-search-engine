@@ -169,7 +169,7 @@ public class ISO19115_3_2018_parser extends AbstractParser {
         }
 
         try {
-            record.setWktAndArea(wkt);
+            record.setWktAndAttributes(wkt);
         } catch(ParseException ex) {
             Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
             message.addDetail(wkt);

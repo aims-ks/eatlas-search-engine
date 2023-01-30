@@ -1,0 +1,20 @@
+TODO:
+
+- Create files:
+  - resources/eatlas_search_engine_default.json
+
+- Fix tests
+
+- Settings page
+  - Commit to Git repo (repo dedicated for the search engine config)
+
+- Index GIS polygons / points
+
+- Search order
+  - Store polygon BBOX as 4 values (north, east, south, west)
+  - During search, calculate the area of the intersection of the BBOX: (min(north) - max(south)) * (min(east) - max(west))
+    rest/Search.java, line 372
+
+NOTE: Application name: ${pageContext.servletContext.contextPath}
+
+Example of URL that can't be harvested: https://doi.org/10.1002/aqc.3115
