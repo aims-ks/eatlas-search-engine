@@ -10,17 +10,20 @@ docReady(function() {
     // Remove the "hover" CSS class, which provides a mouse hover behaviour when JS is disabled.
     parentEl.classList.remove("hover");
 
-    parentEl.addEventListener("click", function(event) {
-      const childCollapsibleEls = this.getElementsByClassName("collapsible");
-      for (let i=0; i<childCollapsibleEls.length; i++) {
-        let childCollapsibleEl = childCollapsibleEls[i];
-        if (childCollapsibleEl.style.display === "none") {
-          childCollapsibleEl.style.display = "block";
-        } else {
-          childCollapsibleEl.style.display = "none";
+    let clickableEls = parentEl.getElementsByClassName("clickable");
+    for (let j=0; j<clickableEls.length; j++) {
+      clickableEls[j].addEventListener("click", function(event) {
+        const childCollapsibleEls = this.parentNode.getElementsByClassName("collapsible");
+        for (let k=0; k<childCollapsibleEls.length; k++) {
+          let childCollapsibleEl = childCollapsibleEls[k];
+          if (childCollapsibleEl.style.display === "none") {
+            childCollapsibleEl.style.display = "block";
+          } else {
+            childCollapsibleEl.style.display = "none";
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   // Toggle index edit forms

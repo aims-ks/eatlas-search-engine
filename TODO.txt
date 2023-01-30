@@ -8,12 +8,8 @@ TODO:
 - Settings page
   - Commit to Git repo (repo dedicated for the search engine config)
 
-- Index GIS polygons / points
-
-- Search order
-  - Store polygon BBOX as 4 values (north, east, south, west)
-  - During search, calculate the area of the intersection of the BBOX: (min(north) - max(south)) * (min(east) - max(west))
-    rest/Search.java, line 372
+- Search engine testing page
+  - Fix Show / Collapse JSON
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}
 
