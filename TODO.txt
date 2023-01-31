@@ -8,8 +8,8 @@ TODO:
 - Settings page
   - Commit to Git repo (repo dedicated for the search engine config)
 
-- Search engine testing page
-  - Fix Show / Collapse JSON
+- Can't extract spatial extent of:
+  https://eatlas.org.au/geonetwork/srv/eng/catalog.search#/metadata/07c61554-d76d-4c6c-956d-dcd171864921
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}
 

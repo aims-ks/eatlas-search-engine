@@ -428,4 +428,31 @@ public class GeoNetworkRecordTest {
         }
     }
 
+    @Test
+    public void testParseWKT_07c61554_d76d_4c6c_956d_dcd171864921() throws Exception {
+        String index = "gn-test";
+        String metadataRecordUUID = "07c61554-d76d-4c6c-956d-dcd171864921";
+        String metadataSchema = "iso19115-3.2018";
+        String geoNetworkVersion = "3.0";
+        String geoNetworkUrl = "https://eatlas.org.au/geonetwork";
+
+        Messages messages = Messages.getInstance(null);
+
+        String expectedWKT = "MULTIPOLYGON (((142.3430729249374 -9.809321980495367, 142.3430729249374 -9.808321980495366, 142.34407292493736 -9.808321980495366, 142.34407292493736 -9.809321980495367, 142.3430729249374 -9.809321980495367)), ((142.1682949896024 -9.97181744955857, 142.1682949896024 -9.970817449558568, 142.16929498960238 -9.970817449558568, 142.16929498960238 -9.97181744955857, 142.1682949896024 -9.97181744955857)))";
+
+        try (
+            InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
+                    .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_07c61554-d76d-4c6c-956d-dcd171864921.xml")
+        ) {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+
+            Document document = builder.parse(recordInputStream);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
+            geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
+
+            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+        }
+    }
+
 }

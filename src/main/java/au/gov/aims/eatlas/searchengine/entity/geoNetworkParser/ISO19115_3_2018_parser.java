@@ -424,6 +424,14 @@ public class ISO19115_3_2018_parser extends AbstractParser {
                         List<Element> gexPolygonList = IndexUtils.getXMLChildren(exBoundingPolygonElement, "gex:polygon");
                         for (Element gexPolygonElement : gexPolygonList) {
 
+                            List<Element> gmlPointList = IndexUtils.getXMLChildren(gexPolygonElement, "gml:Point");
+                            for (Element gmlPointElement : gmlPointList) {
+                                Polygon point = parseGmlPoint(gmlPointElement);
+                                if (point != null) {
+                                    polygons.add(point);
+                                }
+                            }
+
                             List<Element> gmlPolygonList = IndexUtils.getXMLChildren(gexPolygonElement, "gml:Polygon");
                             for (Element gmlPolygonElement : gmlPolygonList) {
                                 Polygon polygon = parseGmlPolygon(gmlPolygonElement);
@@ -454,6 +462,19 @@ public class ISO19115_3_2018_parser extends AbstractParser {
 
         return WktUtils.polygonsToWKT(polygons);
     }
+
+    private Polygon parseGmlPoint(Element gmlPointElement) {
+        Element posElement = IndexUtils.getXMLChild(gmlPointElement, "gml:pos");
+        String srsDimensionStr = IndexUtils.parseAttribute(posElement, "srsDimension");
+
+        int dimension = 2;
+        if (srsDimensionStr != null) {
+            dimension = Integer.parseInt(srsDimensionStr);
+        }
+
+        return this.parsePos(IndexUtils.parseText(posElement), dimension, false);
+    }
+
     private Polygon parseGmlPolygon(Element gmlPolygonElement) {
         Element exteriorElement = IndexUtils.getXMLChild(gmlPolygonElement, "gml:exterior");
         Element exteriorLinearRingElement = IndexUtils.getXMLChild(exteriorElement, "gml:LinearRing");

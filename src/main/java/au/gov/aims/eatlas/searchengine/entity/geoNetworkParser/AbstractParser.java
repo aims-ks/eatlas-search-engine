@@ -38,6 +38,7 @@ public abstract class AbstractParser {
     // New line used to separate lines in the indexed document.
     // It doesn't really matter which new line scheme is used, as long as it's supported by ElasticSearch.
     public static final String NL = "\n";
+    // https://www.usna.edu/Users/oceano/pguth/md_help/html/approx_equivalents.htm
     public static final double GIS_EPSILON = 0.001; // About 100 metres
 
     public static final Map<String, Locale> LANGCODE_MAP = new HashMap<>();
@@ -115,11 +116,15 @@ public abstract class AbstractParser {
     }
 
     public Polygon parseBoundingBox(String northStr, String eastStr, String southStr, String westStr) {
-        double north = Double.parseDouble(northStr);
-        double east = Double.parseDouble(eastStr);
-        double south = Double.parseDouble(southStr);
-        double west = Double.parseDouble(westStr);
+        return this.parseBoundingBox(
+            Double.parseDouble(northStr),
+            Double.parseDouble(eastStr),
+            Double.parseDouble(southStr),
+            Double.parseDouble(westStr)
+        );
+    }
 
+    public Polygon parseBoundingBox(double north, double east, double south, double west) {
         // Normalise north and south
         if (north > 90) { north = 90; }
         if (south < -90) { south = -90; }
@@ -175,6 +180,33 @@ public abstract class AbstractParser {
         }
 
         return WktUtils.GEOMETRY_FACTORY.createLinearRing(coordinateList.toArray(new Coordinate[0]));
+    }
+
+    // NOTE: The JTS library have no issue handling points, but when they go in and out of the index,
+    //     points are merged together to form a large bounding box.
+    //     It's better to handle points as small squares.
+    public Polygon parsePos(String coordinateStr, int dimension, boolean lonlat) {
+        if (coordinateStr == null || coordinateStr.isEmpty() || dimension < 2) {
+            return null;
+        }
+
+        Polygon point = null;
+        String[] coordinateValues = coordinateStr.split(" ");
+        int coordinateValueLength = coordinateValues.length;
+        if (coordinateValueLength > 0 && (coordinateValueLength % dimension) == 0) {
+            double lon, lat;
+            if (lonlat) {
+                lon = Double.parseDouble(coordinateValues[0]);
+                lat = Double.parseDouble(coordinateValues[1]);
+            } else {
+                lat = Double.parseDouble(coordinateValues[0]);
+                lon = Double.parseDouble(coordinateValues[1]);
+            }
+
+            point = this.parseBoundingBox(lat, lon, lat, lon);
+        }
+
+        return point;
     }
 
     public LinearRing parsePosListLinearRing(String coordinatesStr, int dimension, boolean lonlat) {
