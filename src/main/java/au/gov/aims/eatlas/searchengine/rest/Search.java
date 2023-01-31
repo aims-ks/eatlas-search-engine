@@ -336,6 +336,7 @@ public class Search {
             List<String> defaultSearchFields = new ArrayList<>();
             defaultSearchFields.add("title");
             defaultSearchFields.add("document");
+            defaultSearchFields.add("id");
 
             Query textQuery = QueryBuilders.queryString()
                     .query(searchText)
