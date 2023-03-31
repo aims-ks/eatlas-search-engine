@@ -87,7 +87,7 @@ public class WktUtils {
 
         if (wkt.startsWith("BBOX")) {
             // JTS doesn't support BBOX.
-            return wkt;
+            return WktUtils.normaliseBboxWkt(wkt);
         }
 
         Geometry geometry = WktUtils.wktToGeometry(wkt);
@@ -120,6 +120,65 @@ public class WktUtils {
         //   It's not perfect, but at least the resulting polygon should be valid.
         //   See: https://stackoverflow.com/questions/31473553/is-there-a-way-to-convert-a-self-intersecting-polygon-to-a-multipolygon-in-jts
         return reader.read(wkt).norm().buffer(0);
+    }
+
+    /**
+     * Normalise BBOX that goes over the dateline, or span several time around the globe (longitude > 360).
+     * @param wkt BBOX WKT.
+     * @return Normalised WKT, within valid bounds (lon: [-180. 180], lat: [-90, 90])
+     */
+    public static String normaliseBboxWkt(String wkt) {
+        if (wkt == null || wkt.isEmpty()) {
+            return null;
+        }
+        wkt = wkt.trim();
+
+        if (!wkt.startsWith("BBOX")) {
+            return null;
+        }
+
+        Pattern pattern = Pattern.compile("BBOX\\(([\\-\\d.]+),([\\-\\d.]+),([\\-\\d.]+),([\\-\\d.]+)\\)");
+        Matcher matcher = pattern.matcher(
+            // Remove all whitespaces
+            wkt.replaceAll("\\s+","")
+        );
+
+        if (matcher.matches()) {
+            double west = Double.parseDouble(matcher.group(1));
+            double east = Double.parseDouble(matcher.group(2));
+            double north = Double.parseDouble(matcher.group(3));
+            double south = Double.parseDouble(matcher.group(4));
+
+            // Normalise polygon
+            // Example: 185 East = -175 East
+            west = WktUtils.normaliseLongitudeCoord(west);
+            east = WktUtils.normaliseLongitudeCoord(east);
+
+            north = WktUtils.normaliseLatitudeCoord(north);
+            south = WktUtils.normaliseLatitudeCoord(south);
+
+            return String.format("BBOX(%f,%f,%f,%f)", west, east, north, south);
+        }
+
+        return null;
+    }
+    public static double normaliseLongitudeCoord(double coord) {
+            if (coord < -360) coord %= -360;
+            if (coord < -180) coord = 360 - coord;
+
+            if (coord > 360) coord %= 360;
+            if (coord > 180) coord = -360 + coord;
+
+            return coord;
+    }
+    public static double normaliseLatitudeCoord(double coord) {
+            if (coord > 180) coord %= 180;
+            if (coord > 90) coord = -180 + coord;
+
+            if (coord < -180) coord %= -180;
+            if (coord < -90) coord = 180 - coord;
+
+            return coord;
     }
 
     public static Polygon bboxToPolygon(String wkt) {

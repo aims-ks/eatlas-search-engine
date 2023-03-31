@@ -12,6 +12,27 @@ TODO:
   Layer: seamap_imas:NERP_VLucieer_Flinders_CMA_habitat_geobia. Invalid bounding box. Fallback to whole world.
     Invalid bbox: [W: 647418.4683, E: 651938.5317, N: 5505450, S: 5499492]
 
+  Layer: seamap_seamap:SeamapAus_WA_NWShelf_ecosystems. Invalid bounding box. Fallback to whole world.
+    Invalid bbox: [W: -2074028.6869648, E: -1455275.3935527, N: -2235124.382523, S: -2796011.8556129]
+
+  Layer: seamap_seamap:SeamapAus_QLD_reefs_shoals. Invalid bounding box. Fallback to whole world.
+    Invalid bbox: [W: 534496.4979962, E: 1933626.9746807, N: -1100732.0755214, S: -3256917.9685858]
+
+  Layer: seamap_seamap:SeamapAus_SA_state_benthic_habitats. Invalid bounding box. Fallback to whole world.
+    Invalid bbox: [W: -56452.2794, E: 618034.4523, N: -3618202.56, S: -4303994.0866]
+
+  Layer: seamap_seamap:SeamapAus_WA_seagrass_Walpole_Nornalup_2009. Invalid bounding box. Fallback to whole world.
+    Invalid bbox: [W: -1570185.3776071, E: -1564823.1134954, N: -4044788.3971432, S: -4050948.7350049]
+
+  Layer: seamap_seamap:SeamapAus_NAT_CoastalGeomorph_Smartline100K_DATA. Invalid bounding box. Fallback to whole world.
+    Invalid bbox: [W: -2083193.417, E: 1923908.3271, N: -1116044.0643, S: -4991821.1622]
+
+  Layer: seamap_seamap:SeamapAus_WA_seagrass_OysterHarbour_1988. Invalid bounding box. Fallback to whole world.
+    Invalid bbox: [W: -1458189.5307774, E: -1455290.9367346, N: -4026941.0297624, S: -4032228.3093619]
+
+
+
+
 NOTE: Application name: ${pageContext.servletContext.contextPath}
 
 Example of URL that can't be harvested: https://doi.org/10.1002/aqc.3115

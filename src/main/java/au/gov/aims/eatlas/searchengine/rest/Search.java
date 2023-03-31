@@ -350,6 +350,7 @@ public class Search {
         // Build the WKT query
         //   The query used to filter by GEO coordinates, polygons, bbox, etc.
         if (wkt != null && !wkt.isEmpty()) {
+            String fixedWkt = WktUtils.fixWkt(wkt);
             // GeoLocation = Single point.
             // GeoLocation geoLocation = new GeoLocation.Builder().text(wkt).build();
 
@@ -358,7 +359,7 @@ public class Search {
 
             Query wktQuery = new GeoShapeQuery.Builder()
                     .shape(new GeoShapeFieldQuery.Builder()
-                            .shape(JsonData.of(wkt))
+                            .shape(JsonData.of(fixedWkt))
                             .relation(GeoShapeRelation.Intersects)
                             .build())
                     .field("wkt")
@@ -367,7 +368,7 @@ public class Search {
 
             queries.add(wktQuery);
 
-            Geometry geometry = WktUtils.wktToGeometry(wkt);
+            Geometry geometry = WktUtils.wktToGeometry(fixedWkt);
             if (geometry != null) {
                 double searchArea = geometry.getArea();
                 Bbox searchBbox = new Bbox(geometry);
