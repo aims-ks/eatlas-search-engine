@@ -210,11 +210,12 @@ public class WktUtils {
             double south = Double.parseDouble(matcher.group(4));
 
             Coordinate[] coordinates = new Coordinate[] {
-                new Coordinate(north, west),
-                new Coordinate(south, west),
-                new Coordinate(south, east),
-                new Coordinate(north, east),
-                new Coordinate(north, west)
+                // NOTE: JTS expects coordinates to be in (lon, lat)
+                new Coordinate(west, north),
+                new Coordinate(west, south),
+                new Coordinate(east, south),
+                new Coordinate(east, north),
+                new Coordinate(west, north)
             };
 
             return WktUtils.GEOMETRY_FACTORY.createLinearRing(coordinates);
