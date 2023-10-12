@@ -49,7 +49,7 @@ public class EntityUtilsTest {
     @Test
     public void testHarvestURLRedirection() throws IOException, InterruptedException {
         Messages messages = Messages.getInstance(null);
-        String url = "http://tiny.cc/f94ysz"; // Tiny URL which redirect to "https://google.com"
+        String url = "http://google.com"; // This URL redirects to "https://www.google.com"
         int minimumExpectedFileSize = 10000;
 
         String htmlContent = EntityUtils.harvestGetURL(url, messages);
