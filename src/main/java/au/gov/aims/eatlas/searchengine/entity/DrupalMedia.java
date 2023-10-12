@@ -76,8 +76,6 @@ public class DrupalMedia extends AbstractDrupalEntity {
         }
 
         // Otherwise, return "/media/[MEDIA ID]"
-        // TODO Fix! "/media/[MEDIA ID]" URL doesn't work (404). "/media/[MEDIA ID]/edit" works, but that's not what we want.
-        //     We need a media page.
         String mid = jsonAttributes == null ? null : jsonAttributes.optString("drupal_internal__mid", null);
         if (mid != null) {
             return "/media/" + mid;

@@ -122,6 +122,10 @@ public class WktUtils {
         return reader.read(wkt).norm().buffer(0);
     }
 
+    public static String geometryToWkt(Geometry geometry) {
+        return WktUtils.WKT_WRITER.write(geometry.norm());
+    }
+
     /**
      * Normalise BBOX that goes over the dateline, or span several time around the globe (longitude > 360).
      * @param wkt BBOX WKT.

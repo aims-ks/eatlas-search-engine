@@ -149,6 +149,13 @@
             <version>1.19.0</version>
         </dependency>
 
+        <!-- GeoJSON parser, for Drupal Geometries -->
+        <dependency>
+            <groupId>org.locationtech.jts.io</groupId>
+            <artifactId>jts-io-common</artifactId>
+            <version>1.19.0</version>
+        </dependency>
+
         <!-- ############## -->
         <!-- # Unit tests # -->
         <!-- ############## -->

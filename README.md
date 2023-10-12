@@ -32,7 +32,7 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
 
 - Starting Drupal:
   ```
-  $ cd ~/Desktop/projects/eAtlas-redesign/2020-Drupal9
+  $ cd ~/Desktop/projects/eAtlas-redesign/2023-Drupal10
   $ docker-compose up
   ```
 
@@ -68,7 +68,7 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
 
 - Drupal website:
   ```
-  http://localhost:9090/
+  http://localhost:1010/
   ```
 
 - Deploy

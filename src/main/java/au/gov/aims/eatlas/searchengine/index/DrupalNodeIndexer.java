@@ -40,7 +40,7 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             json.optString("drupalNodeType", null),
             json.optString("drupalPreviewImageField", null),
             json.optString("drupalIndexedFields", null),
-            json.optString("drupalWktField", null));
+            json.optString("drupalGeoJSONField", null));
     }
 
     public JSONObject toJSON() {
@@ -66,9 +66,14 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             String drupalNodeType,
             String drupalPreviewImageField,
             String drupalIndexedFields,
-            String drupalWktField) {
+            String drupalGeoJSONField) {
 
-        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalIndexedFields, drupalWktField);
+        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
+    }
+
+    @Override
+    public String getHarvestSort(boolean fullHarvest) {
+        return fullHarvest ? "drupal_internal__nid" : "-changed,drupal_internal__nid";
     }
 
     @Override

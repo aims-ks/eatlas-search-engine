@@ -23,7 +23,6 @@ import au.gov.aims.eatlas.searchengine.index.AbstractDrupalEntityIndexer;
 import org.json.JSONObject;
 
 import java.net.URL;
-import java.util.List;
 
 public class DrupalNode extends AbstractDrupalEntity {
     private Integer nid;

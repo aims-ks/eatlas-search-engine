@@ -167,17 +167,35 @@ public abstract class Entity {
     }
 
     public void setWktAndAttributes(String wkt) throws ParseException {
-        Double area = null;
-        Bbox bbox = null;
+        this.setWktAndAttributes(null, wkt);
+    }
 
-        if (wkt != null) {
-            // Set area
-            Geometry geometry = WktUtils.wktToGeometry(wkt);
-            if (geometry != null) {
-                area = geometry.getArea();
-                bbox = new Bbox(geometry);
+    public void setWktAndAttributes(Geometry geometry) throws ParseException {
+        this.setWktAndAttributes(geometry, null);
+    }
+
+    public void setWktAndAttributes(Geometry geometry, String wkt) throws ParseException {
+        // If both are null, there is nothing we can do about it...
+        if (geometry == null && wkt == null) {
+            return;
+        }
+
+        // Make sure geometry and WKT are set.
+        if (geometry == null) {
+            geometry = WktUtils.wktToGeometry(wkt);
+        } else {
+            if (wkt == null) {
+                // Create WKT from geometry
+                wkt = WktUtils.geometryToWkt(geometry);
             }
         }
+
+        if (geometry == null || wkt == null) {
+            return;
+        }
+
+        Double area = geometry.getArea();;
+        Bbox bbox = new Bbox(geometry);
 
         this.setWktAndAttributes(wkt, area, bbox);
     }

@@ -32,7 +32,9 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -54,7 +56,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
     // Number of Drupal entity to index per page.
     //     Larger number = less request, more RAM
-    private static final int INDEX_PAGE_SIZE = 100;
+    private static final int INDEX_PAGE_SIZE = 50;
 
     private String drupalUrl;
     private String drupalVersion;
@@ -62,7 +64,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     private String drupalBundleId; // Content type (node type) or media type. Example: article, image, etc
     private String drupalPreviewImageField;
     private String drupalIndexedFields;
-    private String drupalWktField;
+    private String drupalGeoJSONField;
 
     public AbstractDrupalEntityIndexer(
             String index,
@@ -72,7 +74,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String drupalBundleId,
             String drupalPreviewImageField,
             String drupalIndexedFields,
-            String drupalWktField) {
+            String drupalGeoJSONField) {
 
         super(index);
         this.drupalUrl = drupalUrl;
@@ -81,11 +83,12 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalBundleId = drupalBundleId;
         this.drupalPreviewImageField = drupalPreviewImageField;
         this.drupalIndexedFields = drupalIndexedFields;
-        this.drupalWktField = drupalWktField;
+        this.drupalGeoJSONField = drupalGeoJSONField;
     }
 
     public abstract E createDrupalEntity(JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, Messages messages);
     public abstract E getIndexedDrupalEntity(SearchClient client, String id, Messages messages);
+    public abstract String getHarvestSort(boolean fullHarvest);
 
     protected JSONObject getJsonBase() {
         return super.getJsonBase()
@@ -93,7 +96,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             .put("drupalVersion", this.drupalVersion)
             .put("drupalPreviewImageField", this.drupalPreviewImageField)
             .put("drupalIndexedFields", this.drupalIndexedFields)
-            .put("drupalWktField", this.drupalWktField);
+            .put("drupalGeoJSONField", this.drupalGeoJSONField);
     }
 
     @Override
@@ -226,7 +229,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             Messages messages) {
 
         this.updateThumbnail(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
-        this.updateWkt(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
+        this.updateGeoJSON(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
         return true;
     }
 
@@ -255,8 +258,9 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         int entityFound, page = 0;
         boolean stop = false;
         boolean crashed = false;
+        String sort = this.getHarvestSort(fullHarvest);
         do {
-            URIBuilder uriBuilder = this.buildDrupalApiPageUrl(page, messages);
+            URIBuilder uriBuilder = this.buildDrupalApiPageUrl(page, sort, messages);
             if (uriBuilder == null) {
                 return;
             }
@@ -332,7 +336,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         //     !stop: Stop explicitly set to true, because we found an entity that was not modified since last harvest.
         //     !crashed: An exception occurred or an error message was sent by Drupal.
         //     entityFound == INDEX_PAGE_SIZE: A page of results contains less entity than requested.
-        } while(!stop && !crashed && entityFound == INDEX_PAGE_SIZE);
+        } while(!stop && !crashed && page < 100 /*entityFound != 0*/ /*entityFound == INDEX_PAGE_SIZE*/);
 
         threadPool.shutdown();
         try {
@@ -368,7 +372,14 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return uriBuilder;
     }
 
-    public URIBuilder buildDrupalApiPageUrl(int page, Messages messages) {
+    // sort
+    //   For media:
+    //     To get all: drupal_internal__mid
+    //     To get latest: -changed,drupal_internal__mid
+    //   For nodes:
+    //     To get all: drupal_internal__nid
+    //     To get latest: -changed,drupal_internal__nid
+    public URIBuilder buildDrupalApiPageUrl(int page, String sort, Messages messages) {
         // Ordered by lastModified (changed).
         // If the parameter lastHarvested is set, harvest entities (nodes)
         //     until we found an entity that was last modified before the lastHarvested parameter.
@@ -385,7 +396,10 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
-        uriBuilder.setParameter("sort", "-changed");
+
+        if (sort != null) {
+            uriBuilder.setParameter("sort", "-changed");
+        }
         uriBuilder.setParameter("page[limit]", String.format("%d", INDEX_PAGE_SIZE));
         uriBuilder.setParameter("page[offset]", String.format("%d", page * INDEX_PAGE_SIZE));
         uriBuilder.setParameter("filter[status]", "1");
@@ -731,12 +745,12 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalIndexedFields = drupalIndexedFields;
     }
 
-    public String getDrupalWktField() {
-        return this.drupalWktField;
+    public String getDrupalGeoJSONField() {
+        return this.drupalGeoJSONField;
     }
 
-    public void setDrupalWktField(String drupalWktField) {
-        this.drupalWktField = drupalWktField;
+    public void setDrupalGeoJSONField(String drupalGeoJSONField) {
+        this.drupalGeoJSONField = drupalGeoJSONField;
     }
 
     public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
@@ -783,28 +797,44 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         }
     }
 
-    public void updateWkt(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
-        if (this.getDrupalWktField() != null) {
+    public void updateGeoJSON(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
+        if (this.getDrupalGeoJSONField() != null) {
             // Extract WKT from jsonApiEntity (node / media)
             JSONObject jsonAttributes = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("attributes");
-            String wkt = jsonAttributes == null ? null : jsonAttributes.optString(this.getDrupalWktField(), null);
+            String geoJSON = jsonAttributes == null ? null : jsonAttributes.optString(this.getDrupalGeoJSONField(), null);
 
-            if (wkt != null) {
-                wkt = wkt.trim();
-                if (wkt.isEmpty()) {
-                    wkt = null;
+            if (geoJSON != null) {
+                geoJSON = geoJSON.trim();
+                if (geoJSON.isEmpty()) {
+                    geoJSON = null;
                 }
             }
 
-            if (wkt == null) {
-                wkt = AbstractIndexer.DEFAULT_WKT;
+            // Parse the GeoJSON into a JTS Geometry using JTS IO
+            Geometry geometry = null;
+            if (geoJSON != null) {
+                GeoJsonReader reader = new GeoJsonReader();
+                try {
+                    geometry = reader.read(geoJSON);
+                } catch(ParseException ex) {
+                    Messages.Message message = messages.addMessage(Messages.Level.WARNING,
+                            "Exception while parsing GeoJSON",
+                            ex);
+                    message.addDetail(geoJSON);
+                }
             }
 
             try {
-                drupalEntity.setWktAndAttributes(wkt);
+                if (geometry == null) {
+                    drupalEntity.setWktAndAttributes(AbstractIndexer.DEFAULT_WKT);
+                } else {
+                    drupalEntity.setWktAndAttributes(geometry);
+                }
             } catch(ParseException ex) {
-                Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
-                message.addDetail(wkt);
+                Messages.Message message = messages.addMessage(Messages.Level.WARNING,
+                        "Invalid GeoJSON",
+                        ex);
+                message.addDetail(geoJSON);
             }
         }
     }

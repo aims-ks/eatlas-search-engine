@@ -309,17 +309,17 @@
                                         </div>
 
                                         <div class="field">
-                                            <label for="${indexer.index}_drupalWktField">
-                                                <span class="label">Drupal WKT field ID</span>
+                                            <label for="${indexer.index}_drupalGeoJSONField">
+                                                <span class="label">Drupal GeoJSON field ID</span>
                                                 <input type="text"
-                                                    id="${indexer.index}_drupalWktField"
-                                                    name="${indexer.index}_drupalWktField"
+                                                    id="${indexer.index}_drupalGeoJSONField"
+                                                    name="${indexer.index}_drupalGeoJSONField"
                                                     data-lpignore="true"
-                                                    value="<c:out value="${indexer.drupalWktField}" />" />
+                                                    value="<c:out value="${indexer.drupalGeoJSONField}" />" />
                                             </label>
-                                            <div class="desc">Drupal internal field ID for WKT.</div>
-                                            <div class="desc">Drupal field type: <a href="https://github.com/aims-ks/eatlas-drupal8-modules-eatlas_map_field" target="_blank">map_field</a> or Text</div>
-                                            <div class="desc">Example: field_mud_map</div>
+                                            <div class="desc">Drupal internal field ID for the node's GeoJSON.</div>
+                                            <div class="desc">Drupal field type: Text (plain, long)</div>
+                                            <div class="desc">Example: field_geojson</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -414,17 +414,17 @@
                                         </div>
 
                                         <div class="field">
-                                            <label for="${indexer.index}_drupalWktField">
-                                                <span class="label">Drupal WKT field ID</span>
+                                            <label for="${indexer.index}_drupalGeoJSONField">
+                                                <span class="label">Drupal GeoJSON field ID</span>
                                                 <input type="text"
-                                                    id="${indexer.index}_drupalWktField"
-                                                    name="${indexer.index}_drupalWktField"
+                                                    id="${indexer.index}_drupalGeoJSONField"
+                                                    name="${indexer.index}_drupalGeoJSONField"
                                                     data-lpignore="true"
-                                                    value="<c:out value="${indexer.drupalWktField}" />" />
+                                                    value="<c:out value="${indexer.drupalGeoJSONField}" />" />
                                             </label>
-                                            <div class="desc">Drupal internal field ID for WKT.</div>
-                                            <div class="desc">Drupal field type: <a href="https://github.com/aims-ks/eatlas-drupal8-modules-eatlas_map_field" target="_blank">map_field</a> or Text</div>
-                                            <div class="desc">Example: field_mud_map</div>
+                                            <div class="desc">Drupal internal field ID for the media's GeoJSON.</div>
+                                            <div class="desc">Drupal field type: Text (plain, long)</div>
+                                            <div class="desc">Example: field_geojson</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -518,17 +518,17 @@
                                         </div>
 
                                         <div class="field">
-                                            <label for="${indexer.index}_drupalWktField">
-                                                <span class="label">Drupal WKT field ID</span>
+                                            <label for="${indexer.index}_drupalGeoJSONField">
+                                                <span class="label">Drupal GeoJSON field ID</span>
                                                 <input type="text"
-                                                    id="${indexer.index}_drupalWktField"
-                                                    name="${indexer.index}_drupalWktField"
+                                                    id="${indexer.index}_drupalGeoJSONField"
+                                                    name="${indexer.index}_drupalGeoJSONField"
                                                     data-lpignore="true"
-                                                    value="<c:out value="${indexer.drupalWktField}" />" />
+                                                    value="<c:out value="${indexer.drupalGeoJSONField}" />" />
                                             </label>
-                                            <div class="desc">Drupal internal field ID for WKT.</div>
-                                            <div class="desc">Drupal field type: <a href="https://github.com/aims-ks/eatlas-drupal8-modules-eatlas_map_field" target="_blank">map_field</a> or Text</div>
-                                            <div class="desc">Example: field_mud_map</div>
+                                            <div class="desc">Drupal internal field ID for the node's GeoJSON.</div>
+                                            <div class="desc">Drupal field type: Text (plain, long)</div>
+                                            <div class="desc">Example: field_geojson</div>
                                         </div>
                                     </div>
                                 </c:when>

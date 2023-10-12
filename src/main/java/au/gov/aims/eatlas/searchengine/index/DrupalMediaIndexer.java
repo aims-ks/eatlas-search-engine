@@ -44,13 +44,18 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             json.optString("drupalPreviewImageField", null),
             json.optString("drupalTitleField", null),
             json.optString("drupalIndexedFields", null),
-            json.optString("drupalWktField", null));
+            json.optString("drupalGeoJSONField", null));
     }
 
     public JSONObject toJSON() {
         return this.getJsonBase()
             .put("drupalMediaType", this.getDrupalBundleId())
             .put("drupalTitleField", this.drupalTitleField);
+    }
+
+    @Override
+    public String getHarvestSort(boolean fullHarvest) {
+        return fullHarvest ? "drupal_internal__mid" : "-changed,drupal_internal__mid";
     }
 
     @Override
@@ -72,12 +77,12 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String drupalPreviewImageField,
             String drupalTitleField,
             String drupalIndexedFields,
-            String drupalWktField
+            String drupalGeoJSONField
     ) {
 
         super(index, drupalUrl, drupalVersion, "media", drupalMediaType,
                 (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
-                drupalIndexedFields, drupalWktField);
+                drupalIndexedFields, drupalGeoJSONField);
 
         this.drupalTitleField = drupalTitleField;
     }

@@ -47,7 +47,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             json.optString("drupalPreviewImageField", null),
             json.optString("drupalExternalUrlField", null),
             json.optString("drupalContentOverwriteField", null),
-            json.optString("drupalWktField", null));
+            json.optString("drupalGeoJSONField", null));
     }
 
     public JSONObject toJSON() {
@@ -60,6 +60,11 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     @Override
     public ExternalLink load(JSONObject json, Messages messages) {
         return ExternalLink.load(json, messages);
+    }
+
+    @Override
+    public String getHarvestSort(boolean fullHarvest) {
+        return fullHarvest ? "drupal_internal__nid" : "-changed,drupal_internal__nid";
     }
 
     /**
@@ -76,9 +81,9 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             String drupalPreviewImageField,
             String drupalExternalUrlField,
             String drupalContentOverwriteField,
-            String drupalWktField
+            String drupalGeoJSONField
     ) {
-        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalWktField);
+        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalGeoJSONField);
         this.drupalExternalUrlField = drupalExternalUrlField;
         this.drupalContentOverwriteField = drupalContentOverwriteField;
     }
