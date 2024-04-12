@@ -21,8 +21,37 @@ package au.gov.aims.eatlas.searchengine.entity;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.json.JSONObject;
 
+import java.net.URL;
+
 public abstract class AbstractDrupalEntity extends Entity {
     protected AbstractDrupalEntity() {}
 
     public AbstractDrupalEntity(JSONObject jsonApiEntity, Messages messages) {}
+
+    public static URL getDrupalBaseUrl(JSONObject jsonApiEntity, Messages messages) {
+        JSONObject jsonLinks = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("links");
+        JSONObject jsonLinksSelf = jsonLinks == null ? null : jsonLinks.optJSONObject("self");
+        String linksSelfHref = jsonLinksSelf == null ? null : jsonLinksSelf.optString("href", null);
+
+        URL linksSelfUrl = null;
+        if (linksSelfHref != null) {
+            try {
+                linksSelfUrl = new URL(linksSelfHref);
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Invalid URL found in links.self.href: %s", linksSelfHref), ex);
+            }
+        }
+
+        if (linksSelfUrl != null) {
+            try {
+                return new URL(linksSelfUrl.getProtocol(), linksSelfUrl.getHost(), linksSelfUrl.getPort(), "/");
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR,
+                        String.format("Can not get root URL from links.self.href: %s", linksSelfUrl), ex);
+            }
+        }
+
+        return null;
+    }
 }

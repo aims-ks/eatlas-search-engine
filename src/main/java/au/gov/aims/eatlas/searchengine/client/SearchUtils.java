@@ -22,6 +22,7 @@ import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
+import au.gov.aims.eatlas.searchengine.index.DrupalBlockIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
@@ -96,6 +97,13 @@ public class SearchUtils {
         }
     }
 
+    // TODO Use the REST API to get the actual Elastic Search status
+    //   $ curl -X GET "localhost:9200/_cluster/health?pretty"
+    //   {
+    //     "status" : "yellow",
+    //     ...
+    //   }
+    //   String url = "http://localhost:9200/_cluster/health";
     public static ElasticSearchStatus getElasticSearchStatus() {
         ElasticSearchStatus status = null;
 
@@ -199,6 +207,11 @@ public class SearchUtils {
             case "DrupalExternalLinkNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-extlink");
                 newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, null, null, null, null, null, null, null);
+                break;
+
+            case "DrupalBlockIndexer":
+                newIndex = SearchUtils.generateUniqueIndexName("drupal-block");
+                newIndexer = new DrupalBlockIndexer(newIndex, null, null, null, null, null, null);
                 break;
 
             case "GeoNetworkIndexer":

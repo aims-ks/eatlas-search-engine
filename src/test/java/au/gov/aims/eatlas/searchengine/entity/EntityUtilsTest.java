@@ -71,6 +71,7 @@ public class EntityUtilsTest {
         EntityUtils.harvestGetURL(url, messages);
     }
 
+    // Disabled: The old legacy eAtlas GeoServer is retired
     @Ignore
     @Test
     public void testLegacyGeoServer() throws IOException, InterruptedException {

@@ -22,6 +22,7 @@ import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
+import au.gov.aims.eatlas.searchengine.index.DrupalBlockIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
@@ -216,6 +217,17 @@ public class SettingsPage {
                 drupalExternalLinkNodeIndexer.setDrupalExternalUrlField(FormUtils.getFormStringValue(form, index + "_drupalExternalUrlField"));
                 drupalExternalLinkNodeIndexer.setDrupalContentOverwriteField(FormUtils.getFormStringValue(form, index + "_drupalContentOverwriteField"));
                 drupalExternalLinkNodeIndexer.setDrupalGeoJSONField(FormUtils.getFormStringValue(form, index + "_drupalGeoJSONField"));
+
+            } else if (indexer instanceof DrupalBlockIndexer) {
+                // DrupalBlockIndexer
+                DrupalBlockIndexer drupalBlockIndexer = (DrupalBlockIndexer)indexer;
+
+                drupalBlockIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
+                drupalBlockIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
+                drupalBlockIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalBlockType"));
+                drupalBlockIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
+                drupalBlockIndexer.setDrupalIndexedFields(FormUtils.getFormStringValue(form, index + "_drupalIndexedFields"));
+                drupalBlockIndexer.setDrupalGeoJSONField(FormUtils.getFormStringValue(form, index + "_drupalGeoJSONField"));
 
             } else if (indexer instanceof GeoNetworkIndexer) {
                 // GeoNetworkIndexer

@@ -61,6 +61,45 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   $ docker-compose up
   ```
 
+- Check Elastic Search status
+
+  ```
+  $ curl -X GET "localhost:9200/_cluster/health?pretty"
+  ```
+
+- Change "watermark" thresholds
+
+  Elastic search will prevent writing to disk when the disk is almost full.
+  Those thresholds can be changed.
+  
+  Default:
+  ```
+  "cluster.routing.allocation.disk.watermark.low": "85%",
+  "cluster.routing.allocation.disk.watermark.high": "90%",
+  "cluster.routing.allocation.disk.watermark.flood_stage": "95%"
+  ```
+
+  ```
+  curl -X PUT "localhost:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
+  {
+    "persistent": {
+      "cluster.routing.allocation.disk.watermark.low": "95%",
+      "cluster.routing.allocation.disk.watermark.high": "97%",
+      "cluster.routing.allocation.disk.watermark.flood_stage": "99%"
+    }
+  }
+  '
+  ```
+
+- Hard-reset Elastic Search
+
+  ```
+  $ cd ~/Desktop/projects/Intellij/projects/eatlas-search-engine/
+  $ docker-compose down
+  $ docker system prune -a
+  $ docker-compose up
+  ```
+
 - Testing search engine:
   ```
   http://localhost:8080/eatlas-search-engine/public/search/v1?q=lorem&idx=eatlas_article

@@ -41,7 +41,7 @@ public class Bbox {
     }
 
     public Bbox(Geometry geometry) {
-        this(geometry == null ? null : geometry.getBoundary().getEnvelopeInternal());
+        this(geometry == null ? null : geometry.getEnvelopeInternal());
     }
 
     public Double getNorth() {

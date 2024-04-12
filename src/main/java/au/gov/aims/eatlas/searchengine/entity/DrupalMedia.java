@@ -37,7 +37,7 @@ public class DrupalMedia extends AbstractDrupalEntity {
         this.setIndex(index);
 
         if (jsonApiMedia != null) {
-            URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiMedia, messages);
+            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiMedia, messages);
 
             // UUID
             this.setId(jsonApiMedia.optString("id", null));

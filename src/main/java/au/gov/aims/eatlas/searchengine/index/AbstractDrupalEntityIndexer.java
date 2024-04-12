@@ -20,7 +20,7 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
-import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
+import au.gov.aims.eatlas.searchengine.entity.AbstractDrupalEntity;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
@@ -268,6 +268,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String url;
             try {
                 url = uriBuilder.build().toURL().toString();
+System.out.println("DRUPAL URL: " + url);
             } catch(Exception ex) {
                 // Should not happen
                 messages.addMessage(Messages.Level.ERROR,
@@ -336,7 +337,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         //     !stop: Stop explicitly set to true, because we found an entity that was not modified since last harvest.
         //     !crashed: An exception occurred or an error message was sent by Drupal.
         //     entityFound == INDEX_PAGE_SIZE: A page of results contains less entity than requested.
-        } while(!stop && !crashed && page < 100 /*entityFound != 0*/ /*entityFound == INDEX_PAGE_SIZE*/);
+        // TODO Use links/next/href. If not present, end as been reached
+        } while(!stop && !crashed && entityFound == INDEX_PAGE_SIZE);
 
         threadPool.shutdown();
         try {
@@ -754,7 +756,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     }
 
     public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
-        URL baseUrl = DrupalNode.getDrupalBaseUrl(jsonApiEntity, messages);
+        URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiEntity, messages);
         String previewImageFieldType = AbstractDrupalEntityIndexer.getPreviewImageType(jsonApiEntity, this.getDrupalPreviewImageField());
         if (previewImageFieldType != null && baseUrl != null && this.getDrupalPreviewImageField() != null) {
             String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(jsonApiEntity, this.getDrupalPreviewImageField());

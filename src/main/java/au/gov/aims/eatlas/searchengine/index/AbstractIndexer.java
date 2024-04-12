@@ -193,6 +193,10 @@ public abstract class AbstractIndexer<E extends Entity> {
                 indexer = DrupalExternalLinkNodeIndexer.fromJSON(index, json);
                 break;
 
+            case "DrupalBlockIndexer":
+                indexer = DrupalBlockIndexer.fromJSON(index, json);
+                break;
+
             case "DrupalMediaIndexer":
                 indexer = DrupalMediaIndexer.fromJSON(index, json);
                 break;
