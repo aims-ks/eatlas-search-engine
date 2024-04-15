@@ -80,7 +80,7 @@ public class SearchUtils {
     public static void deleteOrphanIndexes() throws IOException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-        List<String> activeIndexes = new ArrayList();
+        List<String> activeIndexes = new ArrayList<>();
         for (AbstractIndexer indexer : config.getIndexers()) {
             activeIndexes.add(indexer.getIndex());
         }
