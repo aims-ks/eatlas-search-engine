@@ -26,6 +26,7 @@ import java.util.List;
 public class ElasticSearchStatus {
     private final boolean reachable;
     private HealthStatus healthStatus;
+    // List of warning messages. HTML is allowed
     private final List<String> warnings;
     private List<String> indexes;
     private Exception exception;

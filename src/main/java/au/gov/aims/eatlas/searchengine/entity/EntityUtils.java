@@ -23,6 +23,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.http.Consts;
 import org.apache.http.entity.ContentType;
 import org.apache.log4j.Logger;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.jsoup.Connection;
@@ -179,7 +180,7 @@ public class EntityUtils {
     }
 
     public static String extractPDFTextContent(byte[] documentBytes) throws IOException {
-        try (PDDocument document = PDDocument.load(documentBytes)) {
+        try (PDDocument document = Loader.loadPDF(documentBytes)) {
             return new PDFTextStripper().getText(document);
         }
     }
