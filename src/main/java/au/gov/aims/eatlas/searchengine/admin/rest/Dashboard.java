@@ -59,7 +59,7 @@ public class Dashboard {
         model.put("messages", messages);
         model.put("config", config);
 
-        model.put("status", SearchUtils.getElasticSearchStatus());
+        model.put("status", SearchUtils.getElasticSearchStatus(httpRequest));
 
         File configFile = config.getConfigFile();
         model.put("configFile", configFile);

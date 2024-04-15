@@ -18,19 +18,41 @@
  */
 package au.gov.aims.eatlas.searchengine.client;
 
+import co.elastic.clients.elasticsearch._types.HealthStatus;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class ElasticSearchStatus {
     private final boolean reachable;
+    private HealthStatus healthStatus;
+    private final List<String> warnings;
     private List<String> indexes;
     private Exception exception;
 
     public ElasticSearchStatus(boolean reachable) {
         this.reachable = reachable;
+        this.warnings = new ArrayList<>();
     }
 
     public boolean isReachable() {
         return this.reachable;
+    }
+
+    public void setHealthStatus(HealthStatus healthStatus) {
+        this.healthStatus = healthStatus;
+    }
+
+    public HealthStatus getHealthStatus() {
+        return this.healthStatus;
+    }
+
+    public void addWarning(String warning) {
+        this.warnings.add(warning);
+    }
+
+    public List<String> getWarnings() {
+        return this.warnings;
     }
 
     public List<String> getIndexes() {

@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO DELETE this class: Used for manual tests
 public class Main {
     public static void main(String... args) throws Exception {
         boolean fullHarvest = true;

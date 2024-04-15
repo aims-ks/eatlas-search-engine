@@ -25,13 +25,33 @@
             <h2>Search engine</h2>
 
             <h3>Status</h3>
-            <div>
-                <p>
+            <div class="status">
+                <p class="reachable">
                     <span class="${it.status.reachable ? "ok" : "error"}">
                         ${it.status.reachable ? "Online" : "Offline"}
                     </span>
                 </p>
+                <c:if test="${not empty it.status.healthStatus}">
+                    <p class="healthStatus">
+                        <span class="status-${it.status.healthStatus.jsonValue()}">
+                            Health status: <span class="value"><c:out value="${it.status.healthStatus}"/></span>
+                        </span>
+                    </p>
+                </c:if>
             </div>
+
+            <c:if test="${not empty it.status.warnings}">
+                <div class="warningMessages">
+                    <h3>Warning</h3>
+                    <div>
+                        <ul>
+                            <c:forEach items="${it.status.warnings}" var="warning" varStatus="loopStatus">
+                                <li class="warningMessage">${warning}</li>
+                            </c:forEach>
+                        </ul>
+                    </div>
+                </div>
+            </c:if>
 
             <c:if test="${not empty it.status.indexes}">
                 <h3>List of available indexes</h3>
@@ -45,29 +65,31 @@
             </c:if>
 
             <c:if test="${not empty it.status.exception}">
-                <h3>Error</h3>
-                <div>
-                    <div class="exception hover">
-                        <span class="clickable">
-                            <%-- Display the exception class name and message (not all exception have a "message") --%>
-                            <c:out value="${it.status.exception.getClass().name}"/>
-                            <c:if test="${not empty it.status.exception.message}">
-                                - <c:out value="${it.status.exception.message}"/>
-                            </c:if>
-                        </span>
-                        <ul class="stacktrace collapsible">
-                            <c:forEach var="stacktraceElement" items="${it.status.exception.stackTrace}">
-                                <li>
-                                    <c:out value="${stacktraceElement}"/>
-                                </li>
-                            </c:forEach>
-                        </ul>
-                    </div>
+                <div class="errorMessages">
+                    <h3>Error</h3>
+                    <div>
+                        <div class="exception hover">
+                            <span class="errorMessage clickable">
+                                <%-- Display the exception class name and message (not all exception have a "message") --%>
+                                <c:out value="${it.status.exception.getClass().name}"/>
+                                <c:if test="${not empty it.status.exception.message}">
+                                    - <c:out value="${it.status.exception.message}"/>
+                                </c:if>
+                            </span>
+                            <ul class="stacktrace collapsible">
+                                <c:forEach var="stacktraceElement" items="${it.status.exception.stackTrace}">
+                                    <li>
+                                        <c:out value="${stacktraceElement}"/>
+                                    </li>
+                                </c:forEach>
+                            </ul>
+                        </div>
 
-                    <p>
-                        Check that the <i>Elastic Search</i> service is running and the <i>Elastic Search URLs</i>
-                        are set properly in the <a href="<c:url value="/admin/settings" />">settings</a> page.
-                    </p>
+                        <p>
+                            Check that the <i>Elastic Search</i> service is running and the <i>Elastic Search URLs</i>
+                            are set properly in the <a href="<c:url value="/admin/settings" />">settings</a> page.
+                        </p>
+                    </div>
                 </div>
             </c:if>
 
@@ -151,7 +173,7 @@
         </div>
     </form>
 
-    <jsp:include page="include/footer.jsp" />
+    <c:import url="include/footer.jsp"/>
 </body>
 
 </html>

@@ -29,12 +29,14 @@ import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.index.IndexerState;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -97,14 +99,9 @@ public class SearchUtils {
         }
     }
 
-    // TODO Use the REST API to get the actual Elastic Search status
-    //   $ curl -X GET "localhost:9200/_cluster/health?pretty"
-    //   {
-    //     "status" : "yellow",
-    //     ...
-    //   }
-    //   String url = "http://localhost:9200/_cluster/health";
-    public static ElasticSearchStatus getElasticSearchStatus() {
+    // NOTE: To request the Elastic Search health status manually, use the REST API:
+    //   $ curl http://localhost:9200/_cluster/health
+    public static ElasticSearchStatus getElasticSearchStatus(HttpServletRequest httpRequest) {
         ElasticSearchStatus status = null;
 
         try(
@@ -122,12 +119,72 @@ public class SearchUtils {
 
             status = new ElasticSearchStatus(true);
             status.setIndexes(indexes);
+
+            HealthStatus healthStatus = client.getHealthStatus();
+            status.setHealthStatus(healthStatus);
+            SearchUtils.addHealthStatusWarnings(httpRequest, status, healthStatus);
         } catch(Exception ex) {
             status = new ElasticSearchStatus(false);
             status.setException(ex);
         }
 
         return status;
+    }
+
+    private static void addHealthStatusWarnings(HttpServletRequest httpRequest, ElasticSearchStatus status, HealthStatus healthStatus) {
+        if (healthStatus == null) {
+            // This should not happen
+            status.addWarning(
+                "Elastic Search health status is null."
+            );
+        } else {
+            String helpPageUrl = httpRequest.getContextPath() + "/admin/help";
+
+            switch(healthStatus) {
+                case Green:
+                    // Everything is going well, no warning
+                    break;
+                case Yellow:
+                    // Yellow status, something is about to go bad.
+                    // Probably disk space related.
+                    status.addWarning(
+                        "Yellow health status. Check Elastic Search logs for more details."
+                    );
+                    status.addWarning(
+                        "Check Elastic Search health status (see <a href=\"" + helpPageUrl + "\">help page</a>)."
+                    );
+                    status.addWarning(
+                        "Check available disk space with \"df -h\" and compare with disk watermark settings (see <a href=\"" + helpPageUrl + "\">help page</a>)."
+                    );
+                    status.addWarning(
+                        "If the disk percentage has reach \"low\" watermark, free some disk space or adjust Elastic Search settings (see <a href=\"" + helpPageUrl + "\">help page</a>) before it reach the \"high\" watermark."
+                    );
+                    break;
+                case Red:
+                    // Red status, Elastic Search is not working properly.
+                    // Disk almost full?
+                    status.addWarning(
+                        "Red health status. Elastic search is currently readonly. Check Elastic Search logs for more details."
+                    );
+                    status.addWarning(
+                        "Check Elastic Search health status (see <a href=\"" + helpPageUrl + "\">help page</a>)."
+                    );
+                    status.addWarning(
+                        "Check available disk space with \"df -h\" and compare with disk watermark settings (see <a href=\"" + helpPageUrl + "\">help page</a>)."
+                    );
+                    status.addWarning(
+                        "If the disk percentage has reach \"high\" watermark, free some disk space or adjust Elastic Search settings (see <a href=\"" + helpPageUrl + "\">help page</a>)."
+                    );
+                    break;
+                default:
+                    // Unknown status.
+                    // Did Elastic Search API change?
+                    status.addWarning(
+                        "Unknown HealthStatus: " + healthStatus
+                    );
+                    break;
+            }
+        }
     }
 
     public static void refreshIndexesCount() throws Exception {

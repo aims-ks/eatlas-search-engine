@@ -17,6 +17,7 @@
                 <li class="${requestScope.settingsActive}"><a href="<c:url value="/admin/settings" />">Settings</a></li> <!-- Create, edit, delete index -->
                 <li class="${requestScope.reindexActive}"><a href="<c:url value="/admin/reindex" />">Reindex</a></li> <!-- Reindex an index or all indexes, with progress bar -->
                 <li class="${requestScope.searchActive}"><a href="<c:url value="/admin/search" />">Test search</a></li> <!-- Test the search. Checkbox to choose which index to search from. -->
+                <li class="${requestScope.helpActive}"><a href="<c:url value="/admin/help" />">Help</a></li> <!-- Help page. -->
             </ul>
         </nav>
 

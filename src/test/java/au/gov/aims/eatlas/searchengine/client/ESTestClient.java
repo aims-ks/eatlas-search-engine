@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine.client;
 
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
@@ -36,6 +37,11 @@ import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * NOTE: Elastic Search used to provide a testing environment.
+ * I could not find that environment in the latest version of Elastic Search.
+ * Tests are currently disabled until I can figure out how to do this.
+ */
 public class ESTestClient implements SearchClient {
     // https://github.com/elastic/elasticsearch-java/blob/main/java-client/src/test/java/co/elastic/clients/elasticsearch/end_to_end/RequestTest.java
     private ElasticsearchClient client;
@@ -46,6 +52,11 @@ public class ESTestClient implements SearchClient {
 
     @Override
     public List<String> listIndexes() throws IOException {
+        return null; // TODO
+    }
+
+    @Override
+    public HealthStatus getHealthStatus() throws IOException {
         return null; // TODO
     }
 

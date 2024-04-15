@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.client;
 
 import au.gov.aims.eatlas.searchengine.entity.Entity;
+import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
@@ -47,6 +48,7 @@ public interface SearchClient extends AutoCloseable {
     CreateIndexResponse createIndex(String indexName) throws IOException;
 
     List<String> listIndexes() throws IOException;
+    HealthStatus getHealthStatus() throws IOException;
     void deleteOrphanIndexes(List<String> activeIndexes) throws IOException;
 
     <E extends Entity> IndexResponse index(IndexRequest<E> indexRequest) throws IOException;

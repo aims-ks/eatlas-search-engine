@@ -755,7 +755,7 @@
 
     </form>
 
-    <jsp:include page="include/footer.jsp" />
+    <c:import url="include/footer.jsp"/>
 </body>
 
 </html>

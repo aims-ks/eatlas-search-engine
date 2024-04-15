@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine.client;
 
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.elasticsearch._types.analysis.Analyzer;
 import co.elastic.clients.elasticsearch._types.analysis.CustomAnalyzer;
 import co.elastic.clients.elasticsearch._types.mapping.DoubleNumberProperty;
@@ -29,6 +30,7 @@ import co.elastic.clients.elasticsearch._types.mapping.TextProperty;
 import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 import co.elastic.clients.elasticsearch.cat.IndicesResponse;
 import co.elastic.clients.elasticsearch.cat.indices.IndicesRecord;
+import co.elastic.clients.elasticsearch.cluster.HealthResponse;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
@@ -84,6 +86,12 @@ public class ESClient implements SearchClient {
         }
 
         return indexes;
+    }
+
+    @Override
+    public HealthStatus getHealthStatus() throws IOException {
+        HealthResponse healthResponse = this.client.cluster().health();
+        return healthResponse.status();
     }
 
     @Override
