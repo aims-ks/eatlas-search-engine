@@ -11,6 +11,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- NOTE: Elastic Search version is specified as a properties, to share the version number with the JUnit tests -->
+        <elasticsearch.version>8.13.2</elasticsearch.version>
+
         <!-- NOTE: Glassfish 3 requires Java 9+ -->
         <glassfish.version>2.42</glassfish.version>
 
@@ -81,7 +85,7 @@
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.13.2</version>
+            <version>${elasticsearch.version}</version>
         </dependency>
 
         <dependency>
@@ -234,6 +238,16 @@
                 <version>2.4</version>
             </plugin>
         </plugins>
+
+        <!-- Substitute the Elastic Search version number in the test.properties file,
+            with the version number found in the POM. -->
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+
         <finalName>eatlas-search-engine</finalName>
     </build>
 
