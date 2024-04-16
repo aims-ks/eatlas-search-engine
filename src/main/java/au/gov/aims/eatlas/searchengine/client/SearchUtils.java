@@ -148,32 +148,18 @@ public class SearchUtils {
                     // Yellow status, something is about to go bad.
                     // Probably disk space related.
                     status.addWarning(
-                        "Yellow health status. Check Elastic Search logs for more details."
-                    );
-                    status.addWarning(
-                        "Check Elastic Search health status (see <a href=\"" + helpPageUrl + "\">help page</a>)."
-                    );
-                    status.addWarning(
-                        "Check available disk space with \"df -h\" and compare with disk watermark settings (see <a href=\"" + helpPageUrl + "\">help page</a>)."
-                    );
-                    status.addWarning(
-                        "If the disk percentage has reach \"low\" watermark, free some disk space or adjust Elastic Search settings (see <a href=\"" + helpPageUrl + "\">help page</a>) before it reach the \"high\" watermark."
+                        "Yellow health status. " +
+                        "Identify and fix the issue before it gets worse. " +
+                        "Check the <a href=\"" + helpPageUrl + "#es-yellow-status\">help page</a> for more information."
                     );
                     break;
                 case Red:
                     // Red status, Elastic Search is not working properly.
                     // Disk almost full?
                     status.addWarning(
-                        "Red health status. Elastic search is currently readonly. Check Elastic Search logs for more details."
-                    );
-                    status.addWarning(
-                        "Check Elastic Search health status (see <a href=\"" + helpPageUrl + "\">help page</a>)."
-                    );
-                    status.addWarning(
-                        "Check available disk space with \"df -h\" and compare with disk watermark settings (see <a href=\"" + helpPageUrl + "\">help page</a>)."
-                    );
-                    status.addWarning(
-                        "If the disk percentage has reach \"high\" watermark, free some disk space or adjust Elastic Search settings (see <a href=\"" + helpPageUrl + "\">help page</a>)."
+                        "Red health status. " +
+                        "Identify and fix the issue to allow Elastic Search engine to work properly. " +
+                        "Check the <a href=\"" + helpPageUrl + "#es-red-status\">help page</a> for more information."
                     );
                     break;
                 default:

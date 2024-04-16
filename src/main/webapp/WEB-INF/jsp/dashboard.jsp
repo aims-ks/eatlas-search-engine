@@ -33,9 +33,7 @@
                 </p>
                 <c:if test="${not empty it.status.healthStatus}">
                     <p class="healthStatus">
-                        <span class="status-${it.status.healthStatus.jsonValue()}">
-                            Health status: <span class="value"><c:out value="${it.status.healthStatus}"/></span>
-                        </span>
+                        Health status: <span class="status-${it.status.healthStatus.jsonValue()}"><c:out value="${it.status.healthStatus}"/></span>
                     </p>
                 </c:if>
             </div>

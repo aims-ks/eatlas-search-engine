@@ -185,16 +185,16 @@ progress.disabled {
 }
 
 .ok,
-.status-green .value {
+.status-green {
   background-color: #DDFFDD;
 }
 .warningMessage,
-.status-yellow .value {
+.status-yellow {
   background-color: #FFFFDD;
 }
 .error,
 .errorMessage,
-.status-red .value {
+.status-red {
   background-color: #FFDDDD;
 }
 
