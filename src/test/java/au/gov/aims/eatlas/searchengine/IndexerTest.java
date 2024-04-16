@@ -1,90 +1,142 @@
-/*
- *  Copyright (C) 2020 Australian Institute of Marine Science
- *
- *  Contact: Gael Lafond <g.lafond@aims.gov.au>
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package au.gov.aims.eatlas.searchengine;
 
-import org.apache.log4j.Logger;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
+import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.HealthStatus;
+import co.elastic.clients.elasticsearch._types.Result;
+import co.elastic.clients.elasticsearch.core.CountRequest;
+import co.elastic.clients.elasticsearch.core.CountResponse;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Locale;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
 
-// https://mincong.io/2019/11/24/essinglenodetestcase/
-// https://discuss.elastic.co/t/is-the-highlevelrestclient-no-supported-in-the-java-testing-framework/218083/3
-// https://www.javacodegeeks.com/2017/03/elasticsearch-java-developers-elasticsearch-java.html
-//@ESIntegTestCase.ClusterScope(numDataNodes = 3)
-public class IndexerTest /*extends ESSingleNodeTestCase*/ {
-    private static final Logger LOGGER = Logger.getLogger(IndexerTest.class.getName());
+@Testcontainers
+public class IndexerTest {
 
-    @BeforeClass
-    public static void beforeClass() {
-        // ESIntegTestCase (or com.carrotsearch.randomizedtesting.RandomizedRunner)
-        // is changing the Locale to random stuff, making it really hard to read logs.
-        Locale.setDefault(Locale.forLanguageTag("en_AU"));
+    private static SearchEngineConfig config;
+
+    @BeforeAll
+    public static void setup() throws Exception {
+        URL resourceUrl = IndexerTest.class.getClassLoader().getResource("config/eatlas_search_engine.json");
+        if (resourceUrl == null) {
+            throw new FileNotFoundException("Could not find the Search Engine config file for tests");
+        }
+        File configFile = new File(resourceUrl.getFile());
+        Messages messages = Messages.getInstance(null);
+
+        config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json", messages);
     }
 
-    @Before
-    public void setUpCatalog() {
-        //this.createIndex("catalog");
+    public static String getElasticsearchVersion() {
+        // Load the Elastic Search version found in the test.properties file,
+        // after being substituted by Maven with the actual version number found in the POM.
+        try (InputStream input = IndexerTest.class.getClassLoader()
+                .getResourceAsStream("test.properties")) {
+            Properties prop = new Properties();
+            prop.load(input);
+            return prop.getProperty("elasticsearch.version");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        //this.ensureGreen("catalog");
+    @Container
+    private static final ElasticsearchContainer elasticsearchContainer =
+        new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + IndexerTest.getElasticsearchVersion())
+            // Restrict to single node (for testing purposes)
+            .withEnv("discovery.type", "single-node")
+            // Restrict memory usage
+            .withEnv("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
+            // Disable HTTPS
+            .withEnv("xpack.security.enabled", "false")
+            .withEnv("xpack.security.http.ssl.enabled", "false")
+            .waitingFor(Wait.forHttp("/_cluster/health")
+            .forPort(9200) // This refers to the internal port of the container
+            .forStatusCode(200));
+
+    private SearchClient createElasticsearchClient() {
+        // Retrieve the dynamically assigned HTTP host address from Testcontainers
+        String elasticsearchHttpHostAddress = elasticsearchContainer.getHttpHostAddress();
+
+        // Create an instance of the RestClient
+        RestClient restClient = RestClient.builder(
+                HttpHost.create(elasticsearchHttpHostAddress)
+        ).build();
+
+        // Create the ElasticsearchClient using the RestClient
+        RestClientTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+        return new ESClient(new ElasticsearchClient(transport));
     }
 
     @Test
-    public void testEmptyCatalogHasNoBooks() {
-        /*
-        final SearchResponse response = client()
-            .prepareSearch("catalog")
-            .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-            .setQuery(QueryBuilders.matchAllQuery())
-            .setFetchSource(false)
-            .get();
+    public void testElasticsearchConnection() throws Exception {
+        try (SearchClient client = this.createElasticsearchClient()) {
+            HealthStatus status = client.getHealthStatus();
 
-        ElasticsearchAssertions.assertNoSearchHits(response);
-        */
+            Assertions.assertEquals(HealthStatus.Green, status, "The Elastic Search engine health status is not Green.");
+        }
     }
 
-/*
+    @Test
+    public void testEmptyCatalogHasNoBooks() throws Exception {
+        try (SearchClient client = this.createElasticsearchClient()) {
+            CountResponse countResponse = client.count(new CountRequest.Builder()
+                .index("donotexist")
+                .ignoreUnavailable(true)
+                .build());
+
+            Assertions.assertEquals(0, countResponse.count(), "Number of document in the donotexist index is not 0.");
+        }
+    }
+
     @Test
     public void testIndex() throws IOException {
-        try (ESClient client = new ESTestClient(super.node().client())) {
-            Map<String, Object> jsonMap = new HashMap<>();
-            jsonMap.put("user", "kimchy");
-            jsonMap.put("postDate", new Date());
-            jsonMap.put("message", "trying out Elasticsearch");
+        try (SearchClient client = this.createElasticsearchClient()) {
+            GeoNetworkRecord record = new GeoNetworkRecord(
+                "records",
+                "00000000-0000-0000-0000-000000000000",
+                "iso19115-3.2018",
+                "3.0"
+            );
 
-            IndexRequest indexRequest = new IndexRequest("posts")
-                .id("1")
-                .source(jsonMap);
+            IndexRequest<GeoNetworkRecord> indexRequest = new IndexRequest.Builder<GeoNetworkRecord>()
+                .index("records")
+                .id(record.getId())
+                .document(record)
+                .build();
 
             IndexResponse indexResponse = client.index(indexRequest);
 
-            String index = indexResponse.getIndex();
-            String id = indexResponse.getId();
+            Result result = indexResponse.result();
 
-            System.out.println("index: " + index);
-            System.out.println("id: " + id);
+            Assertions.assertEquals(Result.Created, result, "Unexpected result.");
         }
     }
 
     @Test
     public void testIndexExternalLinks() throws IOException {
+/*
         ClassLoader classLoader = IndexerTest.class.getClassLoader();
         String index = "eatlas_extlink";
 
@@ -177,6 +229,7 @@ public class IndexerTest /*extends ESSingleNodeTestCase*/ {
 
             Assert.assertEquals("Some of the external links was not found.", 2, found);
         }
-    }
 */
+    }
+
 }
