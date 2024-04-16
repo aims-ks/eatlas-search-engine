@@ -38,12 +38,12 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
 
 - Control panel
   ```
-  http://localhost:8080/eatlas-search-engine/admin
+  http://localhost:8085/eatlas-search-engine/admin
   ```
   - Username: `admin`
   - Password: `admin`
 
-  The config file is in:
+  The config file is in: TODO Location has changed
   ```
   /home/glafond/Desktop/projects/tomcat/etc-tomcat-Catalina-data/eatlas-search-engine/eatlas_search_engine.json
   ```
@@ -113,7 +113,6 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
 - Deploy
 
   ```
-  $ sudo -u tomcat cp ~/Desktop/projects/Intellij/projects/eatlas-search-engine/target/eatlas-search-engine.war ~/Desktop/projects/tomcat/var-lib-tomcat-webapps/eatlas-search-engine.war
-  $ tail -f /var/log/tomcat9/catalina.out
-  $ journalctl -n 500 -f -u tomcat9.service
+  $ cp ~/Desktop/projects/Intellij/projects/eatlas-search-engine/target/eatlas-search-engine.war ~/Desktop/projects/Intellij/projects/eatlas-search-engine/webapps/eatlas-search-engine.war
+  $ docker logs -f eatlas-searchengine
   ```

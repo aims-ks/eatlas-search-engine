@@ -33,10 +33,10 @@ import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;

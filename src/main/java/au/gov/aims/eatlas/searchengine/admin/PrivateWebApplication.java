@@ -21,12 +21,11 @@ package au.gov.aims.eatlas.searchengine.admin;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.rest.PublicWebApplication;
+import jakarta.servlet.ServletContext;
+import jakarta.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.jsp.JspMvcFeature;
-
-import javax.servlet.ServletContext;
-import javax.ws.rs.core.Context;
 
 public class PrivateWebApplication extends ResourceConfig {
     private static final Logger LOGGER = Logger.getLogger(PublicWebApplication.class.getName());

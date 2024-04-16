@@ -4,11 +4,39 @@ version: '2.0'
 # Start elasticsearch in Docker, for use on development environment.
 #   https://hub.docker.com/_/elasticsearch
 services:
+  searchengine:
+    # https://hub.docker.com/_/tomcat
+    image: "tomcat:10.1.20-jdk11"
+    container_name: eatlas-searchengine
+    depends_on:
+      - elasticsearch
+    networks:
+      - eatlas
+    ports:
+      - "8085:8080"
+    volumes:
+      - ./webapps:/usr/local/tomcat/webapps
+      - ./tomcat-conf:/usr/local/tomcat/conf
+      - ./searchengine-data:/usr/local/tomcat/searchengine-data
+    environment:
+      #- CATALINA_OPTS="-DEATLAS-SEARCH-ENGINE_CONFIG_FILE=/usr/local/tomcat/searchengine-data/eatlas_search_engine.json"
+      - EATLAS-SEARCH-ENGINE_CONFIG_FILE=/usr/local/tomcat/searchengine-data/eatlas_search_engine.json
+
   elasticsearch:
-    # image: elasticsearch:8.3.3
-    image: elasticsearch:8.13.0
+    # https://hub.docker.com/_/elasticsearch
+    image: "elasticsearch:8.13.0"
     container_name: eatlas-elasticsearch
     # network_mode host: Elastic search can be access using localhost:9200 and localhost:9300
-    network_mode: host
+    #network_mode: host
+    networks:
+      - eatlas
+    ports:
+      - "9200:9200"
+      - "9300:9300"
     env_file:
       - "docker-compose.env"
+
+networks:
+  # Same network as Drupal 7, to be able to use D10 API from D7
+  eatlas:
+    name: eatlas-drupal7-network

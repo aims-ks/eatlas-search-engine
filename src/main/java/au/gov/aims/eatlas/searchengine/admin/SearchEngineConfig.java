@@ -21,12 +21,12 @@ package au.gov.aims.eatlas.searchengine.admin;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.entity.User;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import jakarta.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;

@@ -18,9 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import jakarta.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 
-import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;

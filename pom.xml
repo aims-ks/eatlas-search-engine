@@ -15,11 +15,11 @@
         <!-- NOTE: Elastic Search version is specified as a properties, to share the version number with the JUnit tests -->
         <elasticsearch.version>8.13.2</elasticsearch.version>
 
-        <!-- NOTE: Jersey 3 requires Java 9+ [2.42 -> 4.0.0-M1] -->
-        <jersey.version>2.42</jersey.version>
+        <!-- NOTE: Jersey 3 requires Java 9+ [2.42 -> 3.1.6 -> 4.0.0-M1] -->
+        <jersey.version>3.1.6</jersey.version>
 
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <repositories>
@@ -35,9 +35,9 @@
         <!-- Jar containing classes provided by tomcat - Not included in the war -->
         <!-- NOTE: javaee-web-api conflict with Glassfish framework (Jar Hell) -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.0.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -49,10 +49,17 @@
             <version>2.3.0</version>
         </dependency>
         -->
+        <!--
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+            <version>2.0.1</version>
         </dependency>
 
         <!-- REST API framework -->
@@ -74,10 +81,16 @@
             <artifactId>jersey-mvc-jsp</artifactId>
             <version>${jersey.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>jstl</artifactId>
-            <version>1.2</version>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+            <version>3.0.1</version>
         </dependency>
 
         <!-- Docs -->

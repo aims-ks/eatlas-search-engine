@@ -21,12 +21,12 @@
 
 package au.gov.aims.eatlas.searchengine.rest;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xml.sax.SAXParseException;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;

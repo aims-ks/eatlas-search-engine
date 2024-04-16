@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -8,5 +8,11 @@ target/
 # Ignore the symbolic link, placed in here to make things easier to find
 data/
 
+# Ignore tomcat webapps folder
+webapps/
+
+# Search engine test configuration
+searchengine-data/
+
 # OpenJDK bug: https://bugs.openjdk.java.net/browse/JDK-8214300
 .attach_pid*

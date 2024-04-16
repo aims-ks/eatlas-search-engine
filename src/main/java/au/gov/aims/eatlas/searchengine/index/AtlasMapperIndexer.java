@@ -24,13 +24,13 @@ import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import jakarta.ws.rs.core.MultivaluedMap;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.uri.UriComponent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;

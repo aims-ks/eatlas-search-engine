@@ -20,12 +20,11 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import jakarta.servlet.ServletContext;
+import jakarta.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.jsp.JspMvcFeature;
-
-import javax.servlet.ServletContext;
-import javax.ws.rs.core.Context;
 
 public class PublicWebApplication extends ResourceConfig {
     private static final Logger LOGGER = Logger.getLogger(PublicWebApplication.class.getName());
