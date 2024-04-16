@@ -28,6 +28,11 @@
             <pre>$ curl "${it.elasticSearchUrl}/_cluster/health?pretty"</pre>
         </div>
 
+        <h3>Cluster allocation explanation</h3>
+        <div>
+            <pre>$ curl "${it.elasticSearchUrl}/_cluster/allocation/explain?pretty"</pre>
+        </div>
+
         <h3>View disk watermark settings</h3>
         <div>
             <pre>$ curl "${it.elasticSearchUrl}/_cluster/settings?pretty"</pre>
@@ -57,7 +62,7 @@
     <div class="box" id="es-yellow-status">
         <h2>Elastic Search - <span class="status-yellow">Yellow status</span></h2>
 
-        <!-- TODO Divide this into sections: disk, etc. How to identify and fix the issue. -->
+        <!-- TODO: Divide this into sections: disk, etc. How to identify and fix the issue. -->
         <p>
             If Elastic Search health status changes to <span class="status-yellow">Yellow</span>,
             something is going wrong.
@@ -76,7 +81,7 @@
     <div class="box" id="es-red-status">
         <h2>Elastic Search - <span class="status-red">Red status</span></h2>
 
-        <!-- TODO Divide this into sections: disk, etc. How to identify and fix the issue. -->
+        <!-- TODO: Divide this into sections: disk, etc. How to identify and fix the issue. -->
         <p>
             When Elastic Search health status changes to <span class="status-red">Red</span>,
             Elastic search becomes readonly.

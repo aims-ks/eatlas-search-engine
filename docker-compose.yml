@@ -18,9 +18,8 @@ services:
       - ./webapps:/usr/local/tomcat/webapps
       - ./tomcat-conf:/usr/local/tomcat/conf
       - ./searchengine-data:/usr/local/tomcat/searchengine-data
-    environment:
-      #- CATALINA_OPTS="-DEATLAS-SEARCH-ENGINE_CONFIG_FILE=/usr/local/tomcat/searchengine-data/eatlas_search_engine.json"
-      - EATLAS-SEARCH-ENGINE_CONFIG_FILE=/usr/local/tomcat/searchengine-data/eatlas_search_engine.json
+    env_file:
+      - "tomcat.env"
 
   elasticsearch:
     # https://hub.docker.com/_/elasticsearch
@@ -34,7 +33,7 @@ services:
       - "9200:9200"
       - "9300:9300"
     env_file:
-      - "docker-compose.env"
+      - "elasticsearch.env"
 
 networks:
   # Same network as Drupal 7, to be able to use D10 API from D7
