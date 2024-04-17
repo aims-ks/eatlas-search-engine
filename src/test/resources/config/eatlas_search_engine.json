@@ -1,29 +1,6 @@
 {
-  "imageCacheDirectory": "/usr/local/tomcat/searchengine-data/",
+  "imageCacheDirectory": "/tmp/searchengine-data/",
   "indexers": [
-    {
-      "drupalPreviewImageField": "field_preview",
-      "drupalIndexedFields": "field_body",
-      "drupalVersion": "10",
-      "drupalGeoJSONField": "field_geojson",
-      "drupalNodeType": "article",
-      "index": "eatlas_article",
-      "drupalUrl": "http://localhost:1212",
-      "type": "DrupalNodeIndexer",
-      "enabled": true
-    },
-    {
-      "drupalPreviewImageField": "thumbnail",
-      "drupalTitleField": "name",
-      "drupalIndexedFields": "field_description",
-      "drupalMediaType": "image",
-      "drupalVersion": "10",
-      "drupalGeoJSONField": "field_geojson",
-      "index": "eatlas_image",
-      "drupalUrl": "http://localhost:1212",
-      "type": "DrupalMediaIndexer",
-      "enabled": true
-    },
     {
       "drupalPreviewImageField": "field_preview",
       "drupalContentOverwriteField": "field_content_overwrite",
@@ -31,93 +8,16 @@
       "drupalVersion": "10",
       "drupalGeoJSONField": "field_geojson",
       "drupalNodeType": "external_link",
-      "index": "eatlas_external_link",
+      "index": "links",
       "drupalUrl": "http://localhost:1111",
       "type": "DrupalExternalLinkNodeIndexer",
       "enabled": true
     },
     {
       "geoNetworkUrl": "https://eatlas.org.au/geonetwork",
-      "index": "eatlas_metadata",
+      "index": "metadata",
       "type": "GeoNetworkIndexer",
       "geoNetworkVersion": "3.0",
-      "enabled": true
-    },
-    {
-      "atlasMapperClientUrl": "https://maps.eatlas.org.au",
-      "baseLayerUrl": "https://maps.eatlas.org.au/maps/wms?SERVICE=WMS&REQUEST=GetMap&LAYERS=ea-be:World_Bright-Earth-e-Atlas-basemap&FORMAT=image/jpeg&TRANSPARENT=false&VERSION=1.1.1&SRS=EPSG:4326&BBOX={BBOX}&WIDTH={WIDTH}&HEIGHT={HEIGHT}",
-      "atlasMapperVersion": "2.3.0",
-      "index": "eatlas_layer",
-      "type": "AtlasMapperIndexer",
-      "enabled": true
-    },
-    {
-      "geoNetworkUrl": "http://localhost:8081/geonetwork",
-      "index": "geonetwork_benchmark",
-      "type": "GeoNetworkIndexer",
-      "geoNetworkVersion": "3.0",
-      "enabled": false
-    },
-    {
-      "atlasMapperClientUrl": "http://localhost:8080/atlasmapper/client/demo",
-      "baseLayerUrl": "https://maps.eatlas.org.au/maps/wms?SERVICE=WMS&REQUEST=GetMap&LAYERS=ea-be:World_Bright-Earth-e-Atlas-basemap&FORMAT=image/jpeg&TRANSPARENT=false&VERSION=1.1.1&SRS=EPSG:4326&BBOX={BBOX}&WIDTH={WIDTH}&HEIGHT={HEIGHT}",
-      "atlasMapperVersion": "2.3.1",
-      "index": "atlasmapper_localhost",
-      "type": "AtlasMapperIndexer",
-      "enabled": false
-    },
-    {
-      "drupalPreviewImageField": "field_image",
-      "drupalIndexedFields": "body",
-      "drupalVersion": "9",
-      "drupalNodeType": "article",
-      "index": "eatlas_article_d9",
-      "drupalUrl": "http://localhost:9090",
-      "type": "DrupalNodeIndexer",
-      "enabled": true
-    },
-    {
-      "drupalPreviewImageField": "thumbnail",
-      "drupalTitleField": "name",
-      "drupalIndexedFields": "field_description",
-      "drupalMediaType": "image",
-      "drupalVersion": "9",
-      "drupalGeoJSONField": "field_geojson",
-      "index": "eatlas_image_d9",
-      "drupalUrl": "http://localhost:9090",
-      "type": "DrupalMediaIndexer",
-      "enabled": true
-    },
-    {
-      "drupalPreviewImageField": "field_image",
-      "drupalContentOverwriteField": "field_content_overwrite",
-      "drupalExternalUrlField": "field_external_link",
-      "drupalVersion": "9",
-      "drupalNodeType": "external_link",
-      "index": "eatlas_external_link_d9",
-      "drupalUrl": "http://localhost:9090",
-      "type": "DrupalExternalLinkNodeIndexer",
-      "enabled": true
-    },
-    {
-      "drupalIndexedFields": "body",
-      "drupalVersion": "10",
-      "drupalGeoJSONField": "field_geojson",
-      "index": "ampsa_marine_park",
-      "drupalUrl": "http://ampsa_d10",
-      "drupalBlockType": "marine_park",
-      "type": "DrupalBlockIndexer",
-      "enabled": true
-    },
-    {
-      "drupalPreviewImageField": "field_preview",
-      "drupalIndexedFields": "field_body",
-      "drupalVersion": "10",
-      "drupalGeoJSONField": "field_geojson",
-      "drupalNodeType": "article",
-      "index": "ampsa_article",
-      "drupalUrl": "http://ampsa_d10",
-      "type": "DrupalNodeIndexer",
       "enabled": true
     }
   ],

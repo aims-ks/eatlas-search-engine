@@ -1,0 +1,96 @@
+{
+  "type": "node--external_link",
+  "id": "cbfd684d-56a2-490d-9864-46520fd1359d",
+  "links": {
+    "self": {
+      "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d?resourceVersion=id%3A50726"
+    }
+  },
+  "attributes": {
+    "drupal_internal__nid": 50686,
+    "drupal_internal__vid": 50726,
+    "langcode": "en",
+    "revision_timestamp": "2024-04-17T00:46:07+00:00",
+    "revision_log": null,
+    "status": true,
+    "title": "Tropical Seagrass Identification (Seagrass-Watch)",
+    "created": "2024-04-17T00:46:07+00:00",
+    "changed": "2024-04-17T00:46:07+00:00",
+    "promote": false,
+    "sticky": false,
+    "default_langcode": true,
+    "revision_translation_affected": true,
+    "path": {
+      "alias": null,
+      "pid": null,
+      "langcode": "en"
+    },
+    "field_content_overwrite": null,
+    "field_external_link": "https:\/\/www.seagrasswatch.org\/idseagrass\/",
+    "field_geojson": null
+  },
+  "relationships": {
+    "node_type": {
+      "data": {
+        "type": "node_type--node_type",
+        "id": "383fc6a2-87b8-400d-aaaa-7aa1d2924ebf",
+        "meta": {
+          "drupal_internal__target_id": "external_link"
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/node_type?resourceVersion=id%3A50726"
+        },
+        "self": {
+          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/node_type?resourceVersion=id%3A50726"
+        }
+      }
+    },
+    "revision_uid": {
+      "data": {
+        "type": "user--user",
+        "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+        "meta": {
+          "drupal_internal__target_id": 1
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/revision_uid?resourceVersion=id%3A50726"
+        },
+        "self": {
+          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/revision_uid?resourceVersion=id%3A50726"
+        }
+      }
+    },
+    "uid": {
+      "data": {
+        "type": "user--user",
+        "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+        "meta": {
+          "drupal_internal__target_id": 1
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/uid?resourceVersion=id%3A50726"
+        },
+        "self": {
+          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/uid?resourceVersion=id%3A50726"
+        }
+      }
+    },
+    "field_preview": {
+      "data": null,
+      "links": {
+        "related": {
+          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/field_preview?resourceVersion=id%3A50726"
+        },
+        "self": {
+          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/field_preview?resourceVersion=id%3A50726"
+        }
+      }
+    }
+  }
+}
