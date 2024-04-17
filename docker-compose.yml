@@ -32,6 +32,8 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    #volumes:
+    # - TODO Volume for persistent index files
     env_file:
       - "elasticsearch.env"
 

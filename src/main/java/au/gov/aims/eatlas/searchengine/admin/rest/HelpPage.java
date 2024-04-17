@@ -32,11 +32,15 @@ public class HelpPage {
         model.put("config", config);
 
         String elasticSearchUrl = "http://localhost:9200";
-
+        /*
+        // We can get the Elastic Search URL from the config,
+        //   but it will likely contain the Docker service name for the domain name,
+        //   which is not very useful outside of Docker.
         List<String> elasticSearchUrls = config.getElasticSearchUrls();
         if (elasticSearchUrls != null && !elasticSearchUrls.isEmpty()) {
             elasticSearchUrl = elasticSearchUrls.get(0);
         }
+        */
         model.put("elasticSearchUrl", elasticSearchUrl);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/help.jsp

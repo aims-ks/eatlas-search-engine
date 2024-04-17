@@ -198,6 +198,9 @@ public class ESClient implements SearchClient {
                             */
                             .build())
                     .settings(new IndexSettings.Builder()
+                            .numberOfShards("1")
+                            // Set number of replica to 0, to be able to run on a single-node Elastic Search instance
+                            .numberOfReplicas("0")
                             .analysis(new IndexSettingsAnalysis.Builder()
                                     .analyzer("english_analyser", new Analyzer.Builder()
                                             .custom(new CustomAnalyzer.Builder()

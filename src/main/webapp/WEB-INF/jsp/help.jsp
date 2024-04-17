@@ -20,27 +20,116 @@
 <body>
     <c:import url="include/header.jsp"/>
 
-    <div class="box">
+    <div class="box" id="es-diagnosis">
+        <h2>Elastic Search - Diagnosis and solutions</h2>
+
+        <p>
+            If Elastic Search health status is <span class="status-yellow">Yellow</span> or
+            <span class="status-red">Red</span>, it needs to be fixed.
+        </p>
+
+        <h3>Diagnose the problem</h3>
+        <ul>
+            <li>Check Elastic Search health status (see <a href="#es-api">Elastic Search - API</a>)</li>
+            <li>Check Elastic Search logs for more details:
+                <code>docker logs -f eatlas-searchengine</code>
+            </li>
+        </ul>
+
+        <h3>Disk</h3>
+        <p>
+            If you see warnings about <code>disk watermark</code> in Elastic Search logs,
+            check available disk space with the bash command <code>df -h</code>
+            and compare with disk watermark settings (see <a href="#es-api">Elastic Search - API</a>).
+            If the available disk space (in percentage) has reach the "low" or "high" watermark threshold:
+        </p>
+        <ul>
+            <li>Free some disk space.</li>
+            <li>Adjust Elastic Search disk watermark settings (see <a href="#es-api">Elastic Search - API</a>).</li>
+        </ul>
+
+        <h3>Unassigned shards</h3>
+        <p>
+            If the Health status shows unassigned shards.<br/>
+            Example:<br/>
+            <code>"unassigned_shards" : 2</code><br/>
+            Try to understand why the shards are unassigned.
+            The most likely explanation is because some search indices have
+            too many shards and replica.
+            The number of shards + replica in an index should never exceed the number of node.<br/>
+            Example:<br/>
+            <code>
+            "number_of_nodes" : 1,<br/>
+            "number_of_shards" : 2,<br/>
+            "number_of_replicas" : 1,
+            </code><br/>
+            The number of shards + replica = 3. Number of nodes = 1. The shards + replica needs to be reduced to 1.<br/>
+            Example:<br/>
+            <code>
+            "number_of_nodes" : 1,<br/>
+            "number_of_shards" : 1,<br/>
+            "number_of_replicas" : 0,
+            </code>
+        </p>
+        <ul>
+            <li>You can manually fix the index
+                using the <a href="#es-api">Elastic Search API</a>.</li>
+            <li>Something probably went wrong during the creation of the index.
+                Fix the index creation code in the Search Engine
+                (see <code>src/main/java/au/gov/aims/eatlas/searchengine/client/ESClient.java</code>).</li>
+        </ul>
+
+    </div>
+
+    <div class="box" id="es-green-status">
+        <h2>Elastic Search - <span class="status-green">Green status</span></h2>
+
+        <p>
+            Elasticsearch is in optimal condition and operating efficiently.
+        </p>
+    </div>
+
+    <div class="box" id="es-yellow-status">
+        <h2>Elastic Search - <span class="status-yellow">Yellow status</span></h2>
+
+        <p>
+            If Elastic Search health status changes to <span class="status-yellow">Yellow</span>,
+            something is going wrong.
+            The problem needs to be fixed before the health status changes
+            to <span class="status-red">Red</span>.
+        </p>
+    </div>
+
+    <div class="box" id="es-red-status">
+        <h2>Elastic Search - <span class="status-red">Red status</span></h2>
+
+        <p>
+            When Elastic Search health status changes to <span class="status-red">Red</span>,
+            Elastic search becomes readonly.
+        </p>
+    </div>
+
+    <div class="box" id="es-api">
         <h2>Elastic Search - API</h2>
 
-        <h3>Health check</h3>
+        <h3>Health status</h3>
         <div>
-            <pre>$ curl "${it.elasticSearchUrl}/_cluster/health?pretty"</pre>
+            <pre>curl "${it.elasticSearchUrl}/_cluster/health?level=indices&pretty"</pre>
         </div>
 
         <h3>Cluster allocation explanation</h3>
         <div>
-            <pre>$ curl "${it.elasticSearchUrl}/_cluster/allocation/explain?pretty"</pre>
+            <pre>curl "${it.elasticSearchUrl}/_cluster/allocation/explain?pretty"</pre>
         </div>
 
         <h3>View disk watermark settings</h3>
         <div>
-            <pre>$ curl "${it.elasticSearchUrl}/_cluster/settings?pretty"</pre>
+            <pre>curl "${it.elasticSearchUrl}/_cluster/settings?pretty"</pre>
         </div>
 
         <h3>Update disk watermark settings</h3>
         <div>
-            <pre>$ curl -X PUT "${it.elasticSearchUrl}/_cluster/settings" -H 'Content-Type: application/json' -d'
+            <pre>curl -X PUT "${it.elasticSearchUrl}/_cluster/settings" -H 'Content-Type: application/json' -d'
 {
   "persistent": {
     "cluster.routing.allocation.disk.watermark.low": "95%",
@@ -49,49 +138,33 @@
   }
 }'</pre>
         </div>
-    </div>
 
-    <div class="box" id="es-green-status">
-        <h2>Elastic Search - <span class="status-green">Green status</span></h2>
+        <h3>Update index settings</h3>
+        <div>
+            <p>
+                <strong>NOTE</strong>: This following examples are for the index <code>drupal_article</code>.
+                Change <code>drupal_article</code> for your index name before executing the command.
+            </p>
+            <p>
+                Set the number of replica to 0:
+            </p>
+            <pre>curl -X PUT "${it.elasticSearchUrl}/drupal_article/_settings" -H "Content-Type: application/json" -d'
+{
+    "index" : {
+        "number_of_replicas" : 0
+    }
+}'</pre>
 
-        <p>
-            Everything is going well. The Elastic Search engine is running smooth.
-        </p>
-    </div>
-
-    <div class="box" id="es-yellow-status">
-        <h2>Elastic Search - <span class="status-yellow">Yellow status</span></h2>
-
-        <!-- TODO: Divide this into sections: disk, etc. How to identify and fix the issue. -->
-        <p>
-            If Elastic Search health status changes to <span class="status-yellow">Yellow</span>,
-            something is going wrong.
-            The problem needs to be fixed before the health status changes
-            to <span class="status-red">Red</span>.
-            Check Elastic Search logs for more details.
-            Check Elastic Search health status (see "Elastic Search - API" above).
-            Check available disk space with "df -h"
-            and compare with disk watermark settings (see "Elastic Search - API" above).
-            If the disk percentage has reach "low" watermark,
-            free some disk space or adjust Elastic Search settings (see "Elastic Search - API" above)
-            before it reach the "high" watermark.
-        </p>
-    </div>
-
-    <div class="box" id="es-red-status">
-        <h2>Elastic Search - <span class="status-red">Red status</span></h2>
-
-        <!-- TODO: Divide this into sections: disk, etc. How to identify and fix the issue. -->
-        <p>
-            When Elastic Search health status changes to <span class="status-red">Red</span>,
-            Elastic search becomes readonly.
-            Check Elastic Search logs for more details.
-            Check Elastic Search health status (see "Elastic Search - API" above).
-            Check available disk space with "df -h"
-            and compare with disk watermark settings (see "Elastic Search - API" above).
-            If the disk percentage has reach "high" watermark,
-            free some disk space or adjust Elastic Search settings (see "Elastic Search - API" above)."
-        </p>
+            <p>
+                Set the number of shards to 1:
+            </p>
+            <pre>curl -X PUT "${it.elasticSearchUrl}/drupal_article/_settings" -H "Content-Type: application/json" -d'
+{
+    "index" : {
+        "number_of_shards" : 1
+    }
+}'</pre>
+        </div>
     </div>
 
     <c:import url="include/footer.jsp"/>
