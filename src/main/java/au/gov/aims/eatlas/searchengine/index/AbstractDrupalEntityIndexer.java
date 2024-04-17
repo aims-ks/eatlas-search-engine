@@ -259,23 +259,19 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         boolean stop = false;
         boolean crashed = false;
         String sort = this.getHarvestSort(fullHarvest);
+
+        URIBuilder uriBuilder = this.buildDrupalApiPageUrl(page, sort, messages);
+        String url = null;
+        try {
+            url = uriBuilder.build().toURL().toString();
+        } catch(Exception ex) {
+            // Should not happen
+            messages.addMessage(Messages.Level.ERROR,
+                    String.format("Invalid Drupal URL. Exception occurred while building a URL starting with: %s", this.getDrupalApiUrlBase()), ex);
+            return;
+        }
+
         do {
-            URIBuilder uriBuilder = this.buildDrupalApiPageUrl(page, sort, messages);
-            if (uriBuilder == null) {
-                return;
-            }
-
-            String url;
-            try {
-                url = uriBuilder.build().toURL().toString();
-System.out.println("DRUPAL URL: " + url);
-            } catch(Exception ex) {
-                // Should not happen
-                messages.addMessage(Messages.Level.ERROR,
-                        String.format("Invalid Drupal URL. Exception occurred while building a URL starting with: %s", this.getDrupalApiUrlBase()), ex);
-                return;
-            }
-
             entityFound = 0;
             String responseStr = null;
             try {
@@ -330,15 +326,20 @@ System.out.println("DRUPAL URL: " + url);
                         threadPool.execute(thread);
                     }
                 }
+
+                // Get the URL of the next page
+                // NOTE: Use links/next/href. If not present, end as been reached
+                JSONObject linksJson = jsonResponse.optJSONObject("links");
+                JSONObject nextJson = linksJson == null ? null : linksJson.optJSONObject("next");
+                url = nextJson == null ? null : nextJson.optString("href", null);
             }
             page++;
 
         // while:
         //     !stop: Stop explicitly set to true, because we found an entity that was not modified since last harvest.
         //     !crashed: An exception occurred or an error message was sent by Drupal.
-        //     entityFound == INDEX_PAGE_SIZE: A page of results contains less entity than requested.
-        // TODO Use links/next/href. If not present, end as been reached
-        } while(!stop && !crashed && entityFound == INDEX_PAGE_SIZE);
+        //     url != null: No next URL found in the JSON response.
+        } while(!stop && !crashed && url != null);
 
         threadPool.shutdown();
         try {
