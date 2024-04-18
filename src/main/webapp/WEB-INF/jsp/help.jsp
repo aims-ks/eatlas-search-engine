@@ -125,9 +125,25 @@
         <h3>View disk watermark settings</h3>
         <div>
             <pre>curl "${it.elasticSearchUrl}/_cluster/settings?pretty"</pre>
+            <p>
+                If the settings are empty, the default settings applies:
+            </p>
+            <pre>{
+  "persistent": {
+    "cluster.routing.allocation.disk.watermark.low": "80%",
+    "cluster.routing.allocation.disk.watermark.high": "85%",
+    "cluster.routing.allocation.disk.watermark.flood_stage": "90%"
+  },
+  "transient" : { }
+}</pre>
         </div>
 
         <h3>Update disk watermark settings</h3>
+        <p>
+            To update the settings permanently, update the <code>persistent</code> object.
+            Use the <code>transient</code> object for temporary settings
+            that will last until the next server reboot.
+        </p>
         <div>
             <pre>curl -X PUT "${it.elasticSearchUrl}/_cluster/settings" -H 'Content-Type: application/json' -d'
 {

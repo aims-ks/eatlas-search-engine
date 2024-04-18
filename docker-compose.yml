@@ -1,5 +1,5 @@
 ---
-version: '2.0'
+version: '3.5'
 
 # Start elasticsearch in Docker, for use on development environment.
 #   https://hub.docker.com/_/elasticsearch
@@ -30,8 +30,12 @@ services:
     networks:
       - eatlas
     ports:
+      # 9200: Port for HTTP requests, to index, search, etc
       - "9200:9200"
-      - "9300:9300"
+
+      # 9300: Port used for communication between nodes.
+      #   Elastic Search runs with a single node. We do not need this port.
+      #- "9300:9300"
     volumes:
       # Persistent search index files
       - ./elasticsearch-data:/usr/share/elasticsearch/data

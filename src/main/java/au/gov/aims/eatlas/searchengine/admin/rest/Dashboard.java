@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
+import au.gov.aims.eatlas.searchengine.client.ElasticSearchStatus;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
@@ -59,7 +60,18 @@ public class Dashboard {
         model.put("messages", messages);
         model.put("config", config);
 
-        model.put("status", SearchUtils.getElasticSearchStatus(httpRequest));
+        ElasticSearchStatus status = SearchUtils.getElasticSearchStatus(httpRequest);
+        model.put("status", status);
+
+        // Refresh index count, when the search engine is reachable
+        if (status.isReachable()) {
+            try {
+                SearchUtils.refreshIndexesCount();
+            } catch (Exception ex) {
+                messages.addMessage(Messages.Level.ERROR,
+                    "An exception occurred while refreshing the indexes count.", ex);
+            }
+        }
 
         File configFile = config.getConfigFile();
         model.put("configFile", configFile);
