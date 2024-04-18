@@ -30,7 +30,7 @@
             <div class="field">
                 <label for="elasticSearchUrls">
                     <span class="label required">Elastic Search URLs</span>
-                    <div id="elasticSearchUrls" class="multiple-text">
+                    <span id="elasticSearchUrls" class="multiple-text">
                         <c:forEach items="${it.config.elasticSearchUrls}" var="elasticSearchUrl" varStatus="loopStatus">
                             <%-- "data-lpignore" is used to prevent LastPass filling the field. --%>
                             <input type="text"
@@ -43,7 +43,7 @@
                             name="elasticSearchUrl"
                             data-lpignore="true"
                             value="" />
-                    </div>
+                    </span>
                 </label>
                 <div class="desc">URLs to the Elastic Search server.</div>
                 <div class="desc">Example: http://localhost:9200, http://localhost:9300</div>
@@ -623,7 +623,7 @@
                                             <div class="desc">Example: field_geojson</div>
                                         </div>
 
-<!-- TODO Field published -->
+<!-- TODO Field published, AMPSA network checkbox, etc -->
 
                                     </div>
                                 </c:when>
