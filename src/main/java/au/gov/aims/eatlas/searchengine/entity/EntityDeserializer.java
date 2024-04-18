@@ -48,7 +48,7 @@ public class EntityDeserializer extends StdDeserializer<Entity> {
             SearchEngineConfig config = SearchEngineConfig.getInstance();
 
             Messages messages = Messages.getInstance(null);
-            for (AbstractIndexer indexer : config.getIndexers()) {
+            for (AbstractIndexer<?> indexer : config.getIndexers()) {
                 if (index.equals(indexer.getIndex())) {
                     // The loader takes a JSONObject. Creates one from the parser.
                     return indexer.load(new JSONObject(node.toString()), messages);

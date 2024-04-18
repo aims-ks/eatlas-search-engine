@@ -58,7 +58,7 @@ public class SearchPage {
 
         if (reindexIdx != null && reindexId != null) {
             try {
-                AbstractIndexer indexer = config.getIndexer(reindexIdx);
+                AbstractIndexer<?> indexer = config.getIndexer(reindexIdx);
                 indexer.reindex(reindexId, messages);
                 // Wait 1 sec, to be sure the updated document is in the index.
                 Thread.sleep(1000);

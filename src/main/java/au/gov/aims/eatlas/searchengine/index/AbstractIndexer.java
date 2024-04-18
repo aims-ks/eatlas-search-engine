@@ -157,7 +157,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             .put("brokenThumbnailTTL", this.brokenThumbnailTTL);
     }
 
-    public static AbstractIndexer fromJSON(JSONObject json, Messages messages) {
+    public static AbstractIndexer<?> fromJSON(JSONObject json, Messages messages) {
         if (json == null) {
             return null;
         }
@@ -178,8 +178,7 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         SearchEngineState searchEngineState = SearchEngineState.getInstance();
 
-        // TODO Use annotation to find indexer
-        AbstractIndexer indexer = null;
+        AbstractIndexer<?> indexer = null;
         switch(type) {
             case "AtlasMapperIndexer":
                 indexer = AtlasMapperIndexer.fromJSON(index, json);

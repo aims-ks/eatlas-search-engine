@@ -122,9 +122,9 @@ public class Index {
 
         // Reindex
         if (config != null) {
-            List<AbstractIndexer> indexers = config.getIndexers();
+            List<AbstractIndexer<?>> indexers = config.getIndexers();
             if (indexers != null && !indexers.isEmpty()) {
-                for (AbstractIndexer indexer : indexers) {
+                for (AbstractIndexer<?> indexer : indexers) {
                     if (indexer.isEnabled()) {
                         Index.internalReindex(indexer, full, messages);
                     }
@@ -136,7 +136,7 @@ public class Index {
             .put("status", "success");
     }
 
-    public static void internalReindex(AbstractIndexer indexer, boolean full, Messages messages) throws IOException {
+    public static void internalReindex(AbstractIndexer<?> indexer, boolean full, Messages messages) throws IOException {
         LOGGER.debug(String.format("Reindexing %s class %s",
                 indexer.getIndex(), indexer.getClass().getSimpleName()));
 

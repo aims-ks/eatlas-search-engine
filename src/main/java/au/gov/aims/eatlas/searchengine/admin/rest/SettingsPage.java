@@ -121,7 +121,7 @@ public class SettingsPage {
         if (deleteIndex != null) {
             SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-            AbstractIndexer deletedIndexer = null;
+            AbstractIndexer<?> deletedIndexer = null;
             try {
                 deletedIndexer = config.removeIndexer(deleteIndex);
             } catch (Exception ex) {
@@ -163,7 +163,7 @@ public class SettingsPage {
         config.setSearchEngineBaseUrl(FormUtils.getFormStringValue(form, "searchEngineBaseUrl"));
 
         boolean valid = true;
-        for (AbstractIndexer indexer : config.getIndexers()) {
+        for (AbstractIndexer<?> indexer : config.getIndexers()) {
             String index = indexer.getIndex();
 
             String newIndex = FormUtils.getFormStringValue(form, index + "_index");

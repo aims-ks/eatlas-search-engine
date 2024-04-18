@@ -85,7 +85,7 @@ public class Dashboard {
         model.put("imageCacheDirectory", imageCacheDirectory);
 
         Map<String, File> cacheDirectories = new HashMap<>();
-        for (AbstractIndexer indexer : config.getIndexers()) {
+        for (AbstractIndexer<?> indexer : config.getIndexers()) {
             String index = indexer.getIndex();
             File cacheDirectory = ImageCache.getCacheDirectory(index, messages);
             cacheDirectories.put(index, cacheDirectory);

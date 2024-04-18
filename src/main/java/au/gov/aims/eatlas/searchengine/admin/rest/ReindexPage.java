@@ -72,7 +72,7 @@ public class ReindexPage {
 
         // If it's not running, show 100%
         int runningCount = 0;
-        for (AbstractIndexer indexer : config.getIndexers()) {
+        for (AbstractIndexer<?> indexer : config.getIndexers()) {
             if (indexer != null) {
                 Double progress = 1.0;
                 boolean running = false;
@@ -157,7 +157,7 @@ public class ReindexPage {
 
         } else {
             SearchEngineConfig config = SearchEngineConfig.getInstance();
-            AbstractIndexer indexer = config.getIndexer(index);
+            AbstractIndexer<?> indexer = config.getIndexer(index);
 
             try {
                 Index.internalReindex(indexer, fullHarvest, messages);

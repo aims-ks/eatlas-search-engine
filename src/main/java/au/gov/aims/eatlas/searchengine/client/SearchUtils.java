@@ -81,7 +81,7 @@ public class SearchUtils {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         List<String> activeIndexes = new ArrayList<>();
-        for (AbstractIndexer indexer : config.getIndexers()) {
+        for (AbstractIndexer<?> indexer : config.getIndexers()) {
             activeIndexes.add(indexer.getIndex());
         }
 
@@ -187,7 +187,7 @@ public class SearchUtils {
                 // And create the API client
                 SearchClient client = new ESClient(new ElasticsearchClient(transport))
         ) {
-            for (AbstractIndexer indexer : config.getIndexers()) {
+            for (AbstractIndexer<?> indexer : config.getIndexers()) {
                 indexer.refreshCount(client);
             }
         }
@@ -222,11 +222,11 @@ public class SearchUtils {
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-        AbstractIndexer foundIndexer = config.getIndexer(index);
+        AbstractIndexer<?> foundIndexer = config.getIndexer(index);
         return foundIndexer != null;
     }
 
-    public static AbstractIndexer addIndex(String newIndexType) throws Exception {
+    public static AbstractIndexer<?> addIndex(String newIndexType) throws Exception {
         if (newIndexType == null || newIndexType.isEmpty()) {
             return null;
         }
@@ -235,7 +235,7 @@ public class SearchUtils {
 
         String newIndex = null;
         IndexerState state = null;
-        AbstractIndexer newIndexer = null;
+        AbstractIndexer<?> newIndexer = null;
         switch (newIndexType) {
             case "DrupalNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-node");

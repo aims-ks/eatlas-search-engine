@@ -66,7 +66,7 @@ public class SearchEngineConfig {
     private String imageCacheDirectory;
     // Used to craft URL to preview images
     private String searchEngineBaseUrl;
-    private List<AbstractIndexer> indexers;
+    private List<AbstractIndexer<?>> indexers;
 
     private String reindexToken;
 
@@ -141,13 +141,13 @@ public class SearchEngineConfig {
         this.lastModified = this.configFile.lastModified();
     }
 
-    public List<AbstractIndexer> getIndexers() {
+    public List<AbstractIndexer<?>> getIndexers() {
         return this.indexers;
     }
 
-    public List<AbstractIndexer> getEnabledIndexers() {
-        List<AbstractIndexer> enabledIndexers = new ArrayList<>();
-        for (AbstractIndexer indexer : this.indexers) {
+    public List<AbstractIndexer<?>> getEnabledIndexers() {
+        List<AbstractIndexer<?>> enabledIndexers = new ArrayList<>();
+        for (AbstractIndexer<?> indexer : this.indexers) {
             if (indexer.isEnabled()) {
                 enabledIndexers.add(indexer);
             }
@@ -155,9 +155,9 @@ public class SearchEngineConfig {
         return enabledIndexers;
     }
 
-    public AbstractIndexer getIndexer(String index) {
+    public AbstractIndexer<?> getIndexer(String index) {
         if (index != null && this.indexers != null) {
-            for (AbstractIndexer foundIndexer : this.indexers) {
+            for (AbstractIndexer<?> foundIndexer : this.indexers) {
                 if (index.equals(foundIndexer.getIndex())) {
                     return foundIndexer;
                 }
@@ -166,22 +166,22 @@ public class SearchEngineConfig {
         return null;
     }
 
-    public void addIndexer(AbstractIndexer indexer) {
+    public void addIndexer(AbstractIndexer<?> indexer) {
         if (this.indexers == null) {
             this.indexers = new ArrayList<>();
         }
         this.indexers.add(indexer);
     }
 
-    public AbstractIndexer removeIndexer(String index) throws Exception {
-        AbstractIndexer foundIndexer = this.getIndexer(index);
+    public AbstractIndexer<?> removeIndexer(String index) throws Exception {
+        AbstractIndexer<?> foundIndexer = this.getIndexer(index);
         if (foundIndexer != null) {
             return this.removeIndexer(foundIndexer) ? foundIndexer : null;
         }
         return null;
     }
 
-    public boolean removeIndexer(AbstractIndexer indexer) throws Exception {
+    public boolean removeIndexer(AbstractIndexer<?> indexer) throws Exception {
         if (indexer != null && this.indexers != null) {
             SearchEngineState searchEngineState = SearchEngineState.getInstance();
             searchEngineState.removeIndexerState(indexer.getIndex());
@@ -440,7 +440,7 @@ public class SearchEngineConfig {
 
         JSONArray jsonIndexers = new JSONArray();
         if (this.indexers != null && !this.indexers.isEmpty()) {
-            for (AbstractIndexer indexer : this.indexers) {
+            for (AbstractIndexer<?> indexer : this.indexers) {
                 jsonIndexers.put(indexer.toJSON());
             }
         }
@@ -483,7 +483,7 @@ public class SearchEngineConfig {
         if (jsonIndexers != null) {
             for (int i=0; i<jsonIndexers.length(); i++) {
                 JSONObject jsonIndexer = jsonIndexers.optJSONObject(i);
-                AbstractIndexer indexer = AbstractIndexer.fromJSON(jsonIndexer, messages);
+                AbstractIndexer<?> indexer = AbstractIndexer.fromJSON(jsonIndexer, messages);
                 if (indexer != null) {
                     this.addIndexer(indexer);
                 }
