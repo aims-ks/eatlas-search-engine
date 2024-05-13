@@ -85,9 +85,9 @@ public class IndexerTest {
             // Disable HTTPS
             .withEnv("xpack.security.enabled", "false")
             .withEnv("xpack.security.http.ssl.enabled", "false")
-            .waitingFor(Wait.forHttp("/_cluster/health")
-            .forPort(9200) // This refers to the internal port of the container
-            .forStatusCode(200));
+            .waitingFor(Wait.forHttp("/_cluster/health?wait_for_status=green&timeout=1m")
+                .forPort(9200) // This refers to the internal port of the container
+                .forStatusCode(200));
 
     private SearchClient createElasticsearchClient() {
         // Retrieve the dynamically assigned HTTP host address from Testcontainers
@@ -106,21 +106,23 @@ public class IndexerTest {
     @Test
     public void testElasticsearchConnection() throws Exception {
         try (SearchClient client = this.createElasticsearchClient()) {
-            HealthStatus status = client.getHealthStatus();
-
-            Assertions.assertEquals(HealthStatus.Green, status, "The Elastic Search engine health status is not Green.");
+            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green.");
         }
     }
 
     @Test
     public void testEmptyCatalogHasNoBooks() throws Exception {
         try (SearchClient client = this.createElasticsearchClient()) {
+            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
+
             CountResponse countResponse = client.count(new CountRequest.Builder()
                 .index("donotexist")
                 .ignoreUnavailable(true)
                 .build());
 
             Assertions.assertEquals(0, countResponse.count(), "Number of document in the donotexist index is not 0.");
+
+            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
         }
     }
 
@@ -130,6 +132,8 @@ public class IndexerTest {
     @Test
     public void testIndex() throws IOException {
         try (SearchClient client = this.createElasticsearchClient()) {
+            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
+
             GeoNetworkRecord record = new GeoNetworkRecord(
                 "metadata",
                 "00000000-0000-0000-0000-000000000000",
@@ -137,8 +141,11 @@ public class IndexerTest {
                 "3.0"
             );
 
+            String index = "records";
+            client.createIndex(index);
+
             IndexRequest<GeoNetworkRecord> indexRequest = new IndexRequest.Builder<GeoNetworkRecord>()
-                .index("records")
+                .index(index)
                 .id(record.getId())
                 .document(record)
                 .build();
@@ -148,6 +155,7 @@ public class IndexerTest {
             Result result = indexResponse.result();
 
             Assertions.assertEquals(Result.Created, result, "Unexpected result.");
+            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
         }
     }
 
@@ -203,8 +211,11 @@ public class IndexerTest {
         Assertions.assertNotNull(seagrasswatchTextContent, String.format("Can not find the test resource file: %s", seagrasswatchHtmlPath));
 
         try (SearchClient client = this.createElasticsearchClient()) {
+            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
             String index = "links";
             Messages messages = Messages.getInstance(null);
+
+            client.createIndex(index);
 
             // Find the indexer, defined in the config file
             DrupalExternalLinkNodeIndexer drupalExternalLinkIndexer =
@@ -343,6 +354,7 @@ public class IndexerTest {
                 Assertions.fail("Exception thrown while testing the Search API.", ex);
             }
 
+            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
         }
     }
 

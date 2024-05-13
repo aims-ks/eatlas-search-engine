@@ -45,4 +45,5 @@ services:
 networks:
   # Same network as Drupal 7, to be able to use D10 API from D7
   eatlas:
+    external: true
     name: eatlas-drupal7-network
