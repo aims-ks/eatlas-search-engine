@@ -434,17 +434,17 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     public static JsonResponse getJsonResponse(String url, Messages messages) {
-        Connection.Response response = null;
+        EntityUtils.TextResponse response = null;
         try {
-            response = EntityUtils.jsoupExecuteWithRetry(url, messages);
+            response = EntityUtils.jsoupTextExecuteWithRetry(url, messages);
         } catch(Exception ex) {
             messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper configuration file: %s",
                     url), ex);
             return null;
         }
-        Long lastModified = IndexUtils.parseHttpLastModifiedHeader(response, messages);
+        Long lastModified = response.getLastModified();
 
-        String responseStr = response.body();
+        String responseStr = response.getText();
         JSONObject json = null;
         if (responseStr != null && !responseStr.isEmpty()) {
             json = new JSONObject(responseStr);

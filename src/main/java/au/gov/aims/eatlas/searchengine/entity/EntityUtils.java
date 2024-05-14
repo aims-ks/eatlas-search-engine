@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.Consts;
 import org.apache.http.entity.ContentType;
@@ -35,6 +36,10 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -93,6 +98,23 @@ public class EntityUtils {
         }
 
         return response.body();
+    }
+
+    // TODO Use this instead of jsoupExecuteWithRetry where ever possible, to add support for "file" urls.
+    public static TextResponse jsoupTextExecuteWithRetry(String url, Messages messages) throws IOException, InterruptedException {
+        Long lastModified = null;
+        String responseStr = null;
+
+        if (url.startsWith("file:/")) {
+            Path path = Paths.get(URI.create(url));
+            responseStr = Files.readString(path);
+        } else {
+            Connection.Response response = jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages), url);
+            lastModified = IndexUtils.parseHttpLastModifiedHeader(response, messages);
+            responseStr = response.body();
+        }
+
+        return new TextResponse(responseStr, lastModified);
     }
 
     public static Connection.Response jsoupExecuteWithRetry(String url, Messages messages) throws IOException, InterruptedException {
@@ -317,4 +339,21 @@ public class EntityUtils {
         }
     }
 
+    public static class TextResponse {
+        private final Long lastModified;
+        private final String text;
+
+        public TextResponse(String text, Long lastModified) {
+            this.lastModified = lastModified;
+            this.text = text;
+        }
+
+        public Long getLastModified() {
+            return this.lastModified;
+        }
+
+        public String getText() {
+            return this.text;
+        }
+    }
 }

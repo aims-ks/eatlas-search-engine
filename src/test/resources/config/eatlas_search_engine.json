@@ -2,11 +2,21 @@
   "imageCacheDirectory": "/tmp/searchengine-data/",
   "indexers": [
     {
-      "atlasMapperClientUrl": "https://domain.com",
+      "atlasMapperClientUrl": "file:/to/be/replace/by/unit/test",
       "baseLayerUrl": "https://domain.com/maps/wms?SERVICE=WMS&REQUEST=GetMap&LAYERS=ea-be:World_Bright-Earth-e-Atlas-basemap&FORMAT=image/jpeg&TRANSPARENT=false&VERSION=1.1.1&SRS=EPSG:4326&BBOX={BBOX}&WIDTH={WIDTH}&HEIGHT={HEIGHT}",
       "atlasMapperVersion": "2.3.0",
       "index": "atlasmapper",
       "type": "AtlasMapperIndexer",
+      "enabled": true
+    },
+    {
+      "drupalIndexedFields": "body",
+      "drupalVersion": "10",
+      "drupalGeoJSONField": "field_geojson",
+      "index": "blocks",
+      "drupalUrl": "file:/to/be/replace/by/unit/test",
+      "drupalBlockType": "basic",
+      "type": "DrupalBlockIndexer",
       "enabled": true
     },
 
