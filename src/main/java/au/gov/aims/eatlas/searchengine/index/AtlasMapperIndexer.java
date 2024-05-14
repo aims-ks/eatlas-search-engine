@@ -216,6 +216,16 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         JSONObject jsonMainConfig = mainResponse.getJson();
         JSONObject jsonLayersConfig = layersResponse.getJson();
 
+        this.indexLayers(client, messages, jsonMainConfig, jsonLayersConfig, refreshThumbnails);
+    }
+
+    public void indexLayers(
+            SearchClient client,
+            Messages messages,
+            JSONObject jsonMainConfig,
+            JSONObject jsonLayersConfig,
+            boolean refreshThumbnails) {
+
         long harvestStart = System.currentTimeMillis();
 
         Set<String> usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
@@ -619,14 +629,16 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                     oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(),
                     AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL(), this.messages);
 
-            boolean thumbnailNeedsUpdate = newLayer || (outdatedThumbnail && this.refreshThumbnails);
-            if (thumbnailNeedsUpdate) {
-                AtlasMapperIndexer.updateThumbnail(
-                        this.atlasMapperLayerId, AtlasMapperIndexer.this.getIndex(),
-                        jsonLayer, this.baseLayerUrl, this.jsonMainConfig,
-                        layerEntity, this.messages);
-            } else {
-                layerEntity.useCachedThumbnail(oldLayer);
+            if (!jsonMainConfig.optBoolean("testConfiguration", false)) {
+                boolean thumbnailNeedsUpdate = newLayer || (outdatedThumbnail && this.refreshThumbnails);
+                if (thumbnailNeedsUpdate) {
+                    AtlasMapperIndexer.updateThumbnail(
+                            this.atlasMapperLayerId, AtlasMapperIndexer.this.getIndex(),
+                            jsonLayer, this.baseLayerUrl, this.jsonMainConfig,
+                            layerEntity, this.messages);
+                } else {
+                    layerEntity.useCachedThumbnail(oldLayer);
+                }
             }
 
             // Keep a list of used thumbnails, so we can delete unused ones at the end of the indexation.

@@ -54,7 +54,6 @@ import co.elastic.clients.transport.endpoints.BooleanResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ESClient implements SearchClient {
@@ -246,7 +245,7 @@ public class ESClient implements SearchClient {
 
     @Override
     public RefreshResponse refresh(String ... indices) throws IOException {
-        return this.client.indices().refresh(new RefreshRequest.Builder().index(Arrays.asList(indices)).build());
+        return this.client.indices().refresh(new RefreshRequest.Builder().index(List.of(indices)).build());
     }
 
     @Override

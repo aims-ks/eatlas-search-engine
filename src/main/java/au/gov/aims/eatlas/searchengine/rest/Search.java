@@ -70,7 +70,6 @@ import org.locationtech.jts.io.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Path("/search/v1")
@@ -262,7 +261,7 @@ public class Search {
         SearchRequest.Builder sourceBuilder = Search.getBaseSearchQuery(searchText, wkt);
 
         return new CountRequest.Builder()
-                .index(Arrays.asList(indexes))
+                .index(List.of(indexes))
                 .ignoreUnavailable(true)
                 .allowNoIndices(true)
                 .query(sourceBuilder.build().query())
@@ -339,7 +338,7 @@ public class Search {
                 .from(from) // Used to continue the search (get next page)
                 .size(size) // Number of results to return. Default = 10
                 .highlight(highlightBuilder.build())
-                .index(Arrays.asList(indexes))
+                .index(List.of(indexes))
                 .ignoreUnavailable(true)
                 .allowNoIndices(true)
                 .build();
