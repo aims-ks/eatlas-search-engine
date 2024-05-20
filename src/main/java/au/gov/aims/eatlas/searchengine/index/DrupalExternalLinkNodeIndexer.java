@@ -155,8 +155,17 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             return null;
         }
         JSONObject jsonAttributes = jsonApiNode == null ? null : jsonApiNode.optJSONObject("attributes");
-        JSONObject jsonExternalLink = jsonAttributes == null ? null : jsonAttributes.optJSONObject(externalLinkField);
-        return jsonExternalLink == null ? null : jsonExternalLink.optString("uri", null);
+        if (jsonAttributes == null) {
+            return null;
+        }
+        JSONObject jsonExternalLink = jsonAttributes.optJSONObject(externalLinkField);
+        if (jsonExternalLink == null) {
+            // URL provided as a String
+            return jsonAttributes.optString(externalLinkField, null);
+        }
+
+        // URL provided as a URL field
+        return jsonExternalLink.optString("uri", null);
     }
 
     private static String getDrupalContentOverwrite(JSONObject jsonApiNode, String drupalContentOverwriteField) {
