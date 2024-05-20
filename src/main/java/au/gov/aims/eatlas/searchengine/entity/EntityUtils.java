@@ -40,8 +40,10 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.Map;
 
 public class EntityUtils {
@@ -55,11 +57,9 @@ public class EntityUtils {
         LOGGER.debug(String.format("Harvesting GET URL body: %s", url));
 
         // Get a HTTP document.
-        // NOTE: Body in this case is the body of the response.
-        //     It's the entire HTML document, not just the content
-        //     of the HTML body element.
-        return jsoupExecuteWithRetry(url, messages)
-                .body();
+        TextResponse textResponse = EntityUtils.jsoupTextExecuteWithRetry(url, messages);
+
+        return textResponse.getText();
     }
 
     public static String harvestPostURL(String url, Map<String, String> dataMap, Messages messages) throws IOException, InterruptedException {
@@ -106,8 +106,28 @@ public class EntityUtils {
         String responseStr = null;
 
         if (url.startsWith("file:/")) {
-            Path path = Paths.get(URI.create(url));
-            responseStr = Files.readString(path);
+            // This is used for Unit tests
+
+            // Convert the URL into a proper file URL
+            String fileUrl = url.replaceAll("[^a-zA-Z0-9 :/_.-]", "_");
+
+            Path path = Paths.get(URI.create(fileUrl));
+
+            try {
+                responseStr = Files.readString(path);
+            } catch (IOException ex) {
+                throw new IOException(
+                        String.format("Error reading the file: %s", fileUrl), ex);
+            }
+
+            // Get file last modified
+            try {
+                BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+                Instant lastModifiedTime = attributes.lastModifiedTime().toInstant();
+                lastModified = lastModifiedTime.toEpochMilli();
+            } catch (IOException ex) {
+                // Can not get the file last modified. Fallback to "null"...
+            }
         } else {
             Connection.Response response = jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages), url);
             lastModified = IndexUtils.parseHttpLastModifiedHeader(response, messages);

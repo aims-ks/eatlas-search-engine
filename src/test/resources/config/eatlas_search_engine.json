@@ -19,6 +19,19 @@
       "type": "DrupalBlockIndexer",
       "enabled": true
     },
+    {
+      "drupalPreviewImageField": "field_image",
+      "drupalContentOverwriteField": "field_content_overwrite",
+      "drupalExternalUrlField": "field_external_link",
+      "drupalVersion": "10",
+      "drupalNodeType": "external_link",
+      "index": "links",
+      "drupalUrl": "file:/to/be/replace/by/unit/test",
+      "type": "DrupalExternalLinkNodeIndexer",
+      "enabled": true
+    },
+
+
 
     {
       "drupalPreviewImageField": "field_preview",

@@ -44,7 +44,7 @@ public class AtlasMapperIndexerTest extends IndexerTestBase {
             // Check indexed documents
             SearchResults results = null;
             try {
-                String q = "coral"; // Search for the word "of", present in both external link entities
+                String q = "coral"; // Search for the word "coral", present in multiple layers
                 Integer start = 0;
                 Integer hits = 50; // There is only 2 documents in the index
                 String wkt = null; // No geographic filtering

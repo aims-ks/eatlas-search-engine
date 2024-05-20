@@ -1,0 +1,2 @@
+- Indexer tests for each class
+- Polygon search test
