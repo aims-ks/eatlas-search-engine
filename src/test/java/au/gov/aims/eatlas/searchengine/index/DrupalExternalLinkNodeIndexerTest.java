@@ -37,8 +37,6 @@ public class DrupalExternalLinkNodeIndexerTest extends IndexerTestBase {
 
             drupalExternalLinkNodeIndexer.internalIndex(client, null, messages);
 
-// TODO Index HTML from saved HTML files in test resources
-
             // Wait for ElasticSearch to finish its indexation
             client.refresh(index);
 

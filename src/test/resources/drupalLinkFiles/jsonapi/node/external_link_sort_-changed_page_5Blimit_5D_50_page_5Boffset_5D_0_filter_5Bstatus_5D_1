@@ -12,105 +12,10 @@
   "data": [
     {
       "type": "node--external_link",
-      "id": "6c1babf7-5599-40e8-8cdc-d4099593f100",
-      "links": {
-        "self": {
-          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100?resourceVersion=id%3A50727"
-        }
-      },
-      "attributes": {
-        "drupal_internal__nid": 50687,
-        "drupal_internal__vid": 50727,
-        "langcode": "en",
-        "revision_timestamp": "2024-04-17T00:46:48+00:00",
-        "status": true,
-        "title": "Corals of the World (AIMS)",
-        "created": "2024-04-17T00:46:48+00:00",
-        "changed": "2024-04-17T00:46:48+00:00",
-        "promote": false,
-        "sticky": false,
-        "default_langcode": true,
-        "revision_translation_affected": true,
-        "path": {
-          "alias": null,
-          "pid": null,
-          "langcode": "en"
-        },
-        "field_content_overwrite": null,
-        "field_external_link": "http:\/\/www.coralsoftheworld.org\/",
-        "field_geojson": null
-      },
-      "relationships": {
-        "node_type": {
-          "data": {
-            "type": "node_type--node_type",
-            "id": "383fc6a2-87b8-400d-aaaa-7aa1d2924ebf",
-            "meta": {
-              "drupal_internal__target_id": "external_link"
-            }
-          },
-          "links": {
-            "related": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/node_type?resourceVersion=id%3A50727"
-            },
-            "self": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/relationships\/node_type?resourceVersion=id%3A50727"
-            }
-          }
-        },
-        "revision_uid": {
-          "data": {
-            "type": "user--user",
-            "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
-            "meta": {
-              "drupal_internal__target_id": 1
-            }
-          },
-          "links": {
-            "related": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/revision_uid?resourceVersion=id%3A50727"
-            },
-            "self": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/relationships\/revision_uid?resourceVersion=id%3A50727"
-            }
-          }
-        },
-        "uid": {
-          "data": {
-            "type": "user--user",
-            "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
-            "meta": {
-              "drupal_internal__target_id": 1
-            }
-          },
-          "links": {
-            "related": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/uid?resourceVersion=id%3A50727"
-            },
-            "self": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/relationships\/uid?resourceVersion=id%3A50727"
-            }
-          }
-        },
-        "field_preview": {
-          "data": null,
-          "links": {
-            "related": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/field_preview?resourceVersion=id%3A50727"
-            },
-            "self": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/relationships\/field_preview?resourceVersion=id%3A50727"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "node--external_link",
       "id": "cbfd684d-56a2-490d-9864-46520fd1359d",
       "links": {
         "self": {
-          "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d?resourceVersion=id%3A50726"
+          "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d?resourceVersion=id%3A50726"
         }
       },
       "attributes": {
@@ -121,7 +26,7 @@
         "status": true,
         "title": "Tropical Seagrass Identification (Seagrass-Watch)",
         "created": "2024-04-17T00:46:07+00:00",
-        "changed": "2024-04-17T00:46:07+00:00",
+        "changed": "2024-05-21T02:59:53+00:00",
         "promote": false,
         "sticky": false,
         "default_langcode": true,
@@ -131,7 +36,7 @@
           "pid": null,
           "langcode": "en"
         },
-        "field_content_overwrite": null,
+        "field_content_overwrite": "Skip to content Main Menu HOME ABOUTMenu Toggle SEAGRASS-WATCH GLOBAL MONITORING TEAMMenu Toggle PROFILE CAPACITY SERVICES SEAGRASSMenu Toggle WHAT IS SEAGRASS IS IT SEAGRASS IMPORTANCE THREATS SEAGRASS CONTRIBUTIONS GLOBAL MONITORINGMenu Toggle REGISTRATION GETTING STARTEDMenu Toggle STEPS TO TAKE TRAINING CALENDAR DATA COLLECTIONMenu Toggle MONITORING MAPPING QAQC DATA SUBMISSION STATUS REPORTS PROJECTSMenu Toggle GBR MARINE MONITORING WOPPABURRA (coming soon) PAST PROJECTS RESOURCESMenu Toggle ID SEAGRASS MANUALS GUIDES DATASHEETS E LIBRARY E LEARNING SEAGRASS HERBARIUM FREQUENT QUESTIONS EXPLOREMenu Toggle DUGONG GREEN SEA TURTLE SEAGRASS MEADOW (coming soon) MEDIAMenu Toggle NEWS MAGAZINE EBULLETIN GALLERY VIDEOS PODS n MORE CITIZEN SCIENCEMenu Toggle SEAGRASS SPOTTER SEAGRASS EDUCATION SHOP CONTACTMenu Toggle CONTACT US PRIVACY POLICY GUIDELINES Search for:Search Button Identifying Tropical Seagrass What are Seagrass Seagrasses are a functional group, not a taxonomic group, of angiosperms (flowering plants), i.e. various seagrass families do not necessary have to be closely related. Debate continues in the literature and between seagrass taxonomists on the details (particularly below sub class) on the correct classification. For example, the Angiosperm Phylogeny Group published several papers recommending angiosperm classification, and is considered by many to represent the \u201cstandard\u201d. However many prominent seagrass taxonomists disagree. From the advice of Dr Don Les (University of Connecticut) and Assoc. Prof Michelle Waycott (The University of Adelaide), this is the best we have been able to compile: Kingdom: Plantae Division: Magnoliophyta (Angiosperms) Class: Liliopsida Sub class: Alismatidae Order: Alismatales Family: Hydrocharitaceae Order: Potamogetonales Family: Cymodoceaceae, Posidoniaceae, Potamogetonaceae, Ruppiaceae, Zannichelliaceae and Zosteraceae Please note: This classification is an opinion of Seagrass-Watch HQ based on the best information available. Seagrass-Watch HQ recommends that users exercise their own skill and care with respect to their use of this classification and that users carefully evaluate the accuracy, currency, completeness and relevance of the material on the web site for their purposes. 0 \u00b0C Seawater temperatures above 40\u00baC will stress tropical seagrass. Death occurs at temperatures above 43\u00baC How to identify seagrass Seagrasses are unique flowering plants that have evolved to live in sea water. Seagrasses belong to a group of plants known as angiosperms(flowering plants). Various common names are applied to seagrass species, such as turtle grass, eelgrass, tape grass, spoon grass and shoal grass. These names are not consistently applied across countries. They are called \u201cseagrass\u201d because most have ribbon\u2010like, grassy leaves. There are many different kinds of seagrasses and some do not look like grass at all. Seagrass range from the size of your fingernail to plants with leaves as long as 7 metres. Like terrestrial (land living) plants, a seagrass can be divided into its leaves (which contain veins), stem, roots (buried in the substrate) and reproductive parts such as flowers and fruits. Algae do not have veins in their leaves nor do they possess roots (anchoring to the surface of the substrate by a holdfast) or produce flowers or seeds (more info). Some of the shapes and sizes of leaves of different species of seagrass include an oval (paddle or clover) shape, a fern shape, a long spaghetti like leaf and a ribbon shape. Species that have a paddle or fern shaped leaf are called Halophila. Ones that have a ribbon shaped leaf are the Cymodocea, Thalassia, Thalassodendron, Halodule and Zostera. Spaghetti\u2010like seagrass is called Syringodium. At the base of a leaf is a sheath, which protects young leaves. At the other end of a leaf is the tip, which can be rounded or pointed. The vertical stem, found in some species, is the upright axis of the plant from which leaves arise (attach). The remnants of leaf attachment are seen as scars. The roots and horizontal stems (rhizomes) of seagrass are often buried in sand or mud. They anchor the plant, store carbohydrates and absorb nutrients. Roots can be simple or branching and all have fine hairs to help absorb nutrients. Rhizomes are formed in segments with leaves or vertical stems rising from the joins, called nodes or scars. Composite illustration demonstrating morphological features used to distinguish main seagrass taxonomic groups. By Len McKenzie (2008). Sections between the nodes are called internodes. Seagrasses depend upon the growth of rhizomes to increase the area they occupy. This vegetative growth is the most common mode of growth for seagrasses. Although the rhizome mainly runs horizontally, some lateral branches are more or less erect and bear leaves (erect shoots). Sometimes the leaves are on a special type of stalk, called a petiole. Identifying Tropical Indo-Pacific Seagrasses Cymodocea rotundata (CR) Flat, strap-like leaves 2-4mm wide Rounded, smooth leaf tip Smooth rhizome Scars from well developed leaf sheaths form a continuous ring around the stem Found on shallow reef flats Oceana serrulata (CS) Linear strap-like leaves, 5-9mm wide Serrated leaf tip Leaf sheath is broadly triangular with a narrow base Leaf scars do not form a continuous ring around the stem Found on shallow subtidal reef flats and sand banks Please note: Revision of Cymodoceaceae has resulted in recognition of four-genera and the renaming of Cymodocea serrulata to Oceana serrulata (R.Brown) Byng \u0026 Christenhusz 2018. Synonyms of this species include: Cymodocea serrulata and Caulinia serrulata. See Christenhusz et al. (2018) More information Enhalus acoroides (EA) Very long ribbon-like leaves 30-150 cm long Leaves with inrolled leaf margins Thick rhizome with long black bristles and cord-like roots Found on shallow\/intertidal sand\/mud banks (often adjacent to mangrove forests) Halodule pinifolia (HP) Fine, delicate leaves up to 20cm long 1 central vein Black central vein splits into two at the rounded leaf tip Usually pale rhizome, with clean black leaf scars Found on intertidal sand banks Halodule uninervis (HU) Usually larger than Halodule pinifolia Trident leaf tip 1 central longitudinal vein Rhizome usually pale ivory, with clean black leaf scars Dugong preferred food Found on shallow\/intertidal sand or mud banks Halophila capricorni (HC) Small oval leaves that are hairy on one side Central vein on leaf with 9-14 cross veins Usually found deeper than 10m in coral environments proximal to coral reefs Only found in subtidal Australian waters (\u003E10m) proximal to coral reefs Halophila decipiens (HD) Small oval leaf blade 1-2.5cm long 6-8 cross veins Leaf hairs on both sides Leaves usually longer than wider Found at subtidal depths (\u003E10m) Halophila ovalis (HO) Oval shaped leaves in pairs 8 or more cross veins No hairs on leaf surface Preferred dugong food Common early colonising species Found from intertidal to subtidal depths Halophila minor (HM) Less than 8 pairs of cross veins Small oval leaves occurring in pairs Wedge-shaped leaf sheath Found on shallow\/intertidal sand flats Halophila spinulosa (HS) Fern like Leaves arranged in opposite pairs Erect shoot up to 15cm long Found at subtidal depths (\u003E10m Halophila tricostata (HT) Erect shoots 8-18cm long Leaves with 3 veins 2-3 leaves at each node Leaves \u201cwhorl\u201d around stem Found at subtidal depths (\u003E10m) Endemic to Queensland, Australia Syringodium isoetifolium (SI) Cylindrical in cross section (spaghetti like) Leaf tip tapers to a point Leaves 7-30cm long Found on shallow subtidal reef flats and sand banks Thalassia hemprichii (TH) Short black bars of tannin cells in leaf blade Thick rhizome with scars between shoots Hooked\/curved shaped leaves Leaves 10-40cm long Common on shallow reef flats Thalassodendron ciliatum (TC) Cluster of ribbon-like curved leaves at the end of an erect stem Round, serrated leaf tip Tough, woody rhizomes with scars from successive shoots Very coiled, branched roots Typically found in rocky areas with strong reef crests Nanozostera muelleri (ZC) Long strap-shaped leaves 5 longitudinal veins Cross veins which form a mesh across leaf blade Rounded leaf tip Leaf grows straight from rhizome ie. no stem Found on shallow and intertidal mud\/sand flats Please note: Advances in research reveal multiple lines of evidence for conserving four distinct genera in the family Zosteraceae and the reclassification of Zostera muelleri to Nanozostera muelleri (Irmisch ex Ascherson) Tomlinson \u0026 Posluszny, 2001. Synonyms of this species include: Zostera muelleri subsp. capricorni; Zostera muelleri subsp. muelleri; and Zostera capricorni. See Sullivan \u0026 Short (2023) Recommended Reads Field Guide to Seagrasses of the Red Sea Download El Shaffai A. (2016). Field Guide to Seagrasses of the Red Sea. Rouphael, A.and Abdulla, A., eds. First Edition56pp. [2.8Mb] Guide to the identification of seagrasses in the GBR Download Lanyon J (1986). Guide to the identification of seagrasses in the Great Barrier Reef region. Great Barrier Reef Marine Park Authority Special 54pp. [3.3Mb] A guide to tropical seagrasses of the Indo-West Pacific Waycott M, McMahon K, Mellors J, Calladine A and Kleine D (2004) A guide to tropical seagrasses of the Indo-West Pacific. James Cook University, Townsville. 72pp. NAVIGATE ABOUT US GETTING STARTED TRAINING MANUALS\/FIELD GUIDES\/DATASHEETS QAQC CONTACT local eyes, global wise Seagrass-Watch raises awareness on the condition and trend of seagrass ecosystems. The Seagrass-Watch program has a simple philosophy of involving those who are concerned, and involves collaboration\/partnerships between scientists, community and the data users Acknowledgement of Country Seagrass-Watch acknowledges First Nations People as the first inhabitants of nations, and thank the traditional custodians of the sea country on which the monitoring is conducted. We pay our respects to ancestors and Elders, past, present and emerging. Contact us Seagrass-Watch HQ, PO Box 4, Clifton Beach, QLD 4879, AUSTRALIA EMAIL: Click here UPDATES Register FOLLOW US Instagram Mastodon Facebook Youtube Twitter Envelope PRIVACY POLICY We understand and appreciate that visitors and users of this website are concerned about their privacy and the confidentiality and security of any information that may be provided to us. More information Privacy Policy Site map Copyright \u00a9 2024 Seagrass-Watch This website uses cookies to improve your experience. We\u0027ll assume you\u0027re ok with this, but you can opt-out if you wish. Cookie settingsACCEPTRead More Privacy \u0026 Cookies Policy Close Privacy Overview This website uses cookies to improve your experience while you navigate through the website. Out of these cookies, the cookies that are categorized as necessary are stored on your browser as they are essential for the working of basic functionalities of the website. We also use third-party cookies that help us analyze and understand how you use this website. These cookies will be stored in your browser only with your consent. You also have the option to opt-out of these cookies. But opting out of some of these cookies may have an effect on your browsing experience. Necessary Necessary Always Enabled Necessary cookies are absolutely essential for the website to function properly. This category only includes cookies that ensures basic functionalities and security features of the website. These cookies do not store any personal information. SAVE \u0026 ACCEPT",
         "field_external_link": "https:\/\/www.seagrasswatch.org\/idseagrass\/",
         "field_geojson": null
       },
@@ -146,10 +51,10 @@
           },
           "links": {
             "related": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/node_type?resourceVersion=id%3A50726"
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/node_type?resourceVersion=id%3A50726"
             },
             "self": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/node_type?resourceVersion=id%3A50726"
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/node_type?resourceVersion=id%3A50726"
             }
           }
         },
@@ -163,10 +68,10 @@
           },
           "links": {
             "related": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/revision_uid?resourceVersion=id%3A50726"
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/revision_uid?resourceVersion=id%3A50726"
             },
             "self": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/revision_uid?resourceVersion=id%3A50726"
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/revision_uid?resourceVersion=id%3A50726"
             }
           }
         },
@@ -180,10 +85,10 @@
           },
           "links": {
             "related": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/uid?resourceVersion=id%3A50726"
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/uid?resourceVersion=id%3A50726"
             },
             "self": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/uid?resourceVersion=id%3A50726"
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/uid?resourceVersion=id%3A50726"
             }
           }
         },
@@ -191,10 +96,105 @@
           "data": null,
           "links": {
             "related": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/field_preview?resourceVersion=id%3A50726"
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/field_preview?resourceVersion=id%3A50726"
             },
             "self": {
-              "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/field_preview?resourceVersion=id%3A50726"
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/cbfd684d-56a2-490d-9864-46520fd1359d\/relationships\/field_preview?resourceVersion=id%3A50726"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "node--external_link",
+      "id": "6c1babf7-5599-40e8-8cdc-d4099593f100",
+      "links": {
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100?resourceVersion=id%3A50727"
+        }
+      },
+      "attributes": {
+        "drupal_internal__nid": 50687,
+        "drupal_internal__vid": 50727,
+        "langcode": "en",
+        "revision_timestamp": "2024-04-17T00:46:48+00:00",
+        "status": true,
+        "title": "Corals of the World (AIMS)",
+        "created": "2024-04-17T00:46:48+00:00",
+        "changed": "2024-05-21T02:59:26+00:00",
+        "promote": false,
+        "sticky": false,
+        "default_langcode": true,
+        "revision_translation_affected": true,
+        "path": {
+          "alias": null,
+          "pid": null,
+          "langcode": "en"
+        },
+        "field_content_overwrite": "Donate Go Toggle navigation Corals of the World Home Home Video tour History and scope What\u0027s new Future directions Website policy Versioning Authors Citation guide Acknowledgements Support this website Coral Taxonomy Taxon Finder Overview of Coral Taxonomy Other taxonomic issues Type species Coral Geographic Coral Geographic interactive map Overview of Coral Distributions Methodology and data limitations Factsheets Species Factsheets Ecoregion Factsheets Resources Corals and Coral Reefs Reefs Classification Evolution Taxonomy Reef environments Coral structure and growth Distributions, diversity and endemism Algal symbiosis and mass bleaching Reproduction Mesophotic environments Bibliography Glossary Help FAQs Login Home Version 0.01 Beta Please help us to develop this website Donate Quick Links Home Video tour What\u0027s new History and Scope Versioning Authors and citation guide Acknowledgements Website policy Coral Taxonomy Taxon Finder Overview of taxonomy Coral Geographic Interactive map Overview of distributions Methodology Factsheets Species Factsheets Ecoregion Factsheets Resources Corals and coral reefs Bibliography Glossary Future directions Coral ID Coral Enquirer To find out more about the website and its tools in general, access the Video tour. To go direct to a tool, click on its icon Welcome to Corals of the World Information, identification, distribution and taxonomy of reef building corals Find your species Coral Taxonomy Examine distributions Coral Geographic Species Factsheets Video tour What\u2019s new? In the pipeline Have your say Feedback Cite this page Terms of use Privacy policy Notification We are currently working on a significant update to the taxonomy in Corals of the World. **We would welcome images of rare and unusual species and of location-specific variants of common species. Especially useful images are those where two similar species are present side by side. If you have suitable images that you are prepared to share with us and which you are happy to have published on Corals of the World, please contact us via the Feedback form (bottom banner). **As we are updating the \u0022similar species\u0022 section of the factsheets we would be interested to know what species our users are finding difficult to distinguish. Where there is sufficient need we will include those species pairs in the update. **Please also inform us of any errors or problems with website function so that these can be fixed. --------------------------------------------------------------- Please cite this website as indicated on the bottom banner. (Note that from 1 October 2021 no changes will be made to critical data on this Beta version until the new release at which time this Beta version will be archived for future access.) --------------------------------------------------------------- Close",
+        "field_external_link": "http:\/\/www.coralsoftheworld.org\/",
+        "field_geojson": null
+      },
+      "relationships": {
+        "node_type": {
+          "data": {
+            "type": "node_type--node_type",
+            "id": "383fc6a2-87b8-400d-aaaa-7aa1d2924ebf",
+            "meta": {
+              "drupal_internal__target_id": "external_link"
+            }
+          },
+          "links": {
+            "related": {
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/node_type?resourceVersion=id%3A50727"
+            },
+            "self": {
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/relationships\/node_type?resourceVersion=id%3A50727"
+            }
+          }
+        },
+        "revision_uid": {
+          "data": {
+            "type": "user--user",
+            "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          },
+          "links": {
+            "related": {
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/revision_uid?resourceVersion=id%3A50727"
+            },
+            "self": {
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/relationships\/revision_uid?resourceVersion=id%3A50727"
+            }
+          }
+        },
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          },
+          "links": {
+            "related": {
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/uid?resourceVersion=id%3A50727"
+            },
+            "self": {
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/relationships\/uid?resourceVersion=id%3A50727"
+            }
+          }
+        },
+        "field_preview": {
+          "data": null,
+          "links": {
+            "related": {
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/field_preview?resourceVersion=id%3A50727"
+            },
+            "self": {
+              "href": "http:\/\/domain.com\/jsonapi\/node\/external_link\/6c1babf7-5599-40e8-8cdc-d4099593f100\/relationships\/field_preview?resourceVersion=id%3A50727"
             }
           }
         }
@@ -203,7 +203,7 @@
   ],
   "links": {
     "self": {
-      "href": "http:\/\/localhost:1022\/jsonapi\/node\/external_link?filter%5Bstatus%5D=1\u0026page%5Blimit%5D=50\u0026page%5Boffset%5D=0\u0026sort=-changed"
+      "href": "http:\/\/domain.com\/jsonapi\/node\/external_link?filter%5Bstatus%5D=1\u0026page%5Blimit%5D=50\u0026page%5Boffset%5D=0\u0026sort=-changed"
     }
   }
 }
