@@ -52,6 +52,13 @@
       "type": "DrupalNodeIndexer",
       "enabled": true
     },
+    {
+      "geoNetworkUrl": "file:/to/be/replace/by/unit/test",
+      "index": "metadata_records",
+      "type": "GeoNetworkIndexer",
+      "geoNetworkVersion": "3",
+      "enabled": true
+    },
 
 
 

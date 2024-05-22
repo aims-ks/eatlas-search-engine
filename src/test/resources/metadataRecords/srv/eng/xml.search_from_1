@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response from="1" to="6" selected="0" maxPageSize="100">
+    <summary count="6" type="local">
+        <types>
+            <type count="340" name="dataset" label="Dataset"/>
+            <type count="82" name="fieldSession" label="Field session"/>
+            <type count="2" name="collectionSession" label="Collection session"/>
+            <type count="2" name="service" label="Service"/>
+            <type count="1" name="application" label="application"/>
+        </types>
+        <topicCats>
+            <topicCat count="239" name="biota" label="Biota"/>
+            <topicCat count="85" name="oceans" label="Oceans"/>
+            <topicCat count="37" name="boundaries" label="Boundaries"/>
+            <topicCat count="33" name="environment" label="Environment"/>
+            <topicCat count="17" name="imageryBaseMapsEarthCover" label="Imagery base maps earth cover"/>
+            <topicCat count="15" name="society" label="Society"/>
+            <topicCat count="10" name="elevation" label="Elevation"/>
+            <topicCat count="9" name="planningCadastre" label="Planning cadastre"/>
+            <topicCat count="5" name="geoscientificInformation" label="Geoscientific information"/>
+            <topicCat count="5" name="climatologyMeteorologyAtmosphere" label="Climatology, meteorology, atmosphere"/>
+            <topicCat count="3" name="economy" label="Economy"/>
+            <topicCat count="2" name="transportation" label="Transportation"/>
+            <topicCat count="1" name="location" label="Location"/>
+            <topicCat count="1" name="health" label="Health"/>
+            <topicCat count="1" name="structure" label="Structure"/>
+        </topicCats>
+        <inspireThemes/>
+        <inspireThemesWithAc/>
+        <inspireThemesURI/>
+        <keywords>
+            <keyword count="179" name="marine" label="marine"/>
+            <keyword count="52" name="MARINE" label="MARINE"/>
+            <keyword count="50" name="National Environmental Science Program (NESP) Marine and Coastal Hub"
+                     label="National Environmental Science Program (NESP) Marine and Coastal Hub"/>
+            <keyword count="49" name="Coastal Waters (Australia)" label="Coastal Waters (Australia)"/>
+            <keyword count="9" name="World" label="World"/>
+            <keyword count="6" name="Human Dimensions | Boundaries | Administrative Divisions"
+                     label="Human Dimensions | Boundaries | Administrative Divisions"/>
+            <keyword count="4" name="National dataset" label="National dataset"/>
+            <keyword count="4" name="ocean acidification" label="ocean acidification"/>
+            <keyword count="4" name="Oceans | Bathymetry | Seafloor Topography"
+                     label="Oceans | Bathymetry | Seafloor Topography"/>
+            <keyword count="4" name="Marine" label="Marine"/>
+            <keyword count="3" name="GIS" label="GIS"/>
+            <keyword count="3" name="Oceans | Marine Biology | Marine Mammals"
+                     label="Oceans | Marine Biology | Marine Mammals"/>
+            <keyword count="3" name="Oceans | Marine Environment Monitoring"
+                     label="Oceans | Marine Environment Monitoring"/>
+            <keyword count="2" name="WMS" label="WMS"/>
+            <keyword count="2" name="GeoServer" label="GeoServer"/>
+        </keywords>
+        <orgNames>
+            <orgName count="408" name="Australian Institute of Marine Science (AIMS)"
+                     label="Australian Institute of Marine Science (AIMS)"/>
+            <orgName count="24" name="Australian Institute of Marine Science"
+                     label="Australian Institute of Marine Science"/>
+            <orgName count="19" name="TropWATER, James Cook University" label="TropWATER, James Cook University"/>
+            <orgName count="19" name="James Cook University" label="James Cook University"/>
+            <orgName count="11" name="National Native Title Tribunal" label="National Native Title Tribunal"/>
+            <orgName count="11" name="CSIRO Land and Water" label="CSIRO Land and Water"/>
+            <orgName count="8" name="Wet Tropics Management Authority" label="Wet Tropics Management Authority"/>
+            <orgName count="8" name="Great Barrier Reef Marine Park Authority"
+                     label="Great Barrier Reef Marine Park Authority"/>
+            <orgName count="7" name="Charles Darwin University" label="Charles Darwin University"/>
+            <orgName count="6" name="Commonwealth Scientific and Industrial Research Organisation (CSIRO)"
+                     label="Commonwealth Scientific and Industrial Research Organisation (CSIRO)"/>
+            <orgName count="6" name="Australian Research Council Centre of Excellence for Coral Reef Studies (JCU)"
+                     label="Australian Research Council Centre of Excellence for Coral Reef Studies (JCU)"/>
+            <orgName count="6" name="School of Earth and Environmental Sciences, James Cook University (JCU)"
+                     label="School of Earth and Environmental Sciences, James Cook University (JCU)"/>
+            <orgName count="5" name="TropWATER, James Cook University (JCU)"
+                     label="TropWATER, James Cook University (JCU)"/>
+            <orgName count="5"
+                     name="Ecosystem Sciences, Commonwealth Scientific and Industrial Research Organisation (CSIRO)"
+                     label="Ecosystem Sciences, Commonwealth Scientific and Industrial Research Organisation (CSIRO)"/>
+            <orgName count="5" name="TropWATER, James Cook University (TropWATER/JCU)"
+                     label="TropWATER, James Cook University (TropWATER/JCU)"/>
+            <orgName count="5" name="Griffith Institute for Tourism, Griffith University"
+                     label="Griffith Institute for Tourism, Griffith University"/>
+            <orgName count="5" name="University of Queensland" label="University of Queensland"/>
+            <orgName count="5" name="School of Marine and Tropical Biology, James Cook University (JCU)"
+                     label="School of Marine and Tropical Biology, James Cook University (JCU)"/>
+            <orgName count="4" name="School of Environment, Griffith University (GU)"
+                     label="School of Environment, Griffith University (GU)"/>
+            <orgName count="4" name="CSIRO Land and Water Flagship" label="CSIRO Land and Water Flagship"/>
+            <orgName count="4" name="CSIRO" label="CSIRO"/>
+            <orgName count="4" name="Torres Strait Regional Authority (TSRA)"
+                     label="Torres Strait Regional Authority (TSRA)"/>
+            <orgName count="4" name="ARC Centre of Excellence for Coral Reef Studies, James Cook University"
+                     label="ARC Centre of Excellence for Coral Reef Studies, James Cook University"/>
+            <orgName count="3"
+                     name="Centre for Tropical Water &amp; Aquatic Ecosystem Research (TropWATER), James Cook University"
+                     label="Centre for Tropical Water &amp; Aquatic Ecosystem Research (TropWATER), James Cook University"/>
+            <orgName count="3"
+                     name="Centre for Tropical Environmental &amp; Sustainability Sciences, School of Marine and Tropical Biology, James Cook University (JCU)"
+                     label="Centre for Tropical Environmental &amp; Sustainability Sciences, School of Marine and Tropical Biology, James Cook University (JCU)"/>
+        </orgNames>
+        <createDateYears>
+            <createDateYear count="14" name="2024" label="2024"/>
+            <createDateYear count="20" name="2023" label="2023"/>
+            <createDateYear count="69" name="2022" label="2022"/>
+            <createDateYear count="5" name="2021" label="2021"/>
+            <createDateYear count="39" name="2020" label="2020"/>
+            <createDateYear count="20" name="2019" label="2019"/>
+            <createDateYear count="2" name="2018" label="2018"/>
+            <createDateYear count="1" name="2017" label="2017"/>
+            <createDateYear count="3" name="2016" label="2016"/>
+            <createDateYear count="5" name="2014" label="2014"/>
+            <createDateYear count="3" name="2013" label="2013"/>
+            <createDateYear count="6" name="2012" label="2012"/>
+            <createDateYear count="40" name="2011" label="2011"/>
+            <createDateYear count="3" name="2010" label="2010"/>
+            <createDateYear count="2" name="2009" label="2009"/>
+            <createDateYear count="2" name="2008" label="2008"/>
+            <createDateYear count="1" name="2006" label="2006"/>
+            <createDateYear count="1" name="2004" label="2004"/>
+            <createDateYear count="1" name="2003" label="2003"/>
+            <createDateYear count="2" name="1997" label="1997"/>
+            <createDateYear count="1" name="1991" label="1991"/>
+            <createDateYear count="1" name="1982" label="1982"/>
+        </createDateYears>
+        <formats>
+            <format count="1" name="ARC/INFO raster grid files" label="ARC/INFO raster grid files"/>
+            <format count="1" name="ARC/INFO shapefile" label="ARC/INFO shapefile"/>
+            <format count="1" name="DIGITAL - mif MapInfo Interchange Format (MIF) MapInfo Geographic AGD66"
+                    label="DIGITAL - mif MapInfo Interchange Format (MIF) MapInfo Geographic AGD66"/>
+            <format count="2" name="DIGITAL - shp ArcView shape file ArcView Geographic AGD66"
+                    label="DIGITAL - shp ArcView shape file ArcView Geographic AGD66"/>
+            <format count="4" name="ESRI Shapefile" label="ESRI Shapefile"/>
+            <format count="1" name="File Geodatabase Feature Class" label="File Geodatabase Feature Class"/>
+            <format count="1" name="GeoTiff" label="GeoTiff"/>
+            <format count="1" name="GeoTiff, Shapefile, SLDs, GeoServer configuration"
+                    label="GeoTiff, Shapefile, SLDs, GeoServer configuration"/>
+            <format count="1" name="KML" label="KML"/>
+            <format count="1" name="Queensland Government Information Service"
+                    label="Queensland Government Information Service"/>
+            <format count="1" name="Queensland Spatial Catalogue" label="Queensland Spatial Catalogue"/>
+            <format count="40" name="Reports, published papers and datasets"
+                    label="Reports, published papers and datasets"/>
+            <format count="1" name="SDE Feature Class" label="SDE Feature Class"/>
+            <format count="2" name="downloadableData" label="downloadableData"/>
+            <format count="1" name="shp" label="shp"/>
+        </formats>
+        <spatialRepresentationTypes>
+            <spatialRepresentationType count="56" name="vector" label="Vector"/>
+            <spatialRepresentationType count="41" name="grid" label="Grid"/>
+            <spatialRepresentationType count="37" name="textTable" label="Text, table"/>
+        </spatialRepresentationTypes>
+        <maintenanceAndUpdateFrequencies>
+            <maintenanceAndUpdateFrequency count="69" name="asNeeded" label="As needed"/>
+            <maintenanceAndUpdateFrequency count="14" name="notPlanned" label="Not planned"/>
+            <maintenanceAndUpdateFrequency count="2" name="irregular" label="Irregular"/>
+            <maintenanceAndUpdateFrequency count="1" name="daily" label="Daily"/>
+            <maintenanceAndUpdateFrequency count="1" name="monthly" label="Monthly"/>
+            <maintenanceAndUpdateFrequency count="1" name="unknown" label="Unknown"/>
+        </maintenanceAndUpdateFrequencies>
+        <status>
+            <status count="428" name="notobsolete" label="Not obsolete"/>
+            <status count="92" name="completed" label="Completed"/>
+            <status count="37" name="onGoing" label="On going"/>
+            <status count="3" name="underDevelopment" label="Under development"/>
+            <status count="1" name="deprecated" label="deprecated"/>
+        </status>
+        <serviceTypes/>
+        <denominators>
+            <denominator count="1" name="10000000" label="10000000"/>
+            <denominator count="1" name="5000000" label="5000000"/>
+            <denominator count="1" name="2500000" label="2500000"/>
+            <denominator count="3" name="2000000" label="2000000"/>
+            <denominator count="3" name="1000000" label="1000000"/>
+            <denominator count="3" name="500000" label="500000"/>
+            <denominator count="3" name="250000" label="250000"/>
+            <denominator count="1" name="150000" label="150000"/>
+            <denominator count="4" name="100000" label="100000"/>
+            <denominator count="1" name="50000" label="50000"/>
+        </denominators>
+        <resolutions/>
+    </summary>
+    <metadata>
+        <metadatacreationdate/>
+        <geonet:info xmlns:geonet="http://www.fao.org/geonetwork">
+            <id>148</id>
+            <uuid>f6636322-28d9-47fe-878d-0e70cc7c6920</uuid>
+            <schema>iso19115-3.2018</schema>
+            <createDate>2019-01-15T03:22:13</createDate>
+            <changeDate>2023-09-18T06:39:47</changeDate>
+            <source>0fa22dbb-282b-4719-a259-93299f649cde</source>
+            <category>Custodian</category>
+            <category>eAtlas</category>
+            <selected>false</selected>
+            <category internal="true">dataset</category>
+        </geonet:info>
+    </metadata>
+    <metadata>
+        <metadatacreationdate/>
+        <geonet:info xmlns:geonet="http://www.fao.org/geonetwork">
+            <id>580</id>
+            <uuid>61a4bac5-79d1-4c1f-9358-a7bb587e07df</uuid>
+            <schema>iso19115-3.2018</schema>
+            <createDate>2020-11-24T05:28:14</createDate>
+            <changeDate>2021-07-21T03:28:03</changeDate>
+            <source>0fa22dbb-282b-4719-a259-93299f649cde</source>
+            <category>Custodian</category>
+            <category>eAtlas</category>
+            <selected>false</selected>
+            <category internal="true">dataset</category>
+        </geonet:info>
+    </metadata>
+    <metadata>
+        <metadatacreationdate/>
+        <geonet:info xmlns:geonet="http://www.fao.org/geonetwork">
+            <id>442</id>
+            <uuid>356e7b3c-1508-432e-9d85-263ec8a67cef</uuid>
+            <schema>iso19115-3.2018</schema>
+            <createDate>2020-05-15T04:49:41</createDate>
+            <changeDate>2023-09-18T06:16:46</changeDate>
+            <source>0fa22dbb-282b-4719-a259-93299f649cde</source>
+            <category>Custodian</category>
+            <category>eAtlas</category>
+            <selected>false</selected>
+            <category internal="true">dataset</category>
+        </geonet:info>
+    </metadata>
+    <metadata>
+        <metadatacreationdate/>
+        <geonet:info xmlns:geonet="http://www.fao.org/geonetwork">
+            <id>704</id>
+            <uuid>e9a43553-dbe4-40e2-9d3a-aa200f9e2277</uuid>
+            <schema>iso19115-3.2018</schema>
+            <createDate>2020-07-28T03:55:42</createDate>
+            <changeDate>2024-02-01T10:42:56</changeDate>
+            <source>0fa22dbb-282b-4719-a259-93299f649cde</source>
+            <category>Custodian</category>
+            <category>eAtlas</category>
+            <selected>false</selected>
+            <category internal="true">dataset</category>
+        </geonet:info>
+    </metadata>
+    <metadata>
+        <metadatacreationdate/>
+        <geonet:info xmlns:geonet="http://www.fao.org/geonetwork">
+            <id>761</id>
+            <uuid>09ac8e36-5d65-40f9-9bb7-c32a0dd9f24f</uuid>
+            <schema>iso19115-3.2018</schema>
+            <createDate>2021-07-02T01:58:26</createDate>
+            <changeDate>2024-02-01T10:48:26</changeDate>
+            <source>0fa22dbb-282b-4719-a259-93299f649cde</source>
+            <category>Custodian</category>
+            <category>eAtlas</category>
+            <selected>false</selected>
+            <category internal="true">dataset</category>
+        </geonet:info>
+    </metadata>
+    <metadata>
+        <metadatacreationdate/>
+        <geonet:info xmlns:geonet="http://www.fao.org/geonetwork">
+            <id>353</id>
+            <uuid>a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068</uuid>
+            <schema>iso19115-3.2018</schema>
+            <createDate>2022-03-23T06:18:30</createDate>
+            <changeDate>2022-03-23T07:56:02</changeDate>
+            <source>0fa22dbb-282b-4719-a259-93299f649cde</source>
+            <category>Custodian</category>
+            <category>eAtlas</category>
+            <selected>false</selected>
+            <category internal="true">dataset</category>
+        </geonet:info>
+    </metadata>
+</response>

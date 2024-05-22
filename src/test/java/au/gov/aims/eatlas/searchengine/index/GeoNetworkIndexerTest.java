@@ -15,27 +15,27 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-public class DrupalNodeIndexerTest extends IndexerTestBase {
+public class GeoNetworkIndexerTest extends IndexerTestBase {
 
     @Test
-    public void testIndexArticles() throws IOException {
+    public void testIndexMetadataRecords() throws IOException {
         try (SearchClient client = this.createElasticsearchClient()) {
             Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
-            String index = "articles";
+            String index = "metadata_records";
             Messages messages = Messages.getInstance(null);
 
             client.createIndex(index);
 
             // Find the indexer, defined in the config file
-            DrupalNodeIndexer drupalNodeIndexer =
-                    (DrupalNodeIndexer)this.getConfig().getIndexer(index);
+            GeoNetworkIndexer geoNetworkIndexer =
+                    (GeoNetworkIndexer)this.getConfig().getIndexer(index);
 
-            String configPath = "drupalArticleFiles";
-            URL configUrl = DrupalNodeIndexerTest.class.getClassLoader().getResource(configPath);
-            drupalNodeIndexer.setDrupalUrl(configUrl.toString());
+            String configPath = "metadataRecords";
+            URL configUrl = GeoNetworkIndexerTest.class.getClassLoader().getResource(configPath);
+            geoNetworkIndexer.setGeoNetworkUrl(configUrl.toString());
 
-            drupalNodeIndexer.internalIndex(client, null, messages);
+            geoNetworkIndexer.internalIndex(client, null, messages);
 
             // Wait for ElasticSearch to finish its indexation
             client.refresh(index);
@@ -61,7 +61,7 @@ public class DrupalNodeIndexerTest extends IndexerTestBase {
 
                 IndexSummary layersIndexSummary = searchSummary.getIndexSummary(index);
 
-                Assertions.assertEquals(50, layersIndexSummary.getHits(),
+                Assertions.assertEquals(6, layersIndexSummary.getHits(),
                         "Wrong number of search result in the index summary.");
 
             } catch(Exception ex) {
