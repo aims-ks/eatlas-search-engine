@@ -1,0 +1,239 @@
+{
+  "jsonapi": {
+    "version": "1.0",
+    "meta": {
+      "links": {
+        "self": {
+          "href": "http:\/\/jsonapi.org\/format\/1.0\/"
+        }
+      }
+    }
+  },
+  "data": {
+    "type": "media--image",
+    "id": "7b99cf2d-1539-413f-8e97-fc3e91610367",
+    "links": {
+      "self": {
+        "_href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367?resourceVersion=id%3A7789"
+      }
+    },
+    "attributes": {
+      "drupal_internal__mid": 3806,
+      "drupal_internal__vid": 7789,
+      "langcode": "en",
+      "revision_created": "2024-02-28T01:26:34+00:00",
+      "status": true,
+      "name": "Gifford_seamounts_use.jpg",
+      "created": "2024-02-12T03:49:22+00:00",
+      "changed": "2024-02-28T01:26:34+00:00",
+      "default_langcode": true,
+      "revision_translation_affected": true,
+      "path": {
+        "alias": null,
+        "pid": null,
+        "langcode": "en"
+      },
+      "field_attribution": "Geoscience Australia",
+      "field_custom_licence": null,
+      "field_description": null,
+      "field_geojson": null,
+      "field_licence": "cc_nd_nc",
+      "field_notes": null,
+      "field_private_media_page": false,
+      "field_source": null,
+      "field_title": "3D view of Gifford guyots looking south"
+    },
+    "relationships": {
+      "bundle": {
+        "data": {
+          "type": "media_type--media_type",
+          "id": "e605f2b0-1482-45a8-9f84-ee8e574a164d",
+          "meta": {
+            "drupal_internal__target_id": "image"
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/bundle?resourceVersion=id%3A7789"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/relationships\/bundle?resourceVersion=id%3A7789"
+          }
+        }
+      },
+      "revision_user": {
+        "data": {
+          "type": "user--user",
+          "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/revision_user?resourceVersion=id%3A7789"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/relationships\/revision_user?resourceVersion=id%3A7789"
+          }
+        }
+      },
+      "uid": {
+        "data": {
+          "type": "user--user",
+          "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/uid?resourceVersion=id%3A7789"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/relationships\/uid?resourceVersion=id%3A7789"
+          }
+        }
+      },
+      "thumbnail": {
+        "data": {
+          "type": "file--file",
+          "id": "8309e493-1763-4f23-b010-15b0c9a79d54",
+          "meta": {
+            "alt": "3D view of Gifford guyots looking south",
+            "title": null,
+            "width": 4000,
+            "height": 2250,
+            "drupal_internal__target_id": 3807
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/thumbnail?resourceVersion=id%3A7789"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/relationships\/thumbnail?resourceVersion=id%3A7789"
+          }
+        }
+      },
+      "field_marine_parks": {
+        "data": null,
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/field_marine_parks?resourceVersion=id%3A7789"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/relationships\/field_marine_parks?resourceVersion=id%3A7789"
+          }
+        }
+      },
+      "field_media_image": {
+        "data": {
+          "type": "file--file",
+          "id": "8309e493-1763-4f23-b010-15b0c9a79d54",
+          "meta": {
+            "alt": "3D view of Gifford guyots looking south",
+            "title": "",
+            "width": 4000,
+            "height": 2250,
+            "drupal_internal__target_id": 3807
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/field_media_image?resourceVersion=id%3A7789"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/relationships\/field_media_image?resourceVersion=id%3A7789"
+          }
+        }
+      },
+      "field_related_content": {
+        "data": [],
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/field_related_content?resourceVersion=id%3A7789"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/relationships\/field_related_content?resourceVersion=id%3A7789"
+          }
+        }
+      },
+      "field_tags": {
+        "data": [
+          {
+            "type": "taxonomy_term--galleries",
+            "id": "cc1f01c4-982c-4ea6-82a0-63cd16ac0ab0",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          },
+          {
+            "type": "taxonomy_term--galleries",
+            "id": "73bdd15c-d1a7-4660-a43c-04c3ef3ac2a1",
+            "meta": {
+              "drupal_internal__target_id": 3
+            }
+          }
+        ],
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/field_tags?resourceVersion=id%3A7789"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367\/relationships\/field_tags?resourceVersion=id%3A7789"
+          }
+        }
+      }
+    }
+  },
+  "included": [
+    {
+      "type": "file--file",
+      "id": "8309e493-1763-4f23-b010-15b0c9a79d54",
+      "links": {
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/file\/file\/8309e493-1763-4f23-b010-15b0c9a79d54"
+        }
+      },
+      "attributes": {
+        "drupal_internal__fid": 3807,
+        "langcode": "en",
+        "filename": "Gifford_seamounts_use.jpg",
+        "uri": {
+          "value": "public:\/\/2024-02\/Gifford_seamounts_use.jpg",
+          "url": "\/sites\/default\/files\/2024-02\/Gifford_seamounts_use.jpg"
+        },
+        "filemime": "image\/jpeg",
+        "filesize": 2547330,
+        "status": true,
+        "created": "2024-02-12T03:49:22+00:00",
+        "changed": "2024-02-12T03:49:22+00:00"
+      },
+      "relationships": {
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          },
+          "links": {
+            "related": {
+              "href": "http:\/\/domain.com\/jsonapi\/file\/file\/8309e493-1763-4f23-b010-15b0c9a79d54\/uid"
+            },
+            "self": {
+              "href": "http:\/\/domain.com\/jsonapi\/file\/file\/8309e493-1763-4f23-b010-15b0c9a79d54\/relationships\/uid"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": {
+      "href": "http:\/\/domain.com\/jsonapi\/media\/image\/7b99cf2d-1539-413f-8e97-fc3e91610367?filter%5Bstatus%5D=1\u0026include=thumbnail"
+    }
+  }
+}

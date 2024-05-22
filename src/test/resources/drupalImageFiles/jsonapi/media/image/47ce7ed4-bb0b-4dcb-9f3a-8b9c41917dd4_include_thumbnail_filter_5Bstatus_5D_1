@@ -1,0 +1,243 @@
+{
+  "jsonapi": {
+    "version": "1.0",
+    "meta": {
+      "links": {
+        "self": {
+          "href": "http:\/\/jsonapi.org\/format\/1.0\/"
+        }
+      }
+    }
+  },
+  "data": {
+    "type": "media--image",
+    "id": "47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4",
+    "links": {
+      "self": {
+        "_href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4?resourceVersion=id%3A7790"
+      }
+    },
+    "attributes": {
+      "drupal_internal__mid": 2745,
+      "drupal_internal__vid": 7790,
+      "langcode": "en",
+      "revision_created": "2024-03-07T03:46:03+00:00",
+      "status": true,
+      "name": "Wreck Reef (2).jpg",
+      "created": "2024-02-12T03:42:41+00:00",
+      "changed": "2024-03-07T03:46:03+00:00",
+      "default_langcode": true,
+      "revision_translation_affected": true,
+      "path": {
+        "alias": null,
+        "pid": null,
+        "langcode": "en"
+      },
+      "field_attribution": "Reef Life Survey, Dr Rick Stuart-Smith",
+      "field_custom_licence": null,
+      "field_description": {
+        "value": "\u003Cp\u003EA coral reef community in Coral Sea Marine Park. Still image taken as part of underwater visual census of marine life for the Reef Life Survey program. The \u003Ca href=\u0022https:\/\/reeflifesurvey.com\/\u0022 target=\u0022_blank\u0022\u003EReef Life Survey\u003C\/a\u003E program is a volunteer network of highly trained divers, and is a product of the CERF Major Projects funding that facilitated a cost-effective citizen science contribution to inventory and monitoring of shallow water marine environments. The RLS program has been further facilitated within the NERP Hub, describing biodiversity patterns at a national and global scale, as well as providing critical baseline data from areas such as the Coral Sea Marine Park, from Ashmore Reef, the Great Barrier Reef, and other Australian Marine Parks such as the Cod Grounds.\u003C\/p\u003E\r\n",
+        "format": "basic_html",
+        "processed": "\u003Cp\u003EA coral reef community in Coral Sea Marine Park. Still image taken as part of underwater visual census of marine life for the Reef Life Survey program. The \u003Ca href=\u0022https:\/\/reeflifesurvey.com\/\u0022\u003EReef Life Survey\u003C\/a\u003E program is a volunteer network of highly trained divers, and is a product of the CERF Major Projects funding that facilitated a cost-effective citizen science contribution to inventory and monitoring of shallow water marine environments. The RLS program has been further facilitated within the NERP Hub, describing biodiversity patterns at a national and global scale, as well as providing critical baseline data from areas such as the Coral Sea Marine Park, from Ashmore Reef, the Great Barrier Reef, and other Australian Marine Parks such as the Cod Grounds.\u003C\/p\u003E",
+        "summary": ""
+      },
+      "field_geojson": "{\u0022type\u0022:\u0022Feature\u0022,\u0022properties\u0022:{\u0022name\u0022:\u0022Coral Sea Marine Park\u0022,\u0022AREA_KM2\u0022:989836.286071,\u0022Network\u0022:\u0022Coral Sea\u0022,\u0022MPA_NAME\u0022:\u0022Coral Sea\u0022,\u0022MPA_ID\u0022:\u0022AMP_CS_CS\u0022,\u0022Network_ID\u0022:\u0022AMP_CS\u0022,\u0022Authority\u0022:\u0022ParksAus\u0022},\u0022geometry\u0022:{\u0022type\u0022:\u0022MultiPolygon\u0022,\u0022coordinates\u0022:[[[[145.169091,-10.464349],[145.508364,-10.942904],[145.841422,-11.410823],[146.173129,-11.874937],[146.501057,-12.331829],[147.142718,-12.640158],[147.614879,-12.908286],[148.084375,-13.173485],[148.593319,-13.362152],[149.103053,-13.549792],[149.609562,-13.734922],[150.112834,-13.917552],[150.616895,-14.099139],[151.11771,-14.278227],[151.619315,-14.456258],[152.117661,-14.631793],[152.651841,-14.662856],[153.186168,-14.692691],[153.716361,-14.721071],[154.250965,-14.748452],[154.840853,-14.584884],[155.429866,-14.419826],[156.022118,-14.252129],[156.617595,-14.081782],[156.621396,-14.081623],[156.682376,-14.095687],[156.75707,-14.114467],[156.831325,-14.134858],[156.896933,-14.154326],[156.970263,-14.177729],[157.043052,-14.202711],[157.115263,-14.22926],[157.186863,-14.257362],[157.256468,-14.286427],[157.716814,-14.683297],[158.240552,-15.212859],[158.760981,-15.735241],[158.380425,-16.424408],[157.937775,-17.075423],[157.366537,-17.911075],[156.945703,-18.540242],[156.62487,-18.931631],[156.255703,-19.286631],[156.542543,-19.717564],[156.826259,-20.141076],[157.052648,-20.541076],[157.076259,-20.714409],[157.107092,-20.892465],[157.171537,-21.215798],[157.243481,-21.789132],[157.217926,-22.175243],[157.312093,-22.527187],[157.558359,-22.891373],[157.801259,-23.248299],[158.066354,-23.876499],[158.331541,-24.498407],[154.000999,-24.498407],[153.731884,-23.646562],[153.474946,-22.822273],[153.340956,-22.388238],[153.194537,-21.910646],[152.917666,-20.998434],[152.544996,-20.788184],[152.175198,-20.578168],[151.806425,-20.36736],[151.479464,-20.179311],[151.112576,-19.967045],[150.746661,-19.754014],[150.367414,-19.53183],[149.963085,-19.293404],[149.600189,-19.078051],[149.238238,-18.861987],[148.83714,-18.621085],[148.477124,-18.403537],[148.078168,-18.161015],[147.720059,-17.942031],[147.323182,-17.697939],[147.001071,-17.498488],[146.757352,-16.89559],[146.509242,-16.277538],[146.251584,-15.631201],[146.001071,-14.998515],[145.732541,-14.465389],[145.486222,-13.973749],[145.263364,-13.526899],[145.001062,-12.998524],[145.001053,-10.681889],[144,-10.686536],[144,-10.465182],[144.167744,-10.465182],[144.201076,-10.248517],[144.467739,-9.898518],[144.467738,-9.65559],[144.734402,-9.848517],[145.169091,-10.464349]]]]}}",
+      "field_licence": "cc_nc",
+      "field_notes": null,
+      "field_private_media_page": false,
+      "field_source": "https:\/\/www.nespmarine.edu.au\/cmr-still-image-56",
+      "field_title": "Wreck Reef, Coral Sea Marine Park"
+    },
+    "relationships": {
+      "bundle": {
+        "data": {
+          "type": "media_type--media_type",
+          "id": "e605f2b0-1482-45a8-9f84-ee8e574a164d",
+          "meta": {
+            "drupal_internal__target_id": "image"
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/bundle?resourceVersion=id%3A7790"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/relationships\/bundle?resourceVersion=id%3A7790"
+          }
+        }
+      },
+      "revision_user": {
+        "data": {
+          "type": "user--user",
+          "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/revision_user?resourceVersion=id%3A7790"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/relationships\/revision_user?resourceVersion=id%3A7790"
+          }
+        }
+      },
+      "uid": {
+        "data": {
+          "type": "user--user",
+          "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/uid?resourceVersion=id%3A7790"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/relationships\/uid?resourceVersion=id%3A7790"
+          }
+        }
+      },
+      "thumbnail": {
+        "data": {
+          "type": "file--file",
+          "id": "535cd70d-7b34-4633-87e5-57ca2d29e750",
+          "meta": {
+            "alt": "Wreck Reef, Coral Sea Marine Park",
+            "title": null,
+            "width": 1024,
+            "height": 683,
+            "drupal_internal__target_id": 2746
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/thumbnail?resourceVersion=id%3A7790"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/relationships\/thumbnail?resourceVersion=id%3A7790"
+          }
+        }
+      },
+      "field_marine_parks": {
+        "data": {
+          "type": "block_content--marine_park",
+          "id": "4b91bb54-fbb8-4e8f-8245-e3d5885d259b",
+          "meta": {
+            "drupal_internal__target_id": 170
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/field_marine_parks?resourceVersion=id%3A7790"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/relationships\/field_marine_parks?resourceVersion=id%3A7790"
+          }
+        }
+      },
+      "field_media_image": {
+        "data": {
+          "type": "file--file",
+          "id": "535cd70d-7b34-4633-87e5-57ca2d29e750",
+          "meta": {
+            "alt": "Wreck Reef, Coral Sea Marine Park",
+            "title": "",
+            "width": 1024,
+            "height": 683,
+            "drupal_internal__target_id": 2746
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/field_media_image?resourceVersion=id%3A7790"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/relationships\/field_media_image?resourceVersion=id%3A7790"
+          }
+        }
+      },
+      "field_related_content": {
+        "data": [],
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/field_related_content?resourceVersion=id%3A7790"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/relationships\/field_related_content?resourceVersion=id%3A7790"
+          }
+        }
+      },
+      "field_tags": {
+        "data": [
+          {
+            "type": "taxonomy_term--galleries",
+            "id": "cc1f01c4-982c-4ea6-82a0-63cd16ac0ab0",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          }
+        ],
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/field_tags?resourceVersion=id%3A7790"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4\/relationships\/field_tags?resourceVersion=id%3A7790"
+          }
+        }
+      }
+    }
+  },
+  "included": [
+    {
+      "type": "file--file",
+      "id": "535cd70d-7b34-4633-87e5-57ca2d29e750",
+      "links": {
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/file\/file\/535cd70d-7b34-4633-87e5-57ca2d29e750"
+        }
+      },
+      "attributes": {
+        "drupal_internal__fid": 2746,
+        "langcode": "en",
+        "filename": "Wreck Reef (2).jpg",
+        "uri": {
+          "value": "public:\/\/2024-02\/Wreck Reef (2).jpg",
+          "url": "\/sites\/default\/files\/2024-02\/Wreck%20Reef%20%282%29.jpg"
+        },
+        "filemime": "image\/jpeg",
+        "filesize": 99126,
+        "status": true,
+        "created": "2024-02-12T03:42:40+00:00",
+        "changed": "2024-02-12T03:42:41+00:00"
+      },
+      "relationships": {
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          },
+          "links": {
+            "related": {
+              "href": "http:\/\/domain.com\/jsonapi\/file\/file\/535cd70d-7b34-4633-87e5-57ca2d29e750\/uid"
+            },
+            "self": {
+              "href": "http:\/\/domain.com\/jsonapi\/file\/file\/535cd70d-7b34-4633-87e5-57ca2d29e750\/relationships\/uid"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": {
+      "href": "http:\/\/domain.com\/jsonapi\/media\/image\/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4?filter%5Bstatus%5D=1\u0026include=thumbnail"
+    }
+  }
+}

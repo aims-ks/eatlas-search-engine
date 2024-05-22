@@ -1,0 +1,237 @@
+{
+  "jsonapi": {
+    "version": "1.0",
+    "meta": {
+      "links": {
+        "self": {
+          "href": "http:\/\/jsonapi.org\/format\/1.0\/"
+        }
+      }
+    }
+  },
+  "data": {
+    "type": "media--image",
+    "id": "e3727cb7-0a17-465d-8dd7-cac5d2b10e47",
+    "links": {
+      "self": {
+        "_href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47?resourceVersion=id%3A7785"
+      }
+    },
+    "attributes": {
+      "drupal_internal__mid": 3842,
+      "drupal_internal__vid": 7785,
+      "langcode": "en",
+      "revision_created": "2024-02-12T08:03:19+00:00",
+      "status": true,
+      "name": "Huge sponge 2197m Tas Fracture Franzis Althaus CSIRO.jpg",
+      "created": "2024-02-12T03:49:37+00:00",
+      "changed": "2024-02-12T08:03:19+00:00",
+      "default_langcode": true,
+      "revision_translation_affected": true,
+      "path": {
+        "alias": null,
+        "pid": null,
+        "langcode": "en"
+      },
+      "field_attribution": "Commonwealth Scientific and Industrial Research Organisation",
+      "field_custom_licence": null,
+      "field_description": {
+        "value": "\u003Cp\u003EIn 2009, the JASON Remotely Operated Vehicle (ROV) belonging to the Woods Hole Oceanographic Institution\u0026nbsp;undertook a voyage in the Tasman Fracture Zone off south-east Tasmania. This huge \u0026quot;waffle-cone\u0026quot; glass sponge (species unknown) was photographed at approximately 2197 metres.\u003C\/p\u003E\r\n",
+        "format": "basic_html",
+        "processed": "\u003Cp\u003EIn 2009, the JASON Remotely Operated Vehicle (ROV) belonging to the Woods Hole Oceanographic Institution\u0026nbsp;undertook a voyage in the Tasman Fracture Zone off south-east Tasmania. This huge \u0022waffle-cone\u0022 glass sponge (species unknown) was photographed at approximately 2197 metres.\u003C\/p\u003E",
+        "summary": null
+      },
+      "field_geojson": null,
+      "field_licence": "cc",
+      "field_notes": null,
+      "field_private_media_page": null,
+      "field_source": "https:\/\/www.nespmarine.edu.au\/cmr-still-image-61",
+      "field_title": "Huge glass sponge at 2197 metres in the Tasman Fracture Marine Park"
+    },
+    "relationships": {
+      "bundle": {
+        "data": {
+          "type": "media_type--media_type",
+          "id": "e605f2b0-1482-45a8-9f84-ee8e574a164d",
+          "meta": {
+            "drupal_internal__target_id": "image"
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/bundle?resourceVersion=id%3A7785"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/relationships\/bundle?resourceVersion=id%3A7785"
+          }
+        }
+      },
+      "revision_user": {
+        "data": {
+          "type": "user--user",
+          "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/revision_user?resourceVersion=id%3A7785"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/relationships\/revision_user?resourceVersion=id%3A7785"
+          }
+        }
+      },
+      "uid": {
+        "data": {
+          "type": "user--user",
+          "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/uid?resourceVersion=id%3A7785"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/relationships\/uid?resourceVersion=id%3A7785"
+          }
+        }
+      },
+      "thumbnail": {
+        "data": {
+          "type": "file--file",
+          "id": "a548ac91-28be-43fb-ac90-6e0fde5b441f",
+          "meta": {
+            "alt": "Huge glass sponge at 2197 metres in the Tasman Fracture Marine Park",
+            "title": null,
+            "width": 1920,
+            "height": 1080,
+            "drupal_internal__target_id": 3843
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/thumbnail?resourceVersion=id%3A7785"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/relationships\/thumbnail?resourceVersion=id%3A7785"
+          }
+        }
+      },
+      "field_marine_parks": {
+        "data": null,
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/field_marine_parks?resourceVersion=id%3A7785"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/relationships\/field_marine_parks?resourceVersion=id%3A7785"
+          }
+        }
+      },
+      "field_media_image": {
+        "data": {
+          "type": "file--file",
+          "id": "a548ac91-28be-43fb-ac90-6e0fde5b441f",
+          "meta": {
+            "alt": "Huge glass sponge at 2197 metres in the Tasman Fracture Marine Park",
+            "title": null,
+            "width": 1920,
+            "height": 1080,
+            "drupal_internal__target_id": 3843
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/field_media_image?resourceVersion=id%3A7785"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/relationships\/field_media_image?resourceVersion=id%3A7785"
+          }
+        }
+      },
+      "field_related_content": {
+        "data": [],
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/field_related_content?resourceVersion=id%3A7785"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/relationships\/field_related_content?resourceVersion=id%3A7785"
+          }
+        }
+      },
+      "field_tags": {
+        "data": [
+          {
+            "type": "taxonomy_term--galleries",
+            "id": "cc1f01c4-982c-4ea6-82a0-63cd16ac0ab0",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          }
+        ],
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/field_tags?resourceVersion=id%3A7785"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47\/relationships\/field_tags?resourceVersion=id%3A7785"
+          }
+        }
+      }
+    }
+  },
+  "included": [
+    {
+      "type": "file--file",
+      "id": "a548ac91-28be-43fb-ac90-6e0fde5b441f",
+      "links": {
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/file\/file\/a548ac91-28be-43fb-ac90-6e0fde5b441f"
+        }
+      },
+      "attributes": {
+        "drupal_internal__fid": 3843,
+        "langcode": "en",
+        "filename": "Huge sponge 2197m Tas Fracture Franzis Althaus CSIRO.jpg",
+        "uri": {
+          "value": "public:\/\/2024-02\/Huge sponge 2197m Tas Fracture Franzis Althaus CSIRO.jpg",
+          "url": "\/sites\/default\/files\/2024-02\/Huge%20sponge%202197m%20Tas%20Fracture%20Franzis%20Althaus%20CSIRO.jpg"
+        },
+        "filemime": "image\/jpeg",
+        "filesize": 1703110,
+        "status": true,
+        "created": "2024-02-12T03:49:37+00:00",
+        "changed": "2024-02-12T03:49:37+00:00"
+      },
+      "relationships": {
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          },
+          "links": {
+            "related": {
+              "href": "http:\/\/domain.com\/jsonapi\/file\/file\/a548ac91-28be-43fb-ac90-6e0fde5b441f\/uid"
+            },
+            "self": {
+              "href": "http:\/\/domain.com\/jsonapi\/file\/file\/a548ac91-28be-43fb-ac90-6e0fde5b441f\/relationships\/uid"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": {
+      "href": "http:\/\/domain.com\/jsonapi\/media\/image\/e3727cb7-0a17-465d-8dd7-cac5d2b10e47?filter%5Bstatus%5D=1\u0026include=thumbnail"
+    }
+  }
+}

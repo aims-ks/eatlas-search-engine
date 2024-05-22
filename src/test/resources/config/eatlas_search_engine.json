@@ -30,6 +30,18 @@
       "type": "DrupalExternalLinkNodeIndexer",
       "enabled": true
     },
+    {
+      "drupalPreviewImageField": "thumbnail",
+      "drupalTitleField": "name",
+      "drupalIndexedFields": "field_description",
+      "drupalMediaType": "image",
+      "drupalVersion": "10",
+      "drupalGeoJSONField": "field_geojson",
+      "index": "images",
+      "drupalUrl": "file:/to/be/replace/by/unit/test",
+      "type": "DrupalMediaIndexer",
+      "enabled": true
+    },
 
 
 

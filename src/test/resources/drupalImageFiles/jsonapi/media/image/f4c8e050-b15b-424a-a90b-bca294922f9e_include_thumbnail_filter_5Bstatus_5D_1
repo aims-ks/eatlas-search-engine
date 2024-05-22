@@ -1,0 +1,237 @@
+{
+  "jsonapi": {
+    "version": "1.0",
+    "meta": {
+      "links": {
+        "self": {
+          "href": "http:\/\/jsonapi.org\/format\/1.0\/"
+        }
+      }
+    }
+  },
+  "data": {
+    "type": "media--image",
+    "id": "f4c8e050-b15b-424a-a90b-bca294922f9e",
+    "links": {
+      "self": {
+        "_href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e?resourceVersion=id%3A7783"
+      }
+    },
+    "attributes": {
+      "drupal_internal__mid": 3801,
+      "drupal_internal__vid": 7783,
+      "langcode": "en",
+      "revision_created": "2024-02-12T08:03:19+00:00",
+      "status": true,
+      "name": "AUV_from_underwater_Credit_Kim_Brooks,_AIMS.jpg",
+      "created": "2024-02-12T03:49:20+00:00",
+      "changed": "2024-02-12T08:03:19+00:00",
+      "default_langcode": true,
+      "revision_translation_affected": true,
+      "path": {
+        "alias": null,
+        "pid": null,
+        "langcode": "en"
+      },
+      "field_attribution": "Australian Institute of Marine Science, Kim Brooks",
+      "field_custom_licence": null,
+      "field_description": {
+        "value": "\u003Cp\u003EAUV from underwater\u003C\/p\u003E\r\n",
+        "format": "basic_html",
+        "processed": "\u003Cp\u003EAUV from underwater\u003C\/p\u003E",
+        "summary": null
+      },
+      "field_geojson": null,
+      "field_licence": "cc",
+      "field_notes": null,
+      "field_private_media_page": null,
+      "field_source": null,
+      "field_title": "AUV from underwater"
+    },
+    "relationships": {
+      "bundle": {
+        "data": {
+          "type": "media_type--media_type",
+          "id": "e605f2b0-1482-45a8-9f84-ee8e574a164d",
+          "meta": {
+            "drupal_internal__target_id": "image"
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/bundle?resourceVersion=id%3A7783"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/relationships\/bundle?resourceVersion=id%3A7783"
+          }
+        }
+      },
+      "revision_user": {
+        "data": {
+          "type": "user--user",
+          "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/revision_user?resourceVersion=id%3A7783"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/relationships\/revision_user?resourceVersion=id%3A7783"
+          }
+        }
+      },
+      "uid": {
+        "data": {
+          "type": "user--user",
+          "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/uid?resourceVersion=id%3A7783"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/relationships\/uid?resourceVersion=id%3A7783"
+          }
+        }
+      },
+      "thumbnail": {
+        "data": {
+          "type": "file--file",
+          "id": "3b7ce0f7-56be-44e9-bcd4-140f11575241",
+          "meta": {
+            "alt": "AUV from underwater",
+            "title": null,
+            "width": 3648,
+            "height": 2736,
+            "drupal_internal__target_id": 3802
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/thumbnail?resourceVersion=id%3A7783"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/relationships\/thumbnail?resourceVersion=id%3A7783"
+          }
+        }
+      },
+      "field_marine_parks": {
+        "data": null,
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/field_marine_parks?resourceVersion=id%3A7783"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/relationships\/field_marine_parks?resourceVersion=id%3A7783"
+          }
+        }
+      },
+      "field_media_image": {
+        "data": {
+          "type": "file--file",
+          "id": "3b7ce0f7-56be-44e9-bcd4-140f11575241",
+          "meta": {
+            "alt": "AUV from underwater",
+            "title": null,
+            "width": 3648,
+            "height": 2736,
+            "drupal_internal__target_id": 3802
+          }
+        },
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/field_media_image?resourceVersion=id%3A7783"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/relationships\/field_media_image?resourceVersion=id%3A7783"
+          }
+        }
+      },
+      "field_related_content": {
+        "data": [],
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/field_related_content?resourceVersion=id%3A7783"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/relationships\/field_related_content?resourceVersion=id%3A7783"
+          }
+        }
+      },
+      "field_tags": {
+        "data": [
+          {
+            "type": "taxonomy_term--galleries",
+            "id": "cc1f01c4-982c-4ea6-82a0-63cd16ac0ab0",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          }
+        ],
+        "links": {
+          "related": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/field_tags?resourceVersion=id%3A7783"
+          },
+          "self": {
+            "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e\/relationships\/field_tags?resourceVersion=id%3A7783"
+          }
+        }
+      }
+    }
+  },
+  "included": [
+    {
+      "type": "file--file",
+      "id": "3b7ce0f7-56be-44e9-bcd4-140f11575241",
+      "links": {
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/file\/file\/3b7ce0f7-56be-44e9-bcd4-140f11575241"
+        }
+      },
+      "attributes": {
+        "drupal_internal__fid": 3802,
+        "langcode": "en",
+        "filename": "AUV_from_underwater_Credit_Kim_Brooks,_AIMS.jpg",
+        "uri": {
+          "value": "public:\/\/2024-02\/AUV_from_underwater_Credit_Kim_Brooks,_AIMS.jpg",
+          "url": "\/sites\/default\/files\/2024-02\/AUV_from_underwater_Credit_Kim_Brooks%2C_AIMS.jpg"
+        },
+        "filemime": "image\/jpeg",
+        "filesize": 1944416,
+        "status": true,
+        "created": "2024-02-12T03:49:20+00:00",
+        "changed": "2024-02-12T03:49:20+00:00"
+      },
+      "relationships": {
+        "uid": {
+          "data": {
+            "type": "user--user",
+            "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+            "meta": {
+              "drupal_internal__target_id": 1
+            }
+          },
+          "links": {
+            "related": {
+              "href": "http:\/\/domain.com\/jsonapi\/file\/file\/3b7ce0f7-56be-44e9-bcd4-140f11575241\/uid"
+            },
+            "self": {
+              "href": "http:\/\/domain.com\/jsonapi\/file\/file\/3b7ce0f7-56be-44e9-bcd4-140f11575241\/relationships\/uid"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": {
+      "href": "http:\/\/domain.com\/jsonapi\/media\/image\/f4c8e050-b15b-424a-a90b-bca294922f9e?filter%5Bstatus%5D=1\u0026include=thumbnail"
+    }
+  }
+}
