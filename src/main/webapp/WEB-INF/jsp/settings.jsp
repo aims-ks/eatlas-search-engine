@@ -623,7 +623,7 @@
                                             <div class="desc">Example: field_geojson</div>
                                         </div>
 
-<!-- TODO Field published, AMPSA network checkbox, etc -->
+<!-- TODO: Field published, AMPSA network checkbox, etc -->
 
                                     </div>
                                 </c:when>
