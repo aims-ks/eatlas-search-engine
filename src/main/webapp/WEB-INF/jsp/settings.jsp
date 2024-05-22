@@ -622,12 +622,212 @@
                                             <div class="desc">Drupal field type: Text (plain, long)</div>
                                             <div class="desc">Example: field_geojson</div>
                                         </div>
+                                    </div>
+                                </c:when>
 
-<!-- TODO: Field published, AMPSA network checkbox, etc -->
+
+                                <c:when test="${indexer.type == 'AmpsaMarineParkBlockIndexer'}">
+                                    <h3>AmpsaMarineParkBlockIndexer fields</h3>
+
+                                    <div class="AmpsaMarineParkBlockIndexer_form">
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalUrl">
+                                                <span class="label required">Drupal URL</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalUrl"
+                                                        name="${indexer.index}_drupalUrl"
+                                                        data-lpignore="true"
+                                                        required="required"
+                                                        value="<c:out value="${indexer.drupalUrl}" />" />
+                                            </label>
+                                            <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc">Example: https://eatlas.org.au</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalVersion">
+                                                <span class="label">Drupal version</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalVersion"
+                                                        name="${indexer.index}_drupalVersion"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalVersion}" />" />
+                                            </label>
+                                            <div class="desc">Version of Drupal, to use the proper API version.</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalBlockType">
+                                                <span class="label required">Drupal block type</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalBlockType"
+                                                        name="${indexer.index}_drupalBlockType"
+                                                        data-lpignore="true"
+                                                        required="required"
+                                                        value="<c:out value="${indexer.drupalBundleId}" />" />
+                                            </label>
+                                            <div class="desc">Type of block indexed by this indexer.</div>
+                                            <div class="desc">Example: basic, network, marine_park</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalParentField">
+                                                <span class="label required">Parent field</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalParentField"
+                                                        name="${indexer.index}_drupalParentField"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalParentField}" />" />
+                                            </label>
+                                            <div class="desc">Drupal internal field ID for the parent block.</div>
+                                            <div class="desc">Used to AMPSA Network field</div>
+                                            <div class="desc">Example: field_network</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalPreviewImageField">
+                                                <span class="label">Drupal preview image field ID</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalPreviewImageField"
+                                                        name="${indexer.index}_drupalPreviewImageField"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalPreviewImageField}" />" />
+                                            </label>
+                                            <div class="desc">Drupal internal field ID for the preview image.</div>
+                                            <div class="desc">Drupal field type: Image or Media</div>
+                                            <div class="desc">Example: field_image</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalIndexedFields">
+                                                <span class="label">Drupal indexed field IDs</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalIndexedFields"
+                                                        name="${indexer.index}_drupalIndexedFields"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalIndexedFields}" />" />
+                                            </label>
+                                            <div class="desc">
+                                                Drupal internal field IDs to index.
+                                                Multiple fields can be specified, using a comma separated list.
+                                            </div>
+                                            <div class="desc">Drupal field type: Text or Paragraph</div>
+                                            <div class="desc">Example: field_body, field_references</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalGeoJSONField">
+                                                <span class="label">Drupal GeoJSON field ID</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalGeoJSONField"
+                                                        name="${indexer.index}_drupalGeoJSONField"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalGeoJSONField}" />" />
+                                            </label>
+                                            <div class="desc">Drupal internal field ID for the node's GeoJSON.</div>
+                                            <div class="desc">Drupal field type: Text (plain, long)</div>
+                                            <div class="desc">Example: field_geojson</div>
+                                        </div>
+
+                                        <!-- TODO Field published, AMPSA network checkbox, etc -->
 
                                     </div>
                                 </c:when>
 
+
+                                <c:when test="${indexer.type == 'AmpsaNetworkBlockIndexer'}">
+                                    <h3>AmpsaNetworkBlockIndexer fields</h3>
+
+                                    <div class="AmpsaNetworkBlockIndexer_form">
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalUrl">
+                                                <span class="label required">Drupal URL</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalUrl"
+                                                        name="${indexer.index}_drupalUrl"
+                                                        data-lpignore="true"
+                                                        required="required"
+                                                        value="<c:out value="${indexer.drupalUrl}" />" />
+                                            </label>
+                                            <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc">Example: https://eatlas.org.au</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalVersion">
+                                                <span class="label">Drupal version</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalVersion"
+                                                        name="${indexer.index}_drupalVersion"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalVersion}" />" />
+                                            </label>
+                                            <div class="desc">Version of Drupal, to use the proper API version.</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalBlockType">
+                                                <span class="label required">Drupal block type</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalBlockType"
+                                                        name="${indexer.index}_drupalBlockType"
+                                                        data-lpignore="true"
+                                                        required="required"
+                                                        value="<c:out value="${indexer.drupalBundleId}" />" />
+                                            </label>
+                                            <div class="desc">Type of block indexed by this indexer.</div>
+                                            <div class="desc">Example: basic, network, marine_park</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalPreviewImageField">
+                                                <span class="label">Drupal preview image field ID</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalPreviewImageField"
+                                                        name="${indexer.index}_drupalPreviewImageField"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalPreviewImageField}" />" />
+                                            </label>
+                                            <div class="desc">Drupal internal field ID for the preview image.</div>
+                                            <div class="desc">Drupal field type: Image or Media</div>
+                                            <div class="desc">Example: field_image</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalIndexedFields">
+                                                <span class="label">Drupal indexed field IDs</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalIndexedFields"
+                                                        name="${indexer.index}_drupalIndexedFields"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalIndexedFields}" />" />
+                                            </label>
+                                            <div class="desc">
+                                                Drupal internal field IDs to index.
+                                                Multiple fields can be specified, using a comma separated list.
+                                            </div>
+                                            <div class="desc">Drupal field type: Text or Paragraph</div>
+                                            <div class="desc">Example: field_body, field_references</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalGeoJSONField">
+                                                <span class="label">Drupal GeoJSON field ID</span>
+                                                <input type="text"
+                                                        id="${indexer.index}_drupalGeoJSONField"
+                                                        name="${indexer.index}_drupalGeoJSONField"
+                                                        data-lpignore="true"
+                                                        value="<c:out value="${indexer.drupalGeoJSONField}" />" />
+                                            </label>
+                                            <div class="desc">Drupal internal field ID for the node's GeoJSON.</div>
+                                            <div class="desc">Drupal field type: Text (plain, long)</div>
+                                            <div class="desc">Example: field_geojson</div>
+                                        </div>
+
+                                        <!-- TODO Field published, AMPSA network checkbox, etc -->
+
+                                    </div>
+                                </c:when>
 
 
                                 <c:when test="${indexer.type == 'GeoNetworkIndexer'}">
@@ -725,6 +925,8 @@
                         <option value="DrupalNodeIndexer">DrupalNodeIndexer</option>
                         <option value="DrupalMediaIndexer">DrupalMediaIndexer</option>
                         <option value="DrupalExternalLinkNodeIndexer">DrupalExternalLinkNodeIndexer</option>
+                        <option value="AmpsaMarineParkBlockIndexer">AmpsaMarineParkBlockIndexer</option>
+                        <option value="AmpsaNetworkBlockIndexer">AmpsaNetworkBlockIndexer</option>
                         <option value="DrupalBlockIndexer">DrupalBlockIndexer</option>
                         <option value="GeoNetworkIndexer">GeoNetworkIndexer</option>
                         <option value="AtlasMapperIndexer">AtlasMapperIndexer</option>
