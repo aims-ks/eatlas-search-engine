@@ -18,8 +18,12 @@ import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +36,29 @@ import java.util.Map;
  * and integrates well with the Search Engine.
  */
 public class IndexerTest extends IndexerTestBase {
+
+    @Override
+    protected Map<String, String> getMockupUrlMap() {
+        Map<String, String> urlMap = super.getMockupUrlMap();
+        urlMap.put("https://www.hpwmxatrfsjcebqvdgnukz.com/coralsoftheworld", "externalLinks/coralsoftheworld.html");
+        return urlMap;
+    }
+
+    @Test
+    public void testMockito() throws Exception {
+        try (MockedStatic<Jsoup> mockedJsoup = this.getMockedJsoup()) {
+            Connection.Response response = Jsoup.connect("https://www.hpwmxatrfsjcebqvdgnukz.com/coralsoftheworld").execute();
+            Assertions.assertNotNull(response, "Response is null");
+            String responseStr = response.body();
+            Assertions.assertNotNull(responseStr, "Response body is null");
+            Assertions.assertTrue(responseStr.contains("<title>Corals of the World</title>"), "The response doesn't contain the expected HTML title.");
+
+            String htmlStr = "<p>Brisinglid sea stars photographed in the Coral Sea as part of the Deep Down Under research expedition. The Deep Down Under expedition was a team of German and Australian researchers exploring deep into the waters of Australia's Coral Sea in 2009. Geobiologists from the Ludwig-Maximilians-Universität Munich, the Natural History Museum at the Humboldt-Universität Berlin, the University of Göttingen, the Queensland Museum, University of Queensland and James Cook University investigated ‘living fossils’ such as sponges, brachiopods, echinoderms and cold-water corals in the deep. Using a 1000 m-rated Cherokee ROV from MARUM at the University of Bremen, the team explored the deep-sea ecosystems on the steep slopes of Queensland Plateau emergent reefs, such as Osprey Reef, which have remained largely unchanged for millions of years.</p>\n";
+
+            Document document = Jsoup.parse(htmlStr);
+            Assertions.assertNotNull(document);
+        }
+    }
 
     @Test
     public void testElasticsearchConnection() throws Exception {

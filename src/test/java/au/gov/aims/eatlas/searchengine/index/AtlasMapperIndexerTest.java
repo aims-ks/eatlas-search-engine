@@ -7,20 +7,30 @@ import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
-import org.json.JSONObject;
+import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
 public class AtlasMapperIndexerTest extends IndexerTestBase {
 
+    @Override
+    protected Map<String, String> getMockupUrlMap() {
+        Map<String, String> urlMap = super.getMockupUrlMap();
+        urlMap.put("https://domain.com/config/main.json", "atlasmapperFiles/config/main.json");
+        urlMap.put("https://domain.com/config/layers.json", "atlasmapperFiles/config/layers.json");
+        return urlMap;
+    }
+
     @Test
-    public void testIndexLayers() throws IOException {
-        try (SearchClient client = this.createElasticsearchClient()) {
+    public void testIndexLayers() throws Exception {
+        try (
+                MockedStatic<Jsoup> mockedJsoup = this.getMockedJsoup();
+                SearchClient client = this.createElasticsearchClient()
+        ) {
             Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "atlasmapper";
@@ -31,10 +41,6 @@ public class AtlasMapperIndexerTest extends IndexerTestBase {
             // Find the indexer, defined in the config file
             AtlasMapperIndexer atlasMapperIndexer =
                     (AtlasMapperIndexer)this.getConfig().getIndexer(index);
-
-            String configPath = "atlasmapperFiles";
-            URL configUrl = AtlasMapperIndexerTest.class.getClassLoader().getResource(configPath);
-            atlasMapperIndexer.setAtlasMapperClientUrl(configUrl.toString());
 
             atlasMapperIndexer.internalIndex(client, null, messages);
 

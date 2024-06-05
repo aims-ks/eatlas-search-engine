@@ -19,7 +19,6 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.Consts;
 import org.apache.http.entity.ContentType;
@@ -36,14 +35,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.time.Instant;
 import java.util.Map;
 
 public class EntityUtils {
@@ -57,9 +50,9 @@ public class EntityUtils {
         LOGGER.debug(String.format("Harvesting GET URL body: %s", url));
 
         // Get a HTTP document.
-        TextResponse textResponse = EntityUtils.jsoupTextExecuteWithRetry(url, messages);
+        Connection.Response response = EntityUtils.jsoupExecuteWithRetry(url, messages);
 
-        return textResponse.getText();
+        return response.body();
     }
 
     public static String harvestPostURL(String url, Map<String, String> dataMap, Messages messages) throws IOException, InterruptedException {
@@ -98,43 +91,6 @@ public class EntityUtils {
         }
 
         return response.body();
-    }
-
-    // TODO Use this instead of jsoupExecuteWithRetry where ever possible, to add support for "file" urls.
-    public static TextResponse jsoupTextExecuteWithRetry(String url, Messages messages) throws IOException, InterruptedException {
-        Long lastModified = null;
-        String responseStr = null;
-
-        if (url.startsWith("file:/")) {
-            // This is used for Unit tests
-
-            // Convert the URL into a proper file URL
-            String fileUrl = url.replaceAll("[^a-zA-Z0-9 :/_.-]", "_");
-
-            Path path = Paths.get(URI.create(fileUrl));
-
-            try {
-                responseStr = Files.readString(path);
-            } catch (IOException ex) {
-                throw new IOException(
-                        String.format("Error reading the file: %s", fileUrl), ex);
-            }
-
-            // Get file last modified
-            try {
-                BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-                Instant lastModifiedTime = attributes.lastModifiedTime().toInstant();
-                lastModified = lastModifiedTime.toEpochMilli();
-            } catch (IOException ex) {
-                // Can not get the file last modified. Fallback to "null"...
-            }
-        } else {
-            Connection.Response response = jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages), url);
-            lastModified = IndexUtils.parseHttpLastModifiedHeader(response, messages);
-            responseStr = response.body();
-        }
-
-        return new TextResponse(responseStr, lastModified);
     }
 
     public static Connection.Response jsoupExecuteWithRetry(String url, Messages messages) throws IOException, InterruptedException {
@@ -356,24 +312,6 @@ public class EntityUtils {
             case "webp": return ContentType.IMAGE_WEBP;
 
             default: return defaultContentType;
-        }
-    }
-
-    public static class TextResponse {
-        private final Long lastModified;
-        private final String text;
-
-        public TextResponse(String text, Long lastModified) {
-            this.lastModified = lastModified;
-            this.text = text;
-        }
-
-        public Long getLastModified() {
-            return this.lastModified;
-        }
-
-        public String getText() {
-            return this.text;
         }
     }
 }

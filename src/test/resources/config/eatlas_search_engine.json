@@ -2,7 +2,7 @@
   "imageCacheDirectory": "/tmp/searchengine-data/",
   "indexers": [
     {
-      "atlasMapperClientUrl": "file:/to/be/replace/by/unit/test",
+      "atlasMapperClientUrl": "https://domain.com",
       "baseLayerUrl": "https://domain.com/maps/wms?SERVICE=WMS&REQUEST=GetMap&LAYERS=ea-be:World_Bright-Earth-e-Atlas-basemap&FORMAT=image/jpeg&TRANSPARENT=false&VERSION=1.1.1&SRS=EPSG:4326&BBOX={BBOX}&WIDTH={WIDTH}&HEIGHT={HEIGHT}",
       "atlasMapperVersion": "2.3.0",
       "index": "atlasmapper",
@@ -14,7 +14,7 @@
       "drupalVersion": "10",
       "drupalGeoJSONField": "field_geojson",
       "index": "blocks",
-      "drupalUrl": "file:/to/be/replace/by/unit/test",
+      "drupalUrl": "https://domain.com",
       "drupalBlockType": "basic",
       "type": "DrupalBlockIndexer",
       "enabled": true
@@ -26,7 +26,7 @@
       "drupalVersion": "10",
       "drupalNodeType": "external_link",
       "index": "links",
-      "drupalUrl": "file:/to/be/replace/by/unit/test",
+      "drupalUrl": "https://domain.com",
       "type": "DrupalExternalLinkNodeIndexer",
       "enabled": true
     },
@@ -38,7 +38,7 @@
       "drupalVersion": "10",
       "drupalGeoJSONField": "field_geojson",
       "index": "images",
-      "drupalUrl": "file:/to/be/replace/by/unit/test",
+      "drupalUrl": "https://domain.com",
       "type": "DrupalMediaIndexer",
       "enabled": true
     },
@@ -48,12 +48,12 @@
       "drupalVersion": "10",
       "drupalNodeType": "article",
       "index": "articles",
-      "drupalUrl": "file:/to/be/replace/by/unit/test",
+      "drupalUrl": "https://domain.com",
       "type": "DrupalNodeIndexer",
       "enabled": true
     },
     {
-      "geoNetworkUrl": "file:/to/be/replace/by/unit/test",
+      "geoNetworkUrl": "https://domain.com/geonetwork",
       "index": "metadata_records",
       "type": "GeoNetworkIndexer",
       "geoNetworkVersion": "3",

@@ -177,12 +177,6 @@
         <!-- ############## -->
         <!-- # Unit tests # -->
         <!-- ############## -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
 
         <!-- The elasticsearch test class is broken. Java throws error: "cannot access org.elasticsearch..." -->
         <!--
@@ -230,6 +224,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.36</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Library for Jsoup HTTP client mockup -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.12.0</version>
             <scope>test</scope>
         </dependency>
 

@@ -1,5 +1,10 @@
 TODO:
 
+- Rethink user messages
+  - Displaying messages in pages, and having to refresh, does work, but it's not good.
+    It would be better if each indexer had its own logs, and we can look at them at any time to see the logs from last indexation
+    Other logs would appear in an application log page.
+
 - Create files:
   - resources/eatlas_search_engine_default.json
 
@@ -31,29 +36,7 @@ TODO:
     Invalid bbox: [W: -1458189.5307774, E: -1455290.9367346, N: -4026941.0297624, S: -4032228.3093619]
 
 - AMPSA
-  Add indexer for AMPSA block
-  Example: http://localhost:1022/jsonapi/block_content/network
-
-  DrupalBlockContentIndexer
-    public DrupalBlockContentIndexer(
-            String index,
-            String drupalUrl,
-            String drupalVersion,
-            String drupalBlockContentType,
-            String urlPattern, // example: "/amps?featureId={{ field_feature_id }}"
-            String drupalPreviewImageField,
-            String drupalIndexedFields,
-            String drupalGeoJSONField
-    ) {
-        super(index, drupalUrl, drupalVersion, "block_content", drupalBlockContentType,
-                (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
-                drupalIndexedFields, drupalGeoJSONField);
-    }
-    - Index block_content, with a custom URL: "/amps?featureId=" + field_feature_id
-      - Find a way to provide a pattern to form the URL, since block_content don't usually have URL.
-    - Create 4 indexes, for better flexibility with search.
-      - Block content types: network, marine_park, state_marine_park, welcome_page
-      - The "welcome_page" can be mixed with "site_page" in search settings
+  Do not implement anything specific to AMPSA. It will use Drupal search engine
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}
 

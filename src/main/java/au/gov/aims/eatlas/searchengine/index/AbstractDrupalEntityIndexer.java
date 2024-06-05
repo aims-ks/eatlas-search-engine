@@ -66,6 +66,9 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     private String drupalIndexedFields;
     private String drupalGeoJSONField;
 
+    // Set to false when running Tests. Mockito doesn't work with Threads.
+    private static boolean multiThread = true;
+
     public AbstractDrupalEntityIndexer(
             String index,
             String drupalUrl,
@@ -89,6 +92,13 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     public abstract E createDrupalEntity(JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, Messages messages);
     public abstract E getIndexedDrupalEntity(SearchClient client, String id, Messages messages);
     public abstract String getHarvestSort(boolean fullHarvest);
+
+    public static void enableMultiThread() {
+        AbstractDrupalEntityIndexer.multiThread = true;
+    }
+    public static void disableMultiThread() {
+        AbstractDrupalEntityIndexer.multiThread = false;
+    }
 
     protected JSONObject getJsonBase() {
         return super.getJsonBase()
@@ -321,9 +331,15 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                         }
 
                         Thread thread = new DrupalEntityIndexerThread(
-                            client, messages, jsonApiEntity, usedThumbnails, page+1, i+1, entityFound);
+                                client, messages, jsonApiEntity, usedThumbnails,
+                                page+1, i+1, entityFound);
 
-                        threadPool.execute(thread);
+                        if (AbstractDrupalEntityIndexer.multiThread) {
+                            threadPool.execute(thread);
+                        } else {
+                            // Run in the current thread.
+                            thread.run();
+                        }
                     }
                 }
 

@@ -21,8 +21,6 @@ package au.gov.aims.eatlas.searchengine.client;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
-import au.gov.aims.eatlas.searchengine.index.AmpsaMarineParkBlockIndexer;
-import au.gov.aims.eatlas.searchengine.index.AmpsaNetworkBlockIndexer;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalBlockIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
@@ -252,16 +250,6 @@ public class SearchUtils {
             case "DrupalExternalLinkNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-extlink");
                 newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, null, null, null, null, null, null, null);
-                break;
-
-            case "AmpsaMarineParkBlockIndexer":
-                newIndex = SearchUtils.generateUniqueIndexName("ampsa-marine-park");
-                newIndexer = new AmpsaMarineParkBlockIndexer(newIndex, null, null, null, null, null, null, null);
-                break;
-
-            case "AmpsaNetworkBlockIndexer":
-                newIndex = SearchUtils.generateUniqueIndexName("ampsa-network");
-                newIndexer = new AmpsaNetworkBlockIndexer(newIndex, null, null, null, null, null, null);
                 break;
 
             case "DrupalBlockIndexer":

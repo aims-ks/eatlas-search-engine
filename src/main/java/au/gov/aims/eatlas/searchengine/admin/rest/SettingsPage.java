@@ -21,8 +21,6 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
-import au.gov.aims.eatlas.searchengine.index.AmpsaMarineParkBlockIndexer;
-import au.gov.aims.eatlas.searchengine.index.AmpsaNetworkBlockIndexer;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalBlockIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
@@ -219,29 +217,6 @@ public class SettingsPage {
                 drupalExternalLinkNodeIndexer.setDrupalExternalUrlField(FormUtils.getFormStringValue(form, index + "_drupalExternalUrlField"));
                 drupalExternalLinkNodeIndexer.setDrupalContentOverwriteField(FormUtils.getFormStringValue(form, index + "_drupalContentOverwriteField"));
                 drupalExternalLinkNodeIndexer.setDrupalGeoJSONField(FormUtils.getFormStringValue(form, index + "_drupalGeoJSONField"));
-
-            } else if (indexer instanceof AmpsaMarineParkBlockIndexer) {
-                // AmpsaMarineParkBlockIndexer
-                AmpsaMarineParkBlockIndexer ampsaMarineParkBlockIndexer = (AmpsaMarineParkBlockIndexer)indexer;
-
-                ampsaMarineParkBlockIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
-                ampsaMarineParkBlockIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
-                ampsaMarineParkBlockIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalBlockType"));
-                ampsaMarineParkBlockIndexer.setDrupalParentField(FormUtils.getFormStringValue(form, index + "_drupalParentField"));
-                ampsaMarineParkBlockIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
-                ampsaMarineParkBlockIndexer.setDrupalIndexedFields(FormUtils.getFormStringValue(form, index + "_drupalIndexedFields"));
-                ampsaMarineParkBlockIndexer.setDrupalGeoJSONField(FormUtils.getFormStringValue(form, index + "_drupalGeoJSONField"));
-
-            } else if (indexer instanceof AmpsaNetworkBlockIndexer) {
-                // AmpsaNetworkBlockIndexer
-                AmpsaNetworkBlockIndexer ampsaNetworkBlockIndexer = (AmpsaNetworkBlockIndexer)indexer;
-
-                ampsaNetworkBlockIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
-                ampsaNetworkBlockIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
-                ampsaNetworkBlockIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalBlockType"));
-                ampsaNetworkBlockIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
-                ampsaNetworkBlockIndexer.setDrupalIndexedFields(FormUtils.getFormStringValue(form, index + "_drupalIndexedFields"));
-                ampsaNetworkBlockIndexer.setDrupalGeoJSONField(FormUtils.getFormStringValue(form, index + "_drupalGeoJSONField"));
 
             } else if (indexer instanceof DrupalBlockIndexer) {
                 // DrupalBlockIndexer
