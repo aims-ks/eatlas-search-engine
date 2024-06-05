@@ -32,10 +32,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Instant;
+import java.nio.file.attribute.FileTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
@@ -55,7 +53,7 @@ public abstract class IndexerTestBase {
         return new HashMap<String, String>();
     }
 
-    protected MockedStatic<Jsoup> getMockedJsoup() throws NoSuchMethodException {
+    protected MockedStatic<Jsoup> getMockedJsoup() {
         Map<String, String> urlMap = this.getMockupUrlMap();
 
         // Overwrite the Jsoup class
@@ -92,7 +90,7 @@ public abstract class IndexerTestBase {
         return mockedJsoup;
     }
 
-    private Connection.Response createMockResponse(String resourcePath) throws IOException {
+    private Connection.Response createMockResponse(String resourcePath) throws Exception {
         URL resourceUrl = IndexerTest.class.getClassLoader().getResource(resourcePath);
         if (resourceUrl == null) {
             throw new IOException("Resource not found: " + resourcePath);
@@ -101,33 +99,28 @@ public abstract class IndexerTestBase {
             if (inputStream == null) {
                 throw new IOException("Resource not found: " + resourcePath);
             }
+            URI uri = resourceUrl.toURI();
+            Path path = Paths.get(uri);
+
             String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             Connection.Response mockResponse = Mockito.mock(Connection.Response.class);
             Mockito.when(mockResponse.statusCode()).thenReturn(200);
             Mockito.when(mockResponse.body()).thenReturn(content);
-
-            Mockito.when(mockResponse.header(Mockito.anyString())).thenAnswer(invocation -> {
-                String headerName = invocation.getArgument(0);
-                if ("Last-Modified".equalsIgnoreCase(headerName)) {
-                    try {
-                        URI uri = resourceUrl.toURI();
-                        Path path = Paths.get(uri);
-                        BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-                        Instant lastModifiedTime = attributes.lastModifiedTime().toInstant();
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-                        ZonedDateTime zonedDateTime = lastModifiedTime.atZone(ZoneId.of("UTC"));
-                        return zonedDateTime.format(formatter);
-                    } catch (IOException ex) {
-                        // Can not get the file last modified. Fallback to "null"...
-                        return null;
-                    }
-                }
-                // Other headers not supported yet...
-                return null;
-            });
+            // Content type
+            Mockito.when(mockResponse.contentType()).thenReturn(Files.probeContentType(path));
+            // Last modified
+            Mockito.when(mockResponse.header("Last-Modified")).thenReturn(
+                    this.formatLastModifiedTime(Files.getLastModifiedTime(path))
+            );
 
             return mockResponse;
         }
+    }
+
+    private String formatLastModifiedTime(FileTime fileTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
+                .withZone(ZoneId.of("UTC"));
+        return formatter.format(fileTime.toInstant());
     }
 
     @BeforeAll

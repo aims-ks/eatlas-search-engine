@@ -93,7 +93,7 @@
                   <cit:onlineResource>
                     <cit:CI_OnlineResource>
                       <cit:linkage>
-                        <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
+                        <gco:CharacterString>https://domain.com</gco:CharacterString>
                       </cit:linkage>
                       <cit:protocol>
                         <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
@@ -144,7 +144,7 @@
   <mdb:metadataLinkage xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
     <cit:CI_OnlineResource>
       <cit:linkage>
-        <gco:CharacterString>https://eatlas.org.au/data/uuid/e9a43553-dbe4-40e2-9d3a-aa200f9e2277</gco:CharacterString>
+        <gco:CharacterString>https://domain.com/data/uuid/e9a43553-dbe4-40e2-9d3a-aa200f9e2277</gco:CharacterString>
       </cit:linkage>
       <cit:protocol>
         <gco:CharacterString>WWW:LINK-1.0-http--metadata-URL</gco:CharacterString>
@@ -256,7 +256,7 @@ Method:
 
 The freshwater exposure is calculated from the sum of the daily average salinity below the exposure threshold. Salinity levels above the threshold don't contribute at all to the exposure. Salinity levels below the threshold contribute in proportion to the amount below the threshold. As a result with a threshold of 28 PSU and an exposure to 22 PSU for 3 days the freshwater exposure would be (28-22)*3 = 18 PSU days. The same exposure at 25 PSU would take 6 days (28-25)*6 = 18 PSU days. This method of calculating exposure is conceptually very similar to temperature exposure measured in Degree Heating Weeks, where the higher the temperature is above the typical maximum summer temperature the faster the heat stress occurs. For freshwater exposure the stress occurs when the salinity drops below the threshold value. The lower the salinity the faster the exposure accumulates. More research is needed to determine if this is the best method for estimating stress from freshwater.
 
-A more detailed description of the processing, especially exposure calculations and regridding, is available in the "Technical Guide to Derived Products from CSIRO eReefs Models" document (https://nextcloud.eatlas.org.au/apps/sharealias/a/aims-ereefs-platform-technical-guide-to-derived-products-from-csiro-ereefs-models-pdf ).
+A more detailed description of the processing, especially exposure calculations and regridding, is available in the "Technical Guide to Derived Products from CSIRO eReefs Models" document (https://nextcloud.domain.com/apps/sharealias/a/aims-ereefs-platform-technical-guide-to-derived-products-from-csiro-ereefs-models-pdf ).
 
 
 Data Dictionary:
@@ -340,7 +340,7 @@ This dataset is based on a spatial and temporal model and as such is an estimate
                       <cit:onlineResource>
                         <cit:CI_OnlineResource>
                           <cit:linkage>
-                            <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
+                            <gco:CharacterString>https://domain.com</gco:CharacterString>
                           </cit:linkage>
                           <cit:protocol>
                             <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
@@ -404,7 +404,7 @@ This dataset is based on a spatial and temporal model and as such is an estimate
       <mri:graphicOverview>
         <mcc:MD_BrowseGraphic>
           <mcc:fileName>
-            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/e9a43553-dbe4-40e2-9d3a-aa200f9e2277/attachments/products__ncanimate__ereefs__gbr1_2-0__fresh-water-exposure_monthly_map_monthly_2019-02_townsville-3_-2.35.png</gco:CharacterString>
+            <gco:CharacterString>https://domain.com/geonetwork/srv/api/records/e9a43553-dbe4-40e2-9d3a-aa200f9e2277/attachments/products__ncanimate__ereefs__gbr1_2-0__fresh-water-exposure_monthly_map_monthly_2019-02_townsville-3_-2.35.png</gco:CharacterString>
           </mcc:fileName>
           <mcc:fileDescription>
             <gco:CharacterString>large_thumbnail</gco:CharacterString>
@@ -568,7 +568,7 @@ This dataset is based on a spatial and temporal model and as such is an estimate
           <mrd:onLine>
             <cit:CI_OnlineResource>
               <cit:linkage>
-                <gco:CharacterString>https://nextcloud.eatlas.org.au/apps/sharealias/a/aims-ereefs-platform-technical-guide-to-derived-products-from-csiro-ereefs-models-pdf</gco:CharacterString>
+                <gco:CharacterString>https://nextcloud.domain.com/apps/sharealias/a/aims-ereefs-platform-technical-guide-to-derived-products-from-csiro-ereefs-models-pdf</gco:CharacterString>
               </cit:linkage>
               <cit:protocol>
                 <gco:CharacterString>WWW:LINK-1.0-http--downloaddata</gco:CharacterString>

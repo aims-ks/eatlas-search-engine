@@ -20,7 +20,7 @@ public class DrupalNodeIndexerTest extends IndexerTestBase {
     @Override
     protected Map<String, String> getMockupUrlMap() {
         Map<String, String> urlMap = super.getMockupUrlMap();
-        urlMap.put("https://domain.com/jsonapi/node/article?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalArticleFiles/jsonapi/node/article_sort_-changed_page_5Blimit_5D_50_page_5Boffset_5D_0_filter_5Bstatus_5D_1");
+        urlMap.put("https://domain.com/jsonapi/node/article?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalArticleFiles/jsonapi/node/article.json");
         return urlMap;
     }
 

@@ -90,7 +90,7 @@
                   <cit:onlineResource>
                     <cit:CI_OnlineResource>
                       <cit:linkage>
-                        <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
+                        <gco:CharacterString>https://domain.com</gco:CharacterString>
                       </cit:linkage>
                       <cit:protocol>
                         <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
@@ -141,7 +141,7 @@
   <mdb:metadataLinkage>
     <cit:CI_OnlineResource>
       <cit:linkage>
-        <gco:CharacterString>https://eatlas.org.au/data/uuid/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068</gco:CharacterString>
+        <gco:CharacterString>https://domain.com/data/uuid/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068</gco:CharacterString>
       </cit:linkage>
       <cit:protocol>
         <gco:CharacterString>WWW:LINK-1.0-http--metadata-URL</gco:CharacterString>
@@ -525,7 +525,7 @@
 
 The aim of this study was to 1) identify the survival of coral recruits under simultaneous exposure to climate stress (temperature and pCO2) and light attenuation and 2) identify survival mechanisms (i.e., number of polyps, Symbiodinium quantities, photosynthetic efficiency).
 
-The climate scenarios (average of logged conditions) tested were: 
+The climate scenarios (average of logged conditions) tested were:
 - `Current`: temperature: 28.46 deg C, pCO2: 428 ppm
 - `Medium`: temperature: 28.95 deg C, pCO2: 692 ppm
 - `High`: temperature: 29.56 deg C, pCO2: 985 ppm
@@ -551,7 +551,7 @@ Note that the dataset only includes data for recruits that did not fuse with nei
 
 # Format:
 
-Excel Spreadsheet with 3 tables (`Experiment`: 16 columns x 12332 rows, `Temperature`: 5 columns x 26600 rows, `pCO2`: 5 rows x 14544 rows). 
+Excel Spreadsheet with 3 tables (`Experiment`: 16 columns x 12332 rows, `Temperature`: 5 columns x 26600 rows, `pCO2`: 5 rows x 14544 rows).
 
 
 # Data Dictionary:
@@ -559,8 +559,8 @@ Excel Spreadsheet with 3 tables (`Experiment`: 16 columns x 12332 rows, `Tempera
 - `experiment`: 1: one-month light attenuation one month after settlement, 2 one-month light attenuation two months after settlement
 - `climate`: climate condition that each tank was subjected to: `Current`, `Medium` and `High` conditions.
 - `age_month`: age in months following settlement climate = climate treatment based on manipulated temperature and pCO2, see "Temperatures" and "pCO2" tab for details
-- `light_PAR`: light attenuation in photosynthetic active radiation (umol photons m-2 s-1) during the attenuation period. The PAR specified corresponds to the maximum light intensity during a day. 
-- `light_DLI`: light attenuation as Daily Light Integral (mol photons m-2 d-1) during the attenuation period. This corresponds to the total accumulated light received over the day. During the night light was 0. Between 6 am and 9 am light ramped up to the maximum value (light_PAR). It stayed at this level during the day and ramped down to zero from 3 pm to 6 pm. 
+- `light_PAR`: light attenuation in photosynthetic active radiation (umol photons m-2 s-1) during the attenuation period. The PAR specified corresponds to the maximum light intensity during a day.
+- `light_DLI`: light attenuation as Daily Light Integral (mol photons m-2 d-1) during the attenuation period. This corresponds to the total accumulated light received over the day. During the night light was 0. Between 6 am and 9 am light ramped up to the maximum value (light_PAR). It stayed at this level during the day and ramped down to zero from 3 pm to 6 pm.
 - `tank_ID`: identification number of climate controllable aquarium
 - `disc_ID`: identification number of discs where coral recruits settled on
 - `recruit_ID_on_disc`: identification number of each recruit on each disc
@@ -645,7 +645,7 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
                       <cit:onlineResource>
                         <cit:CI_OnlineResource>
                           <cit:linkage>
-                            <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
+                            <gco:CharacterString>https://domain.com</gco:CharacterString>
                           </cit:linkage>
                           <cit:protocol>
                             <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
@@ -741,7 +741,7 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
       <mri:graphicOverview>
         <mcc:MD_BrowseGraphic>
           <mcc:fileName>
-            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068/attachments/preview-image-recruits-on-disks.jpg</gco:CharacterString>
+            <gco:CharacterString>https://domain.com/geonetwork/srv/api/records/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068/attachments/preview-image-recruits-on-disks.jpg</gco:CharacterString>
           </mcc:fileName>
           <mcc:fileDescription>
             <gco:CharacterString>large_thumbnail</gco:CharacterString>
@@ -853,7 +853,7 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
           <mrd:onLine>
             <cit:CI_OnlineResource>
               <cit:linkage>
-                <gco:CharacterString>https://eatlas.org.au/nesp-twq-5/gbr-cumulative-impacts-5-2</gco:CharacterString>
+                <gco:CharacterString>https://domain.com/nesp-twq-5/gbr-cumulative-impacts-5-2</gco:CharacterString>
               </cit:linkage>
               <cit:protocol>
                 <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
@@ -866,7 +866,7 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
           <mrd:onLine>
             <cit:CI_OnlineResource>
               <cit:linkage>
-                <gco:CharacterString>https://nextcloud.eatlas.org.au/apps/sharealias/a/GBR_NESP-TWQ-5-2_AIMS_Cum-impacts-temp-light-pCO2_A-millepora-recruits_20220323</gco:CharacterString>
+                <gco:CharacterString>https://nextcloud.domain.com/apps/sharealias/a/GBR_NESP-TWQ-5-2_AIMS_Cum-impacts-temp-light-pCO2_A-millepora-recruits_20220323</gco:CharacterString>
               </cit:linkage>
               <cit:protocol>
                 <gco:CharacterString>WWW:LINK-1.0-http--downloaddata</gco:CharacterString>
