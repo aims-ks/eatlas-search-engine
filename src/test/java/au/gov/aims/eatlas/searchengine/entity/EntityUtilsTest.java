@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -33,11 +34,14 @@ public class EntityUtilsTest {
      */
     @Test
     public void testHarvestURL() throws IOException, InterruptedException {
+        HttpClient httpClient = HttpClient.getInstance();
+
         Messages messages = Messages.getInstance(null);
         String url = "https://google.com";
         int minimumExpectedFileSize = 10000;
 
-        String htmlContent = EntityUtils.harvestGetURL(url, messages);
+        HttpClient.Response response = httpClient.getRequest(url, messages);
+        String htmlContent = response.body();
 
         Assert.assertNotNull("Google page returned null content.", htmlContent);
         Assert.assertTrue("The HTML document returned by Google.com is smaller than expected.",
@@ -48,11 +52,14 @@ public class EntityUtilsTest {
 
     @Test
     public void testHarvestURLRedirection() throws IOException, InterruptedException {
+        HttpClient httpClient = HttpClient.getInstance();
+
         Messages messages = Messages.getInstance(null);
         String url = "http://google.com"; // This URL redirects to "https://www.google.com"
         int minimumExpectedFileSize = 10000;
 
-        String htmlContent = EntityUtils.harvestGetURL(url, messages);
+        HttpClient.Response response = httpClient.getRequest(url, messages);
+        String htmlContent = response.body();
 
         Assert.assertNotNull("Google page returned null content.", htmlContent);
         Assert.assertTrue("The HTML document returned by Google.com is smaller than expected.",
@@ -66,21 +73,25 @@ public class EntityUtilsTest {
     @Ignore
     @Test (expected = java.net.UnknownHostException.class)
     public void testHarvestBrokenURL() throws IOException, InterruptedException {
+        HttpClient httpClient = HttpClient.getInstance();
+
         Messages messages = Messages.getInstance(null);
-        String url = "https://bad_url_cef393a8cdff31563033e8b742dcadd5.com";
-        EntityUtils.harvestGetURL(url, messages);
+        String url = "https://bad.url.cef393a8cdff31563033e8b742dcadd5.com";
+        httpClient.getRequest(url, messages);
     }
 
     // Disabled: The old legacy eAtlas GeoServer is retired
     @Ignore
     @Test
     public void testLegacyGeoServer() throws IOException, InterruptedException {
+        HttpClient httpClient = HttpClient.getInstance();
         Messages messages = Messages.getInstance(null);
         // The legacy GeoServer is very slow to response.
         // This is a good test to test JSoup timeout.
         String url = "http://maps.eatlas.org.au:80/geoserver/wms?REQUEST=GetMap&FORMAT=image%2Fpng&SRS=EPSG%3A4326&CRS=EPSG%3A4326&BBOX=144.406341552734%2C-20.206720352173%2C147.492263793945%2C-14.980480194092&VERSION=1.1.1&STYLES=&SERVICE=WMS&WIDTH=118&HEIGHT=200&TRANSPARENT=true&LAYERS=ea%3AJCU_Vertebrate-Herbert_River_Ringtail_Possum-realized";
 
-        String content = EntityUtils.harvestGetURL(url, messages);
+        HttpClient.Response response = httpClient.getRequest(url, messages);
+        String content = response.body();
         System.out.println(String.format("Content length: %d", content.length()));
     }
 
@@ -139,7 +150,7 @@ public class EntityUtilsTest {
         };
 
         for (String[] expectedPair : expected) {
-            String textContent = EntityUtils.extractHTMLTextContent(expectedPair[0]);
+            String textContent = HttpClient.extractHTMLTextContent(expectedPair[0]);
             Assert.assertEquals(expectedPair[1], textContent);
         }
     }

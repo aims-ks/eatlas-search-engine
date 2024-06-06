@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.client;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
@@ -226,7 +227,7 @@ public class SearchUtils {
         return foundIndexer != null;
     }
 
-    public static AbstractIndexer<?> addIndex(String newIndexType) throws Exception {
+    public static AbstractIndexer<?> addIndex(HttpClient httpClient, String newIndexType) throws Exception {
         if (newIndexType == null || newIndexType.isEmpty()) {
             return null;
         }
@@ -239,32 +240,32 @@ public class SearchUtils {
         switch (newIndexType) {
             case "DrupalNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-node");
-                newIndexer = new DrupalNodeIndexer(newIndex, null, null, null, null, null, null);
+                newIndexer = new DrupalNodeIndexer(httpClient, newIndex, null, null, null, null, null, null);
                 break;
 
             case "DrupalMediaIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-media");
-                newIndexer = new DrupalMediaIndexer(newIndex, null, null, null, null, null, null, null);
+                newIndexer = new DrupalMediaIndexer(httpClient, newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "DrupalExternalLinkNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-extlink");
-                newIndexer = new DrupalExternalLinkNodeIndexer(newIndex, null, null, null, null, null, null, null);
+                newIndexer = new DrupalExternalLinkNodeIndexer(httpClient, newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "DrupalBlockIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-block");
-                newIndexer = new DrupalBlockIndexer(newIndex, null, null, null, null, null, null);
+                newIndexer = new DrupalBlockIndexer(httpClient, newIndex, null, null, null, null, null, null);
                 break;
 
             case "GeoNetworkIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("geonetwork");
-                newIndexer = new GeoNetworkIndexer(newIndex, null, null);
+                newIndexer = new GeoNetworkIndexer(httpClient, newIndex, null, null);
                 break;
 
             case "AtlasMapperIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("atlasmapper");
-                newIndexer = new AtlasMapperIndexer(newIndex, null, null, null);
+                newIndexer = new AtlasMapperIndexer(httpClient, newIndex, null, null, null);
                 break;
 
             default:

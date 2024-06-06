@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
@@ -28,13 +29,13 @@ import java.util.Map;
 
 public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
 
-    public static DrupalNodeIndexer fromJSON(String index, JSONObject json) {
+    public static DrupalNodeIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalNodeIndexer(
-            index,
+            httpClient, index,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
@@ -60,6 +61,7 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
      * drupalNodeType: article
      */
     public DrupalNodeIndexer(
+            HttpClient httpClient,
             String index,
             String drupalUrl,
             String drupalVersion,
@@ -68,7 +70,7 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             String drupalIndexedFields,
             String drupalGeoJSONField) {
 
-        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
+        super(httpClient, index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
     }
 
     @Override

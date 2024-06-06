@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
@@ -31,13 +32,13 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
 
     private String drupalTitleField;
 
-    public static DrupalMediaIndexer fromJSON(String index, JSONObject json) {
+    public static DrupalMediaIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalMediaIndexer(
-            index,
+            httpClient, index,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalMediaType", null),
@@ -70,6 +71,7 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
      * drupalMediaType: image
      */
     public DrupalMediaIndexer(
+            HttpClient httpClient,
             String index,
             String drupalUrl,
             String drupalVersion,
@@ -80,7 +82,7 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String drupalGeoJSONField
     ) {
 
-        super(index, drupalUrl, drupalVersion, "media", drupalMediaType,
+        super(httpClient, index, drupalUrl, drupalVersion, "media", drupalMediaType,
                 (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
                 drupalIndexedFields, drupalGeoJSONField);
 

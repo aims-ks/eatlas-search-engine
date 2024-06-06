@@ -18,10 +18,10 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
-import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -29,7 +29,6 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.uri.UriComponent;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Connection;
 
 import java.io.File;
 import java.net.URI;
@@ -55,13 +54,13 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private String atlasMapperVersion;
     private String baseLayerUrl;
 
-    public static AtlasMapperIndexer fromJSON(String index, JSONObject json) {
+    public static AtlasMapperIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new AtlasMapperIndexer(
-            index,
+            httpClient, index,
             json.optString("atlasMapperClientUrl", null),
             json.optString("atlasMapperVersion", null),
             json.optString("baseLayerUrl", null));
@@ -92,15 +91,25 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
     @Override
     protected AtlasMapperLayer harvestEntity(SearchClient client, String layerId, Messages messages) {
+        HttpClient httpClient = this.getHttpClient();
         // If we have a layerInfoService, use that to get info about the layer.
         // If not, pull the whole list of layer and find the info about that single layer.
 
         String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
-        JsonResponse mainResponse = AtlasMapperIndexer.getJsonResponse(mainUrlStr, messages);
+
+        HttpClient.Response mainResponse;
+        try {
+            mainResponse = httpClient.getRequest(mainUrlStr, messages);
+        } catch(Exception ex) {
+            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper configuration file: %s",
+                    mainUrlStr), ex);
+            return null;
+        }
         if (mainResponse == null) {
             return null;
         }
-        JSONObject jsonMainConfig = mainResponse.getJson();
+
+        JSONObject jsonMainConfig = mainResponse.jsonBody();
 
         // Example: /atlasmapper/public/layersInfo.jsp
         String layerInfoServiceUrl = jsonMainConfig.optString("layerInfoServiceUrl", null);
@@ -113,9 +122,17 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             String layerInfoUrlStr = String.format("%s%s?client=%s&layerIds=%s",
                         this.atlasMapperClientUrl, layerInfoServiceUrl, clientId, layerId);
 
-            JsonResponse layerInfoResponse = AtlasMapperIndexer.getJsonResponse(layerInfoUrlStr, messages);
+            HttpClient.Response layerInfoResponse;
+            try {
+                layerInfoResponse = httpClient.getRequest(layerInfoUrlStr, messages);
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper configuration file: %s",
+                        layerInfoUrlStr), ex);
+                return null;
+            }
+
             if (layerInfoResponse != null) {
-                JSONObject jsonLayerResponse = layerInfoResponse.getJson();
+                JSONObject jsonLayerResponse = layerInfoResponse.jsonBody();
                 if (jsonLayerResponse != null) {
                     JSONObject jsonLayerData = jsonLayerResponse.optJSONObject("data");
                     if (jsonLayerData != null) {
@@ -128,9 +145,18 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             // Get the layer info from the list of all layers.
             // The list can be pretty long, that might take a while...
             String layersUrlStr = String.format("%s/config/layers.json", this.atlasMapperClientUrl);
-            JsonResponse layersResponse = AtlasMapperIndexer.getJsonResponse(layersUrlStr, messages);
+
+            HttpClient.Response layersResponse;
+            try {
+                layersResponse = httpClient.getRequest(layersUrlStr, messages);
+            } catch(Exception ex) {
+                messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper configuration file: %s",
+                        layersUrlStr), ex);
+                return null;
+            }
+
             if (layersResponse != null) {
-                JSONObject jsonLayers = layersResponse.getJson();
+                JSONObject jsonLayers = layersResponse.jsonBody();
                 jsonLayer = jsonLayers.optJSONObject(layerId);
             }
         }
@@ -140,7 +166,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 jsonLayer, jsonMainConfig, messages);
 
         AtlasMapperIndexer.updateThumbnail(
-                layerId, this.getIndex(), jsonLayer,
+                httpClient, layerId, this.getIndex(), jsonLayer,
                 this.baseLayerUrl, jsonMainConfig, layerEntity, messages);
 
         return layerEntity;
@@ -151,8 +177,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
      * atlasMapperClientUrl: https://maps.eatlas.org.au
      * atlasMapperVersion: 2.2.0
      */
-    public AtlasMapperIndexer(String index, String atlasMapperClientUrl, String atlasMapperVersion, String baseLayerUrl) {
-        super(index);
+    public AtlasMapperIndexer(HttpClient httpClient, String index, String atlasMapperClientUrl, String atlasMapperVersion, String baseLayerUrl) {
+        super(httpClient, index);
         this.atlasMapperClientUrl = atlasMapperClientUrl;
         this.atlasMapperVersion = atlasMapperVersion;
         this.baseLayerUrl = baseLayerUrl;
@@ -167,26 +193,45 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
     @Override
     protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
+        HttpClient httpClient = this.getHttpClient();
         // There is no way to get last modified layers from AtlasMapper.
         // Therefore, we only perform a harvest if the JSON files are more recent than lastHarvested.
 
         // Get the main configuration file, containing the map of data sources
         // "https://maps.eatlas.org.au/config/main.json"
         String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
-        JsonResponse mainResponse = AtlasMapperIndexer.getJsonResponse(mainUrlStr, messages);
+
+        HttpClient.Response mainResponse;
+        try {
+            mainResponse = httpClient.getRequest(mainUrlStr, messages);
+        } catch(Exception ex) {
+            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper configuration file: %s",
+                    mainUrlStr), ex);
+            return;
+        }
+
         if (mainResponse == null) {
             return;
         }
-        Long mainLastModified = mainResponse.getLastModified();
+        Long mainLastModified = mainResponse.lastModified();
 
         // Get the list of layers
         // "https://maps.eatlas.org.au/config/layers.json"
         String layersUrlStr = String.format("%s/config/layers.json", this.atlasMapperClientUrl);
-        JsonResponse layersResponse = AtlasMapperIndexer.getJsonResponse(layersUrlStr, messages);
+
+        HttpClient.Response layersResponse;
+        try {
+            layersResponse = httpClient.getRequest(layersUrlStr, messages);
+        } catch(Exception ex) {
+            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper configuration file: %s",
+                    layersUrlStr), ex);
+            return;
+        }
+
         if (layersResponse == null) {
             return;
         }
-        Long layersLastModified = layersResponse.getLastModified();
+        Long layersLastModified = layersResponse.lastModified();
 
         boolean refreshThumbnails = true;
         if (lastHarvested != null) {
@@ -213,8 +258,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             refreshThumbnails = false;
         }
 
-        JSONObject jsonMainConfig = mainResponse.getJson();
-        JSONObject jsonLayersConfig = layersResponse.getJson();
+        JSONObject jsonMainConfig = mainResponse.jsonBody();
+        JSONObject jsonLayersConfig = layersResponse.jsonBody();
 
         this.indexLayers(client, messages, jsonMainConfig, jsonLayersConfig, refreshThumbnails);
     }
@@ -364,6 +409,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     public static void updateThumbnail(
+            HttpClient httpClient,
             String layerId, String index,
             JSONObject jsonLayer,
             String baseLayerUrl,
@@ -373,7 +419,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         try {
             File cachedThumbnailFile = AtlasMapperIndexer.createLayerThumbnail(
-                    layerId, index, jsonLayer, baseLayerUrl, jsonMainConfig, messages);
+                    httpClient, layerId, index, jsonLayer, baseLayerUrl, jsonMainConfig, messages);
 
             if (cachedThumbnailFile != null) {
                 layerEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
@@ -387,6 +433,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     private static File createLayerThumbnail(
+            HttpClient httpClient,
             String layerId, String index,
             JSONObject jsonLayer,
             String baseLayerUrlStr,
@@ -426,49 +473,11 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         // If layer is a base layer (or can't find a WMS base layer), simply call cache with the layer URL.
         if (baseLayerUrl == null) {
-            return ImageCache.cache(layerUrl, index, layerId, messages);
+            return ImageCache.cache(httpClient, layerUrl, index, layerId, messages);
         }
 
         // Combine layers and cache them.
-        return ImageCache.cacheLayer(baseLayerUrl, layerUrl, index, layerId, messages);
-    }
-
-    public static JsonResponse getJsonResponse(String url, Messages messages) {
-        Connection.Response response = null;
-        try {
-            response = EntityUtils.jsoupExecuteWithRetry(url, messages);
-        } catch(Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while downloading the AtlasMapper configuration file: %s",
-                    url), ex);
-            return null;
-        }
-        Long lastModified = IndexUtils.parseHttpLastModifiedHeader(response, messages);
-
-        String responseStr = response.body();
-        JSONObject json = null;
-        if (responseStr != null && !responseStr.isEmpty()) {
-            json = new JSONObject(responseStr);
-        }
-
-        return new JsonResponse(json, lastModified);
-    }
-
-    private static class JsonResponse {
-        private Long lastModified;
-        private JSONObject json;
-
-        public JsonResponse(JSONObject json, Long lastModified) {
-            this.lastModified = lastModified;
-            this.json = json;
-        }
-
-        public Long getLastModified() {
-            return this.lastModified;
-        }
-
-        public JSONObject getJson() {
-            return this.json;
-        }
+        return ImageCache.cacheLayer(httpClient, baseLayerUrl, layerUrl, index, layerId, messages);
     }
 
     private static class BboxInfo {
@@ -609,6 +618,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         @Override
         public void run() {
+            HttpClient httpClient = AtlasMapperIndexer.this.getHttpClient();
             JSONObject jsonLayer = this.jsonLayersConfig.optJSONObject(this.atlasMapperLayerId);
 
             AtlasMapperLayer layerEntity = new AtlasMapperLayer(
@@ -633,7 +643,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 boolean thumbnailNeedsUpdate = newLayer || (outdatedThumbnail && this.refreshThumbnails);
                 if (thumbnailNeedsUpdate) {
                     AtlasMapperIndexer.updateThumbnail(
-                            this.atlasMapperLayerId, AtlasMapperIndexer.this.getIndex(),
+                            httpClient, this.atlasMapperLayerId, AtlasMapperIndexer.this.getIndex(),
                             jsonLayer, this.baseLayerUrl, this.jsonMainConfig,
                             layerEntity, this.messages);
                 } else {

@@ -46,10 +46,11 @@ public class Main {
         boolean fullHarvest = true;
 
         Messages messages = Messages.getInstance(null);
+        HttpClient httpClient = HttpClient.getInstance();
 
         File configFile = new File("/var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/eatlas_search_engine.json");
 
-        SearchEngineConfig config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json", messages);
+        SearchEngineConfig config = SearchEngineConfig.createInstance(httpClient, configFile, "eatlas_search_engine_devel.json", messages);
 
         // Reindex everything
         //Index.internalReindex(fullHarvest);

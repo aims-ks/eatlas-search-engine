@@ -1,5 +1,6 @@
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalBlock;
@@ -10,13 +11,13 @@ import java.util.Map;
 
 public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock> {
 
-    public static DrupalBlockIndexer fromJSON(String index, JSONObject json) {
+    public static DrupalBlockIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalBlockIndexer(
-            index,
+            httpClient, index,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalBlockType", null),
@@ -42,6 +43,7 @@ public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock>
      * drupalNodeType: article
      */
     public DrupalBlockIndexer(
+            HttpClient httpClient,
             String index,
             String drupalUrl,
             String drupalVersion,
@@ -50,7 +52,7 @@ public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock>
             String drupalIndexedFields,
             String drupalGeoJSONField) {
 
-        super(index, drupalUrl, drupalVersion, "block_content", drupalBlockType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
+        super(httpClient, index, drupalUrl, drupalVersion, "block_content", drupalBlockType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
     }
 
     @Override

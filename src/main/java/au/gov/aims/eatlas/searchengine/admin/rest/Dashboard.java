@@ -44,6 +44,8 @@ import java.util.Map;
 @Path("/")
 public class Dashboard {
 
+    // TODO Add config for number of shards + replicas
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Viewable dashboard(

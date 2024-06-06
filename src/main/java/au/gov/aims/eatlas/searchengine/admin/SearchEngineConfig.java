@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.entity.User;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
@@ -52,6 +53,7 @@ public class SearchEngineConfig {
     private static final String CONFIG_FILE_PROPERTY = "{WEBAPP-NAME}_CONFIG_FILE";
 
     private static SearchEngineConfig instance;
+    private HttpClient httpClient;
 
     private long lastModified;
     private final File configFile;
@@ -70,21 +72,23 @@ public class SearchEngineConfig {
 
     private String reindexToken;
 
-    private SearchEngineConfig(File configFile, Messages messages) throws IOException {
+    private SearchEngineConfig(HttpClient httpClient, File configFile, Messages messages) throws IOException {
+        this.httpClient = httpClient;
         this.configFile = configFile;
         this.reload(messages);
     }
 
     // For internal use (rest.WebApplication)
-    public static SearchEngineConfig createInstance(ServletContext context, Messages messages) throws Exception {
+    public static SearchEngineConfig createInstance(HttpClient httpClient, ServletContext context, Messages messages) throws Exception {
         return createInstance(
+                httpClient,
                 SearchEngineConfig.findConfigFile(context, messages),
                 "eatlas_search_engine_default.json", messages);
     }
 
     // For internal use (unit tests)
     public static SearchEngineConfig createInstance(
-            File configFile, String configFileResourcePath, Messages messages) throws Exception {
+            HttpClient httpClient, File configFile, String configFileResourcePath, Messages messages) throws Exception {
 
         File stateFile = SearchEngineConfig.findStateFile(configFile);
         if (SearchEngineConfig.checkStateFile(stateFile, true, messages)) {
@@ -93,7 +97,7 @@ public class SearchEngineConfig {
 
         instance = null;
         if (SearchEngineConfig.checkConfigFile(configFile, configFileResourcePath, true, messages)) {
-            instance = new SearchEngineConfig(configFile, messages);
+            instance = new SearchEngineConfig(httpClient, configFile, messages);
         }
 
         return instance;
@@ -483,7 +487,7 @@ public class SearchEngineConfig {
         if (jsonIndexers != null) {
             for (int i=0; i<jsonIndexers.length(); i++) {
                 JSONObject jsonIndexer = jsonIndexers.optJSONObject(i);
-                AbstractIndexer<?> indexer = AbstractIndexer.fromJSON(jsonIndexer, messages);
+                AbstractIndexer<?> indexer = AbstractIndexer.fromJSON(this.httpClient, jsonIndexer, messages);
                 if (indexer != null) {
                     this.addIndexer(indexer);
                 }

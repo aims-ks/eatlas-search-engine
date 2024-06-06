@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
@@ -58,6 +59,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     // WKT used when the indexed document does not have a defined WKT.
     public static final String DEFAULT_WKT = WHOLE_WORLD_WKT;
 
+    private HttpClient httpClient;
     private boolean enabled;
     private String index;
     private Long thumbnailTTL; // TTL, in days
@@ -69,7 +71,8 @@ public abstract class AbstractIndexer<E extends Entity> {
     private long completed;
     private long indexed;
 
-    public AbstractIndexer(String index) {
+    public AbstractIndexer(HttpClient httpClient, String index) {
+        this.httpClient = httpClient;
         this.index = index;
     }
 
@@ -77,6 +80,10 @@ public abstract class AbstractIndexer<E extends Entity> {
     protected abstract E harvestEntity(SearchClient client, String id, Messages messages);
     public abstract E load(JSONObject json, Messages messages);
     public abstract JSONObject toJSON();
+
+    public HttpClient getHttpClient() {
+        return this.httpClient;
+    }
 
     public boolean validate() {
         if (this.index == null || this.index.isEmpty()) {
@@ -157,7 +164,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             .put("brokenThumbnailTTL", this.brokenThumbnailTTL);
     }
 
-    public static AbstractIndexer<?> fromJSON(JSONObject json, Messages messages) {
+    public static AbstractIndexer<?> fromJSON(HttpClient httpClient, JSONObject json, Messages messages) {
         if (json == null) {
             return null;
         }
@@ -181,27 +188,27 @@ public abstract class AbstractIndexer<E extends Entity> {
         AbstractIndexer<?> indexer = null;
         switch(type) {
             case "AtlasMapperIndexer":
-                indexer = AtlasMapperIndexer.fromJSON(index, json);
+                indexer = AtlasMapperIndexer.fromJSON(httpClient, index, json);
                 break;
 
             case "DrupalNodeIndexer":
-                indexer = DrupalNodeIndexer.fromJSON(index, json);
+                indexer = DrupalNodeIndexer.fromJSON(httpClient, index, json);
                 break;
 
             case "DrupalExternalLinkNodeIndexer":
-                indexer = DrupalExternalLinkNodeIndexer.fromJSON(index, json);
+                indexer = DrupalExternalLinkNodeIndexer.fromJSON(httpClient, index, json);
                 break;
 
             case "DrupalBlockIndexer":
-                indexer = DrupalBlockIndexer.fromJSON(index, json);
+                indexer = DrupalBlockIndexer.fromJSON(httpClient, index, json);
                 break;
 
             case "DrupalMediaIndexer":
-                indexer = DrupalMediaIndexer.fromJSON(index, json);
+                indexer = DrupalMediaIndexer.fromJSON(httpClient, index, json);
                 break;
 
             case "GeoNetworkIndexer":
-                indexer = GeoNetworkIndexer.fromJSON(index, json);
+                indexer = GeoNetworkIndexer.fromJSON(httpClient, index, json);
                 break;
 
             default:

@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
@@ -38,6 +39,7 @@ public class GeoShapeTestManual {
     // Attempting to isolate and resolve the GeoShape bug
     @Test
     public void testGeoShapeBug() throws Exception {
+        MockHttpClient mockHttpClient = MockHttpClient.getInstance();
         String index = "unit_test";
         GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy record");
@@ -99,7 +101,7 @@ public class GeoShapeTestManual {
         record.setWktAndAttributes("POLYGON ((-175.4736328125 -31.245117187500004, -171.2548828125 36.9580078125, 171.8701171875 39.0673828125, 175.3857421875 -30.5419921875, -32.0361328125 -34.0576171875, -175.4736328125 -31.245117187500004))");
 
         // Indexation
-        GeoNetworkIndexer indexer = new GeoNetworkIndexer(index, "http://domain.com/geonetwork", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
         try(
                 RestClient restClient = RestClient.builder(
                     new HttpHost[]{
@@ -123,6 +125,7 @@ public class GeoShapeTestManual {
 
     @Test
     public void testNaturalEarthData() throws Exception {
+        MockHttpClient mockHttpClient = MockHttpClient.getInstance();
         String index = "unit_test";
         GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy record");
@@ -138,7 +141,7 @@ public class GeoShapeTestManual {
         }
 
         // Indexation
-        GeoNetworkIndexer indexer = new GeoNetworkIndexer(index, "http://domain.com/geonetwork", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
         try(
                 RestClient restClient = RestClient.builder(
                     new HttpHost[]{
@@ -162,6 +165,7 @@ public class GeoShapeTestManual {
 
     @Test
     public void testCAPAD() throws Exception {
+        MockHttpClient mockHttpClient = MockHttpClient.getInstance();
         String index = "unit_test";
         GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy CAPAD record");
@@ -177,7 +181,7 @@ public class GeoShapeTestManual {
         }
 
         // Indexation
-        GeoNetworkIndexer indexer = new GeoNetworkIndexer(index, "http://domain.com/geonetwork", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
         try(
                 RestClient restClient = RestClient.builder(
                     new HttpHost[]{

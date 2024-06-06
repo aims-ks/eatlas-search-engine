@@ -18,9 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
-import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
@@ -58,13 +58,13 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     // Set to false when running Tests. Mockito doesn't work with Threads.
     private static boolean multiThread = true;
 
-    public static GeoNetworkIndexer fromJSON(String index, JSONObject json) {
+    public static GeoNetworkIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new GeoNetworkIndexer(
-            index,
+            httpClient, index,
             json.optString("geoNetworkUrl", null),
             json.optString("geoNetworkVersion", null));
     }
@@ -110,6 +110,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     private GeoNetworkRecord harvestEntity(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, String metadataSchema, Messages messages) {
+        HttpClient httpClient = this.getHttpClient();
+
         String url;
         String geoNetworkUrl = this.getGeoNetworkUrl();
         String urlBase = String.format("%s/srv/eng/xml.metadata.get", geoNetworkUrl);
@@ -126,10 +128,10 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             return null;
         }
 
-        String responseStr;
+        HttpClient.Response response = null;
         try {
             //LOGGER.info(String.format("Harvesting metadata record UUID: %s from: %s", metadataRecordUUID, url));
-            responseStr = EntityUtils.harvestGetURL(url, messages);
+            response = httpClient.getRequest(url, messages);
         } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting the metadata record UUID: %s%nUrl: %s",
                     metadataRecordUUID, url), ex);
@@ -137,6 +139,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             return null;
         }
 
+        String responseStr = response == null ? null : response.body();
         if (responseStr != null && !responseStr.isEmpty()) {
             try (ByteArrayInputStream input = new ByteArrayInputStream(responseStr.getBytes(StandardCharsets.UTF_8))) {
 
@@ -162,7 +165,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     GeoNetworkRecord oldRecord = this.safeGet(client, GeoNetworkRecord.class, geoNetworkRecord.getId(), messages);
                     if (geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), messages)) {
                         try {
-                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), geoNetworkRecord.getId(), messages);
+                            File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), geoNetworkRecord.getId(), messages);
                             if (cachedThumbnailFile != null) {
                                 geoNetworkRecord.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                             }
@@ -193,8 +196,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
      * geoNetworkUrl: https://eatlas.org.au/geonetwork
      * geoNetworkVersion: 3.6.0 ?
      */
-    public GeoNetworkIndexer(String index, String geoNetworkUrl, String geoNetworkVersion) {
-        super(index);
+    public GeoNetworkIndexer(HttpClient httpClient, String index, String geoNetworkUrl, String geoNetworkVersion) {
+        super(httpClient, index);
         this.geoNetworkUrl = geoNetworkUrl;
         this.geoNetworkVersion = geoNetworkVersion;
     }
@@ -206,6 +209,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
     @Override
     protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
+        HttpClient httpClient = this.getHttpClient();
+
         String lastHarvestedISODateStr = null;
         if (lastHarvested != null) {
             // Date format: YYYY-MM-DD, according to the doc for Q search (which is the same as xml.search)
@@ -270,9 +275,9 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 return;
             }
 
-            String responseStr = null;
+            HttpClient.Response response = null;
             try {
-                responseStr = EntityUtils.harvestGetURL(url, messages);
+                response = httpClient.getRequest(url, messages);
             } catch(Exception ex) {
                 if (!crashed) {
                     messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting GeoNetwork record list: %s",
@@ -281,6 +286,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 crashed = true;
             }
 
+            String responseStr = response == null ? null : response.body();
             if (responseStr != null && !responseStr.isEmpty()) {
 
                 // JDOM tutorial:

@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
@@ -80,13 +81,14 @@ public class SettingsPage {
     ) {
         HttpSession session = httpRequest.getSession(true);
         Messages messages = Messages.getInstance(session);
+        HttpClient httpClient = HttpClient.getInstance();
 
         if (form.containsKey("save-button")) {
             this.save(form, messages);
         } else if (form.containsKey("commit-button")) {
             this.commit(form, messages);
         } else if (form.containsKey("add-index-button")) {
-            this.addIndex(form, messages);
+            this.addIndex(httpClient, form, messages);
         } else if (form.containsKey("delete-button")) {
             this.deleteIndex(FormUtils.getFormStringValue(form, "delete-button"), messages);
         } else {
@@ -99,7 +101,7 @@ public class SettingsPage {
         return settingsPage(httpRequest);
     }
 
-    private void addIndex(MultivaluedMap<String, String> form, Messages messages) {
+    private void addIndex(HttpClient httpClient, MultivaluedMap<String, String> form, Messages messages) {
         String newIndexType = FormUtils.getFormStringValue(form, "newIndexType");
         // Call delete orphan indexes
         try {
@@ -110,7 +112,7 @@ public class SettingsPage {
         }
 
         try {
-            SearchUtils.addIndex(newIndexType);
+            SearchUtils.addIndex(httpClient, newIndexType);
         } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
                 String.format("An exception occurred while adding the new index: %s", newIndexType), ex);

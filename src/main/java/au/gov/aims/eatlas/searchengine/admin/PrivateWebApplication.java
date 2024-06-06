@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.rest.PublicWebApplication;
@@ -31,10 +32,11 @@ public class PrivateWebApplication extends ResourceConfig {
     private static final Logger LOGGER = Logger.getLogger(PublicWebApplication.class.getName());
 
     public PrivateWebApplication(@Context ServletContext servletContext) {
+        HttpClient httpCLient = HttpClient.getInstance();
         Messages messages = Messages.getInstance(null);
 
         try {
-            SearchEngineConfig.createInstance(servletContext, messages);
+            SearchEngineConfig.createInstance(httpCLient, servletContext, messages);
             try {
                 SearchUtils.deleteOrphanIndexes();
             } catch (Exception ex) {

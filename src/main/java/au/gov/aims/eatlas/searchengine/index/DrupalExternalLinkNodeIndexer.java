@@ -18,9 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
-import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -34,13 +34,13 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     private String drupalExternalUrlField;
     private String drupalContentOverwriteField;
 
-    public static DrupalExternalLinkNodeIndexer fromJSON(String index, JSONObject json) {
+    public static DrupalExternalLinkNodeIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalExternalLinkNodeIndexer(
-            index,
+            httpClient, index,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
@@ -74,6 +74,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
      * drupalNodeType: article
      */
     public DrupalExternalLinkNodeIndexer(
+            HttpClient httpClient,
             String index,
             String drupalUrl,
             String drupalVersion,
@@ -83,7 +84,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             String drupalContentOverwriteField,
             String drupalGeoJSONField
     ) {
-        super(index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalGeoJSONField);
+        super(httpClient, index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalGeoJSONField);
         this.drupalExternalUrlField = drupalExternalUrlField;
         this.drupalContentOverwriteField = drupalContentOverwriteField;
     }
@@ -100,6 +101,8 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
 
     @Override
     protected boolean parseJsonDrupalEntity(SearchClient client, JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, ExternalLink externalLink, Messages messages) {
+        HttpClient httpClient = this.getHttpClient();
+
         if (this.drupalExternalUrlField != null) {
             String externalLinkStr = DrupalExternalLinkNodeIndexer.getExternalLink(jsonApiNode, this.drupalExternalUrlField);
             if (externalLinkStr != null && !externalLinkStr.isEmpty()) {
@@ -122,7 +125,8 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
 
                     // Download the text content of the URL
                     try {
-                        content = EntityUtils.harvestURLText(externalLinkStr, messages);
+                        HttpClient.Response response = httpClient.getRequest(externalLinkStr, messages);
+                        content = response.extractText();
                     } catch (Exception ex) {
                         messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while harvesting URL for Drupal node external link %s, id: %s. URL %s",
                                 this.getDrupalBundleId(),

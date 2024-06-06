@@ -1,5 +1,6 @@
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
@@ -105,6 +106,7 @@ public abstract class IndexerTestBase {
             String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             Connection.Response mockResponse = Mockito.mock(Connection.Response.class);
             Mockito.when(mockResponse.statusCode()).thenReturn(200);
+            Mockito.when(mockResponse.bodyAsBytes()).thenReturn(content.getBytes(StandardCharsets.UTF_8));
             Mockito.when(mockResponse.body()).thenReturn(content);
             // Content type
             Mockito.when(mockResponse.contentType()).thenReturn(Files.probeContentType(path));
@@ -131,8 +133,9 @@ public abstract class IndexerTestBase {
         }
         File configFile = new File(resourceUrl.getFile());
         Messages messages = Messages.getInstance(null);
+        MockHttpClient mockHttpClient = MockHttpClient.getInstance();
 
-        config = SearchEngineConfig.createInstance(configFile, "eatlas_search_engine_devel.json", messages);
+        config = SearchEngineConfig.createInstance(mockHttpClient, configFile, "eatlas_search_engine_devel.json", messages);
     }
 
     public static String getElasticsearchVersion() {

@@ -18,9 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.GET;
@@ -85,7 +85,7 @@ public class ImageCache {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        ContentType contentType = EntityUtils.getContentType(filename);
+        ContentType contentType = HttpClient.getContentType(filename);
 
         try {
             byte[] responseBytes = FileUtils.readFileToByteArray(cachedFile);
@@ -144,7 +144,7 @@ public class ImageCache {
         return indexCacheDir;
     }
 
-    public static File cache(URL imageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
+    public static File cache(HttpClient httpClient, URL imageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
         if (imageUrl == null || index == null) {
             return null;
         }
@@ -159,7 +159,7 @@ public class ImageCache {
         }
 
         String urlStr = imageUrl.toString();
-        Connection.Response imageResponse = EntityUtils.jsoupExecuteWithRetry(urlStr, messages);
+        HttpClient.Response imageResponse = httpClient.getRequest(urlStr, messages);
         if (imageResponse == null) {
             return null;
         }
@@ -169,11 +169,10 @@ public class ImageCache {
             return null;
         }
 
-        String contentTypeStr = imageResponse.contentType();
-        if (contentTypeStr == null || contentTypeStr.isEmpty()) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Image content type is null: %s", urlStr));
+        String extension = imageResponse.getFileExtension();
+        if (extension == null) {
+            extension = "bin";
         }
-        String extension = getFileExtension(contentTypeStr, messages);
         File cacheFile = getUniqueFile(cacheDir, imageUrl, filenamePrefix, extension);
 
         byte[] imageBytes = imageResponse.bodyAsBytes();
@@ -188,7 +187,7 @@ public class ImageCache {
         return cacheFile;
     }
 
-    public static File cacheLayer(URL baseLayerImageUrl, URL layerImageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
+    public static File cacheLayer(HttpClient httpClient, URL baseLayerImageUrl, URL layerImageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
         if (layerImageUrl == null || index == null) {
             return null;
         }
@@ -204,7 +203,7 @@ public class ImageCache {
 
         // Get layer image (using JSoup to benefit from the retry feature)
         String layerUrlStr = layerImageUrl.toString();
-        Connection.Response layerImageResponse = EntityUtils.jsoupExecuteWithRetry(layerUrlStr, messages);
+        HttpClient.Response layerImageResponse = httpClient.getRequest(layerUrlStr, messages);
         if (layerImageResponse == null) {
             return null;
         }
@@ -218,7 +217,7 @@ public class ImageCache {
         BufferedImage baseLayerImage = null;
         if (baseLayerImageUrl != null) {
             String baseLayerUrlStr = baseLayerImageUrl.toString();
-            Connection.Response baseLayerImageResponse = EntityUtils.jsoupExecuteWithRetry(baseLayerUrlStr, messages);
+            HttpClient.Response baseLayerImageResponse = httpClient.getRequest(baseLayerUrlStr, messages);
             if (baseLayerImageResponse == null) {
                 return null;
             }
@@ -263,22 +262,10 @@ public class ImageCache {
         return cacheFile;
     }
 
-    private static BufferedImage createImageFromResponse(Connection.Response response) throws IOException {
+    private static BufferedImage createImageFromResponse(HttpClient.Response response) throws IOException {
         try (InputStream inputStream = response.bodyStream()) {
             return ImageIO.read(inputStream);
         }
-    }
-
-    private static String getFileExtension(String contentTypeStr, Messages messages) {
-        ContentType contentType = null;
-        if (contentTypeStr != null && !contentTypeStr.isEmpty()) {
-            try {
-                contentType = ContentType.parse(contentTypeStr);
-            } catch (Exception ex) {
-                messages.addMessage(Messages.Level.WARNING, String.format("Unsupported image content type: %s", contentTypeStr), ex);
-            }
-        }
-        return EntityUtils.getExtension(contentType, "bin");
     }
 
     private static File getUniqueFile(File cacheDir, URL imageUrl, String filenamePrefix, String extension) throws IOException {

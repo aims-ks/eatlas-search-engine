@@ -1,8 +1,8 @@
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
-import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.rest.Search;
@@ -152,7 +152,7 @@ public class IndexerTest extends IndexerTestBase {
         try (InputStream coralsoftheworldHtmlInputStream = IndexerTest.class.getClassLoader().getResourceAsStream(coralsoftheworldHtmlPath)) {
             if (coralsoftheworldHtmlInputStream != null) {
                 String coralsoftheworldHtml = IOUtils.toString(coralsoftheworldHtmlInputStream, StandardCharsets.UTF_8);
-                coralsoftheworldTextContent = EntityUtils.extractHTMLTextContent(coralsoftheworldHtml);
+                coralsoftheworldTextContent = HttpClient.extractHTMLTextContent(coralsoftheworldHtml);
             }
         }
         Assertions.assertNotNull(coralsoftheworldTextContent, String.format("Can not find the test resource file: %s", coralsoftheworldHtmlPath));
@@ -162,7 +162,7 @@ public class IndexerTest extends IndexerTestBase {
         try (InputStream seagrasswatchHtmlInputStream = IndexerTest.class.getClassLoader().getResourceAsStream(seagrasswatchHtmlPath)) {
             if (seagrasswatchHtmlInputStream != null) {
                 String seagrasswatchHtml = IOUtils.toString(seagrasswatchHtmlInputStream, StandardCharsets.UTF_8);
-                seagrasswatchTextContent = EntityUtils.extractHTMLTextContent(seagrasswatchHtml);
+                seagrasswatchTextContent = HttpClient.extractHTMLTextContent(seagrasswatchHtml);
             }
         }
         Assertions.assertNotNull(seagrasswatchTextContent, String.format("Can not find the test resource file: %s", seagrasswatchHtmlPath));

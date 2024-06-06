@@ -18,11 +18,11 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.AbstractDrupalEntity;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
-import au.gov.aims.eatlas.searchengine.entity.EntityUtils;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.http.client.utils.URIBuilder;
@@ -70,6 +70,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     private static boolean multiThread = true;
 
     public AbstractDrupalEntityIndexer(
+            HttpClient httpClient,
             String index,
             String drupalUrl,
             String drupalVersion,
@@ -79,7 +80,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String drupalIndexedFields,
             String drupalGeoJSONField) {
 
-        super(index);
+        super(httpClient, index);
         this.drupalUrl = drupalUrl;
         this.drupalVersion = drupalVersion;
         this.drupalEntityType = drupalEntityType;
@@ -166,6 +167,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
 
     protected JSONObject getJsonResponse(String entityUUID, URIBuilder uriBuilder, Messages messages) {
+        HttpClient httpClient = this.getHttpClient();
         String url;
         try {
             url = uriBuilder.build().toURL().toString();
@@ -176,22 +178,23 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             return null;
         }
 
-        String responseStr = null;
+        HttpClient.Response response = null;
         try {
-            responseStr = EntityUtils.harvestGetURL(url, messages);
+            response = httpClient.getRequest(url, messages);
         } catch(Exception ex) {
             messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting the Drupal %s, type: %s, UUID: %s",
                     this.getDrupalEntityType(), this.getDrupalBundleId(), entityUUID), ex);
         }
 
-        if (responseStr != null && !responseStr.isEmpty()) {
-            JSONObject jsonResponse = new JSONObject(responseStr);
-
-            JSONArray jsonErrors = jsonResponse.optJSONArray("errors");
-            if (jsonErrors != null && !jsonErrors.isEmpty()) {
-                this.handleDrupalApiErrors(jsonErrors, messages);
-            } else {
-                return jsonResponse;
+        if (response != null) {
+            JSONObject jsonResponse = response.jsonBody();
+            if (jsonResponse != null && !jsonResponse.isEmpty()) {
+                JSONArray jsonErrors = jsonResponse.optJSONArray("errors");
+                if (jsonErrors != null && !jsonErrors.isEmpty()) {
+                    this.handleDrupalApiErrors(jsonErrors, messages);
+                } else {
+                    return jsonResponse;
+                }
             }
         }
 
@@ -245,6 +248,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
     @Override
     protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
+        HttpClient httpClient = this.getHttpClient();
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
 
@@ -283,9 +287,9 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
         do {
             entityFound = 0;
-            String responseStr = null;
+            HttpClient.Response response = null;
             try {
-                responseStr = EntityUtils.harvestGetURL(url, messages);
+                response = httpClient.getRequest(url, messages);
             } catch(Exception ex) {
                 if (!crashed) {
                     messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting a page of Drupal %s, type: %s",
@@ -293,9 +297,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                 }
                 crashed = true;
             }
-            if (responseStr != null && !responseStr.isEmpty()) {
-                JSONObject jsonResponse = new JSONObject(responseStr);
-
+            JSONObject jsonResponse = response == null ? null : response.jsonBody();
+            if (jsonResponse != null && !jsonResponse.isEmpty()) {
                 JSONArray jsonErrors = jsonResponse.optJSONArray("errors");
                 if (jsonErrors != null && !jsonErrors.isEmpty()) {
                     this.handleDrupalApiErrors(jsonErrors, messages);
@@ -348,6 +351,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                 JSONObject linksJson = jsonResponse.optJSONObject("links");
                 JSONObject nextJson = linksJson == null ? null : linksJson.optJSONObject("next");
                 url = nextJson == null ? null : nextJson.optString("href", null);
+            } else {
+                stop = true;
             }
             page++;
 
@@ -531,7 +536,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                 if ("body".equals(indexedField)) {
                     JSONObject jsonBody = jsonAttributes == null ? null : jsonAttributes.optJSONObject(indexedField);
                     if (jsonBody != null) {
-                        textChunks.add(EntityUtils.extractHTMLTextContent(jsonBody.optString("processed", null)));
+                        textChunks.add(HttpClient.extractHTMLTextContent(jsonBody.optString("processed", null)));
                     }
                 } else {
                     // Other fields
@@ -626,7 +631,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             JSONObject jsonField = (JSONObject)fieldObj;
             String ckeditorText = jsonField.optString("processed", null);
             if (ckeditorText != null) {
-                texts.add(EntityUtils.extractHTMLTextContent(ckeditorText));
+                texts.add(HttpClient.extractHTMLTextContent(ckeditorText));
             }
 
         } else if (fieldObj instanceof String) {
@@ -773,6 +778,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     }
 
     public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
+        HttpClient httpClient = this.getHttpClient();
         URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiEntity, messages);
         String previewImageFieldType = AbstractDrupalEntityIndexer.getPreviewImageType(jsonApiEntity, this.getDrupalPreviewImageField());
         if (previewImageFieldType != null && baseUrl != null && this.getDrupalPreviewImageField() != null) {
@@ -796,7 +802,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     E oldEntity = this.getIndexedDrupalEntity(client, drupalEntity.getId(), messages);
                     if (drupalEntity.isThumbnailOutdated(oldEntity, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), messages)) {
                         try {
-                            File cachedThumbnailFile = ImageCache.cache(thumbnailUrl, this.getIndex(), drupalEntity.getId(), messages);
+                            File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), drupalEntity.getId(), messages);
                             if (cachedThumbnailFile != null) {
                                 drupalEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                             }

@@ -1,22 +1,4 @@
-/*
- *  Copyright (C) 2020 Australian Institute of Marine Science
- *
- *  Contact: Gael Lafond <g.lafond@aims.gov.au>
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-package au.gov.aims.eatlas.searchengine.entity;
+package au.gov.aims.eatlas.searchengine;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.apache.commons.io.FilenameUtils;
@@ -26,6 +8,9 @@ import org.apache.log4j.Logger;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -34,76 +19,38 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.Map;
+import java.util.Locale;
 
-public class EntityUtils {
-    private static final Logger LOGGER = Logger.getLogger(EntityUtils.class.getName());
+public class HttpClient {
+    private static final Logger LOGGER = Logger.getLogger(HttpClient.class.getName());
 
     private static final int JSOUP_RETRY = 2;//5;
     // NOTE: The delay is incremental: 5, 10, 20, 40, 80...
     private static final int JSOUP_RETRY_INITIAL_DELAY = 5; // In seconds
 
-    public static String harvestGetURL(String url, Messages messages) throws IOException, InterruptedException {
-        LOGGER.debug(String.format("Harvesting GET URL body: %s", url));
+    private static HttpClient instance;
 
-        // Get a HTTP document.
-        Connection.Response response = EntityUtils.jsoupExecuteWithRetry(url, messages);
-
-        return response.body();
-    }
-
-    public static String harvestPostURL(String url, Map<String, String> dataMap, Messages messages) throws IOException, InterruptedException {
-        LOGGER.debug(String.format("Harvesting POST URL body: %s%n%s", url, mapToString(dataMap)));
-
-        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages)
-                    .data(dataMap)
-                    .method(Connection.Method.POST), url)
-                .body();
-    }
-
-    public static String harvestURLText(String url, Messages messages) throws IOException, InterruptedException {
-        LOGGER.debug(String.format("Harvesting URL text: %s", url));
-
-        Connection.Response response = jsoupExecuteWithRetry(url, messages);
-
-        String contentTypeStr = response.contentType();
-        if (contentTypeStr == null) {
-            return response.body();
+    public static HttpClient getInstance() {
+        if (instance == null) {
+            instance = new HttpClient();
         }
-
-        try {
-            ContentType contentType = ContentType.parse(contentTypeStr);
-            String extension = getExtension(contentType);
-
-            if ("html".equals(extension)) {
-                return EntityUtils.extractHTMLTextContent(response.body());
-            }
-            if ("pdf".equals(extension)) {
-                return EntityUtils.extractPDFTextContent(response.bodyAsBytes());
-            }
-            messages.addMessage(Messages.Level.WARNING, String.format("Unsupported mime type: %s", contentType.getMimeType()));
-
-        } catch (Exception ex) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Unsupported content type: %s", contentTypeStr), ex);
-        }
-
-        return response.body();
+        return instance;
     }
 
-    public static Connection.Response jsoupExecuteWithRetry(String url, Messages messages) throws IOException, InterruptedException {
-        return jsoupExecuteWithRetry(EntityUtils.getJsoupConnection(url, messages), url);
-    }
+    public Response getRequest(String url, Messages messages) throws IOException, InterruptedException {
+        Connection jsoupConnection = this.getJsoupConnection(url, messages);
 
-    private static Connection.Response jsoupExecuteWithRetry(Connection jsoupConnection, String url) throws IOException, InterruptedException {
         IOException lastException = null;
         int delay = JSOUP_RETRY_INITIAL_DELAY;
 
         for (int i=0; i<JSOUP_RETRY; i++) {
             try {
-                return jsoupConnection.execute();
+                return new Response(jsoupConnection.execute());
             } catch (IOException ex) {
                 // The following IOException (and maybe more) may occur when the computer lose network connection:
                 //     SocketTimeoutException, ConnectException, UnknownHostException
@@ -119,7 +66,7 @@ public class EntityUtils {
         throw lastException;
     }
 
-    private static Connection getJsoupConnection(String url, Messages messages) {
+    private Connection getJsoupConnection(String url, Messages messages) {
         // JSoup takes care of following redirections.
         //     IOUtils.toString(URL, Charset) does not.
         //
@@ -139,16 +86,22 @@ public class EntityUtils {
         //     AtlasMapper layer list for the eAtlas is larger than 2MB.
         // sslSocketFactory(...)
         //     To deal with dodgy SSL certificates.
-        return Jsoup
+        Connection connection = Jsoup
                 .connect(url)
                 .timeout(120000)
                 .ignoreHttpErrors(true)
                 .ignoreContentType(true)
-                .maxBodySize(0)
-                .sslSocketFactory(EntityUtils.socketFactory(messages));
+                .maxBodySize(0);
+
+        SSLSocketFactory sslSocketFactory = this.socketFactory(messages);
+        if (sslSocketFactory != null) {
+            connection = connection.sslSocketFactory(sslSocketFactory);
+        }
+
+        return connection;
     }
 
-    private static SSLSocketFactory socketFactory(Messages messages) {
+    private SSLSocketFactory socketFactory(Messages messages) {
         TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {
                 return new X509Certificate[0];
@@ -164,6 +117,71 @@ public class EntityUtils {
         } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR, "Failed to create a SSL socket factory.", ex);
             return null;
+        }
+    }
+
+    public static class Response {
+        private final byte[] bodyBytes;
+        private final ContentType contentType;
+        private final int statusCode;
+        private final Long lastModified;
+
+        // HttpConnection.Response
+        public Response(org.jsoup.Connection.Response jsoupResponse) {
+            this.bodyBytes = jsoupResponse.bodyAsBytes();
+            this.statusCode = jsoupResponse.statusCode();
+            this.lastModified = HttpClient.parseHttpLastModifiedHeader(jsoupResponse.header("Last-Modified"));
+
+            String contentTypeStr = jsoupResponse.contentType();
+            this.contentType = contentTypeStr == null? null : ContentType.parse(contentTypeStr);
+        }
+
+        public byte[] bodyAsBytes() {
+            return this.bodyBytes;
+        }
+
+        public String body() {
+            return this.bodyBytes == null ? null : new String(this.bodyBytes);
+        }
+
+        public JSONObject jsonBody() {
+            String body = this.body();
+            return body == null ? null : new JSONObject(body);
+        }
+
+        public InputStream bodyStream() {
+            return new ByteArrayInputStream(this.bodyBytes == null ? new byte[0] : this.bodyBytes);
+        }
+
+        public int statusCode() {
+            return this.statusCode;
+        }
+
+        public ContentType contentType() {
+            return this.contentType;
+        }
+
+        public String getFileExtension() {
+            return HttpClient.getFileExtension(this.contentType());
+        }
+
+        public Long lastModified() {
+            return this.lastModified;
+        }
+
+        public String extractText() throws IOException {
+            ContentType contentType = this.contentType();
+            String mimeType = contentType.getMimeType();
+
+            if (ContentType.TEXT_HTML.equals(contentType) ||
+                    ContentType.APPLICATION_XHTML_XML.equals(contentType)) {
+                return HttpClient.extractHTMLTextContent(this.body());
+            }
+            if ("application/pdf".equals(mimeType)) {
+                return HttpClient.extractPDFTextContent(this.bodyAsBytes());
+            }
+
+            return this.body();
         }
     }
 
@@ -183,43 +201,19 @@ public class EntityUtils {
         }
     }
 
-    public static String mapToString(Map<?, ?> map) {
-        if (map == null) {
-            return "NULL";
-        }
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(String.format("{%n"));
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            Object key = entry.getKey();
-            String keyStr = key == null ? "NULL" : String.format("\"%s\"", key.toString());
-
-            Object value = entry.getValue();
-            String valueStr = value == null ? "NULL" : String.format("\"%s\"", value.toString());
-
-            sb.append(String.format("    %s: %s%n", keyStr, valueStr));
-        }
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    public static String getExtension(ContentType contentType) {
-        return getExtension(contentType, null);
-    }
-    public static String getExtension(ContentType contentType, String defaultExtension) {
+    public static String getFileExtension(ContentType contentType) {
         if (contentType == null) {
-            return defaultExtension;
+            return null;
         }
         String mimeType = contentType.getMimeType();
         if (mimeType == null || mimeType.isEmpty()) {
-            return defaultExtension;
+            return null;
         }
 
         // HTML
         if (
-            ContentType.TEXT_HTML.getMimeType().equalsIgnoreCase(mimeType) ||
-            ContentType.APPLICATION_XHTML_XML.getMimeType().equalsIgnoreCase(mimeType)
+                ContentType.TEXT_HTML.getMimeType().equalsIgnoreCase(mimeType) ||
+                        ContentType.APPLICATION_XHTML_XML.getMimeType().equalsIgnoreCase(mimeType)
         ) {
             return "html";
         }
@@ -231,10 +225,10 @@ public class EntityUtils {
 
         // XML
         if (
-            ContentType.TEXT_XML.getMimeType().equalsIgnoreCase(mimeType) ||
-            ContentType.APPLICATION_XML.getMimeType().equalsIgnoreCase(mimeType) ||
-            ContentType.APPLICATION_ATOM_XML.getMimeType().equalsIgnoreCase(mimeType) ||
-            ContentType.APPLICATION_SOAP_XML.getMimeType().equalsIgnoreCase(mimeType)
+                ContentType.TEXT_XML.getMimeType().equalsIgnoreCase(mimeType) ||
+                        ContentType.APPLICATION_XML.getMimeType().equalsIgnoreCase(mimeType) ||
+                        ContentType.APPLICATION_ATOM_XML.getMimeType().equalsIgnoreCase(mimeType) ||
+                        ContentType.APPLICATION_SOAP_XML.getMimeType().equalsIgnoreCase(mimeType)
         ) {
             return "xml";
         }
@@ -260,14 +254,14 @@ public class EntityUtils {
             return "jpg";
         }
         if (
-            ContentType.IMAGE_PNG.getMimeType().equalsIgnoreCase(mimeType) ||
-            "application/png".equalsIgnoreCase(mimeType)
+                ContentType.IMAGE_PNG.getMimeType().equalsIgnoreCase(mimeType) ||
+                        "application/png".equalsIgnoreCase(mimeType)
         ) {
             return "png";
         }
         if (
-            ContentType.IMAGE_SVG.getMimeType().equalsIgnoreCase(mimeType) ||
-            ContentType.APPLICATION_SVG_XML.getMimeType().equalsIgnoreCase(mimeType)
+                ContentType.IMAGE_SVG.getMimeType().equalsIgnoreCase(mimeType) ||
+                        ContentType.APPLICATION_SVG_XML.getMimeType().equalsIgnoreCase(mimeType)
         ) {
             return "svg";
         }
@@ -282,7 +276,25 @@ public class EntityUtils {
         //     APPLICATION_FORM_URLENCODED,
         //     MULTIPART_FORM_DATA,
         //     APPLICATION_OCTET_STREAM
-        return defaultExtension;
+        return null;
+    }
+
+    public static Long parseHttpLastModifiedHeader(String lastModifiedHeader) {
+        if (lastModifiedHeader == null || lastModifiedHeader.isEmpty()) {
+            return null;
+        }
+
+        DateTime lastModifiedDate = null;
+        try {
+            lastModifiedDate = DateTimeFormat.forPattern("E, dd MMM yyyy HH:mm:ss z")
+                    .withLocale(Locale.ENGLISH)
+                    .parseDateTime(lastModifiedHeader);
+        } catch(Exception ex) {
+            System.err.printf("Exception occurred while parsing the HTTP header Last-Modified date: %s%n", lastModifiedHeader);
+            ex.printStackTrace();
+        }
+
+        return lastModifiedDate == null ? null : lastModifiedDate.getMillis();
     }
 
     public static ContentType getContentType(String filename) {
