@@ -1,5 +1,6 @@
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.rest.Search;
@@ -7,38 +8,31 @@ import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
-import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DrupalMediaIndexerTest extends IndexerTestBase {
 
-    @Override
-    protected Map<String, String> getMockupUrlMap() {
-        Map<String, String> urlMap = super.getMockupUrlMap();
-        urlMap.put("https://domain.com/jsonapi/media/image?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image.json");
-
-        urlMap.put("https://domain.com/jsonapi/media/image/7b99cf2d-1539-413f-8e97-fc3e91610367?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/7b99cf2d-1539-413f-8e97-fc3e91610367.json");
-        urlMap.put("https://domain.com/jsonapi/media/image/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4.json");
-        urlMap.put("https://domain.com/jsonapi/media/image/e3727cb7-0a17-465d-8dd7-cac5d2b10e47?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/e3727cb7-0a17-465d-8dd7-cac5d2b10e47.json");
-        urlMap.put("https://domain.com/jsonapi/media/image/eae1f7db-bf10-4be5-957d-ece17b2b1ae7?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/eae1f7db-bf10-4be5-957d-ece17b2b1ae7.json");
-        urlMap.put("https://domain.com/jsonapi/media/image/f4c8e050-b15b-424a-a90b-bca294922f9e?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/f4c8e050-b15b-424a-a90b-bca294922f9e.json");
-        return urlMap;
-    }
-
     @Test
     public void testIndexImages() throws Exception {
-        try (
-                MockedStatic<Jsoup> mockedJsoup = this.getMockedJsoup();
-                SearchClient client = this.createElasticsearchClient()
-        ) {
-            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
+        try (SearchClient client = this.createElasticsearchClient()) {
+            MockHttpClient mockHttpClient = this.getMockHttpClient();
 
-            AbstractDrupalEntityIndexer.disableMultiThread();
+            Map<String, String> urlMap = new HashMap<>();
+            urlMap.put("https://domain.com/jsonapi/media/image?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image.json");
+
+            urlMap.put("https://domain.com/jsonapi/media/image/7b99cf2d-1539-413f-8e97-fc3e91610367?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/7b99cf2d-1539-413f-8e97-fc3e91610367.json");
+            urlMap.put("https://domain.com/jsonapi/media/image/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/47ce7ed4-bb0b-4dcb-9f3a-8b9c41917dd4.json");
+            urlMap.put("https://domain.com/jsonapi/media/image/e3727cb7-0a17-465d-8dd7-cac5d2b10e47?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/e3727cb7-0a17-465d-8dd7-cac5d2b10e47.json");
+            urlMap.put("https://domain.com/jsonapi/media/image/eae1f7db-bf10-4be5-957d-ece17b2b1ae7?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/eae1f7db-bf10-4be5-957d-ece17b2b1ae7.json");
+            urlMap.put("https://domain.com/jsonapi/media/image/f4c8e050-b15b-424a-a90b-bca294922f9e?include=thumbnail&filter%5Bstatus%5D=1", "drupalImageFiles/jsonapi/media/image/f4c8e050-b15b-424a-a90b-bca294922f9e.json");
+            mockHttpClient.setUrlMap(urlMap);
+
+            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "images";
             Messages messages = Messages.getInstance(null);

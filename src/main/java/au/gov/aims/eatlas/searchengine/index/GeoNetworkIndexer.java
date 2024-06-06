@@ -55,9 +55,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     private String geoNetworkUrl;
     private String geoNetworkVersion;
 
-    // Set to false when running Tests. Mockito doesn't work with Threads.
-    private static boolean multiThread = true;
-
     public static GeoNetworkIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
@@ -67,13 +64,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             httpClient, index,
             json.optString("geoNetworkUrl", null),
             json.optString("geoNetworkVersion", null));
-    }
-
-    public static void enableMultiThread() {
-        GeoNetworkIndexer.multiThread = true;
-    }
-    public static void disableMultiThread() {
-        GeoNetworkIndexer.multiThread = false;
     }
 
     public JSONObject toJSON() {
@@ -344,12 +334,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                                         client, messages, factory, metadataRecordUUID, metadataSchema,
                                         orphanMetadataRecordList, usedThumbnails, from);
 
-                                if (GeoNetworkIndexer.multiThread) {
-                                    threadPool.execute(thread);
-                                } else {
-                                    // Run in the current thread.
-                                    thread.run();
-                                }
+                                threadPool.execute(thread);
                             }
 
                             from++;

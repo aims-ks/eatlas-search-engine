@@ -22,6 +22,7 @@ import javax.net.ssl.X509TrustManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
@@ -136,12 +137,25 @@ public class HttpClient {
             this.contentType = contentTypeStr == null? null : ContentType.parse(contentTypeStr);
         }
 
+        public Response(
+                int statusCode,
+                byte[] bodyBytes,
+                ContentType contentType,
+                Long lastModified) {
+
+            this.statusCode = statusCode;
+            this.bodyBytes = bodyBytes;
+            this.contentType = contentType;
+            this.lastModified = lastModified;
+        }
+
         public byte[] bodyAsBytes() {
             return this.bodyBytes;
         }
 
         public String body() {
-            return this.bodyBytes == null ? null : new String(this.bodyBytes);
+            return this.bodyBytes == null ? null :
+                    new String(this.bodyBytes, StandardCharsets.UTF_8);
         }
 
         public JSONObject jsonBody() {

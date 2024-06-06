@@ -10,14 +10,7 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.BeforeAll;
-import org.mockito.ArgumentMatchers;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -27,29 +20,27 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 
 @Testcontainers
 public abstract class IndexerTestBase {
 
     private static SearchEngineConfig config;
+    private MockHttpClient mockHttpClient = null;
 
     public SearchEngineConfig getConfig() {
         return IndexerTestBase.config;
     }
 
+    public MockHttpClient getMockHttpClient() {
+        if (this.mockHttpClient == null) {
+            this.mockHttpClient = MockHttpClient.getInstance();
+        }
+        return this.mockHttpClient;
+    }
+
+    /*
     protected Map<String, String> getMockupUrlMap() {
         return new HashMap<String, String>();
     }
@@ -124,6 +115,7 @@ public abstract class IndexerTestBase {
                 .withZone(ZoneId.of("UTC"));
         return formatter.format(fileTime.toInstant());
     }
+    */
 
     @BeforeAll
     public static void setup() throws Exception {
@@ -179,6 +171,7 @@ public abstract class IndexerTestBase {
         return new ESClient(new ElasticsearchClient(transport));
     }
 
+    /*
     public static String getResourceFileContent(String resourcePath) throws IOException {
         try (InputStream is = IndexerTestBase.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (is != null) {
@@ -188,4 +181,5 @@ public abstract class IndexerTestBase {
 
         return null;
     }
+    */
 }

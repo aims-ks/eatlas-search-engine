@@ -1,5 +1,6 @@
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.rest.Search;
@@ -7,29 +8,24 @@ import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
-import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DrupalNodeIndexerTest extends IndexerTestBase {
 
-    @Override
-    protected Map<String, String> getMockupUrlMap() {
-        Map<String, String> urlMap = super.getMockupUrlMap();
-        urlMap.put("https://domain.com/jsonapi/node/article?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalArticleFiles/jsonapi/node/article.json");
-        return urlMap;
-    }
-
     @Test
     public void testIndexArticles() throws Exception {
-        try (
-                MockedStatic<Jsoup> mockedJsoup = this.getMockedJsoup();
-                SearchClient client = this.createElasticsearchClient()
-        ) {
+        try (SearchClient client = this.createElasticsearchClient()) {
+            MockHttpClient mockHttpClient = this.getMockHttpClient();
+
+            Map<String, String> urlMap = new HashMap<>();
+            urlMap.put("https://domain.com/jsonapi/node/article?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalArticleFiles/jsonapi/node/article.json");
+            mockHttpClient.setUrlMap(urlMap);
+
             Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "articles";
