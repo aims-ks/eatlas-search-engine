@@ -44,6 +44,11 @@ public class FormUtils {
         return values;
     }
 
+    public static Integer getFormIntegerValue(MultivaluedMap<String, String> form, String key) {
+        String value = FormUtils.getFormStringValue(form, key);
+        return value == null ? null : Integer.parseInt(value);
+    }
+
     public static Long getFormLongValue(MultivaluedMap<String, String> form, String key) {
         String value = FormUtils.getFormStringValue(form, key);
         return value == null ? null : Long.parseLong(value);

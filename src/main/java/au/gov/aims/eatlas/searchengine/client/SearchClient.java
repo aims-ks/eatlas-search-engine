@@ -31,6 +31,7 @@ import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
+import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.elasticsearch.indices.RefreshResponse;
 
 import java.io.IOException;
@@ -49,6 +50,7 @@ public interface SearchClient extends AutoCloseable {
 
     List<String> listIndexes() throws IOException;
     HealthStatus getHealthStatus() throws IOException;
+    DeleteIndexResponse deleteIndex(String indexName) throws IOException;
     void deleteOrphanIndexes(List<String> activeIndexes) throws IOException;
 
     <E extends Entity> IndexResponse index(IndexRequest<E> indexRequest) throws IOException;

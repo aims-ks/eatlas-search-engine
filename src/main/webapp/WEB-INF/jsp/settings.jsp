@@ -50,6 +50,29 @@
             </div>
 
             <div class="field">
+                <div class="field-group">
+                    <label for="elasticSearchNumberOfShards">
+                        <span class="label">Number of shards</span>
+                        <input type="text"
+                                id="elasticSearchNumberOfShards"
+                                name="elasticSearchNumberOfShards"
+                                data-lpignore="true"
+                                value="<c:out value="${it.config.elasticSearchNumberOfShards}" />" />
+                    </label>
+                    <label for="elasticSearchNumberOfReplicas">
+                        <span class="label">Number of replicas</span>
+                        <input type="text"
+                                id="elasticSearchNumberOfReplicas"
+                                name="elasticSearchNumberOfReplicas"
+                                data-lpignore="true"
+                                value="<c:out value="${it.config.elasticSearchNumberOfReplicas}" />" />
+                    </label>
+                </div>
+                <div class="desc">Number of shards and replicas. Set to 1 and 0 respectively for running with a <em>single-node</em> server.</div>
+                <div class="desc"><strong>NOTE</strong>: Those settings only applies to new index. To apply to existing indices, delete the indices and the search engine will re-create them using the new settings.</div>
+            </div>
+
+            <div class="field">
                 <label for="imageCacheDirectory">
                     <span class="label required">Image cache directory</span>
                     <input type="text"

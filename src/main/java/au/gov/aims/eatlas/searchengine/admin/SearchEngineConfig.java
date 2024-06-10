@@ -40,6 +40,9 @@ import java.util.Random;
 public class SearchEngineConfig {
     private static final long DEFAULT_GLOBAL_THUMBNAIL_TTL = 30; // TTL, in days
     private static final long DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL = 1; // TTL, in days
+    private static final int DEFAULT_NUMBER_OF_SHARDS = 1;
+    private static final int DEFAULT_NUMBER_OF_REPLICAS = 0;
+
     private static final int RANDOM_TOKEN_LENGTH = 12;
 
     // CONFIG_FILE_PROPERTY can be set in many ways (same as GeoServer)
@@ -62,6 +65,9 @@ public class SearchEngineConfig {
 
     // Values saved in the config file
     private List<String> elasticSearchUrls; // http://localhost:9200, http://localhost:9300
+
+    private Integer elasticSearchNumberOfShards;
+    private Integer elasticSearchNumberOfReplicas;
 
     private long globalThumbnailTTL = DEFAULT_GLOBAL_THUMBNAIL_TTL; // TTL, in days
     private long globalBrokenThumbnailTTL = DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL; // TTL, in days
@@ -223,6 +229,26 @@ public class SearchEngineConfig {
 
     public void setSearchEngineBaseUrl(String searchEngineBaseUrl) {
         this.searchEngineBaseUrl = searchEngineBaseUrl;
+    }
+
+    public int getElasticSearchNumberOfShards() {
+        return this.elasticSearchNumberOfShards == null ?
+                DEFAULT_NUMBER_OF_SHARDS :
+                this.elasticSearchNumberOfShards;
+    }
+
+    public void setElasticSearchNumberOfShards(Integer elasticSearchNumberOfShards) {
+        this.elasticSearchNumberOfShards = elasticSearchNumberOfShards;
+    }
+
+    public int getElasticSearchNumberOfReplicas() {
+        return this.elasticSearchNumberOfReplicas == null ?
+                DEFAULT_NUMBER_OF_REPLICAS :
+                this.elasticSearchNumberOfReplicas;
+    }
+
+    public void setElasticSearchNumberOfReplicas(Integer elasticSearchNumberOfReplicas) {
+        this.elasticSearchNumberOfReplicas = elasticSearchNumberOfReplicas;
     }
 
     public long getGlobalThumbnailTTL() {
@@ -452,6 +478,8 @@ public class SearchEngineConfig {
         return new JSONObject()
                 .put("user", this.user == null ? null : this.user.toJSON())
                 .put("elasticSearchUrls", jsonElasticSearchUrls)
+                .put("elasticSearchNumberOfShards", this.getElasticSearchNumberOfShards())
+                .put("elasticSearchNumberOfReplicas", this.getElasticSearchNumberOfReplicas())
                 .put("globalThumbnailTTL", this.globalThumbnailTTL)
                 .put("globalBrokenThumbnailTTL", this.globalBrokenThumbnailTTL)
                 .put("imageCacheDirectory", this.imageCacheDirectory)

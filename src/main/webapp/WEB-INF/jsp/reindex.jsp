@@ -73,6 +73,7 @@
                             <progress class="index-progress disabled" value="0" max="100" id="progress_${indexer.index}" data-progress-url="<c:url value="/admin/reindex/OLDprogress"><c:param name="index" value="${indexer.index}" /></c:url>"></progress>
                         </td>
                         <td class="buttons">
+                            <button class="recreate-index" name="recreate-index-button" value="${indexer.index}" title="Reindex">Re-create index</button>
                             <button class="index" name="reindex-button" value="${indexer.index}" title="Reindex">Reindex</button>
                             <button class="index-latest" name="index-latest-button" value="${indexer.index}" title="Index latest" <c:if test="${not indexer.supportsIndexLatest()}">disabled="disabled"</c:if>>Index latest</button>
                         </td>

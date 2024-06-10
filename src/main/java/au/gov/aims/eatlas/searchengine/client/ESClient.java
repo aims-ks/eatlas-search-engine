@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.client;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
@@ -106,6 +107,7 @@ public class ESClient implements SearchClient {
         }
     }
 
+    @Override
     public DeleteIndexResponse deleteIndex(String indexName) throws IOException {
         if (this.indexExists(indexName)) {
             DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(indexName).build();
@@ -117,6 +119,10 @@ public class ESClient implements SearchClient {
     @Override
     public CreateIndexResponse createIndex(String indexName) throws IOException {
         if (!this.indexExists(indexName)) {
+            SearchEngineConfig config = SearchEngineConfig.getInstance();
+            String nbShards = String.valueOf(config.getElasticSearchNumberOfShards());
+            String nbReplicas = String.valueOf(config.getElasticSearchNumberOfReplicas());
+
             // A setting that works, but is probably overkill
             /*
             new IndexSettings.Builder()
@@ -197,9 +203,10 @@ public class ESClient implements SearchClient {
                             */
                             .build())
                     .settings(new IndexSettings.Builder()
-                            .numberOfShards("1")
-                            // Set number of replica to 0, to be able to run on a single-node Elastic Search instance
-                            .numberOfReplicas("0")
+                            // Set number of shards to 1 and the number of replica to 0,
+                            // to be able to run on a single-node Elastic Search instance.
+                            .numberOfShards(nbShards)
+                            .numberOfReplicas(nbReplicas)
                             .analysis(new IndexSettingsAnalysis.Builder()
                                     .analyzer("english_analyser", new Analyzer.Builder()
                                             .custom(new CustomAnalyzer.Builder()

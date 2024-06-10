@@ -19,9 +19,15 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Index;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.Consumes;
@@ -32,6 +38,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
+import org.elasticsearch.client.RestClient;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.json.JSONObject;
 
@@ -122,6 +129,8 @@ public class ReindexPage {
         } else if (form.containsKey("refresh-count-button")) {
             this.refreshCount(messages);
 
+        } else if (form.containsKey("recreate-index-button")) {
+            this.recreateIndex(FormUtils.getFormStringValue(form, "recreate-index-button"), messages);
         } else if (form.containsKey("reindex-button")) {
             this.reindex(FormUtils.getFormStringValue(form, "reindex-button"), true, messages);
         } else if (form.containsKey("index-latest-button")) {
@@ -149,6 +158,26 @@ public class ReindexPage {
         }
     }
 
+    private void recreateIndex(String index, Messages messages) {
+        try(
+                RestClient restClient = SearchUtils.buildRestClient();
+
+                // Create the transport with a Jackson mapper
+                ElasticsearchTransport transport = new RestClientTransport(
+                        restClient, new JacksonJsonpMapper());
+
+                // And create the API client
+                SearchClient client = new ESClient(new ElasticsearchClient(transport))
+        ) {
+            client.deleteIndex(index);
+        } catch (Exception ex) {
+            messages.addMessage(Messages.Level.ERROR,
+                String.format("An exception occurred while deleting the index: %s", index), ex);
+            return;
+        }
+
+        this.reindex(index, true, messages);
+    }
 
     private void reindex(String index, boolean fullHarvest, Messages messages) {
         if (index == null || index.isEmpty()) {

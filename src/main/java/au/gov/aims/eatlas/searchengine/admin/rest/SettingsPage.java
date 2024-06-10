@@ -157,6 +157,8 @@ public class SettingsPage {
     private void save(MultivaluedMap<String, String> form, Messages messages) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
+        config.setElasticSearchNumberOfShards(FormUtils.getFormIntegerValue(form, "elasticSearchNumberOfShards"));
+        config.setElasticSearchNumberOfReplicas(FormUtils.getFormIntegerValue(form, "elasticSearchNumberOfReplicas"));
         config.setImageCacheDirectory(FormUtils.getFormStringValue(form, "imageCacheDirectory"));
         config.setGlobalThumbnailTTL(FormUtils.getFormLongValue(form, "globalThumbnailTTL"));
         config.setGlobalBrokenThumbnailTTL(FormUtils.getFormLongValue(form, "globalBrokenThumbnailTTL"));
