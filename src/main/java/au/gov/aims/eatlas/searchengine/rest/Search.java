@@ -21,7 +21,6 @@ package au.gov.aims.eatlas.searchengine.rest;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.entity.Bbox;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.index.WktUtils;
@@ -30,7 +29,6 @@ import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
 import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
@@ -51,9 +49,6 @@ import co.elastic.clients.elasticsearch.core.search.HighlightField;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.json.JsonData;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.GET;
@@ -64,7 +59,6 @@ import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.elasticsearch.client.RestClient;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 
@@ -100,10 +94,9 @@ public class Search {
             return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
         }
 
-
         SearchResults results = null;
-        try {
-            results = Search.paginationSearch(q, start, hits, wkt, idx, fidx, messages);
+        try (SearchClient searchClient = new ESClient()) {
+            results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, fidx, messages);
 
         } catch(Exception ex) {
             String errorMessageStr = String.format("An exception occurred during the search: %s", ex.getMessage());
@@ -133,6 +126,7 @@ public class Search {
 
     /**
      * Perform a search, with paging.
+     * @param searchClient The Elastic Search client, used to perform the search.
      * @param q The search query. Set to null or empty to get all the documents in the index.
      * @param start The index of the first element. Default: 0.
      * @param hits Number of search results per page. Default: 10.
@@ -144,44 +138,7 @@ public class Search {
      * @throws IOException If something goes wrong with ElasticSearch.
      */
     public static SearchResults paginationSearch(
-            String q,
-            Integer start,
-            Integer hits,
-            String wkt,
-            List<String> idx,  // List of indexes used for the summary
-            List<String> fidx, // List of indexes to filter the search results (optional, default: list all search results for idx)
-            Messages messages
-    ) throws IOException, ParseException {
-        try(
-                RestClient restClient = SearchUtils.buildRestClient();
-
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            return Search.paginationSearch(
-                client, q, start, hits, wkt, idx, fidx, messages);
-        }
-    }
-
-    /**
-     * Perform a search, with paging.
-     * @param client The Elastic Search client, used to perform the search.
-     * @param q The search query. Set to null or empty to get all the documents in the index.
-     * @param start The index of the first element. Default: 0.
-     * @param hits Number of search results per page. Default: 10.
-     * @param wkt GeoJSON polygon, to filter results. Default: null.
-     * @param idx List of indexes used for the search summary. Used to notify the user how many search results are found on each index.
-     * @param fidx List of indexes to filter the search results (optional). Default: returns the results for all the index listed in idx.
-     * @param messages Messages instance, used to notify the user of errors, warnings, etc.
-     * @return A SearchResults object containing a summary of the search (number of search results in each index) and the list of search results.
-     * @throws IOException If something goes wrong with ElasticSearch.
-     */
-    public static SearchResults paginationSearch(
-            SearchClient client,
+            SearchClient searchClient,
             String q,
             Integer start,
             Integer hits,
@@ -207,14 +164,14 @@ public class Search {
 
         String[] idxArray = idx.toArray(new String[0]);
 
-        Summary searchSummary = Search.searchSummary(client, q, wkt, idxArray);
+        Summary searchSummary = Search.searchSummary(searchClient, q, wkt, idxArray);
         results.setSummary(searchSummary);
 
         List<SearchResult> searchResults;
         if (fidx != null && !fidx.isEmpty()) {
-            searchResults = Search.search(client, messages, q, wkt, start, hits, fidx.toArray(new String[0]));
+            searchResults = Search.search(searchClient, messages, q, wkt, start, hits, fidx.toArray(new String[0]));
         } else {
-            searchResults = Search.search(client, messages, q, wkt, start, hits, idxArray);
+            searchResults = Search.search(searchClient, messages, q, wkt, start, hits, idxArray);
         }
 
         results.setSearchResults(searchResults);
@@ -232,14 +189,14 @@ public class Search {
      *   result in many more search requests than one
      *   count request per index.
      */
-    public static Summary searchSummary(SearchClient client, String searchText, String wkt, String ... indexes)
+    public static Summary searchSummary(SearchClient searchClient, String searchText, String wkt, String ... indexes)
             throws IOException, ParseException {
 
         Summary summary = new Summary();
 
         long totalCount = 0;
         for (String index : indexes) {
-            CountResponse response = client.count(Search.getSearchSummaryRequest(searchText, wkt, index));
+            CountResponse response = searchClient.count(Search.getSearchSummaryRequest(searchText, wkt, index));
             long count = response.count();
             if (count > 0) {
                 totalCount += count;
@@ -291,10 +248,10 @@ public class Search {
      *
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
-    public static List<SearchResult> search(SearchClient client, Messages messages, String searchText, String wkt, int from, int size, String ... indexes)
+    public static List<SearchResult> search(SearchClient searchClient, Messages messages, String searchText, String wkt, int from, int size, String ... indexes)
             throws IOException, ParseException {
 
-        SearchResponse<Entity> response = client.search(Search.getSearchRequest(searchText, wkt, from, size, indexes));
+        SearchResponse<Entity> response = searchClient.search(Search.getSearchRequest(searchText, wkt, from, size, indexes));
 
         //LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", indexes %s:%n%s",
         //    searchText, attribute, Arrays.toString(indexes), response.toString()));

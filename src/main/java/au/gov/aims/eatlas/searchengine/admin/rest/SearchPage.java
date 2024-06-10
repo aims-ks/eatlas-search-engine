@@ -19,6 +19,8 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
@@ -56,50 +58,56 @@ public class SearchPage {
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-        if (reindexIdx != null && reindexId != null) {
+        Map<String, Object> model = new HashMap<>();
+        try (SearchClient searchClient = new ESClient()) {
+
+            if (reindexIdx != null && reindexId != null) {
+                try {
+                    AbstractIndexer<?> indexer = config.getIndexer(reindexIdx);
+                    indexer.reindex(searchClient, reindexId, messages);
+                    // Wait 1 sec, to be sure the updated document is in the index.
+                    Thread.sleep(1000);
+                } catch(Exception ex) {
+                    messages.addMessage(Messages.Level.ERROR,
+                        "An exception occurred during the re-indexation of the document.", ex);
+                }
+            }
+
+            if (hitsPerPage == null || hitsPerPage <= 0) {
+                hitsPerPage = 10;
+            }
+            if (page == null || page <= 0) {
+                page = 1;
+            }
+
+            SearchResults results = null;
             try {
-                AbstractIndexer<?> indexer = config.getIndexer(reindexIdx);
-                indexer.reindex(reindexId, messages);
-                // Wait 1 sec, to be sure the updated document is in the index.
-                Thread.sleep(1000);
+                int start = (page-1) * hitsPerPage;
+                results = Search.paginationSearch(searchClient, query, start, hitsPerPage, wkt, indexes, indexes, messages);
             } catch(Exception ex) {
                 messages.addMessage(Messages.Level.ERROR,
-                    "An exception occurred during the re-indexation of the document.", ex);
+                    "An exception occurred during the search.", ex);
             }
-        }
 
-        if (hitsPerPage == null || hitsPerPage <= 0) {
-            hitsPerPage = 10;
-        }
-        if (page == null || page <= 0) {
-            page = 1;
-        }
+            int nbPage = 0;
+            if (results != null) {
+                nbPage = (int)Math.ceil(((double)results.getSummary().getHits()) / hitsPerPage);
+            }
 
-        SearchResults results = null;
-        try {
-            int start = (page-1) * hitsPerPage;
-            results = Search.paginationSearch(query, start, hitsPerPage, wkt, indexes, indexes, messages);
-        } catch(Exception ex) {
+            model.put("nbPage", nbPage);
+            model.put("results", results);
+        } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
-                "An exception occurred during the search.", ex);
+                "An exception occurred while accessing the Elastic Search server", ex);
         }
 
-        int nbPage = 0;
-        if (results != null) {
-            nbPage = (int)Math.ceil(((double)results.getSummary().getHits()) / hitsPerPage);
-        }
-
-        Map<String, Object> model = new HashMap<>();
         model.put("messages", messages);
         model.put("config", config);
         model.put("query", query);
         model.put("wkt", wkt);
         model.put("page", page);
         model.put("hitsPerPage", hitsPerPage);
-        model.put("nbPage", nbPage);
-
         model.put("indexes", indexes);
-        model.put("results", results);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/searchPage.jsp
         return new Viewable("/searchPage", model);

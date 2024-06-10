@@ -2,7 +2,6 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
@@ -19,7 +18,7 @@ public class GeoNetworkIndexerTest extends IndexerTestBase {
 
     @Test
     public void testIndexMetadataRecords() throws Exception {
-        try (SearchClient client = this.createElasticsearchClient()) {
+        try (MockSearchClient searchClient = this.createMockSearchClient()) {
             MockHttpClient mockHttpClient = this.getMockHttpClient();
 
             Map<String, String> urlMap = new HashMap<>();
@@ -40,21 +39,21 @@ public class GeoNetworkIndexerTest extends IndexerTestBase {
             urlMap.put("https://domain.com/geonetwork/srv/api/records/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068/attachments/preview-image-recruits-on-disks.jpg", "metadataRecords/previews/preview.jpg");
             mockHttpClient.setUrlMap(urlMap);
 
-            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
+            Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "metadata_records";
             Messages messages = Messages.getInstance(null);
 
-            client.createIndex(index);
+            searchClient.createIndex(index);
 
             // Find the indexer, defined in the config file
             GeoNetworkIndexer geoNetworkIndexer =
                     (GeoNetworkIndexer)this.getConfig().getIndexer(index);
 
-            geoNetworkIndexer.internalIndex(client, null, messages);
+            geoNetworkIndexer.internalIndex(searchClient, null, messages);
 
             // Wait for ElasticSearch to finish its indexation
-            client.refresh(index);
+            searchClient.refresh(index);
 
             SearchResults results = null;
             try {
@@ -64,7 +63,7 @@ public class GeoNetworkIndexerTest extends IndexerTestBase {
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
 
-                results = Search.paginationSearch(client, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
 
                 Summary searchSummary = results.getSummary();
 
@@ -84,7 +83,7 @@ public class GeoNetworkIndexerTest extends IndexerTestBase {
                 Assertions.fail("Exception thrown while testing the Search API.", ex);
             }
 
-            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
+            Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
         }
     }
 }

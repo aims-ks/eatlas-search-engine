@@ -20,6 +20,8 @@ package au.gov.aims.eatlas.searchengine;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
@@ -74,28 +76,34 @@ public class Main {
         GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
         //Index.internalReindex(geoNetworkIndexer, fullHarvest, messages);
 
-        AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-        Index.internalReindex(atlasMapperIndexer, fullHarvest, messages);
+        try (SearchClient searchClient = new ESClient()) {
+            AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
+            Index.internalReindex(searchClient, atlasMapperIndexer, fullHarvest, messages);
 
 
-        //Main.testElasticsearchClient();
+            //Main.testElasticsearchClient();
 
 
-        // Test search
+            // Test search
 
-        String searchQuery = "reef";
+            String searchQuery = "reef";
 
-        List<String> idx = new ArrayList<String>();
-        //idx.add("eatlas_article");
-        idx.add("eatlas_image");
-        //idx.add("eatlas_external_link");
-        //idx.add("eatlas_metadata");
-        //idx.add("eatlas_layer");
+            List<String> idx = new ArrayList<String>();
+            //idx.add("eatlas_article");
+            idx.add("eatlas_image");
+            //idx.add("eatlas_external_link");
+            //idx.add("eatlas_metadata");
+            //idx.add("eatlas_layer");
 
-        String wkt = null;
+            String wkt = null;
 
-        SearchResults results = Search.paginationSearch(searchQuery, 0, 100, wkt, idx, null, messages);
-        System.out.println(results.toJSON().toString(2));
+            SearchResults results = Search.paginationSearch(searchClient, searchQuery, 0, 100, wkt, idx, null, messages);
+            System.out.println(results.toJSON().toString(2));
+        } catch (Exception ex) {
+            System.err.println(
+                "An exception occurred while accessing the Elastic Search server");
+            ex.printStackTrace();
+        }
 
     }
 

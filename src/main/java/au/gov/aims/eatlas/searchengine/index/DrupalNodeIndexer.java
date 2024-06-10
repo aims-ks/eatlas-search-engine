@@ -98,7 +98,7 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
     }
 
     @Override
-    public DrupalNode getIndexedDrupalEntity(SearchClient client, String id, Messages messages) {
-        return this.safeGet(client, DrupalNode.class, id, messages);
+    public DrupalNode getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages) {
+        return this.safeGet(searchClient, DrupalNode.class, id, messages);
     }
 }

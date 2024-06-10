@@ -51,29 +51,43 @@ import co.elastic.clients.elasticsearch.indices.IndexSettings;
 import co.elastic.clients.elasticsearch.indices.IndexSettingsAnalysis;
 import co.elastic.clients.elasticsearch.indices.RefreshRequest;
 import co.elastic.clients.elasticsearch.indices.RefreshResponse;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import org.elasticsearch.client.RestClient;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ESClient implements SearchClient {
-    private final ElasticsearchClient client;
+    private final RestClient restClient;
+    private final ElasticsearchTransport transport;
+    private final ElasticsearchClient elasticsearchClient;
 
-    public ESClient(ElasticsearchClient client) {
-        this.client = client;
+    public ESClient() throws MalformedURLException {
+        this(SearchUtils.buildRestClient());
+    }
+
+    public ESClient(RestClient restClient) {
+        this.restClient = restClient;
+        this.transport = new RestClientTransport(
+                this.restClient, new JacksonJsonpMapper());
+        this.elasticsearchClient = new ElasticsearchClient(transport);
     }
 
     @Override
     public boolean indexExists(String indexName) throws IOException {
         ExistsRequest existsRequest = new ExistsRequest.Builder().index(indexName).build();
-        BooleanResponse existsResponse = this.client.indices().exists(existsRequest);
+        BooleanResponse existsResponse = this.elasticsearchClient.indices().exists(existsRequest);
         return existsResponse.value();
     }
 
     @Override
     public List<String> listIndexes() throws IOException {
-        IndicesResponse indicesResponse = this.client.cat().indices();
+        IndicesResponse indicesResponse = this.elasticsearchClient.cat().indices();
 
         List<String> indexes = new ArrayList<>();
         if (indicesResponse != null) {
@@ -90,7 +104,7 @@ public class ESClient implements SearchClient {
 
     @Override
     public HealthStatus getHealthStatus() throws IOException {
-        HealthResponse healthResponse = this.client.cluster().health();
+        HealthResponse healthResponse = this.elasticsearchClient.cluster().health();
         return healthResponse.status();
     }
 
@@ -111,7 +125,7 @@ public class ESClient implements SearchClient {
     public DeleteIndexResponse deleteIndex(String indexName) throws IOException {
         if (this.indexExists(indexName)) {
             DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(indexName).build();
-            return this.client.indices().delete(deleteIndexRequest);
+            return this.elasticsearchClient.indices().delete(deleteIndexRequest);
         }
         return null;
     }
@@ -219,7 +233,7 @@ public class ESClient implements SearchClient {
                             .build())
                     .build();
 
-            return this.client.indices().create(createIndexRequest);
+            return this.elasticsearchClient.indices().create(createIndexRequest);
         }
 
         return null;
@@ -227,36 +241,38 @@ public class ESClient implements SearchClient {
 
     @Override
     public <E extends Entity> IndexResponse index(IndexRequest<E> indexRequest) throws IOException {
-        return this.client.index(indexRequest);
+        return this.elasticsearchClient.index(indexRequest);
     }
 
     @Override
     public <E extends Entity> GetResponse<E> get(GetRequest getRequest, Class<E> entityClass) throws IOException {
-        return this.client.get(getRequest, entityClass);
+        return this.elasticsearchClient.get(getRequest, entityClass);
     }
 
     @Override
     public SearchResponse<Entity> search(SearchRequest searchRequest) throws IOException {
-        return this.client.search(searchRequest, Entity.class);
+        return this.elasticsearchClient.search(searchRequest, Entity.class);
     }
 
     @Override
     public CountResponse count(CountRequest countRequest) throws IOException {
-        return this.client.count(countRequest);
+        return this.elasticsearchClient.count(countRequest);
     }
 
     @Override
     public DeleteByQueryResponse deleteByQuery(DeleteByQueryRequest deleteRequest) throws IOException {
-        return this.client.deleteByQuery(deleteRequest);
+        return this.elasticsearchClient.deleteByQuery(deleteRequest);
     }
 
     @Override
     public RefreshResponse refresh(String ... indices) throws IOException {
-        return this.client.indices().refresh(new RefreshRequest.Builder().index(List.of(indices)).build());
+        return this.elasticsearchClient.indices().refresh(new RefreshRequest.Builder().index(List.of(indices)).build());
     }
 
     @Override
     public void close() throws IOException {
-        this.client.shutdown();
+        this.elasticsearchClient.shutdown();
+        this.transport.close();
+        this.restClient.close();
     }
 }

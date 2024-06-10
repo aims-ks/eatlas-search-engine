@@ -24,10 +24,6 @@ import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Index;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.Consumes;
@@ -38,7 +34,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
-import org.elasticsearch.client.RestClient;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.json.JSONObject;
 
@@ -122,64 +117,61 @@ public class ReindexPage {
         HttpSession session = httpRequest.getSession(true);
         Messages messages = Messages.getInstance(session);
 
-        if (form.containsKey("reindex-all-button")) {
-            this.reindexAll(true, messages);
-        } else if (form.containsKey("index-latest-all-button")) {
-            this.reindexAll(false, messages);
-        } else if (form.containsKey("refresh-count-button")) {
-            this.refreshCount(messages);
+        try (SearchClient searchClient = new ESClient()) {
 
-        } else if (form.containsKey("recreate-index-button")) {
-            this.recreateIndex(FormUtils.getFormStringValue(form, "recreate-index-button"), messages);
-        } else if (form.containsKey("reindex-button")) {
-            this.reindex(FormUtils.getFormStringValue(form, "reindex-button"), true, messages);
-        } else if (form.containsKey("index-latest-button")) {
-            this.reindex(FormUtils.getFormStringValue(form, "index-latest-button"), false, messages);
+            if (form.containsKey("reindex-all-button")) {
+                this.reindexAll(searchClient, true, messages);
+            } else if (form.containsKey("index-latest-all-button")) {
+                this.reindexAll(searchClient, false, messages);
+            } else if (form.containsKey("refresh-count-button")) {
+                this.refreshCount(searchClient, messages);
+
+            } else if (form.containsKey("recreate-index-button")) {
+                this.recreateIndex(searchClient, FormUtils.getFormStringValue(form, "recreate-index-button"), messages);
+            } else if (form.containsKey("reindex-button")) {
+                this.reindex(searchClient, FormUtils.getFormStringValue(form, "reindex-button"), true, messages);
+            } else if (form.containsKey("index-latest-button")) {
+                this.reindex(searchClient, FormUtils.getFormStringValue(form, "index-latest-button"), false, messages);
+            }
+        } catch (Exception ex) {
+            messages.addMessage(Messages.Level.ERROR,
+                "An exception occurred while accessing the Elastic Search server", ex);
         }
 
         return this.reindexPage(httpRequest);
     }
 
-    private void reindexAll(boolean fullHarvest, Messages messages) {
+    private void reindexAll(SearchClient searchClient, boolean fullHarvest, Messages messages) {
         try {
-            Index.internalReindex(fullHarvest, messages);
+            Index.internalReindex(searchClient, fullHarvest, messages);
         } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred during the indexation.", ex);
         }
     }
 
-    private void refreshCount(Messages messages) {
+    private void refreshCount(SearchClient searchClient, Messages messages) {
         try {
-            SearchUtils.refreshIndexesCount();
+            SearchUtils.refreshIndexesCount(searchClient);
         } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred while refreshing the indexes count.", ex);
         }
     }
 
-    private void recreateIndex(String index, Messages messages) {
-        try(
-                RestClient restClient = SearchUtils.buildRestClient();
-
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            client.deleteIndex(index);
+    private void recreateIndex(SearchClient searchClient, String index, Messages messages) {
+        try {
+            searchClient.deleteIndex(index);
         } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
                 String.format("An exception occurred while deleting the index: %s", index), ex);
             return;
         }
 
-        this.reindex(index, true, messages);
+        this.reindex(searchClient, index, true, messages);
     }
 
-    private void reindex(String index, boolean fullHarvest, Messages messages) {
+    private void reindex(SearchClient searchClient, String index, boolean fullHarvest, Messages messages) {
         if (index == null || index.isEmpty()) {
             messages.addMessage(Messages.Level.ERROR,
                 "No index provided for indexation.");
@@ -189,7 +181,7 @@ public class ReindexPage {
             AbstractIndexer<?> indexer = config.getIndexer(index);
 
             try {
-                Index.internalReindex(indexer, fullHarvest, messages);
+                Index.internalReindex(searchClient, indexer, fullHarvest, messages);
             } catch (Exception ex) {
                 messages.addMessage(Messages.Level.ERROR,
                     String.format("An exception occurred during the indexation of index: %s", index), ex);

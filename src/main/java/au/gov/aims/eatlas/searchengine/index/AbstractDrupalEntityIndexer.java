@@ -88,7 +88,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     }
 
     public abstract E createDrupalEntity(JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, Messages messages);
-    public abstract E getIndexedDrupalEntity(SearchClient client, String id, Messages messages);
+    public abstract E getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages);
     public abstract String getHarvestSort(boolean fullHarvest);
 
     protected JSONObject getJsonBase() {
@@ -118,7 +118,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     }
 
     @Override
-    protected E harvestEntity(SearchClient client, String entityUUID, Messages messages) {
+    protected E harvestEntity(SearchClient searchClient, String entityUUID, Messages messages) {
         // First, request the node without includes (to find out the node's structure)
         URIBuilder uriBuilder = this.buildDrupalApiEntityUrl(entityUUID, messages);
         if (uriBuilder == null) {
@@ -126,10 +126,10 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         }
 
         JSONObject jsonResponse = this.getJsonResponse(entityUUID, uriBuilder, messages);
-        return this.harvestEntity(client, jsonResponse, entityUUID, messages);
+        return this.harvestEntity(searchClient, jsonResponse, entityUUID, messages);
     }
 
-    protected E harvestEntity(SearchClient client, JSONObject jsonResponse, String entityUUID, Messages messages) {
+    protected E harvestEntity(SearchClient searchClient, JSONObject jsonResponse, String entityUUID, Messages messages) {
         E drupalEntity = null;
         if (jsonResponse != null) {
             JSONObject jsonApiEntity = jsonResponse.optJSONObject("data");
@@ -138,7 +138,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             if (includes == null || includes.isEmpty()) {
                 // No field needs to be included in the query.
                 // No need to send another query, just use the previous response. It contains all the information we need.
-                drupalEntity = this.harvestEntityWithIncludes(client, jsonResponse, messages);
+                drupalEntity = this.harvestEntityWithIncludes(searchClient, jsonResponse, messages);
             } else {
                 // Now that we know what fields need to be included in the request,
                 // request the node again, with the includes.
@@ -148,7 +148,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                 }
 
                 JSONObject jsonResponseWithIncludes = this.getJsonResponse(entityUUID, uriWithIncludesBuilder, messages);
-                drupalEntity = this.harvestEntityWithIncludes(client, jsonResponseWithIncludes, messages);
+                drupalEntity = this.harvestEntityWithIncludes(searchClient, jsonResponseWithIncludes, messages);
             }
         }
 
@@ -191,7 +191,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return null;
     }
 
-    protected E harvestEntityWithIncludes(SearchClient client, JSONObject jsonResponse, Messages messages) {
+    protected E harvestEntityWithIncludes(SearchClient searchClient, JSONObject jsonResponse, Messages messages) {
         JSONObject jsonApiEntity = jsonResponse.optJSONObject("data");
         JSONArray jsonIncludedArray = jsonResponse.optJSONArray("included");
 
@@ -199,7 +199,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
         E drupalEntity = this.createDrupalEntity(jsonApiEntity, jsonIncluded, messages);
 
-        if (this.parseJsonDrupalEntity(client, jsonApiEntity, jsonIncluded, drupalEntity, messages)) {
+        if (this.parseJsonDrupalEntity(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, messages)) {
             return drupalEntity;
         }
 
@@ -225,19 +225,19 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     // Overwrite in subclasses when more work needs to be done.
     // Return false to prevent the entity from been indexed.
     protected boolean parseJsonDrupalEntity(
-            SearchClient client,
+            SearchClient searchClient,
             JSONObject jsonApiEntity,
             Map<String, JSONObject> jsonIncluded,
             E drupalEntity,
             Messages messages) {
 
-        this.updateThumbnail(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
-        this.updateGeoJSON(client, jsonApiEntity, jsonIncluded, drupalEntity, messages);
+        this.updateThumbnail(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, messages);
+        this.updateGeoJSON(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, messages);
         return true;
     }
 
     @Override
-    protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
+    protected void internalIndex(SearchClient searchClient, Long lastHarvested, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
@@ -324,7 +324,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                         }
 
                         Thread thread = new DrupalEntityIndexerThread(
-                                client, messages, jsonApiEntity, usedThumbnails,
+                                searchClient, messages, jsonApiEntity, usedThumbnails,
                                 page+1, i+1, entityFound);
 
                         threadPool.execute(thread);
@@ -357,7 +357,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
         // Only cleanup when we are doing a full harvest
         if (!crashed && fullHarvest) {
-            this.cleanUp(client, harvestStart, usedThumbnails, String.format("Drupal %s type %s",
+            this.cleanUp(searchClient, harvestStart, usedThumbnails, String.format("Drupal %s type %s",
                     this.getDrupalEntityType(), this.getDrupalBundleId()), messages);
         }
     }
@@ -762,7 +762,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalGeoJSONField = drupalGeoJSONField;
     }
 
-    public void updateThumbnail(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
+    public void updateThumbnail(SearchClient searchClient, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
         URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiEntity, messages);
         String previewImageFieldType = AbstractDrupalEntityIndexer.getPreviewImageType(jsonApiEntity, this.getDrupalPreviewImageField());
@@ -784,7 +784,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     drupalEntity.setThumbnailUrl(thumbnailUrl);
 
                     // Create the thumbnail if it's missing or outdated
-                    E oldEntity = this.getIndexedDrupalEntity(client, drupalEntity.getId(), messages);
+                    E oldEntity = this.getIndexedDrupalEntity(searchClient, drupalEntity.getId(), messages);
                     if (drupalEntity.isThumbnailOutdated(oldEntity, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), messages)) {
                         try {
                             File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), drupalEntity.getId(), messages);
@@ -807,7 +807,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         }
     }
 
-    public void updateGeoJSON(SearchClient client, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
+    public void updateGeoJSON(SearchClient searchClient, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
         if (this.getDrupalGeoJSONField() != null) {
             // Extract WKT from jsonApiEntity (node / media)
             JSONObject jsonAttributes = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("attributes");
@@ -852,7 +852,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     // Thread class, which does typical entity indexing (node, media, etc).
     // It can be extended in the indexer and used as a starting point.
     public class DrupalEntityIndexerThread extends Thread {
-        private final SearchClient client;
+        private final SearchClient searchClient;
         private final Messages messages;
         private final JSONObject jsonApiEntity;
         private final Set<String> usedThumbnails;
@@ -862,13 +862,13 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         private E drupalEntity;
 
         public DrupalEntityIndexerThread(
-                SearchClient client,
+                SearchClient searchClient,
                 Messages messages,
                 JSONObject jsonApiEntity,
                 Set<String> usedThumbnails,
                 int page, int current, int pageTotal
         ) {
-            this.client = client;
+            this.searchClient = searchClient;
             this.messages = messages;
             this.jsonApiEntity = jsonApiEntity;
             this.usedThumbnails = usedThumbnails;
@@ -877,8 +877,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             this.pageTotal = pageTotal;
         }
 
-        public SearchClient getClient() {
-            return this.client;
+        public SearchClient getSearchClient() {
+            return this.searchClient;
         }
 
         public Messages getMessages() {
@@ -898,7 +898,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String entityUUID = this.jsonApiEntity == null ? null : this.jsonApiEntity.optString("id", null);
 
             this.drupalEntity = AbstractDrupalEntityIndexer.this.harvestEntity(
-                    this.client, jsonResponse, entityUUID, this.messages);
+                    this.searchClient, jsonResponse, entityUUID, this.messages);
 
 
             if (this.drupalEntity != null) {
@@ -910,7 +910,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                 }
 
                 try {
-                    IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.client, this.drupalEntity, this.messages);
+                    IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.searchClient, this.drupalEntity, this.messages);
 
                     // NOTE: We don't know how many entities (or pages of entities) there is.
                     //     We index until we reach the bottom of the barrel...

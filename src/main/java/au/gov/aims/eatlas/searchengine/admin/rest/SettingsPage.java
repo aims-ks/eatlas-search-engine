@@ -20,6 +20,8 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
@@ -83,29 +85,34 @@ public class SettingsPage {
         Messages messages = Messages.getInstance(session);
         HttpClient httpClient = HttpClient.getInstance();
 
-        if (form.containsKey("save-button")) {
-            this.save(form, messages);
-        } else if (form.containsKey("commit-button")) {
-            this.commit(form, messages);
-        } else if (form.containsKey("add-index-button")) {
-            this.addIndex(httpClient, form, messages);
-        } else if (form.containsKey("delete-button")) {
-            this.deleteIndex(FormUtils.getFormStringValue(form, "delete-button"), messages);
-        } else {
-            // Default value when the user press enter in a text field, or when the form is submitted by JavaScript.
-            // Most modern browser used the next submit button in the DOM tree (which is why we have a hidden save button),
-            // but some browser submits the form without "clicking" a submit button.
-            this.save(form, messages);
+        try (SearchClient searchClient = new ESClient()) {
+            if (form.containsKey("save-button")) {
+                this.save(form, messages);
+            } else if (form.containsKey("commit-button")) {
+                this.commit(form, messages);
+            } else if (form.containsKey("add-index-button")) {
+                this.addIndex(searchClient, httpClient, form, messages);
+            } else if (form.containsKey("delete-button")) {
+                this.deleteIndex(searchClient, FormUtils.getFormStringValue(form, "delete-button"), messages);
+            } else {
+                // Default value when the user press enter in a text field, or when the form is submitted by JavaScript.
+                // Most modern browser used the next submit button in the DOM tree (which is why we have a hidden save button),
+                // but some browser submits the form without "clicking" a submit button.
+                this.save(form, messages);
+            }
+        } catch (Exception ex) {
+            messages.addMessage(Messages.Level.ERROR,
+                "An exception occurred while accessing the Elastic Search server", ex);
         }
 
         return settingsPage(httpRequest);
     }
 
-    private void addIndex(HttpClient httpClient, MultivaluedMap<String, String> form, Messages messages) {
+    private void addIndex(SearchClient searchClient, HttpClient httpClient, MultivaluedMap<String, String> form, Messages messages) {
         String newIndexType = FormUtils.getFormStringValue(form, "newIndexType");
         // Call delete orphan indexes
         try {
-            SearchUtils.deleteOrphanIndexes();
+            SearchUtils.deleteOrphanIndexes(searchClient);
         } catch (IOException ex) {
             messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred while deleting orphan search indexes.", ex);
@@ -119,7 +126,7 @@ public class SettingsPage {
         }
     }
 
-    private void deleteIndex(String deleteIndex, Messages messages) {
+    private void deleteIndex(SearchClient searchClient, String deleteIndex, Messages messages) {
         if (deleteIndex != null) {
             SearchEngineConfig config = SearchEngineConfig.getInstance();
 
@@ -141,7 +148,7 @@ public class SettingsPage {
 
                 // Call delete orphan indexes
                 try {
-                    SearchUtils.deleteOrphanIndexes();
+                    SearchUtils.deleteOrphanIndexes(searchClient);
                 } catch (IOException ex) {
                     messages.addMessage(Messages.Level.ERROR,
                         "An exception occurred deleting orphan search indexes.", ex);

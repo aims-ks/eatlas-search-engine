@@ -3,13 +3,6 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.SearchClient;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -29,120 +22,6 @@ public abstract class IndexerTestBase {
     private static SearchEngineConfig config;
     private MockHttpClient mockHttpClient = null;
 
-    public SearchEngineConfig getConfig() {
-        return IndexerTestBase.config;
-    }
-
-    public MockHttpClient getMockHttpClient() {
-        if (this.mockHttpClient == null) {
-            this.mockHttpClient = MockHttpClient.getInstance();
-        }
-        return this.mockHttpClient;
-    }
-
-    /*
-    protected Map<String, String> getMockupUrlMap() {
-        return new HashMap<String, String>();
-    }
-
-    protected MockedStatic<Jsoup> getMockedJsoup() {
-        Map<String, String> urlMap = this.getMockupUrlMap();
-
-        // Overwrite the Jsoup class
-        MockedStatic<Jsoup> mockedJsoup = Mockito.mockStatic(Jsoup.class);
-
-        // Make sure the method Jsoup.parse() still works.
-        mockedJsoup.when(() -> Jsoup.parse(ArgumentMatchers.anyString())).thenAnswer(invocation -> {
-            String content = invocation.getArgument(0);
-            return Parser.parse(content, "");
-        });
-
-        mockedJsoup.when(() -> Jsoup.connect(ArgumentMatchers.anyString())).thenAnswer((Answer<Connection>) invocation -> {
-            String url = invocation.getArgument(0);
-            if (!urlMap.containsKey(url)) {
-                throw new IOException("Unsupported URL. Add the URL to the getMockupUrlMap: " + url);
-            }
-
-            // Mockup the JSoup connection
-            // NOTE: Setup all the connection methods used by:
-            //   EntityUtils.getJsoupConnection()
-            Connection mockConnection = Mockito.mock(Connection.class);
-            Mockito.when(mockConnection.timeout(Mockito.anyInt())).thenReturn(mockConnection);
-            Mockito.when(mockConnection.ignoreHttpErrors(Mockito.anyBoolean())).thenReturn(mockConnection);
-            Mockito.when(mockConnection.ignoreContentType(Mockito.anyBoolean())).thenReturn(mockConnection);
-            Mockito.when(mockConnection.maxBodySize(Mockito.anyInt())).thenReturn(mockConnection);
-            Mockito.when(mockConnection.sslSocketFactory(Mockito.any())).thenReturn(mockConnection);
-
-            // Mockup the JSoup response
-            Connection.Response mockResponse = this.createMockResponse(urlMap.get(url));
-            Mockito.when(mockConnection.execute()).thenReturn(mockResponse);
-            Mockito.when(mockConnection.response()).thenReturn(mockResponse);
-            return mockConnection;
-        });
-        return mockedJsoup;
-    }
-
-    private Connection.Response createMockResponse(String resourcePath) throws Exception {
-        URL resourceUrl = IndexerTest.class.getClassLoader().getResource(resourcePath);
-        if (resourceUrl == null) {
-            throw new IOException("Resource not found: " + resourcePath);
-        }
-        try (InputStream inputStream = resourceUrl.openStream()) {
-            if (inputStream == null) {
-                throw new IOException("Resource not found: " + resourcePath);
-            }
-            URI uri = resourceUrl.toURI();
-            Path path = Paths.get(uri);
-
-            String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            Connection.Response mockResponse = Mockito.mock(Connection.Response.class);
-            Mockito.when(mockResponse.statusCode()).thenReturn(200);
-            Mockito.when(mockResponse.bodyAsBytes()).thenReturn(content.getBytes(StandardCharsets.UTF_8));
-            Mockito.when(mockResponse.body()).thenReturn(content);
-            // Content type
-            Mockito.when(mockResponse.contentType()).thenReturn(Files.probeContentType(path));
-            // Last modified
-            Mockito.when(mockResponse.header("Last-Modified")).thenReturn(
-                    this.formatLastModifiedTime(Files.getLastModifiedTime(path))
-            );
-
-            return mockResponse;
-        }
-    }
-
-    private String formatLastModifiedTime(FileTime fileTime) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
-                .withZone(ZoneId.of("UTC"));
-        return formatter.format(fileTime.toInstant());
-    }
-    */
-
-    @BeforeAll
-    public static void setup() throws Exception {
-        URL resourceUrl = IndexerTest.class.getClassLoader().getResource("config/eatlas_search_engine.json");
-        if (resourceUrl == null) {
-            throw new FileNotFoundException("Could not find the Search Engine config file for tests");
-        }
-        File configFile = new File(resourceUrl.getFile());
-        Messages messages = Messages.getInstance(null);
-        MockHttpClient mockHttpClient = MockHttpClient.getInstance();
-
-        config = SearchEngineConfig.createInstance(mockHttpClient, configFile, "eatlas_search_engine_devel.json", messages);
-    }
-
-    public static String getElasticsearchVersion() {
-        // Load the Elastic Search version found in the test.properties file,
-        // after being substituted by Maven with the actual version number found in the POM.
-        try (InputStream input = IndexerTest.class.getClassLoader()
-                .getResourceAsStream("test.properties")) {
-            Properties prop = new Properties();
-            prop.load(input);
-            return prop.getProperty("elasticsearch.version");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Container
     private static final ElasticsearchContainer elasticsearchContainer =
             new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:" + IndexerTest.getElasticsearchVersion())
@@ -157,29 +36,44 @@ public abstract class IndexerTestBase {
                             .forPort(9200) // This refers to the internal port of the container
                             .forStatusCode(200));
 
-    public SearchClient createElasticsearchClient() {
-        // Retrieve the dynamically assigned HTTP host address from Testcontainers
-        String elasticsearchHttpHostAddress = elasticsearchContainer.getHttpHostAddress();
-
-        // Create an instance of the RestClient
-        RestClient restClient = RestClient.builder(
-                HttpHost.create(elasticsearchHttpHostAddress)
-        ).build();
-
-        // Create the ElasticsearchClient using the RestClient
-        RestClientTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
-        return new ESClient(new ElasticsearchClient(transport));
-    }
-
-    /*
-    public static String getResourceFileContent(String resourcePath) throws IOException {
-        try (InputStream is = IndexerTestBase.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (is != null) {
-                return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            }
+    @BeforeAll
+    public static void setup() throws Exception {
+        URL resourceUrl = IndexerTest.class.getClassLoader().getResource("config/eatlas_search_engine.json");
+        if (resourceUrl == null) {
+            throw new FileNotFoundException("Could not find the Search Engine config file for tests");
         }
+        File configFile = new File(resourceUrl.getFile());
+        Messages messages = Messages.getInstance(null);
+        MockHttpClient mockHttpClient = MockHttpClient.getInstance();
 
-        return null;
+        config = SearchEngineConfig.createInstance(mockHttpClient, configFile, "eatlas_search_engine_devel.json", messages);
     }
-    */
+
+    public MockSearchClient createMockSearchClient() {
+        return new MockSearchClient(elasticsearchContainer);
+    }
+
+    public SearchEngineConfig getConfig() {
+        return IndexerTestBase.config;
+    }
+
+    public MockHttpClient getMockHttpClient() {
+        if (this.mockHttpClient == null) {
+            this.mockHttpClient = MockHttpClient.getInstance();
+        }
+        return this.mockHttpClient;
+    }
+
+    public static String getElasticsearchVersion() {
+        // Load the Elastic Search version found in the test.properties file,
+        // after being substituted by Maven with the actual version number found in the POM.
+        try (InputStream input = IndexerTest.class.getClassLoader()
+                .getResourceAsStream("test.properties")) {
+            Properties prop = new Properties();
+            prop.load(input);
+            return prop.getProperty("elasticsearch.version");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

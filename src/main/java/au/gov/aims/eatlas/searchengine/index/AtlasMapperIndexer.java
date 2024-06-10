@@ -90,7 +90,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    protected AtlasMapperLayer harvestEntity(SearchClient client, String layerId, Messages messages) {
+    protected AtlasMapperLayer harvestEntity(SearchClient searchClient, String layerId, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
         // If we have a layerInfoService, use that to get info about the layer.
         // If not, pull the whole list of layer and find the info about that single layer.
@@ -192,7 +192,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     @Override
-    protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
+    protected void internalIndex(SearchClient searchClient, Long lastHarvested, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
         // There is no way to get last modified layers from AtlasMapper.
         // Therefore, we only perform a harvest if the JSON files are more recent than lastHarvested.
@@ -261,11 +261,11 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         JSONObject jsonMainConfig = mainResponse.jsonBody();
         JSONObject jsonLayersConfig = layersResponse.jsonBody();
 
-        this.indexLayers(client, messages, jsonMainConfig, jsonLayersConfig, refreshThumbnails);
+        this.indexLayers(searchClient, messages, jsonMainConfig, jsonLayersConfig, refreshThumbnails);
     }
 
     public void indexLayers(
-            SearchClient client,
+            SearchClient searchClient,
             Messages messages,
             JSONObject jsonMainConfig,
             JSONObject jsonLayersConfig,
@@ -282,7 +282,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             current++;
 
             Thread thread = new AtlasMapperIndexerThread(
-                    client, messages, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig,
+                    searchClient, messages, atlasMapperLayerId, jsonMainConfig, jsonLayersConfig,
                     this.getBaseLayerUrl(), usedThumbnails, refreshThumbnails, current);
 
             threadPool.execute(thread);
@@ -296,7 +296,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         }
 
         // Delete old thumbnails older than the TTL (1 month old)
-        this.cleanUp(client, harvestStart, usedThumbnails, "AtlasMapper layer", messages);
+        this.cleanUp(searchClient, harvestStart, usedThumbnails, "AtlasMapper layer", messages);
     }
 
     public String getAtlasMapperClientUrl() {
@@ -584,7 +584,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     }
 
     public class AtlasMapperIndexerThread extends Thread {
-        private final SearchClient client;
+        private final SearchClient searchClient;
         private final Messages messages;
         private final String atlasMapperLayerId;
         private final JSONObject jsonMainConfig;
@@ -595,7 +595,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         private final int current;
 
         public AtlasMapperIndexerThread(
-                SearchClient client,
+                SearchClient searchClient,
                 Messages messages,
                 String atlasMapperLayerId,
                 JSONObject jsonMainConfig,
@@ -605,7 +605,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 boolean refreshThumbnails,
                 int current
         ) {
-            this.client = client;
+            this.searchClient = searchClient;
             this.messages = messages;
             this.atlasMapperLayerId = atlasMapperLayerId;
             this.jsonMainConfig = jsonMainConfig;
@@ -627,7 +627,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
             // Create the thumbnail if it's missing or outdated
             AtlasMapperLayer oldLayer =
-                    AtlasMapperIndexer.this.safeGet(this.client, AtlasMapperLayer.class, this.atlasMapperLayerId, this.messages);
+                    AtlasMapperIndexer.this.safeGet(this.searchClient, AtlasMapperLayer.class, this.atlasMapperLayerId, this.messages);
 
             // Figure out if the thumbnail (preview image) needs to be created or updated:
             //   If the layer is new (not in the index yet), we need to generate its thumbnail.
@@ -658,7 +658,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             }
 
             try {
-                IndexResponse indexResponse = AtlasMapperIndexer.this.indexEntity(this.client, layerEntity, this.messages);
+                IndexResponse indexResponse = AtlasMapperIndexer.this.indexEntity(this.searchClient, layerEntity, this.messages);
 
                 LOGGER.debug(String.format("[%d/%d] Indexing AtlasMapper layer ID: %s, index response status: %s",
                         this.current, AtlasMapperIndexer.this.getTotal(),

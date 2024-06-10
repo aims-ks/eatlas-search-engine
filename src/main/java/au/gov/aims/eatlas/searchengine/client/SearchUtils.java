@@ -29,11 +29,7 @@ import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.index.IndexerState;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
@@ -78,7 +74,7 @@ public class SearchUtils {
             url.getProtocol());
     }
 
-    public static void deleteOrphanIndexes() throws IOException {
+    public static void deleteOrphanIndexes(SearchClient searchClient) throws IOException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         List<String> activeIndexes = new ArrayList<>();
@@ -86,42 +82,22 @@ public class SearchUtils {
             activeIndexes.add(indexer.getIndex());
         }
 
-        try(
-                RestClient restClient = SearchUtils.buildRestClient();
-
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            client.deleteOrphanIndexes(activeIndexes);
-        }
+        searchClient.deleteOrphanIndexes(activeIndexes);
     }
 
     // NOTE: To request the Elastic Search health status manually, use the REST API:
     //   $ curl http://localhost:9200/_cluster/health
-    public static ElasticSearchStatus getElasticSearchStatus(HttpServletRequest httpRequest) {
+    public static ElasticSearchStatus getElasticSearchStatus(SearchClient searchClient, HttpServletRequest httpRequest) {
         ElasticSearchStatus status = null;
 
-        try(
-                RestClient restClient = SearchUtils.buildRestClient();
-
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
+        try {
             // This should give the list of indexes, if the Elastic Search engine is reachable.
-            List<String> indexes = client.listIndexes();
+            List<String> indexes = searchClient.listIndexes();
 
             status = new ElasticSearchStatus(true);
             status.setIndexes(indexes);
 
-            HealthStatus healthStatus = client.getHealthStatus();
+            HealthStatus healthStatus = searchClient.getHealthStatus();
             status.setHealthStatus(healthStatus);
             SearchUtils.addHealthStatusWarnings(httpRequest, status, healthStatus);
         } catch(Exception ex) {
@@ -174,23 +150,12 @@ public class SearchUtils {
         }
     }
 
-    public static void refreshIndexesCount() throws Exception {
+    public static void refreshIndexesCount(SearchClient searchClient) throws Exception {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         SearchEngineState searchEngineState = SearchEngineState.getInstance();
 
-        try(
-                RestClient restClient = SearchUtils.buildRestClient();
-
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            for (AbstractIndexer<?> indexer : config.getIndexers()) {
-                indexer.refreshCount(client);
-            }
+        for (AbstractIndexer<?> indexer : config.getIndexers()) {
+            indexer.refreshCount(searchClient);
         }
 
         searchEngineState.save();

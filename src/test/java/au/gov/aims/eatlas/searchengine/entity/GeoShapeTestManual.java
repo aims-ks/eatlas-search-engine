@@ -23,18 +23,14 @@ import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
 import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class GeoShapeTestManual {
+
+    // TODO Turn into an index test, extends IndexerTestBase
 
     // Attempting to isolate and resolve the GeoShape bug
     @Test
@@ -102,24 +98,10 @@ public class GeoShapeTestManual {
 
         // Indexation
         GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
-        try(
-                RestClient restClient = RestClient.builder(
-                    new HttpHost[]{
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http")
-                    }
-                ).build();
+        try (SearchClient searchClient = new ESClient()) {
+            searchClient.createIndex(index);
 
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            client.createIndex(index);
-
-            indexer.indexEntity(client, record, messages);
+            indexer.indexEntity(searchClient, record, messages);
         }
     }
 
@@ -142,24 +124,10 @@ public class GeoShapeTestManual {
 
         // Indexation
         GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
-        try(
-                RestClient restClient = RestClient.builder(
-                    new HttpHost[]{
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http")
-                    }
-                ).build();
+        try (SearchClient searchClient = new ESClient()) {
+            searchClient.createIndex(index);
 
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            client.createIndex(index);
-
-            indexer.indexEntity(client, record, messages);
+            indexer.indexEntity(searchClient, record, messages);
         }
     }
 
@@ -182,24 +150,10 @@ public class GeoShapeTestManual {
 
         // Indexation
         GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
-        try(
-                RestClient restClient = RestClient.builder(
-                    new HttpHost[]{
-                        new HttpHost("localhost", 9200, "http"),
-                        new HttpHost("localhost", 9300, "http")
-                    }
-                ).build();
+        try (SearchClient searchClient = new ESClient()) {
+            searchClient.createIndex(index);
 
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            client.createIndex(index);
-
-            indexer.indexEntity(client, record, messages);
+            indexer.indexEntity(searchClient, record, messages);
         }
     }
 

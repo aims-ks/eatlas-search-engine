@@ -23,11 +23,8 @@ import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
-import au.gov.aims.eatlas.searchengine.client.ESClient;
-import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Conflicts;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -41,10 +38,6 @@ import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.json.JsonData;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.elasticsearch.client.RestClient;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -76,8 +69,8 @@ public abstract class AbstractIndexer<E extends Entity> {
         this.index = index;
     }
 
-    protected abstract void internalIndex(SearchClient client, Long lastIndexed, Messages messages);
-    protected abstract E harvestEntity(SearchClient client, String id, Messages messages);
+    protected abstract void internalIndex(SearchClient searchClient, Long lastIndexed, Messages messages);
+    protected abstract E harvestEntity(SearchClient searchClient, String id, Messages messages);
     public abstract E load(JSONObject json, Messages messages);
     public abstract JSONObject toJSON();
 
@@ -133,17 +126,17 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     // If full is true, reindex everything.
     // If not, only index what have changed since last indexation.
-    public synchronized void index(boolean full, Messages messages) throws IOException {
+    public synchronized void index(SearchClient searchClient, boolean full, Messages messages) throws IOException {
         if (!this.isRunning()) {
             this.total = null;
             this.completed = 0;
             this.indexed = 0;
-            this.indexerThread = new IndexerThread(full, messages);
+            this.indexerThread = new IndexerThread(searchClient, full, messages);
             this.indexerThread.start();
         }
     }
 
-    public void refreshCount(SearchClient client) throws IOException {
+    public void refreshCount(SearchClient searchClient) throws IOException {
         IndexerState state = this.getState();
 
         CountRequest countRequest = new CountRequest.Builder()
@@ -151,7 +144,7 @@ public abstract class AbstractIndexer<E extends Entity> {
                 .ignoreUnavailable(true)
                 .build();
 
-        CountResponse countResponse = client.count(countRequest);
+        CountResponse countResponse = searchClient.count(countRequest);
         state.setCount(countResponse.count());
     }
 
@@ -280,33 +273,22 @@ public abstract class AbstractIndexer<E extends Entity> {
         this.brokenThumbnailTTL = brokenThumbnailTTL;
     }
 
-    public IndexResponse reindex(String id, Messages messages) throws IOException {
+    public IndexResponse reindex(SearchClient searchClient, String id, Messages messages) throws IOException {
         IndexResponse indexResponse = null;
 
-        try(
-                RestClient restClient = SearchUtils.buildRestClient();
-
-                // Create the transport with a Jackson mapper
-                ElasticsearchTransport transport = new RestClientTransport(
-                        restClient, new JacksonJsonpMapper());
-
-                // And create the API client
-                SearchClient client = new ESClient(new ElasticsearchClient(transport))
-        ) {
-            client.createIndex(index);
-            E entity = this.harvestEntity(client, id, messages);
-            if (entity != null) {
-                indexResponse = this.indexEntity(client, entity, messages, false);
-            }
+        searchClient.createIndex(index);
+        E entity = this.harvestEntity(searchClient, id, messages);
+        if (entity != null) {
+            indexResponse = this.indexEntity(searchClient, entity, messages, false);
         }
 
         return indexResponse;
     }
 
-    public IndexResponse indexEntity(SearchClient client, E entity, Messages messages) throws IOException {
-        return this.indexEntity(client, entity, messages, true);
+    public IndexResponse indexEntity(SearchClient searchClient, E entity, Messages messages) throws IOException {
+        return this.indexEntity(searchClient, entity, messages, true);
     }
-    public IndexResponse indexEntity(SearchClient client, E entity, Messages messages, boolean incrementIndexedCount) throws IOException {
+    public IndexResponse indexEntity(SearchClient searchClient, E entity, Messages messages, boolean incrementIndexedCount) throws IOException {
         entity.setLastIndexed(System.currentTimeMillis());
 
         IndexResponse indexResponse = null;
@@ -328,12 +310,12 @@ public abstract class AbstractIndexer<E extends Entity> {
         }
 
         try {
-            indexResponse = client.index(this.getIndexRequest(entity));
+            indexResponse = searchClient.index(this.getIndexRequest(entity));
         } catch(ElasticsearchException ex) {
             String message = ex.getMessage();
             if (originalWkt != null && message != null && message.contains("failed to parse field [wkt] of type")) {
                 // Fallback to the BBox of the WKT geometry
-                indexResponse = this.indexEntityBboxFallback(client, entity, originalWkt, messages);
+                indexResponse = this.indexEntityBboxFallback(searchClient, entity, originalWkt, messages);
             } else {
                 throw ex;
             }
@@ -346,7 +328,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     // Fallback to the BBox of the WKT geometry
-    private IndexResponse indexEntityBboxFallback(SearchClient client, E entity, String originalWkt, Messages messages) throws IOException {
+    private IndexResponse indexEntityBboxFallback(SearchClient searchClient, E entity, String originalWkt, Messages messages) throws IOException {
         IndexResponse indexResponse = null;
 
         String newWkt = null;
@@ -367,11 +349,11 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         if (newWkt == null || newWkt.isEmpty()) {
             // Fallback to the BBox of whole world
-            indexResponse = this.indexEntityWholeWorldFallback(client, entity, entity.getWkt(), messages);
+            indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), messages);
         } else {
             try {
                 entity.setWktAndAttributes(newWkt);
-                indexResponse = client.index(this.getIndexRequest(entity));
+                indexResponse = searchClient.index(this.getIndexRequest(entity));
 
                 // The Geometry bbox is valid.
                 // Send a warning message regarding the original invalid WKT
@@ -379,12 +361,12 @@ public abstract class AbstractIndexer<E extends Entity> {
                 messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
                 messageObj.addDetail(String.format("Replaced with: %s", newWkt));
             } catch(ParseException ex) {
-                indexResponse = this.indexEntityWholeWorldFallback(client, entity, entity.getWkt(), messages);
+                indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), messages);
             } catch(ElasticsearchException ex) {
                 String message = ex.getMessage();
                 if (message != null && message.contains("failed to parse field [wkt] of type")) {
                     // Fallback to the BBox of whole world
-                    indexResponse = this.indexEntityWholeWorldFallback(client, entity, entity.getWkt(), messages);
+                    indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), messages);
                 } else {
                     throw ex;
                 }
@@ -395,12 +377,12 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     // Fallback to the BBox of whole world
-    private IndexResponse indexEntityWholeWorldFallback(SearchClient client, E entity, String originalWkt, Messages messages) throws IOException {
+    private IndexResponse indexEntityWholeWorldFallback(SearchClient searchClient, E entity, String originalWkt, Messages messages) throws IOException {
         IndexResponse indexResponse = null;
         String newWkt = AbstractIndexer.WHOLE_WORLD_WKT;
         try {
             entity.setWktAndAttributes(newWkt);
-            indexResponse = client.index(this.getIndexRequest(entity));
+            indexResponse = searchClient.index(this.getIndexRequest(entity));
 
             Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to whole world.", entity.getId()));
             messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
@@ -408,7 +390,7 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         } catch (ParseException ex) {
             entity.setWktAndAttributes(null, null, null);
-            indexResponse = client.index(this.getIndexRequest(entity));
+            indexResponse = searchClient.index(this.getIndexRequest(entity));
 
             Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
             message.addDetail(String.format("Invalid WKT: %s", originalWkt));
@@ -419,8 +401,8 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     // Only called with complete reindex
-    public void cleanUp(SearchClient client, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName, Messages messages) {
-        long deletedIndexedItems = this.deleteOldIndexedItems(client, lastIndexed, messages);
+    public void cleanUp(SearchClient searchClient, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName, Messages messages) {
+        long deletedIndexedItems = this.deleteOldIndexedItems(searchClient, lastIndexed, messages);
         if (deletedIndexedItems > 0) {
             messages.addMessage(Messages.Level.INFO,
                     String.format("Deleted %d indexed %s",
@@ -433,7 +415,7 @@ public abstract class AbstractIndexer<E extends Entity> {
         //     otherwise the search engine could return old records
         //     which refers to thumbnails that doesn't exist anymore.
         try {
-            client.refresh(this.index);
+            searchClient.refresh(this.index);
         } catch(Exception ex) {
             messages.addMessage(Messages.Level.WARNING,
                     String.format("Exception occurred while refreshing the search index: %s", this.index), ex);
@@ -447,13 +429,13 @@ public abstract class AbstractIndexer<E extends Entity> {
         }
     }
 
-    private long deleteOldIndexedItems(SearchClient client, long lastIndexed, Messages messages) {
+    private long deleteOldIndexedItems(SearchClient searchClient, long lastIndexed, Messages messages) {
         DeleteByQueryRequest deleteRequest = this.getDeleteOldItemsRequest(lastIndexed);
 
         // Delete old records
         Long deleted = null;
         try {
-            DeleteByQueryResponse response = client.deleteByQuery(deleteRequest);
+            DeleteByQueryResponse response = searchClient.deleteByQuery(deleteRequest);
 
             if (response != null) {
                 deleted = response.deleted();
@@ -501,13 +483,13 @@ public abstract class AbstractIndexer<E extends Entity> {
         return deleted;
     }
 
-    public E get(SearchClient client, Class<E> entityClass, String id) throws IOException {
-        return AbstractIndexer.get(client, entityClass, this.index, id);
+    public E get(SearchClient searchClient, Class<E> entityClass, String id) throws IOException {
+        return AbstractIndexer.get(searchClient, entityClass, this.index, id);
     }
 
-    public E safeGet(SearchClient client, Class<E> entityClass, String id, Messages messages) {
+    public E safeGet(SearchClient searchClient, Class<E> entityClass, String id, Messages messages) {
         try {
-            return this.get(client, entityClass, id);
+            return this.get(searchClient, entityClass, id);
         } catch(Exception ex) {
             // Should not happen
             messages.addMessage(Messages.Level.WARNING,
@@ -518,9 +500,9 @@ public abstract class AbstractIndexer<E extends Entity> {
         return null;
     }
 
-    public static <E extends Entity> E get(SearchClient client, Class<E> entityClass, String index, String id) throws IOException {
+    public static <E extends Entity> E get(SearchClient searchClient, Class<E> entityClass, String index, String id) throws IOException {
         // TODO: Entity is abstract! Jackson can't instantiate it! Use Generics
-        GetResponse<E> response = client.get(AbstractIndexer.getGetRequest(index, id), entityClass);
+        GetResponse<E> response = searchClient.get(AbstractIndexer.getGetRequest(index, id), entityClass);
         if (response == null) {
             return null;
         }
@@ -568,10 +550,12 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     public class IndexerThread extends Thread {
+        private SearchClient searchClient;
         private final boolean fullIndex;
         private Messages messages;
 
-        public IndexerThread(boolean fullIndex, Messages messages) {
+        public IndexerThread(SearchClient searchClient, boolean fullIndex, Messages messages) {
+            this.searchClient = searchClient;
             this.fullIndex = fullIndex;
             this.messages = messages;
         }
@@ -599,19 +583,10 @@ public abstract class AbstractIndexer<E extends Entity> {
 
             boolean fullIndexation = this.fullIndex || state.getLastIndexed() == null;
 
-            try(
-                    RestClient restClient = SearchUtils.buildRestClient();
-
-                    // Create the transport with a Jackson mapper
-                    ElasticsearchTransport transport = new RestClientTransport(
-                            restClient, new JacksonJsonpMapper());
-
-                    // And create the API client
-                    SearchClient client = new ESClient(new ElasticsearchClient(transport))
-            ) {
-                client.createIndex(index);
-                AbstractIndexer.this.internalIndex(client, fullIndexation ? null : state.getLastIndexed(), this.messages);
-                AbstractIndexer.this.refreshCount(client);
+            try {
+                this.searchClient.createIndex(index);
+                AbstractIndexer.this.internalIndex(this.searchClient, fullIndexation ? null : state.getLastIndexed(), this.messages);
+                AbstractIndexer.this.refreshCount(this.searchClient);
 
                 long indexed = AbstractIndexer.this.indexed;
                 if (!fullIndexation && indexed == 0) {

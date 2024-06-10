@@ -20,6 +20,8 @@ package au.gov.aims.eatlas.searchengine.admin;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.rest.PublicWebApplication;
 import jakarta.servlet.ServletContext;
@@ -37,14 +39,14 @@ public class PrivateWebApplication extends ResourceConfig {
 
         try {
             SearchEngineConfig.createInstance(httpCLient, servletContext, messages);
-            try {
-                SearchUtils.deleteOrphanIndexes();
+            try (SearchClient searchClient = new ESClient()) {
+                SearchUtils.deleteOrphanIndexes(searchClient);
             } catch (Exception ex) {
                 LOGGER.error(
                     "An exception occurred while deleting orphan search indexes.", ex);
             }
         } catch (Exception ex) {
-            LOGGER.error("The eAtlas search engine could not load its configuration.", ex);
+            LOGGER.error("Could not load the eAtlas search engine configuration.", ex);
         }
 
         this.packages("au.gov.aims.eatlas.searchengine.admin.rest");

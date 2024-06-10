@@ -89,17 +89,17 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
-    protected GeoNetworkRecord harvestEntity(SearchClient client, String id, Messages messages) {
+    protected GeoNetworkRecord harvestEntity(SearchClient searchClient, String id, Messages messages) {
         // Find the metadata schema from the record from the index.
-        GeoNetworkRecord oldRecord = this.safeGet(client, GeoNetworkRecord.class, id, messages);
+        GeoNetworkRecord oldRecord = this.safeGet(searchClient, GeoNetworkRecord.class, id, messages);
         String metadataSchema = oldRecord.getMetadataSchema();
 
         // Re-harvest the record.
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        return this.harvestEntity(client, factory, id, metadataSchema, messages);
+        return this.harvestEntity(searchClient, factory, id, metadataSchema, messages);
     }
 
-    private GeoNetworkRecord harvestEntity(SearchClient client, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, String metadataSchema, Messages messages) {
+    private GeoNetworkRecord harvestEntity(SearchClient searchClient, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, String metadataSchema, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
 
         String url;
@@ -152,7 +152,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     geoNetworkRecord.setThumbnailUrl(thumbnailUrl);
 
                     // Create the thumbnail if it's missing or outdated
-                    GeoNetworkRecord oldRecord = this.safeGet(client, GeoNetworkRecord.class, geoNetworkRecord.getId(), messages);
+                    GeoNetworkRecord oldRecord = this.safeGet(searchClient, GeoNetworkRecord.class, geoNetworkRecord.getId(), messages);
                     if (geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), messages)) {
                         try {
                             File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), geoNetworkRecord.getId(), messages);
@@ -198,7 +198,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
-    protected void internalIndex(SearchClient client, Long lastHarvested, Messages messages) {
+    protected void internalIndex(SearchClient searchClient, Long lastHarvested, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
 
         String lastHarvestedISODateStr = null;
@@ -331,7 +331,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                                 String metadataSchema = IndexUtils.parseText(metadataSchemaElement);
 
                                 GeoNetworkIndexerThread thread = new GeoNetworkIndexerThread(
-                                        client, messages, factory, metadataRecordUUID, metadataSchema,
+                                        searchClient, messages, factory, metadataRecordUUID, metadataSchema,
                                         orphanMetadataRecordList, usedThumbnails, from);
 
                                 threadPool.execute(thread);
@@ -359,7 +359,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         // Refresh the index to be sure to find parent records, if they are new
         try {
-            client.refresh(this.getIndex());
+            searchClient.refresh(this.getIndex());
         } catch(Exception ex) {
             messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while refreshing the search index: %s", this.getIndex()), ex);
         }
@@ -367,16 +367,16 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         // We have added all the records.
         // Lets fix the records parent title.
         for (String recordUUID : orphanMetadataRecordList) {
-            GeoNetworkRecord geoNetworkRecord = this.safeGet(client, GeoNetworkRecord.class, recordUUID, messages);
+            GeoNetworkRecord geoNetworkRecord = this.safeGet(searchClient, GeoNetworkRecord.class, recordUUID, messages);
             if (geoNetworkRecord != null) {
                 String parentRecordUUID = geoNetworkRecord.getParentUUID();
-                GeoNetworkRecord parentRecord = this.safeGet(client, GeoNetworkRecord.class, parentRecordUUID, messages);
+                GeoNetworkRecord parentRecord = this.safeGet(searchClient, GeoNetworkRecord.class, parentRecordUUID, messages);
 
                 if (parentRecord != null) {
                     geoNetworkRecord.setParentTitle(parentRecord.getTitle());
 
                     try {
-                        IndexResponse indexResponse = this.indexEntity(client, geoNetworkRecord, messages, false);
+                        IndexResponse indexResponse = this.indexEntity(searchClient, geoNetworkRecord, messages, false);
 
                         LOGGER.debug(String.format("Reindexing GeoNetwork metadata record: %s with parent title: %s, status: %s",
                                 geoNetworkRecord.getId(),
@@ -391,7 +391,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         // Only cleanup when we are doing a full harvest
         if (!crashed && fullHarvest) {
-            this.cleanUp(client, harvestStart, usedThumbnails, "GeoNetwork metadata record", messages);
+            this.cleanUp(searchClient, harvestStart, usedThumbnails, "GeoNetwork metadata record", messages);
         }
     }
 
@@ -413,7 +413,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
 
     public class GeoNetworkIndexerThread extends Thread {
-        private final SearchClient client;
+        private final SearchClient searchClient;
         private final Messages messages;
         private final DocumentBuilderFactory documentBuilderFactory;
         private final String metadataRecordUUID;
@@ -423,7 +423,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         private final long current;
 
         public GeoNetworkIndexerThread(
-                SearchClient client,
+                SearchClient searchClient,
                 Messages messages,
                 DocumentBuilderFactory documentBuilderFactory,
                 String metadataRecordUUID,
@@ -432,7 +432,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 Set<String> usedThumbnails,
                 long current
         ) {
-            this.client = client;
+            this.searchClient = searchClient;
             this.messages = messages;
             this.documentBuilderFactory = documentBuilderFactory;
             this.metadataRecordUUID = metadataRecordUUID;
@@ -445,7 +445,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         @Override
         public void run() {
             GeoNetworkRecord geoNetworkRecord = GeoNetworkIndexer.this.harvestEntity(
-                    this.client, this.documentBuilderFactory, this.metadataRecordUUID, this.metadataSchema, this.messages);
+                    this.searchClient, this.documentBuilderFactory, this.metadataRecordUUID, this.metadataSchema, this.messages);
 
             if (geoNetworkRecord != null) {
                 // If the record have a parent UUID,
@@ -456,7 +456,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 }
 
                 try {
-                    IndexResponse indexResponse = GeoNetworkIndexer.this.indexEntity(this.client, geoNetworkRecord, this.messages);
+                    IndexResponse indexResponse = GeoNetworkIndexer.this.indexEntity(this.searchClient, geoNetworkRecord, this.messages);
 
                     LOGGER.debug(String.format("[%d/%d] Indexing GeoNetwork metadata record: %s, index response status: %s",
                             this.current, GeoNetworkIndexer.this.getTotal(),

@@ -112,8 +112,8 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
     }
 
     @Override
-    public DrupalMedia getIndexedDrupalEntity(SearchClient client, String id, Messages messages) {
-        return this.safeGet(client, DrupalMedia.class, id, messages);
+    public DrupalMedia getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages) {
+        return this.safeGet(searchClient, DrupalMedia.class, id, messages);
     }
 
     private String parseDrupalTitle(JSONObject jsonApiMedia, String drupalTitleField) {

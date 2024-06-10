@@ -100,7 +100,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     }
 
     @Override
-    protected boolean parseJsonDrupalEntity(SearchClient client, JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, ExternalLink externalLink, Messages messages) {
+    protected boolean parseJsonDrupalEntity(SearchClient searchClient, JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, ExternalLink externalLink, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
 
         if (this.drupalExternalUrlField != null) {
@@ -141,7 +141,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
                     // Overwrite fields to make the results look more like an external link
                     externalLink.setLink(externalLinkUrl);
 
-                    return super.parseJsonDrupalEntity(client, jsonApiNode, jsonIncluded, externalLink, messages);
+                    return super.parseJsonDrupalEntity(searchClient, jsonApiNode, jsonIncluded, externalLink, messages);
                 }
             }
         }
@@ -150,8 +150,8 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     }
 
     @Override
-    public ExternalLink getIndexedDrupalEntity(SearchClient client, String id, Messages messages) {
-        return this.safeGet(client, ExternalLink.class, id, messages);
+    public ExternalLink getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages) {
+        return this.safeGet(searchClient, ExternalLink.class, id, messages);
     }
 
     private static String getExternalLink(JSONObject jsonApiNode, String externalLinkField) {

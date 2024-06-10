@@ -20,6 +20,8 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.client.ESClient;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.GET;
@@ -96,8 +98,8 @@ public class Index {
         // API call - display messages using the LOGGER.
         Messages messages = Messages.getInstance(null);
 
-        try {
-            JSONObject jsonStatus = Index.internalReindex(full == null ? true : full, messages);
+        try (SearchClient searchClient = new ESClient()) {
+            JSONObject jsonStatus = Index.internalReindex(searchClient, full == null ? true : full, messages);
 
             String responseTxt = jsonStatus.toString();
 
@@ -117,7 +119,7 @@ public class Index {
         }
     }
 
-    public static JSONObject internalReindex(boolean full, Messages messages) throws IOException {
+    public static JSONObject internalReindex(SearchClient searchClient, boolean full, Messages messages) throws IOException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         // Reindex
@@ -126,7 +128,7 @@ public class Index {
             if (indexers != null && !indexers.isEmpty()) {
                 for (AbstractIndexer<?> indexer : indexers) {
                     if (indexer.isEnabled()) {
-                        Index.internalReindex(indexer, full, messages);
+                        Index.internalReindex(searchClient, indexer, full, messages);
                     }
                 }
             }
@@ -136,11 +138,11 @@ public class Index {
             .put("status", "success");
     }
 
-    public static void internalReindex(AbstractIndexer<?> indexer, boolean full, Messages messages) throws IOException {
+    public static void internalReindex(SearchClient searchClient, AbstractIndexer<?> indexer, boolean full, Messages messages) throws IOException {
         LOGGER.debug(String.format("Reindexing %s class %s",
                 indexer.getIndex(), indexer.getClass().getSimpleName()));
 
-        indexer.index(full, messages);
+        indexer.index(searchClient, full, messages);
     }
 
 }

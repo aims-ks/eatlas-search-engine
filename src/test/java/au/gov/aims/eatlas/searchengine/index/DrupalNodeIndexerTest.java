@@ -2,7 +2,6 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
@@ -19,28 +18,28 @@ public class DrupalNodeIndexerTest extends IndexerTestBase {
 
     @Test
     public void testIndexArticles() throws Exception {
-        try (SearchClient client = this.createElasticsearchClient()) {
+        try (MockSearchClient searchClient = this.createMockSearchClient()) {
             MockHttpClient mockHttpClient = this.getMockHttpClient();
 
             Map<String, String> urlMap = new HashMap<>();
             urlMap.put("https://domain.com/jsonapi/node/article?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalArticleFiles/jsonapi/node/article.json");
             mockHttpClient.setUrlMap(urlMap);
 
-            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
+            Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "articles";
             Messages messages = Messages.getInstance(null);
 
-            client.createIndex(index);
+            searchClient.createIndex(index);
 
             // Find the indexer, defined in the config file
             DrupalNodeIndexer drupalNodeIndexer =
                     (DrupalNodeIndexer)this.getConfig().getIndexer(index);
 
-            drupalNodeIndexer.internalIndex(client, null, messages);
+            drupalNodeIndexer.internalIndex(searchClient, null, messages);
 
             // Wait for ElasticSearch to finish its indexation
-            client.refresh(index);
+            searchClient.refresh(index);
 
             SearchResults results = null;
             try {
@@ -50,7 +49,7 @@ public class DrupalNodeIndexerTest extends IndexerTestBase {
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
 
-                results = Search.paginationSearch(client, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
 
                 Summary searchSummary = results.getSummary();
 
@@ -70,7 +69,7 @@ public class DrupalNodeIndexerTest extends IndexerTestBase {
                 Assertions.fail("Exception thrown while testing the Search API.", ex);
             }
 
-            Assertions.assertEquals(HealthStatus.Green, client.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
+            Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
         }
     }
 }

@@ -80,7 +80,7 @@ public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock>
     }
 
     @Override
-    public DrupalBlock getIndexedDrupalEntity(SearchClient client, String id, Messages messages) {
-        return this.safeGet(client, DrupalBlock.class, id, messages);
+    public DrupalBlock getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages) {
+        return this.safeGet(searchClient, DrupalBlock.class, id, messages);
     }
 }
