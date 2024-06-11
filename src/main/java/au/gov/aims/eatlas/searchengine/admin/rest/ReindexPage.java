@@ -23,7 +23,7 @@ import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
-import au.gov.aims.eatlas.searchengine.rest.Index;
+import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.Consumes;
@@ -143,7 +143,7 @@ public class ReindexPage {
 
     private void reindexAll(SearchClient searchClient, boolean fullHarvest, Messages messages) {
         try {
-            Index.internalReindex(searchClient, fullHarvest, messages);
+            IndexUtils.internalReindex(searchClient, fullHarvest, messages);
         } catch (Exception ex) {
             messages.addMessage(Messages.Level.ERROR,
                 "An exception occurred during the indexation.", ex);
@@ -181,7 +181,7 @@ public class ReindexPage {
             AbstractIndexer<?> indexer = config.getIndexer(index);
 
             try {
-                Index.internalReindex(searchClient, indexer, fullHarvest, messages);
+                indexer.index(searchClient, fullHarvest, messages);
             } catch (Exception ex) {
                 messages.addMessage(Messages.Level.ERROR,
                     String.format("An exception occurred during the indexation of index: %s", index), ex);

@@ -28,7 +28,6 @@ import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
-import au.gov.aims.eatlas.searchengine.rest.Index;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -78,7 +77,7 @@ public class Main {
 
         try (SearchClient searchClient = new ESClient()) {
             AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-            Index.internalReindex(searchClient, atlasMapperIndexer, fullHarvest, messages);
+            atlasMapperIndexer.index(searchClient, fullHarvest, messages);
 
 
             //Main.testElasticsearchClient();

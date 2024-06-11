@@ -22,7 +22,7 @@ import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
-import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -32,15 +32,10 @@ import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.List;
 
 @Path("/index/v1")
 public class Index {
-    private static final Logger LOGGER = Logger.getLogger(Index.class.getName());
 
     // http://localhost:8080/eatlas-search-engine/public/index/v1/reindex?full=false&token=[REINDEX TOKEN]
     // REINDEX TOKEN: The token is set in the search engine configuration file. See setting page:
@@ -99,7 +94,7 @@ public class Index {
         Messages messages = Messages.getInstance(null);
 
         try (SearchClient searchClient = new ESClient()) {
-            JSONObject jsonStatus = Index.internalReindex(searchClient, full == null ? true : full, messages);
+            JSONObject jsonStatus = IndexUtils.internalReindex(searchClient, full == null ? true : full, messages);
 
             String responseTxt = jsonStatus.toString();
 
@@ -118,31 +113,4 @@ public class Index {
             return Response.serverError().entity(responseTxt).cacheControl(noCache).build();
         }
     }
-
-    public static JSONObject internalReindex(SearchClient searchClient, boolean full, Messages messages) throws IOException {
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
-
-        // Reindex
-        if (config != null) {
-            List<AbstractIndexer<?>> indexers = config.getIndexers();
-            if (indexers != null && !indexers.isEmpty()) {
-                for (AbstractIndexer<?> indexer : indexers) {
-                    if (indexer.isEnabled()) {
-                        Index.internalReindex(searchClient, indexer, full, messages);
-                    }
-                }
-            }
-        }
-
-        return new JSONObject()
-            .put("status", "success");
-    }
-
-    public static void internalReindex(SearchClient searchClient, AbstractIndexer<?> indexer, boolean full, Messages messages) throws IOException {
-        LOGGER.debug(String.format("Reindexing %s class %s",
-                indexer.getIndex(), indexer.getClass().getSimpleName()));
-
-        indexer.index(searchClient, full, messages);
-    }
-
 }

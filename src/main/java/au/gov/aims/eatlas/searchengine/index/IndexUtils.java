@@ -18,6 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.index;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
@@ -25,6 +28,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -151,5 +155,24 @@ public class IndexUtils {
         }
 
         return null;
+    }
+
+    public static JSONObject internalReindex(SearchClient searchClient, boolean full, Messages messages) throws IOException {
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+
+        // Reindex
+        if (config != null) {
+            List<AbstractIndexer<?>> indexers = config.getIndexers();
+            if (indexers != null && !indexers.isEmpty()) {
+                for (AbstractIndexer<?> indexer : indexers) {
+                    if (indexer.isEnabled()) {
+                        indexer.index(searchClient, full, messages);
+                    }
+                }
+            }
+        }
+
+        return new JSONObject()
+            .put("status", "success");
     }
 }
