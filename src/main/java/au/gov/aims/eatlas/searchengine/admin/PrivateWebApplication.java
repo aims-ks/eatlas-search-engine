@@ -37,16 +37,24 @@ public class PrivateWebApplication extends ResourceConfig {
         HttpClient httpCLient = HttpClient.getInstance();
         Messages messages = Messages.getInstance(null);
 
+        SearchEngineConfig config = null;
         try {
-            SearchEngineConfig.createInstance(httpCLient, servletContext, messages);
+            config = SearchEngineConfig.createInstance(httpCLient, servletContext, messages);
+        } catch (Exception ex) {
+            LOGGER.error("Could not load the eAtlas search engine configuration.", ex);
+        }
+
+        if (config != null) {
             try (SearchClient searchClient = new ESClient()) {
-                SearchUtils.deleteOrphanIndexes(searchClient);
+                if (searchClient.isHealthy()) {
+                    SearchUtils.deleteOrphanIndexes(searchClient);
+                } else {
+                    LOGGER.warn("The Elastic Search server is not healthy (not running or status red).");
+                }
             } catch (Exception ex) {
                 LOGGER.error(
                     "An exception occurred while deleting orphan search indexes.", ex);
             }
-        } catch (Exception ex) {
-            LOGGER.error("Could not load the eAtlas search engine configuration.", ex);
         }
 
         this.packages("au.gov.aims.eatlas.searchengine.admin.rest");

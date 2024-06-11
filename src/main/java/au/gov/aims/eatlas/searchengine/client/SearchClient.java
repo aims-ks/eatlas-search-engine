@@ -49,6 +49,7 @@ public interface SearchClient extends AutoCloseable {
     CreateIndexResponse createIndex(String indexName) throws IOException;
 
     List<String> listIndexes() throws IOException;
+    public boolean isHealthy();
     HealthStatus getHealthStatus() throws IOException;
     DeleteIndexResponse deleteIndex(String indexName) throws IOException;
     void deleteOrphanIndexes(List<String> activeIndexes) throws IOException;

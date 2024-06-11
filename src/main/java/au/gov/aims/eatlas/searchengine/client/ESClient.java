@@ -108,6 +108,17 @@ public class ESClient implements SearchClient {
         return healthResponse.status();
     }
 
+    public boolean isHealthy() {
+        try {
+            HealthStatus status = this.getHealthStatus();
+            return !"red".equals(status.jsonValue());
+        } catch(Exception ex) {
+            // The health status request crashed.
+            // Probably because Elastic Search is not running.
+            return false;
+        }
+    }
+
     @Override
     public void deleteOrphanIndexes(List<String> activeIndexes) throws IOException {
         boolean noActiveIndexes = activeIndexes == null || activeIndexes.isEmpty();
