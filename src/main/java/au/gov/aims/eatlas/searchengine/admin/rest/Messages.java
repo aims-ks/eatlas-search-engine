@@ -20,6 +20,8 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import jakarta.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,6 +106,10 @@ public class Messages {
         return this.messages;
     }
 
+    public boolean isEmpty() {
+        return this.messages == null || this.messages.isEmpty();
+    }
+
     public List<Message> consume() {
         return consume(MAX_CONSUME_MESSAGE);
     }
@@ -135,6 +141,25 @@ public class Messages {
         public String getCssClass() {
             return this.cssClass;
         }
+    }
+
+    public JSONObject toJSON() {
+        JSONArray messagesJson = new JSONArray();
+        if (this.messages != null && !this.messages.isEmpty()) {
+            for (Message message : this.messages) {
+                messagesJson.put(message.toJSON());
+            }
+        }
+        return new JSONObject().put("messages", messagesJson);
+    }
+
+    public String toString(int indentFactor) {
+        return this.toJSON().toString(indentFactor);
+    }
+
+    @Override
+    public String toString() {
+        return this.toString(2);
     }
 
     public static class Message {
@@ -181,7 +206,7 @@ public class Messages {
 
         public void addDetail(String detail) {
             if (this.details == null) {
-                this.details = new ArrayList<>();
+                this.details = new ArrayList<String>();
             }
             this.details.add(detail);
         }
@@ -209,6 +234,37 @@ public class Messages {
 
         public void setException(Throwable exception) {
             this.exception = exception;
+        }
+
+        public JSONObject toJSON() {
+            JSONObject messageJson = new JSONObject()
+                    .put("level", this.level.name())
+                    .put("message", this.message)
+                    .put("timestamp", this.timestamp)
+                    .put("date", this.getDate().toString());
+
+            if (this.exception != null) {
+                messageJson.put("exception", this.exception.toString());
+            }
+
+            if (this.details != null && !this.details.isEmpty()) {
+                JSONArray detailsJson = new JSONArray();
+                for (String detail : this.details) {
+                    detailsJson.put(detail);
+                }
+                messageJson.put("details", detailsJson);
+            }
+
+            return messageJson;
+        }
+
+        public String toString(int indentFactor) {
+            return this.toJSON().toString(indentFactor);
+        }
+
+        @Override
+        public String toString() {
+            return this.toString(2);
         }
     }
 }

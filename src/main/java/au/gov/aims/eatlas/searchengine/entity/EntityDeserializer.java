@@ -31,7 +31,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 public class EntityDeserializer extends StdDeserializer<Entity> {
-    // Constructor required by Jackson
+    // The constructor is called by Jackson:
     //     at com.fasterxml.jackson.databind.util.ClassUtil.createInstance(ClassUtil.java:566)
     //     at com.fasterxml.jackson.databind.deser.DefaultDeserializationContext.deserializerInstance(DefaultDeserializationContext.java:234)
     //     at com.fasterxml.jackson.databind.deser.DeserializerCache.findDeserializerFromAnnotation(DeserializerCache.java:431)

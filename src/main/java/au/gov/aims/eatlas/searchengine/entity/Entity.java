@@ -32,8 +32,10 @@ import java.io.File;
 import java.net.URL;
 
 /*
- * TODO Use Jackson to serialise / deserialise the Entities instead of defining a toJSON and fromJSON method.
- *    (that's what Jackson is for)
+ * Use Jackson to serialise / deserialise the Entities.
+ *   See: EntityDeserializer
+ * The EntityDeserializer uses the SearchEngineConfig to find the proper indexer for the given index ID,
+ *   then the EntityDeserializer uses the "load" method from the indexer to instantiate the Entity.
  */
 
 @JsonDeserialize(using = EntityDeserializer.class)
@@ -160,21 +162,42 @@ public abstract class Entity {
         this.wktBbox = wktBbox;
     }
 
+    /**
+     * Set Well Known Text (WKT), polygon area and polygon bounding box.
+     * Use setWktAndAttributes(String wkt) if you want the JTS library
+     *   to automatically calculate the area and bbox.
+     * @param wkt String The Well Known Text (WKT) string that describe the polygon.
+     * @param area Double The area of the polygon.
+     * @param bbox Bbox The bounding box of the polygon.
+     */
     public void setWktAndAttributes(String wkt, Double area, Bbox bbox) {
         this.wkt = wkt;
         this.wktArea = area;
         this.wktBbox = bbox;
     }
 
+    /**
+     * Set the Well Known Text (WKT) and let the JTS library
+     *   automatically calculate the area and bbox.
+     * @param wkt String The Well Known Text (WKT) string that describe the polygon.
+     * @throws ParseException Thrown when the WKT can not be parsed by the JTS library.
+     */
     public void setWktAndAttributes(String wkt) throws ParseException {
         this.setWktAndAttributes(null, wkt);
     }
 
+    /**
+     * Set the geometry and let the JTS library
+     *   automatically calculate the WKT, area and bbox.
+     * @param geometry Geometry The geometry (polygon) representing the region of interest.
+     * @throws ParseException Never thrown. The exception is present in the method header
+     *   because of shared method dependency.
+     */
     public void setWktAndAttributes(Geometry geometry) throws ParseException {
         this.setWktAndAttributes(geometry, null);
     }
 
-    public void setWktAndAttributes(Geometry geometry, String wkt) throws ParseException {
+    private void setWktAndAttributes(Geometry geometry, String wkt) throws ParseException {
         // If both are null, there is nothing we can do about it...
         if (geometry == null && wkt == null) {
             return;

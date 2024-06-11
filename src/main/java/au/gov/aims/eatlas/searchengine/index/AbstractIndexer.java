@@ -501,7 +501,9 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     public static <E extends Entity> E get(SearchClient searchClient, Class<E> entityClass, String index, String id) throws IOException {
-        // TODO: Entity is abstract! Jackson can't instantiate it! Use Generics
+        // Jackson instantiate the Entity using EntityDeserializer.
+        // NOTE: The EntityDeserializer uses the SearchEngineConfig to find the proper indexer for the given index ID,
+        //   then the EntityDeserializer uses the "load" method from the indexer to instantiate the Entity.
         GetResponse<E> response = searchClient.get(AbstractIndexer.getGetRequest(index, id), entityClass);
         if (response == null) {
             return null;
