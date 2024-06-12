@@ -19,8 +19,8 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -57,7 +57,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -84,7 +84,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -111,7 +111,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -138,7 +138,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -169,7 +169,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -196,7 +196,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -223,7 +223,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -250,7 +250,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -277,7 +277,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -304,7 +304,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -331,7 +331,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -362,7 +362,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -393,7 +393,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -424,7 +424,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 
@@ -451,7 +451,7 @@ public class GeoNetworkRecordTest {
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
-            Assert.assertEquals("Wrong WKT", expectedWKT, geoNetworkRecord.getWkt());
+            Assertions.assertEquals(expectedWKT, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
     }
 

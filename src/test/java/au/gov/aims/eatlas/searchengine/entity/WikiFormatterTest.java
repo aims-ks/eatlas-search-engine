@@ -18,8 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class WikiFormatterTest {
 
@@ -37,8 +37,8 @@ public class WikiFormatterTest {
         String element = array[0]; array = wikiFormatter.arrayShift(array);
 
         //System.out.println(Arrays.toString(array));
-        Assert.assertEquals("arrayShift didn't return the first element of the array", expectedElement, element);
-        Assert.assertArrayEquals("arrayShift didn't modified the array as expected", expectedArray, array);
+        Assertions.assertEquals(expectedElement, element, "arrayShift didn't return the first element of the array");
+        Assertions.assertArrayEquals(expectedArray, array, "arrayShift didn't modify the array as expected");
     }
 
     @Test
@@ -55,8 +55,8 @@ public class WikiFormatterTest {
         String element = array[array.length-1]; array = wikiFormatter.arrayPop(array);
 
         //System.out.println(Arrays.toString(array));
-        Assert.assertEquals("arrayPop didn't return the last element of the array", expectedElement, element);
-        Assert.assertArrayEquals("arrayPop didn't modified the array as expected", expectedArray, array);
+        Assertions.assertEquals(expectedElement, element, "arrayPop didn't return the last element of the array");
+        Assertions.assertArrayEquals(expectedArray, array, "arrayPop didn't modify the array as expected");
     }
 
     @Test
@@ -142,7 +142,7 @@ public class WikiFormatterTest {
 
         String actual = WikiFormatter.getText(wikiText);
 
-        Assert.assertEquals("GetText return unexpected output", expected, actual);
+        Assertions.assertEquals(expected, actual, "GetText return unexpected output");
     }
 
     @Test
@@ -217,7 +217,7 @@ public class WikiFormatterTest {
             String expected = wikiText[1];
             String actual = wikiFormatter.format(wikiText[0]);
 
-            Assert.assertEquals("Style parsing failed", expected, actual);
+            Assertions.assertEquals(expected, actual, "Style parsing failed");
         }
     }
 
@@ -260,7 +260,7 @@ public class WikiFormatterTest {
             String expected = wikiText[1];
             String actual = wikiFormatter.format(wikiText[0]).trim();
 
-            Assert.assertEquals("Header parsing failed", expected, actual);
+            Assertions.assertEquals(expected, actual, "Header parsing failed");
         }
     }
 
@@ -305,7 +305,7 @@ public class WikiFormatterTest {
             String expected = wikiText[1];
             String actual = wikiFormatter.format(wikiText[0]).trim();
 
-            Assert.assertEquals("Bullet list parsing failed", expected, actual);
+            Assertions.assertEquals(expected, actual, "Bullet list parsing failed");
         }
     }
 
@@ -399,7 +399,7 @@ public class WikiFormatterTest {
             String expected = wikiText[1];
             String actual = wikiFormatter.format(wikiText[0]).trim();
 
-            Assert.assertEquals("URL parsing failed", expected, actual);
+            Assertions.assertEquals(expected, actual, "URL parsing failed");
         }
     }
 
@@ -534,7 +534,7 @@ public class WikiFormatterTest {
             String expected = wikiText[1];
             String actual = wikiFormatter.format(wikiText[0]).trim();
 
-            Assert.assertEquals("Multiline text parsing failed", expected, actual);
+            Assertions.assertEquals(expected, actual, "Multiline text parsing failed");
         }
     }
 }
