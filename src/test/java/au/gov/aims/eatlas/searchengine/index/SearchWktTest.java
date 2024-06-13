@@ -6,6 +6,10 @@ import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
+import au.gov.aims.eatlas.searchengine.rest.Search;
+import au.gov.aims.eatlas.searchengine.search.IndexSummary;
+import au.gov.aims.eatlas.searchengine.search.SearchResults;
+import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -19,6 +23,8 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 public class SearchWktTest extends IndexerTestBase {
 
@@ -51,6 +57,7 @@ public class SearchWktTest extends IndexerTestBase {
     private static final String BBOX_WESTERN_AUSTRALIA = "POLYGON((112 -36,129 -36,129 -12,112 -12,112 -36))";
     private static final String BBOX_MAGNETIC_ISLAND = "POLYGON((146.76 -19.07,146.76 -19.21,146.93 -19.21,146.93 -19.07,146.76 -19.07))";
 
+
     @Test
     public void testSearchWkt() throws Exception {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
@@ -68,14 +75,247 @@ public class SearchWktTest extends IndexerTestBase {
             this.indexLayers(layersIndex, config, searchClient, mockHttpClient, messages);
             this.indexImages(imagesIndex, config, searchClient, mockHttpClient, messages);
 
-            // TODO: Search with WKT
+
+            SearchResults results = null;
+
+            // Search - Try to find everything
+            try {
+                String q = ""; // Get every single layers
+                Integer start = 0;
+                Integer hits = 50; // Number of result per page. There is only 11 documents in the index
+                String wkt = null; // No geographic filtering, for now
+                List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+
+                Summary searchSummary = results.getSummary();
+
+                // Check indexes in the summary.
+                Map<String, IndexSummary> indexSummaryMap = searchSummary.getIndexSummaries();
+                Assertions.assertNotNull(indexSummaryMap,
+                        "Index summary is null.");
+                Assertions.assertEquals(3, indexSummaryMap.size(),
+                        "Wrong number if index summary.");
+                Assertions.assertTrue(indexSummaryMap.containsKey(metadataRecordIndex),
+                        String.format("Missing index from the search summary: %s", metadataRecordIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(layersIndex),
+                        String.format("Missing index from the search summary: %s", layersIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(imagesIndex),
+                        String.format("Missing index from the search summary: %s", imagesIndex));
+
+                IndexSummary metadataRecordSummary = searchSummary.getIndexSummary(metadataRecordIndex);
+                Assertions.assertEquals(4, metadataRecordSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", metadataRecordIndex));
+
+                IndexSummary layersIndexSummary = searchSummary.getIndexSummary(layersIndex);
+                Assertions.assertEquals(3, layersIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", layersIndex));
+
+                IndexSummary imagesIndexSummary = searchSummary.getIndexSummary(imagesIndex);
+                Assertions.assertEquals(4, imagesIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", imagesIndex));
+
+                Assertions.assertEquals(11, searchSummary.getHits(),
+                        "Wrong total number of search result in the index summary.");
+
+            } catch(Exception ex) {
+                Assertions.fail("Exception thrown while testing the Search API.", ex);
+            }
+
+
+
+            // Search with WKT
+
+            // The world = Should return every records
+            try {
+                String q = ""; // Get every single layers
+                Integer start = 0;
+                Integer hits = 50; // Number of result per page. There is only 11 documents in the index
+                String wkt = BBOX_WORLD; // No geographic filtering, for now
+                List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+
+                Summary searchSummary = results.getSummary();
+
+                // Check indexes in the summary.
+                Map<String, IndexSummary> indexSummaryMap = searchSummary.getIndexSummaries();
+                Assertions.assertNotNull(indexSummaryMap,
+                        "Index summary is null.");
+                Assertions.assertEquals(3, indexSummaryMap.size(),
+                        "Wrong number if index summary.");
+                Assertions.assertTrue(indexSummaryMap.containsKey(metadataRecordIndex),
+                        String.format("Missing index from the search summary: %s", metadataRecordIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(layersIndex),
+                        String.format("Missing index from the search summary: %s", layersIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(imagesIndex),
+                        String.format("Missing index from the search summary: %s", imagesIndex));
+
+                IndexSummary metadataRecordSummary = searchSummary.getIndexSummary(metadataRecordIndex);
+                Assertions.assertEquals(4, metadataRecordSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", metadataRecordIndex));
+
+                IndexSummary layersIndexSummary = searchSummary.getIndexSummary(layersIndex);
+                Assertions.assertEquals(3, layersIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", layersIndex));
+
+                IndexSummary imagesIndexSummary = searchSummary.getIndexSummary(imagesIndex);
+                Assertions.assertEquals(4, imagesIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", imagesIndex));
+
+                Assertions.assertEquals(11, searchSummary.getHits(),
+                        "Wrong total number of search result in the index summary.");
+
+            } catch(Exception ex) {
+                Assertions.fail("Exception thrown while testing the Search API.", ex);
+            }
+
+
+
+            // Western Australia
+            try {
+                String q = ""; // Get every single layers
+                Integer start = 0;
+                Integer hits = 50; // Number of result per page. There is only 11 documents in the index
+                String wkt = BBOX_WESTERN_AUSTRALIA; // No geographic filtering, for now
+                List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+
+                Summary searchSummary = results.getSummary();
+
+                // Check indexes in the summary.
+                Map<String, IndexSummary> indexSummaryMap = searchSummary.getIndexSummaries();
+                Assertions.assertNotNull(indexSummaryMap,
+                        "Index summary is null.");
+                Assertions.assertEquals(3, indexSummaryMap.size(),
+                        "Wrong number if index summary.");
+                Assertions.assertTrue(indexSummaryMap.containsKey(metadataRecordIndex),
+                        String.format("Missing index from the search summary: %s", metadataRecordIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(layersIndex),
+                        String.format("Missing index from the search summary: %s", layersIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(imagesIndex),
+                        String.format("Missing index from the search summary: %s", imagesIndex));
+
+                IndexSummary metadataRecordSummary = searchSummary.getIndexSummary(metadataRecordIndex);
+                Assertions.assertEquals(2, metadataRecordSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", metadataRecordIndex));
+
+                IndexSummary layersIndexSummary = searchSummary.getIndexSummary(layersIndex);
+                Assertions.assertEquals(2, layersIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", layersIndex));
+
+                IndexSummary imagesIndexSummary = searchSummary.getIndexSummary(imagesIndex);
+                Assertions.assertEquals(2, imagesIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", imagesIndex));
+
+                Assertions.assertEquals(6, searchSummary.getHits(),
+                        "Wrong total number of search result in the index summary.");
+
+            } catch(Exception ex) {
+                Assertions.fail("Exception thrown while testing the Search API.", ex);
+            }
+
+
+
+            // Magnetic Island
+            try {
+                String q = ""; // Get every single layers
+                Integer start = 0;
+                Integer hits = 50; // Number of result per page. There is only 11 documents in the index
+                String wkt = BBOX_MAGNETIC_ISLAND; // No geographic filtering, for now
+                List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+
+                Summary searchSummary = results.getSummary();
+
+                // Check indexes in the summary.
+                Map<String, IndexSummary> indexSummaryMap = searchSummary.getIndexSummaries();
+                Assertions.assertNotNull(indexSummaryMap,
+                        "Index summary is null.");
+                Assertions.assertEquals(3, indexSummaryMap.size(),
+                        "Wrong number if index summary.");
+                Assertions.assertTrue(indexSummaryMap.containsKey(metadataRecordIndex),
+                        String.format("Missing index from the search summary: %s", metadataRecordIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(layersIndex),
+                        String.format("Missing index from the search summary: %s", layersIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(imagesIndex),
+                        String.format("Missing index from the search summary: %s", imagesIndex));
+
+                IndexSummary metadataRecordSummary = searchSummary.getIndexSummary(metadataRecordIndex);
+                Assertions.assertEquals(4, metadataRecordSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", metadataRecordIndex));
+
+                IndexSummary layersIndexSummary = searchSummary.getIndexSummary(layersIndex);
+                Assertions.assertEquals(3, layersIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", layersIndex));
+
+                IndexSummary imagesIndexSummary = searchSummary.getIndexSummary(imagesIndex);
+                Assertions.assertEquals(1, imagesIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", imagesIndex));
+
+                Assertions.assertEquals(8, searchSummary.getHits(),
+                        "Wrong total number of search result in the index summary.");
+
+            } catch(Exception ex) {
+                Assertions.fail("Exception thrown while testing the Search API.", ex);
+            }
+
+
+
+            try {
+                String q = "coral"; // Get every single layers
+                Integer start = 0;
+                Integer hits = 50; // Number of result per page. There is only 11 documents in the index
+                String wkt = BBOX_MAGNETIC_ISLAND; // No geographic filtering, for now
+                List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+
+                Summary searchSummary = results.getSummary();
+
+                // Check indexes in the summary.
+                Map<String, IndexSummary> indexSummaryMap = searchSummary.getIndexSummaries();
+                Assertions.assertNotNull(indexSummaryMap,
+                        "Index summary is null.");
+                Assertions.assertEquals(2, indexSummaryMap.size(),
+                        "Wrong number if index summary.");
+                Assertions.assertTrue(indexSummaryMap.containsKey(metadataRecordIndex),
+                        String.format("Missing index from the search summary: %s", metadataRecordIndex));
+                Assertions.assertFalse(indexSummaryMap.containsKey(layersIndex),
+                        String.format("Unexpected index found in the search summary: %s", layersIndex));
+                Assertions.assertTrue(indexSummaryMap.containsKey(imagesIndex),
+                        String.format("Missing index from the search summary: %s", imagesIndex));
+
+                IndexSummary metadataRecordSummary = searchSummary.getIndexSummary(metadataRecordIndex);
+                Assertions.assertEquals(2, metadataRecordSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", metadataRecordIndex));
+
+                IndexSummary imagesIndexSummary = searchSummary.getIndexSummary(imagesIndex);
+                Assertions.assertEquals(1, imagesIndexSummary.getHits(),
+                        String.format("Wrong number of search result in the index summary for: %s", imagesIndex));
+
+                Assertions.assertEquals(3, searchSummary.getHits(),
+                        "Wrong total number of search result in the index summary.");
+
+            } catch(Exception ex) {
+                Assertions.fail("Exception thrown while testing the Search API.", ex);
+            }
+
+
 
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
         }
     }
 
+
+
+
+
     private void indexMetadataRecords(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, Messages messages) throws ParseException, IOException {
         searchClient.createIndex(index);
+        // TODO Remove duplication of GeoNetwork version (indexer and records) unless there is a good reason for it
         GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
 
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
@@ -85,7 +325,7 @@ public class SearchWktTest extends IndexerTestBase {
         // Australia
         GeoNetworkRecord australiaRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         australiaRecord.setTitle("Australia record");
-        australiaRecord.setDocument("Record that covers whole of Australia.");
+        australiaRecord.setDocument("Record that covers whole of Australia coral.");
         australiaRecord.setWktAndAttributes(WKT_AUSTRALIA);
         indexer.indexEntity(searchClient, australiaRecord, messages);
 
@@ -96,6 +336,7 @@ public class SearchWktTest extends IndexerTestBase {
         qldRecord.setWktAndAttributes(WKT_QUEENSLAND);
         indexer.indexEntity(searchClient, qldRecord, messages);
 
+        // Townsville
         GeoNetworkRecord townsvilleRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000002", "iso19115-3.2018", "3.0");
         townsvilleRecord.setTitle("Townsville record");
         townsvilleRecord.setDocument("Record of Townsville.");
@@ -105,7 +346,9 @@ public class SearchWktTest extends IndexerTestBase {
         // No WKT - Expected to default to whole world
         GeoNetworkRecord unknownRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-00000000000A", "iso19115-3.2018", "3.0");
         unknownRecord.setTitle("Unknown location record");
-        unknownRecord.setDocument("Record that doesn't provide location.");
+        unknownRecord.setDocument("Record that doesn't provide location coral.");
+        // TODO Make sure it default to whole world
+        unknownRecord.setWktAndAttributes(BBOX_WORLD);
         indexer.indexEntity(searchClient, unknownRecord, messages);
 
         // Wait for ElasticSearch to finish its indexation
@@ -117,6 +360,7 @@ public class SearchWktTest extends IndexerTestBase {
         String clientUrl = "http://domain.com/atlasmapper";
         String mainConfigPathStr = "searchWkt/atlasmapperFiles/main.json";
 
+        // TODO Remove duplication of client URL (indexer and layers) unless there is a good reason for it
         AtlasMapperIndexer indexer = new AtlasMapperIndexer(mockHttpClient, index, clientUrl, "1.0", "http://domain.com/geoserver");
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.
@@ -178,7 +422,7 @@ public class SearchWktTest extends IndexerTestBase {
 
     private void indexImages(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, Messages messages) throws IOException, ParseException {
         searchClient.createIndex(index);
-        DrupalMediaIndexer indexer = new DrupalMediaIndexer(mockHttpClient, index, "http://domain.com", "11.0", "image", "field_preview", "title", "body", "field_wkt");
+        DrupalMediaIndexer indexer = new DrupalMediaIndexer(mockHttpClient, index, "http://domain.com", "11.0", "image", "field_preview", "field_title", "field_description", "field_geojson");
 
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.
@@ -187,29 +431,35 @@ public class SearchWktTest extends IndexerTestBase {
         // Magnetic island
         JSONObject jsonMaggieImage = this.createJsonImage(
             "F0000000-0000-0000-0000-000000000000", "magnetic_island.jpg",
-            "Magnetic island", "Image of Magnetic Island", WKT_MAGNETIC_ISLAND);
-        DrupalMedia maggieImage = new DrupalMedia(index, jsonMaggieImage, messages);
+            "Magnetic island", "Image of Magnetic Island coral", WKT_MAGNETIC_ISLAND);
+        DrupalMedia maggieImage = indexer.createDrupalEntity(jsonMaggieImage, null, messages); // new DrupalMedia(index, jsonMaggieImage, messages);
+        // TODO Add parseJsonDrupalEntity to indexEntity
+        indexer.parseJsonDrupalEntity(searchClient, jsonMaggieImage, null, maggieImage, messages);
         indexer.indexEntity(searchClient, maggieImage, messages);
+        System.out.println(maggieImage.toString());
 
         // New-Zealand
         JSONObject jsonNewZealandImage = this.createJsonImage(
             "F0000000-0000-0000-0000-000000000001", "new-zealand.jpg",
-            "New-Zealand", "Image of New-Zealand", WKT_NEW_ZEALAND);
-        DrupalMedia newZealandImage = new DrupalMedia(index, jsonNewZealandImage, messages);
+            "New-Zealand", "Image of New-Zealand coral", WKT_NEW_ZEALAND);
+        DrupalMedia newZealandImage = indexer.createDrupalEntity(jsonNewZealandImage, null, messages);
+        indexer.parseJsonDrupalEntity(searchClient, jsonNewZealandImage, null, newZealandImage, messages);
         indexer.indexEntity(searchClient, newZealandImage, messages);
 
         // Western Australia
         JSONObject jsonWAImage = this.createJsonImage(
             "F0000000-0000-0000-0000-000000000002", "western_australia.jpg",
             "Western Australia", "Image of Western Australia", WKT_WESTERN_AUSTRALIA);
-        DrupalMedia waImage = new DrupalMedia(index, jsonWAImage, messages);
+        DrupalMedia waImage = indexer.createDrupalEntity(jsonWAImage, null, messages);
+        indexer.parseJsonDrupalEntity(searchClient, jsonWAImage, null, waImage, messages);
         indexer.indexEntity(searchClient, waImage, messages);
 
         // Pilbara
         JSONObject jsonPilbaraImage = this.createJsonImage(
             "F0000000-0000-0000-0000-000000000003", "Pilbara.jpg",
-            "Pilbara", "Image of Pilbara", WKT_PILBARA);
-        DrupalMedia pilbaraImage = new DrupalMedia(index, jsonPilbaraImage, messages);
+            "Pilbara", "Image of Pilbara coral", WKT_PILBARA);
+        DrupalMedia pilbaraImage = indexer.createDrupalEntity(jsonPilbaraImage, null, messages);
+        indexer.parseJsonDrupalEntity(searchClient, jsonPilbaraImage, null, pilbaraImage, messages);
         indexer.indexEntity(searchClient, pilbaraImage, messages);
 
         // Wait for ElasticSearch to finish its indexation
@@ -217,7 +467,7 @@ public class SearchWktTest extends IndexerTestBase {
     }
 
     private JSONObject createJsonImage(String imageId, String filename, String title, String description, String wkt) throws IOException, ParseException {
-        String geoJson = this.wktToGeoJson(wkt);
+        JSONObject geoJson = this.wktToGeoJson(wkt);
 
         String imageResponsePathStr = "searchWkt/drupalMediaFiles/image.json";
         JSONObject jsonImageResponse = null;
@@ -233,16 +483,20 @@ public class SearchWktTest extends IndexerTestBase {
             jsonDescription.put("value", description);
             jsonDescription.put("processed", description);
 
-            jsonAttributes.put("field_geojson", geoJson);
+            jsonAttributes.put("field_geojson", geoJson.toString());
             jsonAttributes.put("field_title", title);
         }
 
         return jsonImageResponse;
     }
 
-    private String wktToGeoJson(String wkt) throws ParseException {
+    private JSONObject wktToGeoJson(String wkt) throws ParseException {
         Geometry geometry = WktUtils.wktToGeometry(wkt);
         GeoJsonWriter writer = new GeoJsonWriter();
-        return writer.write(geometry);
+        JSONObject geoJson = new JSONObject(writer.write(geometry));
+        geoJson.remove("crs");
+        return new JSONObject()
+                .put("type", "Feature")
+                .put("geometry", geoJson);
     }
 }

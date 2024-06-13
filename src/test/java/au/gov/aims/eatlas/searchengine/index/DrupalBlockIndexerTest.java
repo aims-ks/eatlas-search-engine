@@ -65,6 +65,9 @@ public class DrupalBlockIndexerTest extends IndexerTestBase {
                 Assertions.assertEquals(9, layersIndexSummary.getHits(),
                         "Wrong number of search result in the index summary.");
 
+                Assertions.assertEquals(9, searchSummary.getHits(),
+                        "Wrong total number of search result in the index summary.");
+
             } catch(Exception ex) {
                 Assertions.fail("Exception thrown while testing the Search API.", ex);
             }

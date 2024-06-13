@@ -65,6 +65,9 @@ public class DrupalExternalLinkNodeIndexerTest extends IndexerTestBase {
                 Assertions.assertEquals(2, layersIndexSummary.getHits(),
                         "Wrong number of search result in the index summary.");
 
+                Assertions.assertEquals(2, searchSummary.getHits(),
+                        "Wrong total number of search result in the index summary.");
+
             } catch(Exception ex) {
                 Assertions.fail("Exception thrown while testing the Search API.", ex);
             }

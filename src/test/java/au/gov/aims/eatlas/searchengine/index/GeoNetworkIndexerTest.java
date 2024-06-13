@@ -79,6 +79,9 @@ public class GeoNetworkIndexerTest extends IndexerTestBase {
                 Assertions.assertEquals(6, layersIndexSummary.getHits(),
                         "Wrong number of search result in the index summary.");
 
+                Assertions.assertEquals(6, searchSummary.getHits(),
+                        "Wrong total number of search result in the index summary.");
+
             } catch(Exception ex) {
                 Assertions.fail("Exception thrown while testing the Search API.", ex);
             }
