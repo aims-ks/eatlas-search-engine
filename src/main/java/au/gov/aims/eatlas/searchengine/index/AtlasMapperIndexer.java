@@ -639,16 +639,14 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                     oldLayer, AtlasMapperIndexer.this.getSafeThumbnailTTL(),
                     AtlasMapperIndexer.this.getSafeBrokenThumbnailTTL(), this.messages);
 
-            if (!jsonMainConfig.optBoolean("testConfiguration", false)) {
-                boolean thumbnailNeedsUpdate = newLayer || (outdatedThumbnail && this.refreshThumbnails);
-                if (thumbnailNeedsUpdate) {
-                    AtlasMapperIndexer.updateThumbnail(
-                            httpClient, this.atlasMapperLayerId, AtlasMapperIndexer.this.getIndex(),
-                            jsonLayer, this.baseLayerUrl, this.jsonMainConfig,
-                            layerEntity, this.messages);
-                } else {
-                    layerEntity.useCachedThumbnail(oldLayer);
-                }
+            boolean thumbnailNeedsUpdate = newLayer || (outdatedThumbnail && this.refreshThumbnails);
+            if (thumbnailNeedsUpdate) {
+                AtlasMapperIndexer.updateThumbnail(
+                        httpClient, this.atlasMapperLayerId, AtlasMapperIndexer.this.getIndex(),
+                        jsonLayer, this.baseLayerUrl, this.jsonMainConfig,
+                        layerEntity, this.messages);
+            } else {
+                layerEntity.useCachedThumbnail(oldLayer);
             }
 
             // Keep a list of used thumbnails, so we can delete unused ones at the end of the indexation.
