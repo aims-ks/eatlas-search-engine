@@ -1,0 +1,182 @@
+{
+  "type": "media--image",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "links": {
+    "self": {
+      "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000?resourceVersion=id%3A7791"
+    }
+  },
+  "attributes": {
+    "drupal_internal__mid": 3188,
+    "drupal_internal__vid": 7791,
+    "langcode": "en",
+    "revision_created": "2024-03-07T03:53:32+00:00",
+    "status": true,
+    "name": "FILENAME.jpg",
+    "created": "2024-02-12T03:45:43+00:00",
+    "changed": "2024-03-07T03:53:32+00:00",
+    "default_langcode": true,
+    "revision_translation_affected": true,
+    "path": {
+      "alias": null,
+      "pid": null,
+      "langcode": "en"
+    },
+    "field_attribution": "www.marum.de",
+    "field_custom_licence": null,
+    "field_description": {
+      "value": "DESCRIPTION",
+      "format": "restricted_html",
+      "processed": "DESCRIPTION",
+      "summary": ""
+    },
+    "field_geojson": "GEOJSON",
+    "field_licence": "none",
+    "field_notes": null,
+    "field_private_media_page": false,
+    "field_source": null,
+    "field_title": "Brisinglid sea stars"
+  },
+  "relationships": {
+    "bundle": {
+      "data": {
+        "type": "media_type--media_type",
+        "id": "e605f2b0-1482-45a8-9f84-ee8e574a164d",
+        "meta": {
+          "drupal_internal__target_id": "image"
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/bundle?resourceVersion=id%3A7791"
+        },
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/relationships\/bundle?resourceVersion=id%3A7791"
+        }
+      }
+    },
+    "revision_user": {
+      "data": {
+        "type": "user--user",
+        "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+        "meta": {
+          "drupal_internal__target_id": 1
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/revision_user?resourceVersion=id%3A7791"
+        },
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/relationships\/revision_user?resourceVersion=id%3A7791"
+        }
+      }
+    },
+    "uid": {
+      "data": {
+        "type": "user--user",
+        "id": "3578af1d-ad3b-484a-9151-6d59c0ebddaa",
+        "meta": {
+          "drupal_internal__target_id": 1
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/uid?resourceVersion=id%3A7791"
+        },
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/relationships\/uid?resourceVersion=id%3A7791"
+        }
+      }
+    },
+    "thumbnail": {
+      "data": {
+        "type": "file--file",
+        "id": "6175da0b-2d14-4fa1-b20f-aab56cb2689b",
+        "meta": {
+          "alt": "Brisinglid sea stars",
+          "title": null,
+          "width": 1909,
+          "height": 1431,
+          "drupal_internal__target_id": 3189
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/thumbnail?resourceVersion=id%3A7791"
+        },
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/relationships\/thumbnail?resourceVersion=id%3A7791"
+        }
+      }
+    },
+    "field_marine_parks": {
+      "data": {
+        "type": "block_content--marine_park",
+        "id": "4b91bb54-fbb8-4e8f-8245-e3d5885d259b",
+        "meta": {
+          "drupal_internal__target_id": 170
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/field_marine_parks?resourceVersion=id%3A7791"
+        },
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/relationships\/field_marine_parks?resourceVersion=id%3A7791"
+        }
+      }
+    },
+    "field_media_image": {
+      "data": {
+        "type": "file--file",
+        "id": "6175da0b-2d14-4fa1-b20f-aab56cb2689b",
+        "meta": {
+          "alt": "Brisinglid sea stars",
+          "title": "",
+          "width": 1909,
+          "height": 1431,
+          "drupal_internal__target_id": 3189
+        }
+      },
+      "links": {
+        "related": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/field_media_image?resourceVersion=id%3A7791"
+        },
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/relationships\/field_media_image?resourceVersion=id%3A7791"
+        }
+      }
+    },
+    "field_related_content": {
+      "data": [],
+      "links": {
+        "related": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/field_related_content?resourceVersion=id%3A7791"
+        },
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/relationships\/field_related_content?resourceVersion=id%3A7791"
+        }
+      }
+    },
+    "field_tags": {
+      "data": [
+        {
+          "type": "taxonomy_term--galleries",
+          "id": "cc1f01c4-982c-4ea6-82a0-63cd16ac0ab0",
+          "meta": {
+            "drupal_internal__target_id": 1
+          }
+        }
+      ],
+      "links": {
+        "related": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/field_tags?resourceVersion=id%3A7791"
+        },
+        "self": {
+          "href": "http:\/\/domain.com\/jsonapi\/media\/image\/00000000-0000-0000-0000-000000000000\/relationships\/field_tags?resourceVersion=id%3A7791"
+        }
+      }
+    }
+  }
+}

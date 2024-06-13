@@ -4,6 +4,7 @@ import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
+import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
 import org.apache.commons.io.IOUtils;
@@ -11,7 +12,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,22 +28,25 @@ public class SearchWktTest extends IndexerTestBase {
 
     // Australia
     private static final String WKT_AUSTRALIA = "POLYGON((131.8 -7.7,112.5 -21.3,114.3 -36.9,147 -44.6,156.8 -28,143.1 -9.4,131.8 -7.7))";
+    // Queensland
     private static final String WKT_QUEENSLAND = "POLYGON((137.9 -16.4,137.9 -26,141.1 -26,141.1 -29,154.7 -29.2,149.9 -20.8,142.4 -10.3,140.7 -16.6,137.9 -16.4))";
     private static final String WKT_TOWNSVILLE = "POLYGON((146.7 -19.4,146.6 -19.3,146.7 -19.2,146.8 -19.1,146.9 -19.1,146.9 -19.3,146.8 -19.4,146.7 -19.4))"; // Includes magnetic island
     private static final String WKT_MAGNETIC_ISLAND = "POLYGON((146.77 -19.12,146.86 -19.09,146.89 -19.11,146.85 -19.19,146.79 -19.16,146.77 -19.12))";
+    // Western Australia
     private static final String WKT_WESTERN_AUSTRALIA = "POLYGON((129 -13.8,125.4 -13.2,120.4 -18.9,112.1 -22.3,114.3 -35,119.5 -35.9,129 -32.3,129 -13.8))";
+    private static final String WKT_PILBARA = "POLYGON((115 -23.5,129 -23.5,129 -21.5,126.4 -21.5,126.4 -19.7,119 -19.8,116.6 -20.5,115 -21.6,115 -23.5))";
 
     // Outside Australia
-    private static final String WKT_NEW_ZEALAND = "POLYGON((171.6 -33.9,172.9 -39.5,165.2 -46,168.1 -48.3,180.3 -38,174 -33.9,171.6 -33.8))";
-    // Western Australia
-    private static final String WKT_PILBARA = "POLYGON((115 -23.5,129 -23.5,129 -21.5,126.4 -21.5,126.4 -19.7,119 -19.8,116.6 -20.5,115 -21.6,115 -23.5))";
+    private static final String WKT_NEW_ZEALAND = "POLYGON((171.6 -33.9,172.9 -39.5,165.2 -46,168.1 -48.3,180.3 -38,174 -33.9,171.6 -33.9))";
 
     // Layers BBOX
     // GeoServer doesn't return fancy WKT.
     // BBOX are saved as: [West, South, East, North]
     private static final float[] LAYER_BBOX_WORLD = new float[]{ -180, -90, 180, 90 };
+    private static final float[] LAYER_BBOX_AUSTRALIA = new float[]{ 112, -44, 154, -10 };
+    private static final float[] LAYER_BBOX_QUEENSLAND = new float[]{ 138, -29, 154, -10 };
 
-    // Used for search (and some indexed documents)
+    // Used for search
     private static final String BBOX_WORLD = "POLYGON((-180 90,180 90,180 -90,-180 -90,-180 90))";
     private static final String BBOX_WESTERN_AUSTRALIA = "POLYGON((112 -36,129 -36,129 -12,112 -12,112 -36))";
     private static final String BBOX_MAGNETIC_ISLAND = "POLYGON((146.76 -19.07,146.76 -19.21,146.93 -19.21,146.93 -19.07,146.76 -19.07))";
@@ -76,7 +82,6 @@ public class SearchWktTest extends IndexerTestBase {
         //   can serialise / deserialise the Entity.
         config.addIndexer(indexer);
 
-
         // Australia
         GeoNetworkRecord australiaRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         australiaRecord.setTitle("Australia record");
@@ -90,6 +95,18 @@ public class SearchWktTest extends IndexerTestBase {
         qldRecord.setDocument("Record that covers whole of Queensland.");
         qldRecord.setWktAndAttributes(WKT_QUEENSLAND);
         indexer.indexEntity(searchClient, qldRecord, messages);
+
+        GeoNetworkRecord townsvilleRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000002", "iso19115-3.2018", "3.0");
+        townsvilleRecord.setTitle("Townsville record");
+        townsvilleRecord.setDocument("Record of Townsville.");
+        townsvilleRecord.setWktAndAttributes(WKT_TOWNSVILLE);
+        indexer.indexEntity(searchClient, townsvilleRecord, messages);
+
+        // No WKT - Expected to default to whole world
+        GeoNetworkRecord unknownRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-00000000000A", "iso19115-3.2018", "3.0");
+        unknownRecord.setTitle("Unknown location record");
+        unknownRecord.setDocument("Record that doesn't provide location.");
+        indexer.indexEntity(searchClient, unknownRecord, messages);
 
         // Wait for ElasticSearch to finish its indexation
         searchClient.refresh(index);
@@ -106,65 +123,60 @@ public class SearchWktTest extends IndexerTestBase {
         config.addIndexer(indexer);
 
         JSONObject jsonMainConfig = null;
-        try (InputStream mainInputStream = IndexerTest.class.getClassLoader().getResourceAsStream(mainConfigPathStr)) {
+        try (InputStream mainInputStream = SearchWktTest.class.getClassLoader().getResourceAsStream(mainConfigPathStr)) {
             Assertions.assertNotNull(mainInputStream, String.format("Can not find the AtlasMapper main config: %s", mainConfigPathStr));
             String jsonText = IOUtils.toString(mainInputStream, StandardCharsets.UTF_8);
             jsonMainConfig = new JSONObject(jsonText);
         }
 
-        // TODO: Add a few layers
+        // World (base layer)
         String worldBaseLayerId = "ea_base_layer";
-        JSONObject jsonWorldBaseLayer = this.createJsonLayer(worldBaseLayerId, "Base layer", "Base layer that covers the whole world", LAYER_BBOX_WORLD);
+        JSONObject jsonWorldBaseLayer = this.createJsonLayer(
+                worldBaseLayerId, "Base layer", "Base layer that covers the whole world", LAYER_BBOX_WORLD);
         AtlasMapperLayer worldBaseLayer = new AtlasMapperLayer(index, clientUrl, worldBaseLayerId, jsonWorldBaseLayer, jsonMainConfig, messages);
         indexer.indexEntity(searchClient, worldBaseLayer, messages);
+
+        // Australia
+        String australiaLayerId = "ea_australia";
+        JSONObject jsonAustraliaLayer = this.createJsonLayer(
+                australiaLayerId, "Australia", "Layer of Australia", LAYER_BBOX_AUSTRALIA);
+        AtlasMapperLayer australiaLayer = new AtlasMapperLayer(index, clientUrl, australiaLayerId, jsonAustraliaLayer, jsonMainConfig, messages);
+        indexer.indexEntity(searchClient, australiaLayer, messages);
+
+        // Queensland
+        String queenslandLayerId = "ea_queensland";
+        JSONObject jsonQueenslandLayer = this.createJsonLayer(
+                queenslandLayerId, "Queensland", "Layer of Queensland", LAYER_BBOX_QUEENSLAND);
+        AtlasMapperLayer queenslandLayer = new AtlasMapperLayer(index, clientUrl, queenslandLayerId, jsonQueenslandLayer, jsonMainConfig, messages);
+        indexer.indexEntity(searchClient, queenslandLayer, messages);
 
         // Wait for ElasticSearch to finish its indexation
         searchClient.refresh(index);
     }
 
-    private JSONObject createJsonLayer(String layerId, String title, String description, float[] bbox) {
+    private JSONObject createJsonLayer(String layerId, String title, String description, float[] bbox) throws IOException {
         JSONArray jsonBbox = new JSONArray();
         for (float coord : bbox) {
             jsonBbox.put(coord);
         }
 
-        return new JSONObject()
-                .put("dataSourceId", "ea")
-                .put("layerName", layerId)
-                .put("title", title)
-                .put("description", description)
-                .put("layerBoundingBox", jsonBbox)
+        String layerPathStr = "searchWkt/atlasmapperFiles/layer.json";
+        JSONObject jsonLayerResponse = null;
+        try (InputStream layerInputStream = SearchWktTest.class.getClassLoader().getResourceAsStream(layerPathStr)) {
+            Assertions.assertNotNull(layerInputStream, String.format("Can not find the Layer response file: %s", layerPathStr));
+            String jsonText = IOUtils.toString(layerInputStream, StandardCharsets.UTF_8);
+            jsonLayerResponse = new JSONObject(jsonText);
 
-                .put("wmsQueryable", true)
-                .put("cached", true);
+            jsonLayerResponse.put("layerName", layerId);
+            jsonLayerResponse.put("title", title);
+            jsonLayerResponse.put("description", description);
+            jsonLayerResponse.put("layerBoundingBox", jsonBbox);
+        }
 
-/*
-{
-        "dataSourceId": "ea",
-        "wmsQueryable": true,
-        "cached": true,
-        "layerBoundingBox": [
-            142.5969132059194, West
-            -9.428481638741948, South
-            142.80160546544423, East
-            -9.364285559724976 North
-        ],
-        "description": "This project seeks to ensure that planning for the future development of the Torres Strait Islands is sustainable and capable of taking into account ecological and social information, assets, risk and existing infrastructure.\n\nThis Plan provides the following information for each island:\n\u2022identification of key environmental assets;\n\u2022identification of key land management issues;\n\u2022identification of key infrastructure needs;\n\u2022land use mapping identifying land suitable for development and conservation; and\n\u2022land use for the future sustainable management.\n\nMethodology\nIn 2007 the TSRA invited 15 of the Torres Strait Island community to participate in the Sustainable  Land Use Study, funded by the NHT (now Caring for the Country). Based on submissions received, the communities of Boigu, Dauan, Erub, Iama, Masig and Saibai were accepted to be involved in the project as stage 1 pilot project. In 2009 the TSRA, via funding from the major infrastructure project, requested the Land Use Plans be extended to the remaining 9 communities of Hammond, Kubin, St. Pauls, Badu, Warraber, Poruma, Mabuyag, Ugar and Mer. Stage 1 occurred between 2007 and 2008. Stage 2 occurred between 2009 and 2010.\n\nPreliminary Consultation\nThe project team met with all Community Council (prior to amalgamation) and Prescribed Bodies Corporate (PBC) to discuss the project objectives and methodology.\n\nPhase 1 - Fauna and Habitat Assessment.\nField Study\nThe project team undertook field studies on the islands to identify key environmental assets and associated land management issues, identify areas of conservation importance and undertake fauna identification.\n\nPhase 2 - Information Gathering & Research.\nThe project team collated all available data for the islands to order to produce a compressive collection of information on the islands. Data included plans and surveys from major infrastructure projects, data collected as part of other TSRA projects (e.g. regional ecosystem mapping, tide levels) and well as existing State government data. Also during this phase, the project team undertook a literature review of natural resource management issues in the context of the Torres Strait. This research, along with local knowledge obtained by Community in Phase 5, provided the foundation for the best practice principles outlined in the Plan.\n\nPhase 3 - Constraints and Information Mapping.\nThe project team produced a series of constraints and information mapping. This included:\n\u2022analysis of the data collected in Phases 2&3;\n\u2022analysis of existing spatial datasets, including\naerial photographs, maps and satellite imagery;\n\u2022analysis of Commonwealth and State legislation, policies, strategies, reports and community plans;\n\u2022development and sourcing of relevant GIS data layers;\n\u2022preparation of base mapping showing satellite imagery, slope analysis, coastal impacts and inundation, fauna and habitat values, bushfire risk, limited cultural heritage information, extent of service infrastructure.\n\n*Online resources*\n* [[https://eatlas.org.au/data/uuid/9fdeb5b3-b407-49e8-ba71-cb10eb31615b|Point of truth URL of this metadata record]]\n* [[http://www.tsra.gov.au/the-tsra/programs-and-output/env-mgt-program/publications-and-resources|Sustainable Land Use Plans, as well as supporting maps and resources, are available for download below.]]",
-        "styles": [{
-            "default": true,
-            "cached": true,
-            "name": "line",
-            "description": "Default line style, 1 pixel wide blue",
-            "title": "1 px blue line"
-        }],
-        "layerName": "TS_TSRA_SLUP-2010:Saibai-Boundary",
-        "title": "Saibai Boundary  (TSRA)",
-        "treePath": "Boundaries/TS: Sustainable Land Use Plan 2010 (TSRA, RPS)/Saibai"
-    }
-*/
+        return jsonLayerResponse;
     }
 
-    private void indexImages(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, Messages messages) throws IOException {
+    private void indexImages(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, Messages messages) throws IOException, ParseException {
         searchClient.createIndex(index);
         DrupalMediaIndexer indexer = new DrupalMediaIndexer(mockHttpClient, index, "http://domain.com", "11.0", "image", "field_preview", "title", "body", "field_wkt");
 
@@ -172,11 +184,65 @@ public class SearchWktTest extends IndexerTestBase {
         //   can serialise / deserialise the Entity.
         config.addIndexer(indexer);
 
-        // TODO: Add a few images
-        // WKT_MAGNETIC_ISLAND
-        // WKT_NEW_ZEALAND
+        // Magnetic island
+        JSONObject jsonMaggieImage = this.createJsonImage(
+            "F0000000-0000-0000-0000-000000000000", "magnetic_island.jpg",
+            "Magnetic island", "Image of Magnetic Island", WKT_MAGNETIC_ISLAND);
+        DrupalMedia maggieImage = new DrupalMedia(index, jsonMaggieImage, messages);
+        indexer.indexEntity(searchClient, maggieImage, messages);
+
+        // New-Zealand
+        JSONObject jsonNewZealandImage = this.createJsonImage(
+            "F0000000-0000-0000-0000-000000000001", "new-zealand.jpg",
+            "New-Zealand", "Image of New-Zealand", WKT_NEW_ZEALAND);
+        DrupalMedia newZealandImage = new DrupalMedia(index, jsonNewZealandImage, messages);
+        indexer.indexEntity(searchClient, newZealandImage, messages);
+
+        // Western Australia
+        JSONObject jsonWAImage = this.createJsonImage(
+            "F0000000-0000-0000-0000-000000000002", "western_australia.jpg",
+            "Western Australia", "Image of Western Australia", WKT_WESTERN_AUSTRALIA);
+        DrupalMedia waImage = new DrupalMedia(index, jsonWAImage, messages);
+        indexer.indexEntity(searchClient, waImage, messages);
+
+        // Pilbara
+        JSONObject jsonPilbaraImage = this.createJsonImage(
+            "F0000000-0000-0000-0000-000000000003", "Pilbara.jpg",
+            "Pilbara", "Image of Pilbara", WKT_PILBARA);
+        DrupalMedia pilbaraImage = new DrupalMedia(index, jsonPilbaraImage, messages);
+        indexer.indexEntity(searchClient, pilbaraImage, messages);
 
         // Wait for ElasticSearch to finish its indexation
         searchClient.refresh(index);
+    }
+
+    private JSONObject createJsonImage(String imageId, String filename, String title, String description, String wkt) throws IOException, ParseException {
+        String geoJson = this.wktToGeoJson(wkt);
+
+        String imageResponsePathStr = "searchWkt/drupalMediaFiles/image.json";
+        JSONObject jsonImageResponse = null;
+        try (InputStream imageInputStream = SearchWktTest.class.getClassLoader().getResourceAsStream(imageResponsePathStr)) {
+            Assertions.assertNotNull(imageInputStream, String.format("Can not find the Drupal image response file: %s", imageResponsePathStr));
+            String jsonText = IOUtils.toString(imageInputStream, StandardCharsets.UTF_8);
+            jsonImageResponse = new JSONObject(jsonText);
+
+            jsonImageResponse.put("id", imageId);
+            JSONObject jsonAttributes = jsonImageResponse.optJSONObject("attributes");
+            jsonAttributes.put("name", filename);
+            JSONObject jsonDescription = jsonAttributes.optJSONObject("field_description");
+            jsonDescription.put("value", description);
+            jsonDescription.put("processed", description);
+
+            jsonAttributes.put("field_geojson", geoJson);
+            jsonAttributes.put("field_title", title);
+        }
+
+        return jsonImageResponse;
+    }
+
+    private String wktToGeoJson(String wkt) throws ParseException {
+        Geometry geometry = WktUtils.wktToGeometry(wkt);
+        GeoJsonWriter writer = new GeoJsonWriter();
+        return writer.write(geometry);
     }
 }

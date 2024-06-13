@@ -1,0 +1,17 @@
+{
+    "dataSourceId": "ea",
+    "wmsQueryable": true,
+    "cached": true,
+    "layerBoundingBox": [],
+    "description": "DESCRIPTION",
+    "styles": [{
+        "default": true,
+        "cached": true,
+        "name": "line",
+        "description": "Default line style, 1 pixel wide blue",
+        "title": "1 px blue line"
+    }],
+    "layerName": "LAYER ID",
+    "title": "TITLE",
+    "treePath": "World/Regions"
+}
