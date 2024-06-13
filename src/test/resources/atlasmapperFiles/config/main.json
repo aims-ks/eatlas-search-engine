@@ -14908,7 +14908,7 @@
             180.00000000000023,
             90.00000000000003
         ],
-        "description": "This contains no Labels or hillshading. The Bright Earth e-Atlas Basemap is a satellite-derived global map of the world at a 1:1M scale for most of the world and 1:500k scale for Australia and 1:200k for Queensland. This map was inspired by Natural Earth II (NEII) and NASA's Blue Marble Next Generation (BMNG) imagery.\r\n\r\nIts aim was to provide a basemap similar to NEII but with a higher resolution (~10x). \r\n\r\nThis basemaps is derived from the following datasets: Blue Marble Next Generation 2004-04 (NASA), VMap0 coastline, Coast100k 2004 Australian coastline (GeoScience Australia), SRTM30 Plus v8.0 (UCSD) hillshading, Natural Earth Vector 10m bathymetry and coastline v2.0 (NE), gbr100 hillshading (JCU).\r\n\r\nThis layer shows version 1.0 of the Bright-Earth e-Atlas Basemap.\r\n\r\n[[http://e-atlas.org.au/data/uuid/ac57aa5a-233b-4c2c-bd52-1fb40a31f639|More information about this basemap]]",
+        "description": "This contains no Labels or hillshading. The Bright Earth e-Atlas Basemap is a satellite-derived global map of the world at a 1:1M scale for most of the world and 1:500k scale for Australia and 1:200k for Queensland. This map was inspired by Natural Earth II (NEII) and NASA's Blue Marble Next Generation (BMNG) imagery.\r\n\r\nIts aim was to provide a basemap similar to NEII but with a higher resolution (~10x). \r\n\r\nThis basemaps is derived from the following datasets: Blue Marble Next Generation 2004-04 (NASA), VMap0 coastline, Coast100k 2004 Australian coastline (GeoScience Australia), SRTM30 Plus v8.0 (UCSD) hillshading, Natural Earth Vector 10m bathymetry and coastline v2.0 (NE), gbr100 hillshading (JCU).\r\n\r\nThis layer shows version 1.0 of the Bright-Earth e-Atlas Basemap.\r\n\r\n[[http://domain.com/data/uuid/ac57aa5a-233b-4c2c-bd52-1fb40a31f639|More information about this basemap]]",
         "layerName": "ea-be:World_Bright-Earth-e-Atlas-basemap_No-Labels-hillshading",
         "title": "World: Bright Earth e-Atlas Basemap (No Labels, Hillshading)",
         "hasLegend": false
@@ -14940,7 +14940,7 @@
             "wmsVersion": "1.1.1",
             "layerType": "WMS",
             "layerCount": 173,
-            "serviceUrl": "https://maps.atlas.parksaustralia.gov.au/maps/wms?SERVICE=WMS&",
+            "serviceUrl": "https://domain.com/parksaustralia/maps/wms?SERVICE=WMS&",
             "legendParameters": {
                 "FORMAT": "image/png",
                 "WIDTH": "20",
@@ -14948,10 +14948,10 @@
             },
             "webCacheEnable": true,
             "dataSourceName": "Australian Marine Parks Science Atlas",
-            "webCacheCapabilitiesUrl": "https://maps.atlas.parksaustralia.gov.au/maps/gwc/service/wmts?REQUEST=getcapabilities",
-            "legendUrl": "https://maps.atlas.parksaustralia.gov.au/maps/wms?SERVICE=WMS&",
+            "webCacheCapabilitiesUrl": "https://domain.com/parksaustralia/maps/gwc/service/wmts?REQUEST=getcapabilities",
+            "legendUrl": "https://domain.com/parksaustralia/maps/wms?SERVICE=WMS&",
             "dataSourceId": "cmr",
-            "featureRequestsUrl": "https://maps.atlas.parksaustralia.gov.au/maps/wms?SERVICE=WMS&",
+            "featureRequestsUrl": "https://domain.com/parksaustralia/maps/wms?SERVICE=WMS&",
             "webCacheSupportedParameters": [
                 "LAYERS",
                 "TRANSPARENT",
@@ -14969,7 +14969,7 @@
             ],
             "legendDpiSupport": true,
             "showInLegend": true,
-            "webCacheUrl": "https://maps.atlas.parksaustralia.gov.au/maps/gwc/service/wms",
+            "webCacheUrl": "https://domain.com/parksaustralia/maps/gwc/service/wms",
             "cacheWmsVersion": "1.1.1",
             "status": "OKAY"
         },
@@ -14977,7 +14977,7 @@
             "wmsVersion": "1.1.1",
             "layerType": "WMS",
             "layerCount": 50,
-            "serviceUrl": "https://maps.northwestatlas.org/maps/wms?SERVICE=WMS&",
+            "serviceUrl": "https://domain.com/northwestatlas/maps/wms?SERVICE=WMS&",
             "legendParameters": {
                 "FORMAT": "image/png",
                 "WIDTH": "20",
@@ -14985,10 +14985,10 @@
             },
             "webCacheEnable": true,
             "dataSourceName": "North West Atlas",
-            "webCacheCapabilitiesUrl": "https://maps.northwestatlas.org/maps/gwc/service/wmts?REQUEST=getcapabilities",
-            "legendUrl": "https://maps.northwestatlas.org/maps/wms?SERVICE=WMS&",
+            "webCacheCapabilitiesUrl": "https://domain.com/northwestatlas/maps/gwc/service/wmts?REQUEST=getcapabilities",
+            "legendUrl": "https://domain.com/northwestatlas/maps/wms?SERVICE=WMS&",
             "dataSourceId": "nwa",
-            "featureRequestsUrl": "https://maps.northwestatlas.org/maps/wms?SERVICE=WMS&",
+            "featureRequestsUrl": "https://domain.com/northwestatlas/maps/wms?SERVICE=WMS&",
             "webCacheSupportedParameters": [
                 "LAYERS",
                 "TRANSPARENT",
@@ -15006,7 +15006,7 @@
             ],
             "legendDpiSupport": true,
             "showInLegend": true,
-            "webCacheUrl": "https://maps.northwestatlas.org/maps/gwc/service/wms",
+            "webCacheUrl": "https://domain.com/northwestatlas/maps/gwc/service/wms",
             "cacheWmsVersion": "1.1.1",
             "status": "OKAY"
         },
@@ -15014,7 +15014,7 @@
             "wmsVersion": "1.1.1",
             "layerType": "WMS",
             "layerCount": 1399,
-            "serviceUrl": "https://maps.eatlas.org.au/maps/wms?SERVICE=WMS&",
+            "serviceUrl": "https://domain.com/maps/wms?SERVICE=WMS&",
             "legendParameters": {
                 "FORMAT": "image/png",
                 "WIDTH": "20",
@@ -15023,10 +15023,10 @@
             },
             "webCacheEnable": true,
             "dataSourceName": "eAtlas",
-            "webCacheCapabilitiesUrl": "https://maps.eatlas.org.au/maps/gwc/service/wmts?REQUEST=getcapabilities",
-            "legendUrl": "https://maps.eatlas.org.au/maps/wms?SERVICE=WMS&",
+            "webCacheCapabilitiesUrl": "https://domain.com/maps/gwc/service/wmts?REQUEST=getcapabilities",
+            "legendUrl": "https://domain.com/maps/wms?SERVICE=WMS&",
             "dataSourceId": "ea",
-            "featureRequestsUrl": "https://maps.eatlas.org.au/maps/wms?SERVICE=WMS&",
+            "featureRequestsUrl": "https://domain.com/maps/wms?SERVICE=WMS&",
             "webCacheSupportedParameters": [
                 "LAYERS",
                 "TRANSPARENT",
@@ -15043,7 +15043,7 @@
             ],
             "legendDpiSupport": true,
             "showInLegend": true,
-            "webCacheUrl": "https://maps.eatlas.org.au/maps/gwc/service/wms",
+            "webCacheUrl": "https://domain.com/maps/gwc/service/wms",
             "cacheWmsVersion": "1.1.1",
             "status": "OKAY"
         }

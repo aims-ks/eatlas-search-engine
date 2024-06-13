@@ -1,0 +1,43 @@
+{
+    "clientId": "atlas",
+    "clientName": "Atlas",
+    "proxyUrl": "/atlasmapper/proxy?client=atlas&url=",
+    "layerInfoServiceUrl": "/atlasmapper/public/layersInfo.jsp",
+    "modules": {},
+    "mapConfigEnabled": true,
+    "defaultLayers": [],
+    "mapOptions": {
+        "maxResolution": 0.703125,
+        "numZoomLevels": 16,
+        "units": "degrees",
+        "maxExtent": [-180, -90, 180, 90]
+    },
+    "startingLocation": [134, -25, 5],
+    "projection": "EPSG:4326",
+    "dataSources": {
+        "ea": {
+            "wmsVersion": "1.1.1",
+            "layerType": "WMS",
+            "layerCount": 1399,
+            "serviceUrl": "https://domain.com/maps/wms?SERVICE=WMS&",
+            "legendParameters": {
+                "FORMAT": "image/png",
+                "WIDTH": "20",
+                "HEIGHT": "15",
+                "LEGEND_OPTIONS": "fontAntiAliasing:true"
+            },
+            "webCacheEnable": true,
+            "dataSourceName": "eAtlas",
+            "webCacheCapabilitiesUrl": "https://domain.com/maps/gwc/service/wmts?REQUEST=getcapabilities",
+            "legendUrl": "https://domain.com/maps/wms?SERVICE=WMS&",
+            "dataSourceId": "ea",
+            "featureRequestsUrl": "https://domain.com/maps/wms?SERVICE=WMS&",
+            "webCacheSupportedParameters": ["LAYERS","TRANSPARENT","SERVICE","VERSION","REQUEST","EXCEPTIONS","FORMAT","SRS","BBOX","WIDTH","HEIGHT","STYLES"],
+            "legendDpiSupport": true,
+            "showInLegend": true,
+            "webCacheUrl": "https://domain.com/maps/gwc/service/wms",
+            "cacheWmsVersion": "1.1.1",
+            "status": "OKAY"
+        }
+    }
+}
