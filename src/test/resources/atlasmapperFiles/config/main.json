@@ -1,7 +1,6 @@
 {
     "clientId": "ampsatlas",
     "clientName": "Australian Marine Parks Science Atlas",
-    "testConfiguration": true,
     "proxyUrl": "/atlasmapper/proxy?client=ampsatlas&url=",
     "mapMeasurementLineEnabled": true,
     "mapMeasurementAreaEnabled": true,
