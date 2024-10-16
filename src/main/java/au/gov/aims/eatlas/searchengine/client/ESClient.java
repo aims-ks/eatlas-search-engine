@@ -63,6 +63,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ESClient implements SearchClient {
+    private static SearchClient instance;
+
     private final RestClient restClient;
     private final ElasticsearchTransport transport;
     private final ElasticsearchClient elasticsearchClient;
@@ -76,6 +78,13 @@ public class ESClient implements SearchClient {
         this.transport = new RestClientTransport(
                 this.restClient, new JacksonJsonpMapper());
         this.elasticsearchClient = new ElasticsearchClient(transport);
+    }
+
+    public static SearchClient getInstance() throws MalformedURLException {
+        if (instance == null) {
+            instance = new ESClient();
+        }
+        return instance;
     }
 
     @Override

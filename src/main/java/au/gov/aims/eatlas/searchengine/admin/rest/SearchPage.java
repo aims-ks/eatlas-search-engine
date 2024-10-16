@@ -59,7 +59,8 @@ public class SearchPage {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
-        try (SearchClient searchClient = new ESClient()) {
+        try {
+            SearchClient searchClient = ESClient.getInstance();
 
             if (reindexIdx != null && reindexId != null) {
                 try {

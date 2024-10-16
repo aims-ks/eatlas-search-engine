@@ -13,7 +13,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- NOTE: Elastic Search version is specified as a properties, to share the version number with the JUnit test framework -->
-        <elasticsearch.version>8.13.2</elasticsearch.version>
+        <!-- ES changes between releases: https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/release-highlights.html -->
+        <elasticsearch.version>8.15.2</elasticsearch.version>
 
         <!-- NOTE: Jersey 4 is still under development (4.0.0-M1) -->
         <jersey.version>3.1.6</jersey.version>

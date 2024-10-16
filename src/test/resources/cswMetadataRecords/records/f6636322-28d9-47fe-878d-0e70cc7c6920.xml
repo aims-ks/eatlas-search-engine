@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdb:MD_Metadata xmlns:mdb="http://standards.iso.org/iso/19115/-3/mdb/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cat="http://standards.iso.org/iso/19115/-3/cat/1.0" xmlns:gfc="http://standards.iso.org/iso/19110/gfc/1.1" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0" xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0" xmlns:gex="http://standards.iso.org/iso/19115/-3/gex/1.0" xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0" xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.1" xmlns:mas="http://standards.iso.org/iso/19115/-3/mas/1.0" xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:mco="http://standards.iso.org/iso/19115/-3/mco/1.0" xmlns:mda="http://standards.iso.org/iso/19115/-3/mda/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/2.0" xmlns:mex="http://standards.iso.org/iso/19115/-3/mex/1.0" xmlns:mmi="http://standards.iso.org/iso/19115/-3/mmi/1.0" xmlns:mpc="http://standards.iso.org/iso/19115/-3/mpc/1.0" xmlns:mrc="http://standards.iso.org/iso/19115/-3/mrc/2.0" xmlns:mrd="http://standards.iso.org/iso/19115/-3/mrd/1.0" xmlns:mri="http://standards.iso.org/iso/19115/-3/mri/1.0" xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0" xmlns:mrs="http://standards.iso.org/iso/19115/-3/mrs/1.0" xmlns:msr="http://standards.iso.org/iso/19115/-3/msr/2.0" xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0" xmlns:mac="http://standards.iso.org/iso/19115/-3/mac/2.0" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://standards.iso.org/iso/19115/-3/cat/1.0 http://standards.iso.org/iso/19115/-3/cat/1.0/cat.xsd http://standards.iso.org/iso/19115/-3/cit/2.0 http://standards.iso.org/iso/19115/-3/cit/2.0/cit.xsd http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd http://standards.iso.org/iso/19115/-3/gex/1.0 http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd http://standards.iso.org/iso/19115/-3/lan/1.0 http://standards.iso.org/iso/19115/-3/lan/1.0/lan.xsd http://standards.iso.org/iso/19115/-3/srv/2.0 http://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd http://standards.iso.org/iso/19115/-3/mas/1.0 http://standards.iso.org/iso/19115/-3/mas/1.0/mas.xsd http://standards.iso.org/iso/19115/-3/mcc/1.0 http://standards.iso.org/iso/19115/-3/mcc/1.0/mcc.xsd http://standards.iso.org/iso/19115/-3/mco/1.0 http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd http://standards.iso.org/iso/19115/-3/mda/2.0 http://standards.iso.org/iso/19115/-3/mda/2.0/mda.xsd http://standards.iso.org/iso/19115/-3/mdb/2.0 http://standards.iso.org/iso/19115/-3/mdb/2.0/mdb.xsd http://standards.iso.org/iso/19115/-3/mds/2.0 http://standards.iso.org/iso/19115/-3/mds/2.0/mds.xsd http://standards.iso.org/iso/19115/-3/mdt/2.0 http://standards.iso.org/iso/19115/-3/mdt/2.0/mdt.xsd http://standards.iso.org/iso/19115/-3/mex/1.0 http://standards.iso.org/iso/19115/-3/mex/1.0/mex.xsd http://standards.iso.org/iso/19115/-3/mmi/1.0 http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd http://standards.iso.org/iso/19115/-3/mpc/1.0 http://standards.iso.org/iso/19115/-3/mpc/1.0/mpc.xsd http://standards.iso.org/iso/19115/-3/mrc/2.0 http://standards.iso.org/iso/19115/-3/mrc/2.0/mrc.xsd http://standards.iso.org/iso/19115/-3/mrd/1.0 http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd http://standards.iso.org/iso/19115/-3/mri/1.0 http://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd http://standards.iso.org/iso/19115/-3/mrl/2.0 http://standards.iso.org/iso/19115/-3/mrl/2.0/mrl.xsd http://standards.iso.org/iso/19115/-3/mrs/1.0 http://standards.iso.org/iso/19115/-3/mrs/1.0/mrs.xsd http://standards.iso.org/iso/19115/-3/msr/2.0 http://standards.iso.org/iso/19115/-3/msr/2.0/msr.xsd http://standards.iso.org/iso/19157/-2/mdq/1.0 http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd http://standards.iso.org/iso/19115/-3/mac/2.0 http://standards.iso.org/iso/19115/-3/mac/2.0/mac.xsd http://standards.iso.org/iso/19115/-3/gco/1.0 http://standards.iso.org/iso/19115/-3/gco/1.0/gco.xsd http://standards.iso.org/iso/19115/-3/gmw/1.0 http://standards.iso.org/iso/19115/-3/gmw/1.0/gmw.xsd http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd http://www.w3.org/1999/xlink http://www.w3.org/1999/xlink.xsd">
+  <mdb:metadataIdentifier>
+    <mcc:MD_Identifier>
+      <mcc:code>
+        <gco:CharacterString>f6636322-28d9-47fe-878d-0e70cc7c6920</gco:CharacterString>
+      </mcc:code>
+      <mcc:codeSpace>
+        <gco:CharacterString>urn:uuid</gco:CharacterString>
+      </mcc:codeSpace>
+    </mcc:MD_Identifier>
+  </mdb:metadataIdentifier>
+  <mdb:defaultLocale xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <lan:PT_Locale id="EN">
+      <lan:language>
+        <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+      </lan:language>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:defaultLocale>
+  <mdb:parentMetadata xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" uuidref="18386963-6960-4eb9-889b-d0964069ce13" />
+  <mdb:metadataScope xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <mdb:MD_MetadataScope>
+      <mdb:resourceScope>
+        <mcc:MD_ScopeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_ScopeCode" codeListValue="dataset" />
+      </mdb:resourceScope>
+      <mdb:name gco:nilReason="missing">
+        <gco:CharacterString />
+      </mdb:name>
+    </mdb:MD_MetadataScope>
+  </mdb:metadataScope>
+  <mdb:contact xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+      </cit:role>
+      <cit:party>
+        <cit:CI_Organisation>
+          <cit:name>
+            <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+          </cit:name>
+          <cit:individual>
+            <cit:CI_Individual>
+              <cit:name>
+                <gco:CharacterString>eAtlas Data Manager</gco:CharacterString>
+              </cit:name>
+              <cit:contactInfo>
+                <cit:CI_Contact>
+                  <cit:phone>
+                    <cit:CI_Telephone>
+                      <cit:number>
+                        <gco:CharacterString>+61 7 4753 4444</gco:CharacterString>
+                      </cit:number>
+                      <cit:numberType>
+                        <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                      </cit:numberType>
+                    </cit:CI_Telephone>
+                  </cit:phone>
+                  <cit:phone>
+                    <cit:CI_Telephone>
+                      <cit:number gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:number>
+                      <cit:numberType>
+                        <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                      </cit:numberType>
+                    </cit:CI_Telephone>
+                  </cit:phone>
+                  <cit:address>
+                    <cit:CI_Address>
+                      <cit:deliveryPoint>
+                        <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                      </cit:deliveryPoint>
+                      <cit:city>
+                        <gco:CharacterString>Townsville</gco:CharacterString>
+                      </cit:city>
+                      <cit:administrativeArea>
+                        <gco:CharacterString>Queensland</gco:CharacterString>
+                      </cit:administrativeArea>
+                      <cit:postalCode>
+                        <gco:CharacterString>4810</gco:CharacterString>
+                      </cit:postalCode>
+                      <cit:country>
+                        <gco:CharacterString>Australia</gco:CharacterString>
+                      </cit:country>
+                      <cit:electronicMailAddress>
+                        <gco:CharacterString>e-atlas@aims.gov.au</gco:CharacterString>
+                      </cit:electronicMailAddress>
+                    </cit:CI_Address>
+                  </cit:address>
+                  <cit:onlineResource>
+                    <cit:CI_OnlineResource>
+                      <cit:linkage>
+                        <gco:CharacterString>https://domain.com</gco:CharacterString>
+                      </cit:linkage>
+                      <cit:protocol>
+                        <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                      </cit:protocol>
+                      <cit:name>
+                        <gco:CharacterString>eAtlas portal</gco:CharacterString>
+                      </cit:name>
+                      <cit:description gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:description>
+                    </cit:CI_OnlineResource>
+                  </cit:onlineResource>
+                </cit:CI_Contact>
+              </cit:contactInfo>
+            </cit:CI_Individual>
+          </cit:individual>
+        </cit:CI_Organisation>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </mdb:contact>
+  <mdb:dateInfo xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <cit:CI_Date>
+      <cit:date>
+        <gco:DateTime>2020-11-18T05:15:45</gco:DateTime>
+      </cit:date>
+      <cit:dateType>
+        <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" />
+      </cit:dateType>
+    </cit:CI_Date>
+  </mdb:dateInfo>
+  <mdb:dateInfo>
+    <cit:CI_Date>
+      <cit:date>
+        <gco:DateTime>2023-09-18T06:39:47</gco:DateTime>
+      </cit:date>
+      <cit:dateType>
+        <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="revision" />
+      </cit:dateType>
+    </cit:CI_Date>
+  </mdb:dateInfo>
+  <mdb:metadataStandard xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <cit:CI_Citation>
+      <cit:title>
+        <gco:CharacterString>ISO 19115-3:2018</gco:CharacterString>
+      </cit:title>
+    </cit:CI_Citation>
+  </mdb:metadataStandard>
+  <mdb:metadataLinkage xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <cit:CI_OnlineResource>
+      <cit:linkage>
+        <gco:CharacterString>https://domain.com/data/uuid/f6636322-28d9-47fe-878d-0e70cc7c6920</gco:CharacterString>
+      </cit:linkage>
+      <cit:protocol>
+        <gco:CharacterString>WWW:LINK-1.0-http--metadata-URL</gco:CharacterString>
+      </cit:protocol>
+      <cit:description>
+        <gco:CharacterString>Point of truth URL of this metadata record</gco:CharacterString>
+      </cit:description>
+    </cit:CI_OnlineResource>
+  </mdb:metadataLinkage>
+  <mdb:identificationInfo xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <mri:MD_DataIdentification>
+      <mri:citation>
+        <cit:CI_Citation>
+          <cit:title>
+            <gco:CharacterString>Effects of climate change and the herbicide diuron on Photosystem II activity of the tropical seagrass Halophila ovalis (NESP TWQ 2.1.6, AIMS)</gco:CharacterString>
+          </cit:title>
+          <cit:date>
+            <cit:CI_Date>
+              <cit:date>
+                <gco:Date>2019-01-15</gco:Date>
+              </cit:date>
+              <cit:dateType>
+                <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="publication" />
+              </cit:dateType>
+            </cit:CI_Date>
+          </cit:date>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="principalInvestigator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Uthicke, Sven, Dr</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number>
+                                <gco:CharacterString>+617 4753 4483</gco:CharacterString>
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint>
+                                <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                              </cit:deliveryPoint>
+                              <cit:city>
+                                <gco:CharacterString>Townsville</gco:CharacterString>
+                              </cit:city>
+                              <cit:administrativeArea>
+                                <gco:CharacterString>Queensland</gco:CharacterString>
+                              </cit:administrativeArea>
+                              <cit:postalCode>
+                                <gco:CharacterString>4810</gco:CharacterString>
+                              </cit:postalCode>
+                              <cit:country>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>s.uthicke@aims.gov.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName>
+                        <gco:CharacterString>Principal Research Scientist</gco:CharacterString>
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Negri, Andrew, Dr</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number>
+                                <gco:CharacterString>+617 4753 4322</gco:CharacterString>
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint>
+                                <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                              </cit:deliveryPoint>
+                              <cit:city>
+                                <gco:CharacterString>Townsville</gco:CharacterString>
+                              </cit:city>
+                              <cit:administrativeArea>
+                                <gco:CharacterString>Queensland</gco:CharacterString>
+                              </cit:administrativeArea>
+                              <cit:postalCode>
+                                <gco:CharacterString>4810</gco:CharacterString>
+                              </cit:postalCode>
+                              <cit:country>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>a.negri@aims.gov.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName>
+                        <gco:CharacterString>Principal Research Scientist</gco:CharacterString>
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:otherCitationDetails>
+            <gco:CharacterString>Additional credit: Ontoria, Yaiza (Uni of Barcelona, Spain), Flores, Florita (AIMS), Collier, Catherine (TropWATER)</gco:CharacterString>
+          </cit:otherCitationDetails>
+        </cit:CI_Citation>
+      </mri:citation>
+      <mri:abstract>
+        <gco:CharacterString>The aim of this study was to investigate the effects of the herbicide diuron and climate change on the Photosystem II activity of the seagrass Halophila ovalis. The 3 climate conditions were: ambient (28.5 °C, 398 µatm), 2050 (29.5 °C, 682 µatm) and 2100 (30.5 °C, 873 µatm). This dataset consists of one data file (spreadsheet) from a 2-week experiment, containing 5 diuron concentrations and 3 climate change scenarios. Each tab contains photosynthetic yield data at each time point: 0 d, 2 d, 7 d and 14 d under each of the diuron and climate change treatments. The first 4 tabs are effective quantum yield data and the last tab consists of maximum quantum yield data.
+
+Methods: Approach and experimental design
+
+Seagrasses (H. ovalis) were exposed for 14 days to three different seawater pCO2 and temperature conditions (398 µatm, 28.5 °C, 682 µatm, 29.5 °C and 873 µatm, 30.5 °C) and four elevated concentrations of diuron (0.3, 1, 3 and 10 µg l-1 nominal concentrations), including a solvent control. H. ovalis were placed in custom 3 l acrylic chambers (15 cm diameter x 19 cm height, working volume 2.5 l) in water baths with the appropriate level of pCO2 bubbling in each chamber. Stock solutions of diuron (10 mg l-1) were prepared in milli Q water (0.5 µm) using a &lt; 0.03% w/w ethanol solvent carrier. Diuron was delivered from 60 L header tanks to the experimental chambers using peristaltic pumps (Masterflex L/S and Ismatec IPC 12) for a turnover rate of at least once per day. Three ramets of H. ovalis were placed in each experimental chamber and three independent replicate chambers were used for each diuron concentration and each climate change scenario. Chambers were randomised to prevent any environmental effects associated with the laboratory.
+
+H. ovalis were illuminated over 13h cycles (Aqua Illumination LED Hydra) with ramping up for the first three hours to approximately 200 µmol m-2 s-1 then down to darkness over the last 3 hours. Irradiance was measured with a Licor LI-250A meter with LI-190R quantum sensor (Li-Cor, Lincoln, USA). Parameters (pH, salinity and dissolved oxygen) were measured five times during the duration of the 14 d experiment. Water temperature and pCO2 levels were controlled by a programmable logic controller (PLC) and measured every ten minutes. Salinity was measured via a handheld meter (Horiba LAQUAact PC110), pH was measured with a multimeter (HQ40d equipped with Intellical PHC301 pH electrode (Hach, USA) and oxygen concentration was determined with a handheld meter (HQ30d equipped with Intellical LDO101 oxygen probe (Hach, USA).
+
+Chlorophyll fluorescence (effective quantum yield, deltaF/Fm’) were taken just prior to the start of exposure and at 2 days, 7d and 14d exposure and maximum quantum yields (Fv/Fm) were taken at 14d exposure using an imaging PAM fluorometer (iPAM, WALZ, Germany). Data-MAXI software (Imaging Win, Walz, Germany) was used to select a single area of interest (AOI) on one leaf per ramet. Minimum fluorescence (F with illuminated samples and F0 with dark-adapted samples) was initiated and recorded by applying a weak pulse-modulated red measuring light (650 nm, 0.15 µmol photons m-2s-1). To quantify light adapted maximum fluorescence (Fm’) a short pulse (800 ms) of saturating actinic light (&gt;3000 µmol photons m-2s-1) was applied and the effective quantum yield of PSII calculated from deltaF/Fm’ = (Fm' – F)/Fm'.  Actinic light was set to approximately 100 µmol photons m-2s-1 for 3 min to generate a moderate level of photochemical quenching. To calculate the maximum quantum yield of PSII (Fv/Fm), seagrass ramets were dark adapted for approximately 30 min and F0 and Fm measured, as above, from Fv/Fm = (Fm – F0) / Fm.
+
+ Pesticide concentrations (2-3 samples) were taken at the start and end of the experiment and analysed by high performance liquid chromatography-mass spectrometry (HPLC-MS/MS). The geometric mean from measured start and end concentrations (time weighted average) was assigned as the ‘actual’ concentration in that sample. The average loss from these ‘actual’ concentrations was then applied to all nominal concentrations to provide estimates of ‘measured’ concentrations used for concentration-response modelling.
+
+
+Format:
+This dataset is presented on one excel spreadsheet containing 5 tabs of photosynthetic yield data over time frames: start of experiment(0 days), 2 days, 7 days, 14 days. Final effective quantum yield data is presented of the final tab 'dark_end'.
+
+Data Dictionary:
+
+PAM data.xlsx
+TAB: START OF EXPERIMENT
+DATE: date the measurement was taken
+CLIMATE CHANGE SCENARIO: Three (3) climate scenarios: AMBIENT(28.5 °C, 398 µatm), 2050 (29.5 °C, 682 µatm), 2100 (30.5 °C, 873 µatm).
+
+DIURON TREATMENT: 0 since it is start of experiment prior to spiking with herbicide
+
+REPLICATE: 3 replicates per climate condition A, B or C
+
+Photosystem II activity of seagrass measurements for photosynthetic yield:
+Y(II)1: effective quantum yield
+Y(II)2: effective quantum yield
+Y(II)3: effective quantum yield
+
+MEAN/CHAMBER: average of Y(II)1, Y(II)2, Y(II)3 for each replicate row
+
+MEAN/TREATMENT: average of MEAN/CHAMBER for each Climate Change Scenario group e.g. When CLIMATE CHANGE SCENARIO= 2050 and DIURON TREATMENT= 10:
+average of [MEAN/CHAMBER for REPLICATE A, MEAN/CHAMBER for REPLICATE B, MEAN/CHAMBER for REPLICATE C]= MEAN/TREATMENT (e.g. when CLIMATE CHANGE SCENARIO= 2050 and DIURON TREATMENT= 10)
+
+SE - Standard error [calculated standard deviation of all effective quantum yield measurements for each group, divided (/) by square root of 3]
+
+
+TABS: 2DAYS, 1WEEK, 2WEEKS, DARK_END
+
+N° PHOTO: photo ID
+DATE: date the measurement was taken
+CLIMATE CHANGE SCENARIO: 3 climate scenarios AMBIENT(28.5 °C, 398 µatm), 2050 (29.5 °C, 682 µatm), 2100 (30.5 °C, 873 µatm)
+DIURON TREATMENT: 5 concentrations 0, 0.3, 1, 3, 10 µg l-1 nominal concentrations
+REPLICATE: 3 replicate chambers A, B, C
+
+Photosystem II activity of seagrass measurements for photosynthetic yield:
+Y(II) 1: effective quantum yield
+Y(II) 2: effective quantum yield
+Y(II) 3: effective quantum yield
+
+MEAN/TREATMENT: average of effective quantum yield for each Climate Change Scenario group i.e. when CLIMATE CHANGE SCENARIO= 2050 and DIURON TREATMENT= 0:
+average of [REPLICATE A (Y(II)1, Y(II)2, Y(II)3) + REPLICATE B (Y(II)1, Y(II)2, Y(II)3) + REPLICATE C (Y(II)1, Y(II)2, Y(II)3)] = MEAN/TREATMENT (e.g. when CLIMATE CHANGE SCENARIO= 2050 and DIURON TREATMENT= 10)
+
+SE - Standard error [calculated standard deviation of all effective quantum yield measurements for each group, divided (/) by square root of 3]
+
+Percentage of Inhibition for photosynthetic yield relative to MEAN/TREATMENT control (CLIMATE CHANGE SCENARIO = AMBIENT and DIURON TREATMENT = 0)
+% Inhibition 1
+% Inhibition 2
+% Inhibition 3
+
+MEAN INHIBITION/TREATMENT: average of %Inhibition 1, %Inhibition 2, %Inhibition for Climate change scenario, Diuron treatment concentration, Replicates A, B and C
+
+SE – Standard Error for % inhibition
+
+
+Data Location:
+
+This dataset is filed in the eAtlas enduring data repository at: data\custodian\2016-18-NESP-TWQ-2\2.1.6_Cumulative-impacts\data\Halophila-ovalis</gco:CharacterString>
+      </mri:abstract>
+      <mri:pointOfContact>
+        <cit:CI_Responsibility>
+          <cit:role>
+            <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+          </cit:role>
+          <cit:party>
+            <cit:CI_Organisation>
+              <cit:name>
+                <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+              </cit:name>
+              <cit:individual>
+                <cit:CI_Individual>
+                  <cit:name>
+                    <gco:CharacterString>Uthicke, Sven , Dr</gco:CharacterString>
+                  </cit:name>
+                  <cit:contactInfo>
+                    <cit:CI_Contact>
+                      <cit:phone>
+                        <cit:CI_Telephone>
+                          <cit:number>
+                            <gco:CharacterString>+617 4753 4483</gco:CharacterString>
+                          </cit:number>
+                          <cit:numberType>
+                            <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                          </cit:numberType>
+                        </cit:CI_Telephone>
+                      </cit:phone>
+                      <cit:address>
+                        <cit:CI_Address>
+                          <cit:deliveryPoint>
+                            <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                          </cit:deliveryPoint>
+                          <cit:city>
+                            <gco:CharacterString>Townsville</gco:CharacterString>
+                          </cit:city>
+                          <cit:administrativeArea>
+                            <gco:CharacterString>Queensland</gco:CharacterString>
+                          </cit:administrativeArea>
+                          <cit:postalCode>
+                            <gco:CharacterString>4810</gco:CharacterString>
+                          </cit:postalCode>
+                          <cit:country>
+                            <gco:CharacterString>Australia</gco:CharacterString>
+                          </cit:country>
+                          <cit:electronicMailAddress>
+                            <gco:CharacterString>s.uthicke@aims.gov.au</gco:CharacterString>
+                          </cit:electronicMailAddress>
+                        </cit:CI_Address>
+                      </cit:address>
+                    </cit:CI_Contact>
+                  </cit:contactInfo>
+                  <cit:positionName>
+                    <gco:CharacterString>Principal Research Scientist</gco:CharacterString>
+                  </cit:positionName>
+                </cit:CI_Individual>
+              </cit:individual>
+            </cit:CI_Organisation>
+          </cit:party>
+        </cit:CI_Responsibility>
+      </mri:pointOfContact>
+      <mri:topicCategory>
+        <mri:MD_TopicCategoryCode>biota</mri:MD_TopicCategoryCode>
+      </mri:topicCategory>
+      <mri:extent>
+        <gex:EX_Extent>
+          <gex:description>
+            <gco:CharacterString>Great Barrier Reef, Australia</gco:CharacterString>
+          </gex:description>
+          <gex:geographicElement>
+            <gex:EX_BoundingPolygon>
+              <gex:polygon>
+                <gml:MultiSurface srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                  <gml:surfaceMember>
+                    <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                      <gml:exterior>
+                        <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                          <gml:posList srsDimension="2">-19.18227966885796 146.84110091589278 -19.18226273591273 146.840942968626 -19.18222905554316 146.84078762188025 -19.18217899675841 146.840636577667 -19.182113108013056 146.84049149085817 -19.1820321111979 146.8403539510553 -19.181936893731063 146.84022546517315 -19.18182849883499 146.84010744093 -19.181708114106897 146.84000117142415 -19.181577058507017 146.83990782096657 -19.18143676790794 146.83982841232432 -19.181288779362845 146.8397638155152 -19.18113471426514 146.8397147382753 -19.180976260584373 146.83968171830514 -19.180815154372155 146.83966511737844 -19.180653160741855 146.83966511737844 -19.180492054529637 146.83968171830514 -19.18033360084884 146.8397147382753 -19.180179535751165 146.8397638155152 -19.180031547206056 146.83982841232432 -19.17989125660698 146.83990782096657 -19.179760201007085 146.84000117142415 -19.179639816279007 146.84010744093 -19.179531421382947 146.84022546517315 -19.179436203916097 146.8403539510553 -19.179355207100983 146.84049149085817 -19.179289318355558 146.840636577667 -19.17923925957082 146.84078762188025 -19.179205579201252 146.840942968626 -19.179188646256037 146.84110091589278 -19.179188646256037 146.84125973317722 -19.179205579201252 146.841417680444 -19.17923925957082 146.84157302718975 -19.179289318355558 146.841724071403 -19.179355207100983 146.84186915821184 -19.179436203916097 146.8420066980147 -19.179531421382947 146.84213518389686 -19.179639816279007 146.84225320814 -19.179760201007085 146.84235947764586 -19.17989125660698 146.84245282810343 -19.180031547206056 146.84253223674568 -19.180179535751165 146.8425968335548 -19.18033360084884 146.84264591079472 -19.180492054529637 146.84267893076486 -19.180653160741855 146.84269553169156 -19.180815154372155 146.84269553169156 -19.180976260584373 146.84267893076486 -19.18113471426514 146.84264591079472 -19.181288779362845 146.8425968335548 -19.18143676790794 146.84253223674568 -19.181577058507017 146.84245282810343 -19.181708114106897 146.84235947764586 -19.18182849883499 146.84225320814 -19.181936893731063 146.84213518389686 -19.1820321111979 146.8420066980147 -19.182113108013056 146.84186915821184 -19.18217899675841 146.841724071403 -19.18222905554316 146.84157302718975 -19.18226273591273 146.841417680444 -19.18227966885796 146.84125973317722 -19.18227966885796 146.84110091589278</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                    </gml:Polygon>
+                  </gml:surfaceMember>
+                </gml:MultiSurface>
+              </gex:polygon>
+            </gex:EX_BoundingPolygon>
+          </gex:geographicElement>
+          <gex:temporalElement>
+            <gex:EX_TemporalExtent>
+              <gex:extent>
+                <gml:TimePeriod gml:id="N10315">
+                  <gml:beginPosition>2018-06-27T00:00:00</gml:beginPosition>
+                  <gml:endPosition>2018-07-11T00:00:00</gml:endPosition>
+                </gml:TimePeriod>
+              </gex:extent>
+            </gex:EX_TemporalExtent>
+          </gex:temporalElement>
+        </gex:EX_Extent>
+      </mri:extent>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://domain.com/geonetwork/srv/api/records/f6636322-28d9-47fe-878d-0e70cc7c6920/attachments/Preview-image.png</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>large_thumbnail</gco:CharacterString>
+          </mcc:fileDescription>
+          <mcc:fileType>
+            <gco:CharacterString>png</gco:CharacterString>
+          </mcc:fileType>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:resourceConstraints>
+        <mco:MD_LegalConstraints>
+          <mco:graphic>
+            <mcc:MD_BrowseGraphic>
+              <mcc:fileName gco:nilReason="inapplicable" />
+              <mcc:linkage>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>http://i.creativecommons.org/l/by/3.0/au/88x31.png</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:description>
+                    <gco:CharacterString>License Graphic</gco:CharacterString>
+                  </cit:description>
+                </cit:CI_OnlineResource>
+              </mcc:linkage>
+            </mcc:MD_BrowseGraphic>
+          </mco:graphic>
+          <mco:reference>
+            <cit:CI_Citation>
+              <cit:title>
+                <gco:CharacterString>Creative Commons Attribution 3.0 Australia License</gco:CharacterString>
+              </cit:title>
+              <cit:citedResponsibleParty>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:electronicMailAddress gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                          <cit:onlineResource>
+                            <cit:CI_OnlineResource>
+                              <cit:linkage>
+                                <gco:CharacterString>http://creativecommons.org/international/au/</gco:CharacterString>
+                              </cit:linkage>
+                              <cit:protocol>
+                                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                              </cit:protocol>
+                              <cit:name gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:name>
+                              <cit:description gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:description>
+                            </cit:CI_OnlineResource>
+                          </cit:onlineResource>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+              </cit:citedResponsibleParty>
+              <cit:onlineResource>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>http://creativecommons.org/licenses/by/3.0/au/</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:description>
+                    <gco:CharacterString>License Text</gco:CharacterString>
+                  </cit:description>
+                </cit:CI_OnlineResource>
+              </cit:onlineResource>
+            </cit:CI_Citation>
+          </mco:reference>
+        </mco:MD_LegalConstraints>
+      </mri:resourceConstraints>
+      <mri:defaultLocale>
+        <lan:PT_Locale>
+          <lan:language>
+            <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+          </lan:language>
+          <lan:characterEncoding>
+            <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+          </lan:characterEncoding>
+        </lan:PT_Locale>
+      </mri:defaultLocale>
+    </mri:MD_DataIdentification>
+  </mdb:identificationInfo>
+  <mdb:distributionInfo xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <mrd:MD_Distribution>
+      <mrd:transferOptions>
+        <mrd:MD_DigitalTransferOptions>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://nesptropical.edu.au/index.php/round-2-projects/project-2-1-6/</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>Link to NESP site for Project 2.1.6</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://domain.com/data/uuid/71127e4d-9f14-4c57-9845-1dce0b541d8d</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>eAtlas Web Mapping Service (WMS) (AIMS)</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://domain.com/nesp-twq-2/gbr-cumulative-impacts-2-1-6</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>Project web site</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://nextcloud.domain.com/apps/sharealias/a/au-nesp-twq-2-1-6-aims-cumulative-impacts-halophila-ovalis</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--downloaddata</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>Experiment dataset + Metadata + Photo [Zip 2246 kB]</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+        </mrd:MD_DigitalTransferOptions>
+      </mrd:transferOptions>
+    </mrd:MD_Distribution>
+  </mdb:distributionInfo>
+  <mdb:metadataConstraints xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0">
+    <mco:MD_LegalConstraints>
+      <mco:graphic>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName gco:nilReason="inapplicable" />
+          <mcc:linkage>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>http://i.creativecommons.org/l/by/3.0/au/88x31.png</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:description>
+                <gco:CharacterString>License Graphic</gco:CharacterString>
+              </cit:description>
+            </cit:CI_OnlineResource>
+          </mcc:linkage>
+        </mcc:MD_BrowseGraphic>
+      </mco:graphic>
+      <mco:reference>
+        <cit:CI_Citation>
+          <cit:title>
+            <gco:CharacterString>Creative Commons Attribution 3.0 Australia License</gco:CharacterString>
+          </cit:title>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name gco:nilReason="missing">
+                    <gco:CharacterString />
+                  </cit:name>
+                  <cit:contactInfo>
+                    <cit:CI_Contact>
+                      <cit:address>
+                        <cit:CI_Address>
+                          <cit:electronicMailAddress gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:electronicMailAddress>
+                        </cit:CI_Address>
+                      </cit:address>
+                      <cit:onlineResource>
+                        <cit:CI_OnlineResource>
+                          <cit:linkage>
+                            <gco:CharacterString>http://creativecommons.org/international/au/</gco:CharacterString>
+                          </cit:linkage>
+                          <cit:protocol>
+                            <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                          </cit:protocol>
+                          <cit:name gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:name>
+                          <cit:description gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:description>
+                        </cit:CI_OnlineResource>
+                      </cit:onlineResource>
+                    </cit:CI_Contact>
+                  </cit:contactInfo>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:onlineResource>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>http://creativecommons.org/licenses/by/3.0/au/</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:description>
+                <gco:CharacterString>License Text</gco:CharacterString>
+              </cit:description>
+            </cit:CI_OnlineResource>
+          </cit:onlineResource>
+        </cit:CI_Citation>
+      </mco:reference>
+    </mco:MD_LegalConstraints>
+  </mdb:metadataConstraints>
+</mdb:MD_Metadata>
+

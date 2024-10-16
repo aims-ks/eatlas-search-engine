@@ -117,7 +117,8 @@ public class ReindexPage {
         HttpSession session = httpRequest.getSession(true);
         Messages messages = Messages.getInstance(session);
 
-        try (SearchClient searchClient = new ESClient()) {
+        try {
+            SearchClient searchClient = ESClient.getInstance();
 
             if (form.containsKey("reindex-all-button")) {
                 this.reindexAll(searchClient, true, messages);

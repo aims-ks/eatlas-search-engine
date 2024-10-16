@@ -45,7 +45,19 @@ public class HttpClient {
 
     public Response getRequest(String url, Messages messages) throws IOException, InterruptedException {
         Connection jsoupConnection = this.getJsoupConnection(url, messages);
+        return this.request(url, jsoupConnection, messages);
+    }
 
+    public Response postXmlRequest(String url, String requestBody, Messages messages) throws IOException, InterruptedException {
+        Connection jsoupConnection = this.getJsoupConnection(url, messages)
+                .method(Connection.Method.POST)
+                .header("Content-Type", "application/xml")
+                .requestBody(requestBody);
+
+        return this.request(url, jsoupConnection, messages);
+    }
+
+    private Response request(String url, Connection jsoupConnection, Messages messages) throws IOException, InterruptedException {
         IOException lastException = null;
         int delay = JSOUP_RETRY_INITIAL_DELAY;
 
@@ -81,7 +93,7 @@ public class HttpClient {
         //     JSoup is quite picky with content types (aka mimetype).
         //     It only allows text/*, application/xml, or application/*+xml
         //     Some websites could be setup with wrong content type.
-        //     We use "ignoreContentType" to workaround this issue.
+        //     We use "ignoreContentType" to work around this issue.
         // maxBodySize(0)
         //     Default to 2MB. 0 = Infinite.
         //     AtlasMapper layer list for the eAtlas is larger than 2MB.

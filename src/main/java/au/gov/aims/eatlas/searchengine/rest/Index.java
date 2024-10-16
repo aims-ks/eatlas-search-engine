@@ -93,7 +93,8 @@ public class Index {
         // API call - display messages using the LOGGER.
         Messages messages = Messages.getInstance(null);
 
-        try (SearchClient searchClient = new ESClient()) {
+        try {
+            SearchClient searchClient = ESClient.getInstance();
             JSONObject jsonStatus = IndexUtils.internalReindex(searchClient, full == null ? true : full, messages);
 
             String responseTxt = jsonStatus.toString();

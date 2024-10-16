@@ -30,7 +30,6 @@ import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
-import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.ScriptLanguage;
 import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScore;
@@ -95,7 +94,8 @@ public class Search {
         }
 
         SearchResults results = null;
-        try (SearchClient searchClient = new ESClient()) {
+        try {
+            SearchClient searchClient = ESClient.getInstance();
             results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, fidx, messages);
 
         } catch(Exception ex) {
@@ -394,12 +394,10 @@ public class Search {
                         .functions(new FunctionScore.Builder()
                                 .scriptScore(new ScriptScoreFunction.Builder()
                                         .script(new Script.Builder()
-                                                .inline(new InlineScript.Builder()
-                                                        .lang(ScriptLanguage.Painless)
-                                                        .source(rankingFormula)
-                                                        .params("searchArea", JsonData.of(searchArea))
-                                                        .params("searchBbox", JsonData.of(searchBbox))
-                                                        .build())
+                                                .lang(ScriptLanguage.Painless)
+                                                .source(rankingFormula)
+                                                .params("searchArea", JsonData.of(searchArea))
+                                                .params("searchBbox", JsonData.of(searchBbox))
                                                 .build())
                                         .build())
                                 .build())

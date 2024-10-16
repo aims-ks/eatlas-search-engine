@@ -650,9 +650,41 @@
 
 
                                 <c:when test="${indexer.type == 'GeoNetworkIndexer'}">
-                                    <h3>GeoNetworkIndexer fields</h3>
+                                    <h3>Old GeoNetworkIndexer fields</h3>
 
                                     <div class="GeoNetworkIndexer_form">
+                                        <div class="field">
+                                            <label for="${indexer.index}_geoNetworkUrl">
+                                                <span class="label required">GeoNetwork URL</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_geoNetworkUrl"
+                                                    name="${indexer.index}_geoNetworkUrl"
+                                                    data-lpignore="true"
+                                                    required="required"
+                                                    value="<c:out value="${indexer.geoNetworkUrl}" />" />
+                                            </label>
+                                            <div class="desc">GeoNetwork base URL, used for API calls.</div>
+                                            <div class="desc">Example: https://eatlas.org.au/geonetwork</div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_geoNetworkVersion">
+                                                <span class="label">GeoNetwork version</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_geoNetworkVersion"
+                                                    name="${indexer.index}_geoNetworkVersion"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.geoNetworkVersion}" />" />
+                                            </label>
+                                            <div class="desc">Version of GeoNetwork, to use the proper API version.</div>
+                                        </div>
+                                    </div>
+                                </c:when>
+
+                                <c:when test="${indexer.type == 'GeoNetworkCswIndexer'}">
+                                    <h3>GeoNetworkCswIndexer fields</h3>
+
+                                    <div class="GeoNetworkCswIndexer_form">
                                         <div class="field">
                                             <label for="${indexer.index}_geoNetworkUrl">
                                                 <span class="label required">GeoNetwork URL</span>
@@ -745,7 +777,8 @@
                         <option value="DrupalMediaIndexer">DrupalMediaIndexer</option>
                         <option value="DrupalExternalLinkNodeIndexer">DrupalExternalLinkNodeIndexer</option>
                         <option value="DrupalBlockIndexer">DrupalBlockIndexer</option>
-                        <option value="GeoNetworkIndexer">GeoNetworkIndexer</option>
+                        <option value="GeoNetworkIndexer">Old GeoNetworkIndexer</option>
+                        <option value="GeoNetworkCswIndexer">GeoNetworkCswIndexer</option>
                         <option value="AtlasMapperIndexer">AtlasMapperIndexer</option>
                     </select>
 

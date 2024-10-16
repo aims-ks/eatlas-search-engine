@@ -23,7 +23,8 @@ services:
 
   elasticsearch:
     # https://hub.docker.com/_/elasticsearch
-    image: "elasticsearch:8.13.0"
+    #image: "elasticsearch:8.13.0"
+    image: "elasticsearch:8.15.2"
     container_name: eatlas-elasticsearch
     # network_mode host: Elastic search can be access using localhost:9200 and localhost:9300
     #network_mode: host

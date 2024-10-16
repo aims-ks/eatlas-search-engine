@@ -1,0 +1,1091 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdb:MD_Metadata xmlns:mdb="http://standards.iso.org/iso/19115/-3/mdb/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cat="http://standards.iso.org/iso/19115/-3/cat/1.0" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0" xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0" xmlns:gex="http://standards.iso.org/iso/19115/-3/gex/1.0" xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0" xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mas="http://standards.iso.org/iso/19115/-3/mas/1.0" xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:mco="http://standards.iso.org/iso/19115/-3/mco/1.0" xmlns:mda="http://standards.iso.org/iso/19115/-3/mda/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0" xmlns:mex="http://standards.iso.org/iso/19115/-3/mex/1.0" xmlns:mmi="http://standards.iso.org/iso/19115/-3/mmi/1.0" xmlns:mpc="http://standards.iso.org/iso/19115/-3/mpc/1.0" xmlns:mrc="http://standards.iso.org/iso/19115/-3/mrc/2.0" xmlns:mrd="http://standards.iso.org/iso/19115/-3/mrd/1.0" xmlns:mri="http://standards.iso.org/iso/19115/-3/mri/1.0" xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0" xmlns:mrs="http://standards.iso.org/iso/19115/-3/mrs/1.0" xmlns:msr="http://standards.iso.org/iso/19115/-3/msr/2.0" xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0" xmlns:mac="http://standards.iso.org/iso/19115/-3/mac/2.0" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://standards.iso.org/iso/19115/-3/cat/1.0 http://standards.iso.org/iso/19115/-3/cat/1.0/cat.xsd http://standards.iso.org/iso/19115/-3/cit/2.0 http://standards.iso.org/iso/19115/-3/cit/2.0/cit.xsd http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd http://standards.iso.org/iso/19115/-3/gex/1.0 http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd http://standards.iso.org/iso/19115/-3/lan/1.0 http://standards.iso.org/iso/19115/-3/lan/1.0/lan.xsd http://standards.iso.org/iso/19115/-3/srv/2.0 http://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd http://standards.iso.org/iso/19115/-3/mas/1.0 http://standards.iso.org/iso/19115/-3/mas/1.0/mas.xsd http://standards.iso.org/iso/19115/-3/mcc/1.0 http://standards.iso.org/iso/19115/-3/mcc/1.0/mcc.xsd http://standards.iso.org/iso/19115/-3/mco/1.0 http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd http://standards.iso.org/iso/19115/-3/mda/2.0 http://standards.iso.org/iso/19115/-3/mda/2.0/mda.xsd http://standards.iso.org/iso/19115/-3/mdb/2.0 http://standards.iso.org/iso/19115/-3/mdb/2.0/mdb.xsd http://standards.iso.org/iso/19115/-3/mds/2.0 http://standards.iso.org/iso/19115/-3/mds/2.0/mds.xsd http://standards.iso.org/iso/19115/-3/mdt/2.0 http://standards.iso.org/iso/19115/-3/mdt/2.0/mdt.xsd http://standards.iso.org/iso/19115/-3/mex/1.0 http://standards.iso.org/iso/19115/-3/mex/1.0/mex.xsd http://standards.iso.org/iso/19115/-3/mmi/1.0 http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd http://standards.iso.org/iso/19115/-3/mpc/1.0 http://standards.iso.org/iso/19115/-3/mpc/1.0/mpc.xsd http://standards.iso.org/iso/19115/-3/mrc/2.0 http://standards.iso.org/iso/19115/-3/mrc/2.0/mrc.xsd http://standards.iso.org/iso/19115/-3/mrd/1.0 http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd http://standards.iso.org/iso/19115/-3/mri/1.0 http://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd http://standards.iso.org/iso/19115/-3/mrl/2.0 http://standards.iso.org/iso/19115/-3/mrl/2.0/mrl.xsd http://standards.iso.org/iso/19115/-3/mrs/1.0 http://standards.iso.org/iso/19115/-3/mrs/1.0/mrs.xsd http://standards.iso.org/iso/19115/-3/msr/2.0 http://standards.iso.org/iso/19115/-3/msr/2.0/msr.xsd http://standards.iso.org/iso/19157/-2/mdq/1.0 http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd http://standards.iso.org/iso/19115/-3/mac/2.0 http://standards.iso.org/iso/19115/-3/mac/2.0/mac.xsd http://standards.iso.org/iso/19115/-3/gco/1.0 http://standards.iso.org/iso/19115/-3/gco/1.0/gco.xsd http://standards.iso.org/iso/19115/-3/gmw/1.0 http://standards.iso.org/iso/19115/-3/gmw/1.0/gmw.xsd http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd http://www.w3.org/1999/xlink http://www.w3.org/1999/xlink.xsd">
+  <mdb:metadataIdentifier>
+    <mcc:MD_Identifier>
+      <mcc:code>
+        <gco:CharacterString>61a4bac5-79d1-4c1f-9358-a7bb587e07df</gco:CharacterString>
+      </mcc:code>
+    </mcc:MD_Identifier>
+  </mdb:metadataIdentifier>
+  <mdb:defaultLocale>
+    <lan:PT_Locale>
+      <lan:language>
+        <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+      </lan:language>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:defaultLocale>
+  <mdb:parentMetadata uuidref="18386963-6960-4eb9-889b-d0964069ce13" />
+  <mdb:metadataScope>
+    <mdb:MD_MetadataScope>
+      <mdb:resourceScope>
+        <mcc:MD_ScopeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_ScopeCode" codeListValue="dataset" />
+      </mdb:resourceScope>
+      <mdb:name gco:nilReason="missing">
+        <gco:CharacterString />
+      </mdb:name>
+    </mdb:MD_MetadataScope>
+  </mdb:metadataScope>
+  <mdb:contact>
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+      </cit:role>
+      <cit:party>
+        <cit:CI_Organisation>
+          <cit:name>
+            <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+          </cit:name>
+          <cit:individual>
+            <cit:CI_Individual>
+              <cit:name>
+                <gco:CharacterString>eAtlas Data Manager</gco:CharacterString>
+              </cit:name>
+              <cit:contactInfo>
+                <cit:CI_Contact>
+                  <cit:phone>
+                    <cit:CI_Telephone>
+                      <cit:number>
+                        <gco:CharacterString>+61 7 4753 4444</gco:CharacterString>
+                      </cit:number>
+                      <cit:numberType>
+                        <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                      </cit:numberType>
+                    </cit:CI_Telephone>
+                  </cit:phone>
+                  <cit:phone>
+                    <cit:CI_Telephone>
+                      <cit:number gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:number>
+                      <cit:numberType>
+                        <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                      </cit:numberType>
+                    </cit:CI_Telephone>
+                  </cit:phone>
+                  <cit:address>
+                    <cit:CI_Address>
+                      <cit:deliveryPoint>
+                        <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                      </cit:deliveryPoint>
+                      <cit:city>
+                        <gco:CharacterString>Townsville</gco:CharacterString>
+                      </cit:city>
+                      <cit:administrativeArea>
+                        <gco:CharacterString>Queensland</gco:CharacterString>
+                      </cit:administrativeArea>
+                      <cit:postalCode>
+                        <gco:CharacterString>4810</gco:CharacterString>
+                      </cit:postalCode>
+                      <cit:country>
+                        <gco:CharacterString>Australia</gco:CharacterString>
+                      </cit:country>
+                      <cit:electronicMailAddress>
+                        <gco:CharacterString>e-atlas@aims.gov.au</gco:CharacterString>
+                      </cit:electronicMailAddress>
+                    </cit:CI_Address>
+                  </cit:address>
+                  <cit:onlineResource>
+                    <cit:CI_OnlineResource>
+                      <cit:linkage>
+                        <gco:CharacterString>https://domain.com</gco:CharacterString>
+                      </cit:linkage>
+                      <cit:protocol>
+                        <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                      </cit:protocol>
+                      <cit:name>
+                        <gco:CharacterString>eAtlas portal</gco:CharacterString>
+                      </cit:name>
+                      <cit:description gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:description>
+                    </cit:CI_OnlineResource>
+                  </cit:onlineResource>
+                </cit:CI_Contact>
+              </cit:contactInfo>
+            </cit:CI_Individual>
+          </cit:individual>
+        </cit:CI_Organisation>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </mdb:contact>
+  <mdb:dateInfo>
+    <cit:CI_Date>
+      <cit:date>
+        <gco:DateTime>2021-07-21T03:28:03</gco:DateTime>
+      </cit:date>
+      <cit:dateType>
+        <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" />
+      </cit:dateType>
+    </cit:CI_Date>
+  </mdb:dateInfo>
+  <mdb:dateInfo>
+    <cit:CI_Date>
+      <cit:date>
+        <gco:DateTime>2021-07-21T03:28:03</gco:DateTime>
+      </cit:date>
+      <cit:dateType>
+        <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="revision" />
+      </cit:dateType>
+    </cit:CI_Date>
+  </mdb:dateInfo>
+  <mdb:metadataStandard>
+    <cit:CI_Citation>
+      <cit:title>
+        <gco:CharacterString>ISO 19115-3:2018</gco:CharacterString>
+      </cit:title>
+    </cit:CI_Citation>
+  </mdb:metadataStandard>
+  <mdb:metadataLinkage>
+    <cit:CI_OnlineResource>
+      <cit:linkage>
+        <gco:CharacterString>https://domain.com/data/uuid/61a4bac5-79d1-4c1f-9358-a7bb587e07df</gco:CharacterString>
+      </cit:linkage>
+      <cit:protocol>
+        <gco:CharacterString>WWW:LINK-1.0-http--metadata-URL</gco:CharacterString>
+      </cit:protocol>
+      <cit:description>
+        <gco:CharacterString>Point of truth URL of this metadata record</gco:CharacterString>
+      </cit:description>
+    </cit:CI_OnlineResource>
+  </mdb:metadataLinkage>
+  <mdb:identificationInfo>
+    <mri:MD_DataIdentification>
+      <mri:citation>
+        <cit:CI_Citation>
+          <cit:title>
+            <gco:CharacterString>Code for generating benthic photosynthetically active radiation (bPAR) and the bPAR index as reported in (NESP TWQ 5.3, AIMS, JCU and Go2Q)</gco:CharacterString>
+          </cit:title>
+          <cit:date>
+            <cit:CI_Date>
+              <cit:date>
+                <gco:DateTime>2020-11-14</gco:DateTime>
+              </cit:date>
+              <cit:dateType>
+                <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" />
+              </cit:dateType>
+            </cit:CI_Date>
+          </cit:date>
+          <cit:date>
+            <cit:CI_Date>
+              <cit:date>
+                <gco:DateTime>2020-11-24T00:00:00</gco:DateTime>
+              </cit:date>
+              <cit:dateType>
+                <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="publication" />
+              </cit:dateType>
+            </cit:CI_Date>
+          </cit:date>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="principalInvestigator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Robson, Barbara, Dr</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number>
+                                <gco:CharacterString>+61 7 4753 4324</gco:CharacterString>
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint>
+                                <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                              </cit:deliveryPoint>
+                              <cit:city>
+                                <gco:CharacterString>Townsville</gco:CharacterString>
+                              </cit:city>
+                              <cit:administrativeArea>
+                                <gco:CharacterString>Queensland</gco:CharacterString>
+                              </cit:administrativeArea>
+                              <cit:postalCode>
+                                <gco:CharacterString>4810</gco:CharacterString>
+                              </cit:postalCode>
+                              <cit:country>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>b.robson@aims.gov.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>James Cook University and AIMS@JCU</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Magno-Canto, Marites, Ms</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint>
+                                <gco:CharacterString>James Cook University</gco:CharacterString>
+                              </cit:deliveryPoint>
+                              <cit:city>
+                                <gco:CharacterString>Townsville</gco:CharacterString>
+                              </cit:city>
+                              <cit:administrativeArea>
+                                <gco:CharacterString>Queensland</gco:CharacterString>
+                              </cit:administrativeArea>
+                              <cit:postalCode>
+                                <gco:CharacterString>4810</gco:CharacterString>
+                              </cit:postalCode>
+                              <cit:country>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>marites.canto@my.jcu.edu.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>Go2Q Pty. Ltd.</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>McKinna, Lachlan, Dr</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number>
+                                <gco:CharacterString>+61 7 5414 1733</gco:CharacterString>
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint>
+                                <gco:CharacterString>PO Box 61</gco:CharacterString>
+                              </cit:deliveryPoint>
+                              <cit:city>
+                                <gco:CharacterString>Buderim</gco:CharacterString>
+                              </cit:city>
+                              <cit:administrativeArea>
+                                <gco:CharacterString>Queensland</gco:CharacterString>
+                              </cit:administrativeArea>
+                              <cit:postalCode>
+                                <gco:CharacterString>4556</gco:CharacterString>
+                              </cit:postalCode>
+                              <cit:country>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>lachlan.mckinna@go2q.com.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Logan, Murray, Dr</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number>
+                                <gco:CharacterString>0447 469 364</gco:CharacterString>
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint>
+                                <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                              </cit:deliveryPoint>
+                              <cit:city>
+                                <gco:CharacterString>Townsville</gco:CharacterString>
+                              </cit:city>
+                              <cit:administrativeArea>
+                                <gco:CharacterString>Queensland</gco:CharacterString>
+                              </cit:administrativeArea>
+                              <cit:postalCode>
+                                <gco:CharacterString>4810</gco:CharacterString>
+                              </cit:postalCode>
+                              <cit:country>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>M.Logan@aims.gov.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Fabricius, Katharina, Dr</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number>
+                                <gco:CharacterString>+61 7 4753 4412</gco:CharacterString>
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint>
+                                <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                              </cit:deliveryPoint>
+                              <cit:city>
+                                <gco:CharacterString>Townsville</gco:CharacterString>
+                              </cit:city>
+                              <cit:administrativeArea>
+                                <gco:CharacterString>Queensland</gco:CharacterString>
+                              </cit:administrativeArea>
+                              <cit:postalCode>
+                                <gco:CharacterString>4810</gco:CharacterString>
+                              </cit:postalCode>
+                              <cit:country>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>k.fabricius@aims.gov.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>James Cook University</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Collier, Catherine, Dr</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:deliveryPoint>
+                              <cit:city gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:city>
+                              <cit:administrativeArea gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:administrativeArea>
+                              <cit:postalCode gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:postalCode>
+                              <cit:country gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>catherine.collier@jcu.edu.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>University of Massachusetts, Boston USA</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Garcia, Rodrigo</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:deliveryPoint>
+                              <cit:city gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:city>
+                              <cit:administrativeArea gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:administrativeArea>
+                              <cit:postalCode gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:postalCode>
+                              <cit:country gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>rodrigo.garcia@umb.edu</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+        </cit:CI_Citation>
+      </mri:citation>
+      <mri:abstract>
+        <gco:CharacterString>This dataset contains code used to generate the daily benthic light (bPAR) data product provided at https://domain.com/data/uuid/356e7b3c-1508-432e-9d85-263ec8a67cef and the bPAR index for water quality in the Great Barrier Reef (GBR). It can also be used to calculate photosynthetically active radiation (PAR) at any specified depth in GBR waters.
+
+The amount of light available for photosynthesis (photosynthetically active radiation, or PAR) is an important determinant of ecosystem health. PAR reaching the bottom of the water column is known as benthic PAR (bPAR). Where there is sufficient light reaching the bottom, seagrasses and corals may thrive. bPAR varies seasonally as a function of surface PAR, but also varies function of both water depth and water quality.
+
+This dataset contains the code used to generate the bPAR data product and the derived bPAR index for water quality developed through NESP TWQ projects 2.3.1 and 5.3.
+
+
+
+Methods:
+Daily benthic light (bPAR) is derived from NASA MODIS Ocean Color data in combination with bathymetric data from Beaman (2010) using the algorithm described by Magno-Canto et al. (2019, 2020). Ocean colour observations are used to estimate inherent optical properties (total absorption and total backscattering coefficients) at each of ten MODIS wavelengths, using the SWIM algorithm of McKinna et al. (2015). These in turn are used to calculate spectrally-resolved light attenuation (Kd). The Beer-Lambert equation is then used to propagate surface PAR using the calculated Kd down to the depth of the bottom of the water column defined by the bathymetry data (i.e. depth map) obtained from Beaman (2010). This yields an estimate of instantaneous bPAR on a nominal 1 km2 grid scale across the study region.
+
+Instantaneous bPAR is then used to calculate daily integrated benthic light by considering the path and angle of the sun over the course of each day, assuming constant atmospheric conditions within each day.
+
+The C code for generating the bPAR product from MODIS data is in the process of being implemented in NASA’s SeaDAS processing and visualisation software package.
+
+Daily bPAR is then is used to derive an index for water quality in the Great Barrier Reef (GBR). Daily bPAR observations at a nominal 1km2 resolution are used to calculate a cumulative seasonal and annual light stress experienced by benthic photosynthesising organisms at each pixel. This light stress is aggregated over each NRM region and waterbody of the GBR and scaled to produce an index with a value between 0 (no light penetration to benthic habitats) and 1 (excellent light penetration to benthic habitats). The R script RS_bPAR_final.R calculates the index and generates figures plotting variations in the value of the index over time as well as showing how this index varies in each region as a function of river load.
+
+The full method used to calculate bPAR is described in the following publications:
+Magno-Canto, M.M., McKinna, L.I., Robson, B.J. and Fabricius, K.E., 2019. Model for deriving benthic irradiance in the Great Barrier Reef from MODIS satellite imagery. Optics express, 27(20), pp.A1350-A1371.
+
+Magno-Canto, M.M., McKinna, L.I., Robson, B.J., Fabricius, K.E. and Garcia, R., 2020. Model for deriving benthic irradiance in the Great Barrier Reef from MODIS satellite imagery: erratum. Optics Express, 28(19), pp.27473-27475.
+
+The full method used to calculate the bPAR index are described in the manuscript:
+Canto, M. M., Fabricius, K. E., Logan, M., Lewis, S., McKinna, L. I. W., &amp; Robson, B. J. (2021). A benthic light index of water quality in the Great Barrier Reef, Australia. Marine Pollution Bulletin, 169, 112539. https://doi.org/10.1016/j.marpolbul.2021.112539
+
+
+Format:
+The functions needed to calculate benthic PAR or PAR at any specified depth is provided as c code in the file “get_bpar.c”. This is designed to be executed as part of NASA’s SeaDAS software.
+
+The script to calculate the bPAR index, “RS_bPAR_final.R” can be executed in the R programming language (v 3.4 or later). This script calls on functions defined in a second R script, “WQI_functions.R” and spatial data and region labels provided in the R data files “Polys.rda” and “spatial.csv”, which are also provided.
+
+
+References:
+
+Magno-Canto, M.M., McKinna, L.I., Robson, B.J. and Fabricius, K.E., 2019. Model for deriving benthic irradiance in the Great Barrier Reef from MODIS satellite imagery. Optics express, 27(20), pp.A1350-A1371.
+
+Magno-Canto, M.M., McKinna, L.I., Robson, B.J., Fabricius, K.E. and Garcia, R., 2020. Model for deriving benthic irradiance in the Great Barrier Reef from MODIS satellite imagery: erratum. Optics Express, 28(19), pp.27473-27475.
+
+Canto, M. M., Fabricius, K. E., Logan, M., Lewis, S., McKinna, L. I. W., &amp; Robson, B. J. (2021). A benthic light index of water quality in the Great Barrier Reef, Australia. Marine Pollution Bulletin, 169, 112539. https://doi.org/10.1016/j.marpolbul.2021.112539
+
+
+Data Location:
+
+This dataset is filed in the eAtlas enduring data repository at: data\nesp5\5.3_Benthic-light</gco:CharacterString>
+      </mri:abstract>
+      <mri:pointOfContact>
+        <cit:CI_Responsibility>
+          <cit:role>
+            <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+          </cit:role>
+          <cit:party>
+            <cit:CI_Organisation>
+              <cit:name>
+                <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+              </cit:name>
+              <cit:individual>
+                <cit:CI_Individual>
+                  <cit:name>
+                    <gco:CharacterString>Robson, Barbara, Dr</gco:CharacterString>
+                  </cit:name>
+                  <cit:contactInfo>
+                    <cit:CI_Contact>
+                      <cit:phone>
+                        <cit:CI_Telephone>
+                          <cit:number>
+                            <gco:CharacterString>+61 7 4753 4324</gco:CharacterString>
+                          </cit:number>
+                          <cit:numberType>
+                            <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                          </cit:numberType>
+                        </cit:CI_Telephone>
+                      </cit:phone>
+                      <cit:phone>
+                        <cit:CI_Telephone>
+                          <cit:number gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:number>
+                          <cit:numberType>
+                            <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" />
+                          </cit:numberType>
+                        </cit:CI_Telephone>
+                      </cit:phone>
+                      <cit:address>
+                        <cit:CI_Address>
+                          <cit:deliveryPoint>
+                            <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                          </cit:deliveryPoint>
+                          <cit:city>
+                            <gco:CharacterString>Townsville</gco:CharacterString>
+                          </cit:city>
+                          <cit:administrativeArea>
+                            <gco:CharacterString>Queensland</gco:CharacterString>
+                          </cit:administrativeArea>
+                          <cit:postalCode>
+                            <gco:CharacterString>4810</gco:CharacterString>
+                          </cit:postalCode>
+                          <cit:country>
+                            <gco:CharacterString>Australia</gco:CharacterString>
+                          </cit:country>
+                          <cit:electronicMailAddress>
+                            <gco:CharacterString>b.robson@aims.gov.au</gco:CharacterString>
+                          </cit:electronicMailAddress>
+                        </cit:CI_Address>
+                      </cit:address>
+                      <cit:onlineResource>
+                        <cit:CI_OnlineResource>
+                          <cit:linkage>
+                            <gco:CharacterString>https://domain.com</gco:CharacterString>
+                          </cit:linkage>
+                          <cit:protocol>
+                            <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                          </cit:protocol>
+                          <cit:name>
+                            <gco:CharacterString>eAtlas portal</gco:CharacterString>
+                          </cit:name>
+                          <cit:description gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:description>
+                        </cit:CI_OnlineResource>
+                      </cit:onlineResource>
+                    </cit:CI_Contact>
+                  </cit:contactInfo>
+                </cit:CI_Individual>
+              </cit:individual>
+            </cit:CI_Organisation>
+          </cit:party>
+        </cit:CI_Responsibility>
+      </mri:pointOfContact>
+      <mri:topicCategory>
+        <mri:MD_TopicCategoryCode>biota</mri:MD_TopicCategoryCode>
+      </mri:topicCategory>
+      <mri:extent>
+        <gex:EX_Extent>
+          <gex:description>
+            <gco:CharacterString>Great Barrier Reef, Australia</gco:CharacterString>
+          </gex:description>
+          <gex:geographicElement>
+            <gex:EX_BoundingPolygon>
+              <gex:polygon>
+                <gml:MultiSurface srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                  <gml:surfaceMember>
+                    <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                      <gml:exterior>
+                        <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                          <gml:posList srsDimension="2">-24.521484375 151.083984375 -24.521484375 153.80859375 -20.830078125 153.45703125 -17.490234375 147.12890625 -13.798828125 145.810546875 -12.832031250000002 144.4921875 -9.84375 144.228515625 -9.931640625 142.119140625 -11.77734375 142.3828125 -14.765625 143.61328125000003 -14.94140625 144.755859375 -19.599609375 146.337890625 -21.005859375000004 148.447265625 -24.521484375 151.083984375</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                    </gml:Polygon>
+                  </gml:surfaceMember>
+                </gml:MultiSurface>
+              </gex:polygon>
+            </gex:EX_BoundingPolygon>
+          </gex:geographicElement>
+          <gex:temporalElement>
+            <gex:EX_TemporalExtent>
+              <gex:extent>
+                <gml:TimePeriod gml:id="d550392e512a1050910">
+                  <gml:beginPosition>2002-10-01</gml:beginPosition>
+                  <gml:endPosition>2019-09-30</gml:endPosition>
+                </gml:TimePeriod>
+              </gex:extent>
+            </gex:EX_TemporalExtent>
+          </gex:temporalElement>
+        </gex:EX_Extent>
+      </mri:extent>
+      <mri:graphicOverview>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName>
+            <gco:CharacterString>https://domain.com/geonetwork/srv/api/records/61a4bac5-79d1-4c1f-9358-a7bb587e07df/attachments/Mean_par8_2008.png</gco:CharacterString>
+          </mcc:fileName>
+          <mcc:fileDescription>
+            <gco:CharacterString>large_thumbnail</gco:CharacterString>
+          </mcc:fileDescription>
+          <mcc:fileType>
+            <gco:CharacterString>png</gco:CharacterString>
+          </mcc:fileType>
+        </mcc:MD_BrowseGraphic>
+      </mri:graphicOverview>
+      <mri:resourceConstraints>
+        <mco:MD_LegalConstraints>
+          <mco:graphic>
+            <mcc:MD_BrowseGraphic>
+              <mcc:fileName gco:nilReason="inapplicable" />
+              <mcc:linkage>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>http://i.creativecommons.org/l/by/3.0/au/88x31.png</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:description>
+                    <gco:CharacterString>License Graphic</gco:CharacterString>
+                  </cit:description>
+                </cit:CI_OnlineResource>
+              </mcc:linkage>
+            </mcc:MD_BrowseGraphic>
+          </mco:graphic>
+          <mco:reference>
+            <cit:CI_Citation>
+              <cit:title>
+                <gco:CharacterString>Creative Commons Attribution 3.0 Australia License</gco:CharacterString>
+              </cit:title>
+              <cit:citedResponsibleParty>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:electronicMailAddress gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                          <cit:onlineResource>
+                            <cit:CI_OnlineResource>
+                              <cit:linkage>
+                                <gco:CharacterString>http://creativecommons.org/international/au/</gco:CharacterString>
+                              </cit:linkage>
+                              <cit:protocol>
+                                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                              </cit:protocol>
+                              <cit:name gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:name>
+                              <cit:description gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:description>
+                            </cit:CI_OnlineResource>
+                          </cit:onlineResource>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+              </cit:citedResponsibleParty>
+              <cit:onlineResource>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>http://creativecommons.org/licenses/by/3.0/au/</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:description>
+                    <gco:CharacterString>License Text</gco:CharacterString>
+                  </cit:description>
+                </cit:CI_OnlineResource>
+              </cit:onlineResource>
+            </cit:CI_Citation>
+          </mco:reference>
+        </mco:MD_LegalConstraints>
+      </mri:resourceConstraints>
+      <mri:defaultLocale>
+        <lan:PT_Locale>
+          <lan:language>
+            <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+          </lan:language>
+          <lan:characterEncoding>
+            <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+          </lan:characterEncoding>
+        </lan:PT_Locale>
+      </mri:defaultLocale>
+    </mri:MD_DataIdentification>
+  </mdb:identificationInfo>
+  <mdb:distributionInfo>
+    <mrd:MD_Distribution>
+      <mrd:transferOptions>
+        <mrd:MD_DigitalTransferOptions>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://domain.com/nesp-twq-5/benthic-light-5-3</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>eAtlas Project web site</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://nesptropical.edu.au/index.php/round-5-projects/project-5-3/</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>NESP TWQ project page</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://github.com/eatlas/NESP-TWQ-5.3_Benthic-Light_WQIcode</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--downloaddata</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>GitHub repository for code used to generate data products and bPAR WQ index</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+          <mrd:onLine>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>https://domain.com/data/uuid/71127e4d-9f14-4c57-9845-1dce0b541d8d</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:name>
+                <gco:CharacterString>eAtlas Web Mapping Service (WMS) (AIMS)</gco:CharacterString>
+              </cit:name>
+            </cit:CI_OnlineResource>
+          </mrd:onLine>
+        </mrd:MD_DigitalTransferOptions>
+      </mrd:transferOptions>
+    </mrd:MD_Distribution>
+  </mdb:distributionInfo>
+  <mdb:metadataConstraints>
+    <mco:MD_LegalConstraints>
+      <mco:graphic>
+        <mcc:MD_BrowseGraphic>
+          <mcc:fileName gco:nilReason="inapplicable" />
+          <mcc:linkage>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>http://i.creativecommons.org/l/by/3.0/au/88x31.png</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:description>
+                <gco:CharacterString>License Graphic</gco:CharacterString>
+              </cit:description>
+            </cit:CI_OnlineResource>
+          </mcc:linkage>
+        </mcc:MD_BrowseGraphic>
+      </mco:graphic>
+      <mco:reference>
+        <cit:CI_Citation>
+          <cit:title>
+            <gco:CharacterString>Creative Commons Attribution 3.0 Australia License</gco:CharacterString>
+          </cit:title>
+          <cit:citedResponsibleParty>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name gco:nilReason="missing">
+                    <gco:CharacterString />
+                  </cit:name>
+                  <cit:contactInfo>
+                    <cit:CI_Contact>
+                      <cit:address>
+                        <cit:CI_Address>
+                          <cit:electronicMailAddress gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:electronicMailAddress>
+                        </cit:CI_Address>
+                      </cit:address>
+                      <cit:onlineResource>
+                        <cit:CI_OnlineResource>
+                          <cit:linkage>
+                            <gco:CharacterString>http://creativecommons.org/international/au/</gco:CharacterString>
+                          </cit:linkage>
+                          <cit:protocol>
+                            <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                          </cit:protocol>
+                          <cit:name gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:name>
+                          <cit:description gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:description>
+                        </cit:CI_OnlineResource>
+                      </cit:onlineResource>
+                    </cit:CI_Contact>
+                  </cit:contactInfo>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </cit:citedResponsibleParty>
+          <cit:onlineResource>
+            <cit:CI_OnlineResource>
+              <cit:linkage>
+                <gco:CharacterString>http://creativecommons.org/licenses/by/3.0/au/</gco:CharacterString>
+              </cit:linkage>
+              <cit:protocol>
+                <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+              </cit:protocol>
+              <cit:description>
+                <gco:CharacterString>License Text</gco:CharacterString>
+              </cit:description>
+            </cit:CI_OnlineResource>
+          </cit:onlineResource>
+        </cit:CI_Citation>
+      </mco:reference>
+    </mco:MD_LegalConstraints>
+  </mdb:metadataConstraints>
+</mdb:MD_Metadata>
+

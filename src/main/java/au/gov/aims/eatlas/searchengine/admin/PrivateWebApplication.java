@@ -45,7 +45,8 @@ public class PrivateWebApplication extends ResourceConfig {
         }
 
         if (config != null) {
-            try (SearchClient searchClient = new ESClient()) {
+            try {
+                SearchClient searchClient = ESClient.getInstance();
                 if (searchClient.isHealthy()) {
                     SearchUtils.deleteOrphanIndexes(searchClient);
                 } else {

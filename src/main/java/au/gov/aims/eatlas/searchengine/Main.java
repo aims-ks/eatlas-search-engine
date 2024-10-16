@@ -27,6 +27,7 @@ import au.gov.aims.eatlas.searchengine.index.AtlasMapperIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
+import au.gov.aims.eatlas.searchengine.index.GeoNetworkCswIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
@@ -41,7 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO DELETE this class: Used for manual tests
+// TODO DELETE this class: Used for manual tests. This class doesn't work anymore (services are in docker)
 public class Main {
     public static void main(String... args) throws Exception {
         boolean fullHarvest = true;
@@ -53,9 +54,6 @@ public class Main {
 
         SearchEngineConfig config = SearchEngineConfig.createInstance(httpClient, configFile, "eatlas_search_engine_devel.json", messages);
 
-        // Reindex everything
-        //Index.internalReindex(fullHarvest);
-
 
         // Reindex individual index
 
@@ -63,21 +61,24 @@ public class Main {
         //     https://apprize.best/data/elasticsearch_1/23.html
         // TODO Fix JUnit tests
 
-        DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
-        //Index.internalReindex(drupalNodeIndexer, fullHarvest, messages);
-
-        DrupalMediaIndexer drupalMediaIndexer = (DrupalMediaIndexer)config.getIndexer("eatlas_image");
-        //Index.internalReindex(drupalMediaIndexer, fullHarvest, messages);
-
-        DrupalExternalLinkNodeIndexer drupalExternalLinkNodeIndexer = (DrupalExternalLinkNodeIndexer)config.getIndexer("eatlas_external_link");
-        //Index.internalReindex(drupalExternalLinkNodeIndexer, fullHarvest, messages);
-
-        GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
-        //Index.internalReindex(geoNetworkIndexer, fullHarvest, messages);
-
         try (SearchClient searchClient = new ESClient()) {
+            DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
+            //drupalNodeIndexer.index(searchClient, fullHarvest, messages);
+
+            DrupalMediaIndexer drupalMediaIndexer = (DrupalMediaIndexer)config.getIndexer("eatlas_image");
+            //drupalMediaIndexer.index(searchClient, fullHarvest, messages);
+
+            DrupalExternalLinkNodeIndexer drupalExternalLinkNodeIndexer = (DrupalExternalLinkNodeIndexer)config.getIndexer("eatlas_external_link");
+            //drupalExternalLinkNodeIndexer.index(searchClient, fullHarvest, messages);
+
+            GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
+            //geoNetworkIndexer.index(searchClient, fullHarvest, messages);
+
+            GeoNetworkCswIndexer geoNetworkCswIndexer = (GeoNetworkCswIndexer) config.getIndexer("eatlas_metadata_csw");
+            geoNetworkCswIndexer.index(searchClient, fullHarvest, messages);
+
             AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-            atlasMapperIndexer.index(searchClient, fullHarvest, messages);
+            //atlasMapperIndexer.index(searchClient, fullHarvest, messages);
 
 
             //Main.testElasticsearchClient();
@@ -89,9 +90,10 @@ public class Main {
 
             List<String> idx = new ArrayList<String>();
             //idx.add("eatlas_article");
-            idx.add("eatlas_image");
+            //idx.add("eatlas_image");
             //idx.add("eatlas_external_link");
             //idx.add("eatlas_metadata");
+            idx.add("eatlas_metadata_csw");
             //idx.add("eatlas_layer");
 
             String wkt = null;

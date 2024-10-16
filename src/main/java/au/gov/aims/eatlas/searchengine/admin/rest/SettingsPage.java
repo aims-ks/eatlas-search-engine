@@ -29,6 +29,7 @@ import au.gov.aims.eatlas.searchengine.index.DrupalBlockIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
+import au.gov.aims.eatlas.searchengine.index.GeoNetworkCswIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -85,7 +86,8 @@ public class SettingsPage {
         Messages messages = Messages.getInstance(session);
         HttpClient httpClient = HttpClient.getInstance();
 
-        try (SearchClient searchClient = new ESClient()) {
+        try {
+            SearchClient searchClient = ESClient.getInstance();
             if (form.containsKey("save-button")) {
                 this.save(form, messages);
             } else if (form.containsKey("commit-button")) {
@@ -246,6 +248,13 @@ public class SettingsPage {
 
                 geoNetworkIndexer.setGeoNetworkUrl(FormUtils.getFormStringValue(form, index + "_geoNetworkUrl"));
                 geoNetworkIndexer.setGeoNetworkVersion(FormUtils.getFormStringValue(form, index + "_geoNetworkVersion"));
+
+            } else if (indexer instanceof GeoNetworkCswIndexer) {
+                // GeoNetworkCswIndexer
+                GeoNetworkCswIndexer geoNetworkCswIndexer = (GeoNetworkCswIndexer)indexer;
+
+                geoNetworkCswIndexer.setGeoNetworkUrl(FormUtils.getFormStringValue(form, index + "_geoNetworkUrl"));
+                geoNetworkCswIndexer.setGeoNetworkVersion(FormUtils.getFormStringValue(form, index + "_geoNetworkVersion"));
 
             } else if (indexer instanceof AtlasMapperIndexer) {
                 // AtlasMapperIndexer

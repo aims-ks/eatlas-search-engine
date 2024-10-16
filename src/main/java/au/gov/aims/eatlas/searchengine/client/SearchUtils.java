@@ -27,6 +27,7 @@ import au.gov.aims.eatlas.searchengine.index.DrupalBlockIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
+import au.gov.aims.eatlas.searchengine.index.GeoNetworkCswIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.index.IndexerState;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
@@ -44,6 +45,10 @@ public class SearchUtils {
 
     public static RestClient buildRestClient() throws MalformedURLException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+        if (config == null) {
+            throw new IllegalArgumentException("Elastic Search configuration object not created.");
+        }
+
         List<String> elasticSearchUrls = config.getElasticSearchUrls();
         if (elasticSearchUrls == null || elasticSearchUrls.isEmpty()) {
             throw new IllegalArgumentException("The Elastic Search configuration do not specify any Elastic Search URL.");
@@ -226,6 +231,11 @@ public class SearchUtils {
             case "GeoNetworkIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("geonetwork");
                 newIndexer = new GeoNetworkIndexer(httpClient, newIndex, null, null);
+                break;
+
+            case "GeoNetworkCswIndexer":
+                newIndex = SearchUtils.generateUniqueIndexName("geonetwork-csw");
+                newIndexer = new GeoNetworkCswIndexer(httpClient, newIndex, null, null);
                 break;
 
             case "AtlasMapperIndexer":

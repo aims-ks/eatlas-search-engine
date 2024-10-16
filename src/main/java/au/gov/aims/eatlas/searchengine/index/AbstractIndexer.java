@@ -27,6 +27,7 @@ import au.gov.aims.eatlas.searchengine.entity.Entity;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch._types.Conflicts;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.query_dsl.DateRangeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.CountRequest;
@@ -37,7 +38,6 @@ import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.json.JsonData;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -202,6 +202,10 @@ public abstract class AbstractIndexer<E extends Entity> {
 
             case "GeoNetworkIndexer":
                 indexer = GeoNetworkIndexer.fromJSON(httpClient, index, json);
+                break;
+
+            case "GeoNetworkCswIndexer":
+                indexer = GeoNetworkCswIndexer.fromJSON(httpClient, index, json);
                 break;
 
             default:
@@ -532,9 +536,12 @@ public abstract class AbstractIndexer<E extends Entity> {
     public DeleteByQueryRequest getDeleteOldItemsRequest(long olderThanLastIndexed) {
         Query query = new Query.Builder()
                 .range(QueryBuilders.range()
-                        .field("lastIndexed")
-                        .lt(JsonData.of(olderThanLastIndexed))
-                        .build()
+                        .date(
+                                new DateRangeQuery.Builder()
+                                        .field("lastIndexed")
+                                        .lt("" + olderThanLastIndexed)
+                                        .build()
+                        ).build()
                 )
                 .build();
 
@@ -552,9 +559,9 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     public class IndexerThread extends Thread {
-        private SearchClient searchClient;
+        private final SearchClient searchClient;
         private final boolean fullIndex;
-        private Messages messages;
+        private final Messages messages;
 
         public IndexerThread(SearchClient searchClient, boolean fullIndex, Messages messages) {
             this.searchClient = searchClient;

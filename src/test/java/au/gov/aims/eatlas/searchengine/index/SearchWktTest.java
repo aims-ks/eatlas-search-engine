@@ -315,7 +315,7 @@ public class SearchWktTest extends IndexerTestBase {
 
     private void indexMetadataRecords(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, Messages messages) throws ParseException, IOException {
         searchClient.createIndex(index);
-        // TODO Remove duplication of GeoNetwork version (indexer and records) unless there is a good reason for it
+        // TODO: Remove duplication of GeoNetwork version (indexer and records) unless there is a good reason for it
         GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
 
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
@@ -347,7 +347,7 @@ public class SearchWktTest extends IndexerTestBase {
         GeoNetworkRecord unknownRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-00000000000A", "iso19115-3.2018", "3.0");
         unknownRecord.setTitle("Unknown location record");
         unknownRecord.setDocument("Record that doesn't provide location coral.");
-        // TODO Make sure it default to whole world
+        // TODO: Make sure it default to whole world
         unknownRecord.setWktAndAttributes(BBOX_WORLD);
         indexer.indexEntity(searchClient, unknownRecord, messages);
 
@@ -360,7 +360,7 @@ public class SearchWktTest extends IndexerTestBase {
         String clientUrl = "http://domain.com/atlasmapper";
         String mainConfigPathStr = "searchWkt/atlasmapperFiles/main.json";
 
-        // TODO Remove duplication of client URL (indexer and layers) unless there is a good reason for it
+        // TODO: Remove duplication of client URL (indexer and layers) unless there is a good reason for it
         AtlasMapperIndexer indexer = new AtlasMapperIndexer(mockHttpClient, index, clientUrl, "1.0", "http://domain.com/geoserver");
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.
@@ -433,7 +433,7 @@ public class SearchWktTest extends IndexerTestBase {
             "F0000000-0000-0000-0000-000000000000", "magnetic_island.jpg",
             "Magnetic island", "Image of Magnetic Island coral", WKT_MAGNETIC_ISLAND);
         DrupalMedia maggieImage = indexer.createDrupalEntity(jsonMaggieImage, null, messages); // new DrupalMedia(index, jsonMaggieImage, messages);
-        // TODO Add parseJsonDrupalEntity to indexEntity
+        // TODO: Add parseJsonDrupalEntity to indexEntity
         indexer.parseJsonDrupalEntity(searchClient, jsonMaggieImage, null, maggieImage, messages);
         indexer.indexEntity(searchClient, maggieImage, messages);
         System.out.println(maggieImage.toString());

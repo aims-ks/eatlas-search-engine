@@ -1,5 +1,7 @@
 ## What is the eAtlasSearchEngine
 
+http://localhost:8085/eatlas-search-engine/public/login
+
 ## Indexation library
 
 We are using ElasticSearch for our indexation library.

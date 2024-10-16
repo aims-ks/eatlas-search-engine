@@ -62,7 +62,8 @@ public class Dashboard {
         model.put("messages", messages);
         model.put("config", config);
 
-        try (SearchClient searchClient = new ESClient()) {
+        try {
+            SearchClient searchClient = ESClient.getInstance();
             ElasticSearchStatus status = SearchUtils.getElasticSearchStatus(searchClient, httpRequest);
             model.put("status", status);
 
@@ -88,7 +89,8 @@ public class Dashboard {
         model.put("stateFile", stateFile);
         model.put("stateFileLastModifiedDate", stateFile == null ? null : new Date(stateFile.lastModified()));
 
-        File imageCacheDirectory = new File(config.getImageCacheDirectory());
+        String imageCacheDirStr = config.getImageCacheDirectory();
+        File imageCacheDirectory = imageCacheDirStr == null ? null : new File(imageCacheDirStr);
         model.put("imageCacheDirectory", imageCacheDirectory);
 
         Map<String, File> cacheDirectories = new HashMap<>();
