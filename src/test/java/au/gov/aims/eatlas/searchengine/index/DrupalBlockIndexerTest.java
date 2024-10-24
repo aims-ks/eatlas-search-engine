@@ -10,7 +10,6 @@ import co.elastic.clients.elasticsearch._types.HealthStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,9 +20,7 @@ public class DrupalBlockIndexerTest extends IndexerTestBase {
         try (MockSearchClient searchClient = this.createMockSearchClient()) {
             MockHttpClient mockHttpClient = this.getMockHttpClient();
 
-            Map<String, String> urlMap = new HashMap<>();
-            urlMap.put("https://domain.com/jsonapi/block_content/basic?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalBlockFiles/jsonapi/block_content/basic.json");
-            mockHttpClient.setUrlMap(urlMap);
+            mockHttpClient.addGetUrl("https://domain.com/jsonapi/block_content/basic?sort=-changed&page%5Blimit%5D=50&page%5Boffset%5D=0&filter%5Bstatus%5D=1", "drupalBlockFiles/jsonapi/block_content/basic.json");
 
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 

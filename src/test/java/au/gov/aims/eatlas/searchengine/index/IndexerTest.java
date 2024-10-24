@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +38,7 @@ public class IndexerTest extends IndexerTestBase {
         MockHttpClient mockHttpClient = this.getMockHttpClient();
         Messages messages = Messages.getInstance(null);
 
-        Map<String, String> urlMap = new HashMap<>();
-        urlMap.put("https://www.hpwmxatrfsjcebqvdgnukz.com/coralsoftheworld", "externalLinks/coralsoftheworld.html");
-        mockHttpClient.setUrlMap(urlMap);
+        mockHttpClient.addGetUrl("https://www.hpwmxatrfsjcebqvdgnukz.com/coralsoftheworld", "externalLinks/coralsoftheworld.html");
 
         HttpClient.Response response = mockHttpClient.getRequest("https://www.hpwmxatrfsjcebqvdgnukz.com/coralsoftheworld", messages);
         Assertions.assertNotNull(response, "Response is null");

@@ -1,10 +1,4 @@
 Listing
-$ wget "http://domain.com/geonetwork/srv/eng/xml.search?from=1" -O xml.search_from_1
 
-Individual records
-$ wget "http://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=f6636322-28d9-47fe-878d-0e70cc7c6920" -O xml.metadata.get_uuid_f6636322-28d9-47fe-878d-0e70cc7c6920
-$ wget "http://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=61a4bac5-79d1-4c1f-9358-a7bb587e07df" -O xml.metadata.get_uuid_61a4bac5-79d1-4c1f-9358-a7bb587e07df
-$ wget "http://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=356e7b3c-1508-432e-9d85-263ec8a67cef" -O xml.metadata.get_uuid_356e7b3c-1508-432e-9d85-263ec8a67cef
-$ wget "http://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=e9a43553-dbe4-40e2-9d3a-aa200f9e2277" -O xml.metadata.get_uuid_e9a43553-dbe4-40e2-9d3a-aa200f9e2277
-$ wget "http://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=09ac8e36-5d65-40f9-9bb7-c32a0dd9f24f" -O xml.metadata.get_uuid_09ac8e36-5d65-40f9-9bb7-c32a0dd9f24f
-$ wget "http://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068" -O xml.metadata.get_uuid_a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068
+First page
+$ curl -X POST -H "Content-Type: application/xml" -d '<?xml version="1.0"?><GetRecords xmlns="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="CSW" version="2.0.2" resultType="results" startPosition="1" maxRecords="10" outputSchema="http://standards.iso.org/iso/19115/-3/mdb/2.0" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><Query typeNames="mdb:MD_Metadata"><ElementSetName>full</ElementSetName><ogc:SortBy xmlns:ogc="http://www.opengis.net/ogc"><ogc:SortProperty><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></Query></GetRecords>' https://eatlas.org.au/geonetwork/srv/eng/csw -o responses/geonetwork-csw-records_page1.xml

@@ -10,34 +10,18 @@ import co.elastic.clients.elasticsearch._types.HealthStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class GeoNetworkCswIndexerTest extends IndexerTestBase {
 
-    // @Test
+    //@Test
     public void testIndexMetadataRecords() throws Exception {
         try (MockSearchClient searchClient = this.createMockSearchClient()) {
             MockHttpClient mockHttpClient = this.getMockHttpClient();
 
-            Map<String, String> urlMap = new HashMap<>();
             // Search page
-            urlMap.put("https://domain.com/geonetwork/srv/eng/xml.search?from=1", "cswMetadataRecords/search.xml");
-            // Metadata records
-            urlMap.put("https://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=09ac8e36-5d65-40f9-9bb7-c32a0dd9f24f", "cswMetadataRecords/records/09ac8e36-5d65-40f9-9bb7-c32a0dd9f24f.xml");
-            urlMap.put("https://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=61a4bac5-79d1-4c1f-9358-a7bb587e07df", "cswMetadataRecords/records/61a4bac5-79d1-4c1f-9358-a7bb587e07df.xml");
-            urlMap.put("https://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=356e7b3c-1508-432e-9d85-263ec8a67cef", "cswMetadataRecords/records/356e7b3c-1508-432e-9d85-263ec8a67cef.xml");
-            urlMap.put("https://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068", "cswMetadataRecords/records/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068.xml");
-            urlMap.put("https://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=e9a43553-dbe4-40e2-9d3a-aa200f9e2277", "cswMetadataRecords/records/e9a43553-dbe4-40e2-9d3a-aa200f9e2277.xml");
-            urlMap.put("https://domain.com/geonetwork/srv/eng/xml.metadata.get?uuid=f6636322-28d9-47fe-878d-0e70cc7c6920", "cswMetadataRecords/records/f6636322-28d9-47fe-878d-0e70cc7c6920.xml");
-            // Preview images
-            urlMap.put("https://domain.com/geonetwork/srv/api/records/f6636322-28d9-47fe-878d-0e70cc7c6920/attachments/Preview-image.png", "cswMetadataRecords/previews/preview.png");
-            urlMap.put("https://domain.com/geonetwork/srv/api/records/61a4bac5-79d1-4c1f-9358-a7bb587e07df/attachments/Mean_par8_2008.png", "cswMetadataRecords/previews/preview.png");
-            urlMap.put("https://domain.com/geonetwork/srv/api/records/356e7b3c-1508-432e-9d85-263ec8a67cef/attachments/example_raster_plot.png", "cswMetadataRecords/previews/preview.png");
-            urlMap.put("https://domain.com/geonetwork/srv/api/records/e9a43553-dbe4-40e2-9d3a-aa200f9e2277/attachments/products__ncanimate__ereefs__gbr1_2-0__fresh-water-exposure_monthly_map_monthly_2019-02_townsville-3_-2.35.png", "cswMetadataRecords/previews/preview.png");
-            urlMap.put("https://domain.com/geonetwork/srv/api/records/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068/attachments/preview-image-recruits-on-disks.jpg", "cswMetadataRecords/previews/preview.jpg");
-            mockHttpClient.setUrlMap(urlMap);
+            mockHttpClient.addPostUrl("https://domain.com/geonetwork/srv/eng/csw", "<?xml version=\"1.0\"?><GetRecords xmlns=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" service=\"CSW\" version=\"2.0.2\" resultType=\"results\" startPosition=\"1\" maxRecords=\"10\" outputSchema=\"http://standards.iso.org/iso/19115/-3/mdb/2.0\" xsi:schemaLocation=\"http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd\"><Query typeNames=\"mdb:MD_Metadata\"><ElementSetName>full</ElementSetName><ogc:SortBy xmlns:ogc=\"http://www.opengis.net/ogc\"><ogc:SortProperty><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></Query></GetRecords>", "cswMetadataRecords/responses/geonetwork-csw-records_page1.xml");
 
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 

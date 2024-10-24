@@ -20,7 +20,7 @@ public class MockHttpClient extends HttpClient {
 
     private static MockHttpClient instance;
 
-    private Map<String, String> urlMap = new HashMap<>();
+    private Map<MockHttpRequest, String> requestMap = new HashMap<>();
 
     public static MockHttpClient getInstance() {
         if (instance == null) {
@@ -29,19 +29,46 @@ public class MockHttpClient extends HttpClient {
         return instance;
     }
 
-    public void setUrlMap(Map<String, String> urlMap) {
-        this.urlMap = urlMap;
+    public void addGetUrl(String url, String resourcePath) {
+        Map<MockHttpRequest, String> requestMap = this.getRequestMap();
+        requestMap.put(new MockHttpRequest(url), resourcePath);
+    }
+
+    public void addPostUrl(String url, String data, String resourcePath) {
+        Map<MockHttpRequest, String> requestMap = this.getRequestMap();
+        requestMap.put(new MockHttpRequest(url, data), resourcePath);
+    }
+
+    public Map<MockHttpRequest, String> getRequestMap() {
+        if (this.requestMap == null) {
+            this.requestMap = new HashMap<MockHttpRequest, String>();
+        }
+        return this.requestMap;
     }
 
     @Override
     public Response getRequest(String url, Messages messages) throws IOException, InterruptedException {
-        if (!this.urlMap.containsKey(url)) {
+        MockHttpRequest urlRequest = new MockHttpRequest(url);
+        if (!this.requestMap.containsKey(urlRequest)) {
             // Return 404
-            return this.notFound("Unsupported URL. Add the URL to the getMockupUrlMap: " + url);
+            return this.notFound("Unsupported URL. Add the GET URL to the MockHttpClient URL map: " + url);
         }
 
-        String resourcePath = this.urlMap.get(url);
+        return this.getResourceResponse(this.requestMap.get(urlRequest));
+    }
 
+    @Override
+    public Response postXmlRequest(String url, String requestBody, Messages messages) throws IOException, InterruptedException {
+        MockHttpRequest urlRequest = new MockHttpRequest(url, requestBody);
+        if (!this.requestMap.containsKey(urlRequest)) {
+            // Return 404
+            return this.notFound("Unsupported URL. Add the POST URL to the MockHttpClient URL map: " + url);
+        }
+
+        return this.getResourceResponse(this.requestMap.get(urlRequest));
+    }
+
+    private Response getResourceResponse(String resourcePath) throws IOException {
         URL resourceUrl = IndexerTest.class.getClassLoader().getResource(resourcePath);
         if (resourceUrl == null) {
             return this.notFound("Resource not found: " + resourcePath);
