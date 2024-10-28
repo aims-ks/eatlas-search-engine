@@ -15,13 +15,31 @@ import java.util.Map;
 
 public class GeoNetworkCswIndexerTest extends IndexerTestBase {
 
-    //@Test
-    public void testIndexMetadataRecords() throws Exception {
+    /**
+     * Test the indexation of GeoNetwork records
+     * using the CSW API.
+     */
+    @Test
+    public void testIndexCswMetadataRecords() throws Exception {
         try (MockSearchClient searchClient = this.createMockSearchClient()) {
             MockHttpClient mockHttpClient = this.getMockHttpClient();
 
-            // Search page
-            mockHttpClient.addPostUrl("https://domain.com/geonetwork/srv/eng/csw", "<?xml version=\"1.0\"?><GetRecords xmlns=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" service=\"CSW\" version=\"2.0.2\" resultType=\"results\" startPosition=\"1\" maxRecords=\"10\" outputSchema=\"http://standards.iso.org/iso/19115/-3/mdb/2.0\" xsi:schemaLocation=\"http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd\"><Query typeNames=\"mdb:MD_Metadata\"><ElementSetName>full</ElementSetName><ogc:SortBy xmlns:ogc=\"http://www.opengis.net/ogc\"><ogc:SortProperty><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></Query></GetRecords>", "cswMetadataRecords/responses/geonetwork-csw-records_page1.xml");
+            String geoNetworkUrl = "https://domain.com/geonetwork/srv/eng/csw";
+            // Data for the request, with "%d" parameter for startPosition.
+            String dataTemplate = "<?xml version=\"1.0\"?><GetRecords xmlns=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" service=\"CSW\" version=\"2.0.2\" resultType=\"results\" startPosition=\"%d\" maxRecords=\"10\" outputSchema=\"http://standards.iso.org/iso/19115/-3/mdb/2.0\" xsi:schemaLocation=\"http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd\"><Query typeNames=\"mdb:MD_Metadata\"><ElementSetName>full</ElementSetName><ogc:SortBy xmlns:ogc=\"http://www.opengis.net/ogc\"><ogc:SortProperty><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></Query></GetRecords>";
+
+            // Search pages
+            mockHttpClient.addPostUrl(geoNetworkUrl,
+                String.format(dataTemplate, 1),
+                "cswMetadataRecords/responses/geonetwork-csw-records_page1.xml");
+
+            mockHttpClient.addPostUrl(geoNetworkUrl,
+                String.format(dataTemplate, 11),
+                "cswMetadataRecords/responses/geonetwork-csw-records_page2.xml");
+
+            mockHttpClient.addPostUrl(geoNetworkUrl,
+                String.format(dataTemplate, 21),
+                "cswMetadataRecords/responses/geonetwork-csw-records_page3.xml");
 
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
@@ -60,10 +78,10 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
 
                 IndexSummary layersIndexSummary = searchSummary.getIndexSummary(index);
 
-                Assertions.assertEquals(6, layersIndexSummary.getHits(),
+                Assertions.assertEquals(30, layersIndexSummary.getHits(),
                         "Wrong number of search result in the index summary.");
 
-                Assertions.assertEquals(6, searchSummary.getHits(),
+                Assertions.assertEquals(30, searchSummary.getHits(),
                         "Wrong total number of search result in the index summary.");
 
             } catch(Exception ex) {

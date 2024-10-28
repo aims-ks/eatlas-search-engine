@@ -51,7 +51,7 @@ public class MockHttpClient extends HttpClient {
         MockHttpRequest urlRequest = new MockHttpRequest(url);
         if (!this.requestMap.containsKey(urlRequest)) {
             // Return 404
-            return this.notFound("Unsupported URL. Add the GET URL to the MockHttpClient URL map: " + url);
+            return this.notFound(String.format("Unsupported URL. Add the GET URL to the MockHttpClient URL map: %s", url));
         }
 
         return this.getResourceResponse(this.requestMap.get(urlRequest));
@@ -62,7 +62,9 @@ public class MockHttpClient extends HttpClient {
         MockHttpRequest urlRequest = new MockHttpRequest(url, requestBody);
         if (!this.requestMap.containsKey(urlRequest)) {
             // Return 404
-            return this.notFound("Unsupported URL. Add the POST URL to the MockHttpClient URL map: " + url);
+            return this.notFound(String.format("Unsupported URL. Add the POST URL to the MockHttpClient URL map: %s%n" +
+                "with data:%n%s",
+                url, requestBody));
         }
 
         return this.getResourceResponse(this.requestMap.get(urlRequest));

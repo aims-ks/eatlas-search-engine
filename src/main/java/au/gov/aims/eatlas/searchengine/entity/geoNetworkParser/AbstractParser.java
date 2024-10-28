@@ -229,6 +229,11 @@ public abstract class AbstractParser {
                     lon = Double.parseDouble(coordinateValues[i+1]);
                 }
 
+                if (Double.isNaN(lat) || Double.isNaN(lon)) {
+                    throw new IllegalArgumentException(
+                        String.format("Invalid coordinate value: [%s, %s].", coordinateValues[i], coordinateValues[i+1]));
+                }
+
                 Coordinate coordinate = new Coordinate(lon, lat);
                 coordinateList.add(coordinate);
             }
@@ -236,6 +241,11 @@ public abstract class AbstractParser {
 
         if (coordinateList.isEmpty()) {
             return null;
+        }
+
+        // Ensure the ring is closed
+        if (!coordinateList.get(0).equals(coordinateList.get(coordinateList.size() - 1))) {
+            coordinateList.add(new Coordinate(coordinateList.get(0)));  // Close the ring
         }
 
         return WktUtils.GEOMETRY_FACTORY.createLinearRing(coordinateList.toArray(new Coordinate[0]));

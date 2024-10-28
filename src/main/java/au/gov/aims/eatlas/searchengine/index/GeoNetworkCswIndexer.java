@@ -22,12 +22,12 @@ import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
+import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.AbstractParser;
+import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.ISO19115_3_2018_parser;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
     private static final Logger LOGGER = Logger.getLogger(GeoNetworkCswIndexer.class.getName());
@@ -99,6 +98,7 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         return this.harvestEntity(searchClient, factory, id, metadataSchema, messages);
     }
 
+    // TODO Implement (if needed...)
     private GeoNetworkRecord harvestEntity(SearchClient searchClient, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, String metadataSchema, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
 
@@ -209,12 +209,8 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
             usedThumbnails = Collections.synchronizedSet(new HashSet<String>());
         }
 
-        // GeoNetwork export API URL
-        // If we have a "lastHarvested" parameter, request metadata records modified since that date (with a small buffer)
-        // Otherwise, request everything.
-        // NOTE: According to the doc, the parameter "dateFrom" is used to filter on creation date, but in fact,
-        //     it filters on modification date (which is what we want).
-        //     https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
+        // GeoNetwork's CSW API URL
+        // The request is provided as XML data in a POST request.
         String urlBase = String.format("%s/srv/eng/csw", this.geoNetworkUrl);
         URIBuilder uriBuilder;
         try {
@@ -243,14 +239,10 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 "</ogc:SortProperty>" +
             "</ogc:SortBy>";
 
+        // If we have a "lastHarvested" parameter, request metadata records modified since that date.
+        // Otherwise, request everything.
         String recordFilterQuery = "";
-        if (fullHarvest) {
-            // Full harvest query
-
-            // Collect the list of existent metadata_record node ID,
-            // so we know which one to delete at the end.
-            // TODO
-        } else {
+        if (!fullHarvest) {
             // Harvest only modified records
             recordFilterQuery =
                 "<Constraint version=\"1.1.0\">" +
@@ -265,6 +257,7 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         String outputSchema = "http://standards.iso.org/iso/19115/-3/mdb/2.0"; // iso19115-3.2018
         int startPosition = 1;
+        int recordCounter = 0;
         int recordsPerPage = 10;
 
         int numberOfRecordsMatched = 0;
@@ -283,6 +276,11 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     this.getIndex()), ex);
             return;
         }
+
+        // List of metadata records which needs its parent title to be set
+        List<String> orphanMetadataRecordList = Collections.synchronizedList(new ArrayList<>());
+        ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+        AbstractParser metadataRecordParser = new ISO19115_3_2018_parser();
 
         do {
             String xmlQuery = "<?xml version=\"1.0\"?>\n" +
@@ -314,17 +312,14 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 crashed = true;
             }
 
+            int statusCode = response == null ? -1 : response.statusCode();
             String responseStr = response == null ? null : response.body();
-/*
-eatlas-searchengine   | URL: https://eatlas.org.au/geonetwork/srv/eng/csw
-eatlas-searchengine   | QUERY: <?xml version="1.0"?>
-eatlas-searchengine   | <GetRecords xmlns="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="CSW" version="2.0.2" resultType="results" startPosition="1" maxRecords="10" outputSchema="http://standards.iso.org/iso/19115/-3/mdb/2.0" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><Query typeNames="mdb:MD_Metadata"><ElementSetName>full</ElementSetName><ogc:SortBy xmlns:ogc="http://www.opengis.net/ogc"><ogc:SortProperty><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></Query></GetRecords>
-*/
-System.out.println("URL: " + url);
-System.out.println("QUERY: " + xmlQuery);
-System.out.println("RESPONSE");
-System.out.println(responseStr);
-            if (responseStr != null && !responseStr.isEmpty()) {
+
+            if (statusCode < 200 || statusCode >= 400) {
+                messages.addMessage(Messages.Level.ERROR, String.format("Unexpected status code returned from GeoNetwork: %d%nResponse: %s",
+                        statusCode, responseStr));
+                crashed = true;
+            } else if (responseStr != null && !responseStr.isEmpty()) {
                 try (ByteArrayInputStream input = new ByteArrayInputStream(
                     responseStr.getBytes(StandardCharsets.UTF_8))) {
 
@@ -335,19 +330,42 @@ System.out.println(responseStr);
 
                     Element root = document.getDocumentElement();
 
-                    // TODO Parse the document
+                    Element searchResultsElement = IndexUtils.getXMLChild(root, "csw:SearchResults");
 
+                    // Loop through mdb:MD_Metadata, parse them with ISO19115_3_2018_parser
+                    List<Element> metadataElements = IndexUtils.getXMLChildren(searchResultsElement, "mdb:MD_Metadata");
+                    for (Element metadataElement : metadataElements) {
+                        recordCounter++;
+                        GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), null, "iso19115-3.2018", this.geoNetworkVersion);
+                        metadataRecordParser.parseRecord(geoNetworkRecord, this.geoNetworkUrl, metadataElement, messages);
+
+                        // Index records in thread.
+                        // NOTE: The record parsing can't be threaded with the CSW API
+                        //   since the information for the next page is in the XML response
+                        //   and the response also contains the full metadata records (not just the record UUID).
+                        //   It needs to be parsed sequentially.
+                        GeoNetworkCswIndexerThread thread = new GeoNetworkCswIndexerThread(
+                                searchClient, messages, geoNetworkRecord,
+                                orphanMetadataRecordList, usedThumbnails, recordCounter);
+
+                        threadPool.execute(thread);
+                    }
+
+                    // Prepare for next page of result
+                    String nextRecordStr = IndexUtils.parseAttribute(searchResultsElement, "nextRecord");
+                    startPosition = nextRecordStr == null ? -1 : Integer.parseInt(nextRecordStr);
+
+                    String numberOfRecordsMatchedStr = IndexUtils.parseAttribute(searchResultsElement, "numberOfRecordsMatched");
+                    numberOfRecordsMatched = numberOfRecordsMatchedStr == null ? -1 : Integer.parseInt(numberOfRecordsMatchedStr);
+                    this.setTotal((long)numberOfRecordsMatched);
                 } catch (Exception ex) {
                     messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while parsing the GeoNetwork record list: %s",
                             url), ex);
+                    crashed = true;
                 }
-
-                // TODO set total at the end, unless the info is in the response
-                long total = this.getTotal() == null ? 0 : this.getTotal();
-
             }
 
-        } while(!crashed && !empty && startPosition > 0 && startPosition < numberOfRecordsMatched);
+        } while(!crashed && !empty && startPosition > 0 && startPosition <= numberOfRecordsMatched);
 
 
         /*
@@ -530,9 +548,7 @@ System.out.println(responseStr);
     public class GeoNetworkCswIndexerThread extends Thread {
         private final SearchClient searchClient;
         private final Messages messages;
-        private final DocumentBuilderFactory documentBuilderFactory;
-        private final String metadataRecordUUID;
-        private final String metadataSchema;
+        private final GeoNetworkRecord geoNetworkRecord;
         private final List<String> orphanMetadataRecordList;
         private final Set<String> usedThumbnails;
         private final long current;
@@ -540,18 +556,14 @@ System.out.println(responseStr);
         public GeoNetworkCswIndexerThread(
                 SearchClient searchClient,
                 Messages messages,
-                DocumentBuilderFactory documentBuilderFactory,
-                String metadataRecordUUID,
-                String metadataSchema,
+                GeoNetworkRecord geoNetworkRecord,
                 List<String> orphanMetadataRecordList,
                 Set<String> usedThumbnails,
                 long current
         ) {
             this.searchClient = searchClient;
             this.messages = messages;
-            this.documentBuilderFactory = documentBuilderFactory;
-            this.metadataRecordUUID = metadataRecordUUID;
-            this.metadataSchema = metadataSchema;
+            this.geoNetworkRecord = geoNetworkRecord;
             this.orphanMetadataRecordList = orphanMetadataRecordList;
             this.usedThumbnails = usedThumbnails;
             this.current = current;
@@ -559,30 +571,27 @@ System.out.println(responseStr);
 
         @Override
         public void run() {
-            GeoNetworkRecord geoNetworkRecord = GeoNetworkCswIndexer.this.harvestEntity(
-                    this.searchClient, this.documentBuilderFactory, this.metadataRecordUUID, this.metadataSchema, this.messages);
-
-            if (geoNetworkRecord != null) {
+            if (this.geoNetworkRecord != null) {
                 // If the record have a parent UUID,
                 // keep it's UUID in a list so we can come back to it later to set its parent title.
-                String parentUUID = geoNetworkRecord.getParentUUID();
+                String parentUUID = this.geoNetworkRecord.getParentUUID();
                 if (parentUUID != null && !parentUUID.isEmpty()) {
-                    this.orphanMetadataRecordList.add(this.metadataRecordUUID);
+                    this.orphanMetadataRecordList.add(this.geoNetworkRecord.getId());
                 }
 
                 try {
-                    IndexResponse indexResponse = GeoNetworkCswIndexer.this.indexEntity(this.searchClient, geoNetworkRecord, this.messages);
+                    IndexResponse indexResponse = GeoNetworkCswIndexer.this.indexEntity(this.searchClient, this.geoNetworkRecord, this.messages);
 
                     LOGGER.debug(String.format("[%d/%d] Indexing GeoNetwork metadata record: %s, index response status: %s",
                             this.current, GeoNetworkCswIndexer.this.getTotal(),
-                            this.metadataRecordUUID,
+                            this.geoNetworkRecord.getId(),
                             indexResponse.result()));
                 } catch(Exception ex) {
-                    this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a GeoNetwork record: %s", this.metadataRecordUUID), ex);
+                    this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a GeoNetwork record: %s", this.geoNetworkRecord.getId()), ex);
                 }
 
                 if (this.usedThumbnails != null) {
-                    String thumbnailFilename = geoNetworkRecord.getCachedThumbnailFilename();
+                    String thumbnailFilename = this.geoNetworkRecord.getCachedThumbnailFilename();
                     if (thumbnailFilename != null) {
                         this.usedThumbnails.add(thumbnailFilename);
                     }

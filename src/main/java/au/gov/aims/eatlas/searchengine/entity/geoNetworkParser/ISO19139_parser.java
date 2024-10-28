@@ -151,7 +151,12 @@ public class ISO19139_parser extends AbstractParser {
 
         // GIS Information (bbox, points, polygons, etc.)
         List<Element> extentList = IndexUtils.getXMLChildren(mdDataIdentification, "gmd:extent");
-        String wkt = this.parseExtentList(extentList);
+        String wkt = null;
+        try {
+            wkt = this.parseExtentList(extentList);
+        } catch (Exception ex) {
+            messages.addMessage(Messages.Level.ERROR, String.format("Metadata record %s - %s", record.getId(), ex.getMessage()), ex);
+        }
 
         if (wkt == null || wkt.isEmpty()) {
             messages.addMessage(Messages.Level.WARNING, String.format("Metadata record %s has no extent.", record.getId()));

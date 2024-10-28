@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <csw:GetRecordsResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd">
-  <csw:SearchStatus timestamp="2024-10-24T07:44:02.761Z" />
-  <csw:SearchResults numberOfRecordsMatched="441" numberOfRecordsReturned="10" elementSet="full" nextRecord="11">
+  <csw:SearchStatus timestamp="2024-10-28T07:26:07.939Z" />
+  <csw:SearchResults numberOfRecordsMatched="30" numberOfRecordsReturned="10" elementSet="full" nextRecord="11">
     <mdb:MD_Metadata xmlns:mdb="http://standards.iso.org/iso/19115/-3/mdb/2.0" xmlns:cat="http://standards.iso.org/iso/19115/-3/cat/1.0" xmlns:gfc="http://standards.iso.org/iso/19110/gfc/1.1" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0" xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0" xmlns:gex="http://standards.iso.org/iso/19115/-3/gex/1.0" xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0" xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mas="http://standards.iso.org/iso/19115/-3/mas/1.0" xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:mco="http://standards.iso.org/iso/19115/-3/mco/1.0" xmlns:mda="http://standards.iso.org/iso/19115/-3/mda/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/2.0" xmlns:mex="http://standards.iso.org/iso/19115/-3/mex/1.0" xmlns:mmi="http://standards.iso.org/iso/19115/-3/mmi/1.0" xmlns:mpc="http://standards.iso.org/iso/19115/-3/mpc/1.0" xmlns:mrc="http://standards.iso.org/iso/19115/-3/mrc/2.0" xmlns:mrd="http://standards.iso.org/iso/19115/-3/mrd/1.0" xmlns:mri="http://standards.iso.org/iso/19115/-3/mri/1.0" xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0" xmlns:mrs="http://standards.iso.org/iso/19115/-3/mrs/1.0" xmlns:msr="http://standards.iso.org/iso/19115/-3/msr/2.0" xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0" xmlns:dqm="http://standards.iso.org/iso/19157/-2/dqm/1.0" xmlns:mac="http://standards.iso.org/iso/19115/-3/mac/2.0" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:geonet="http://www.fao.org/geonetwork" xsi:schemaLocation="http://standards.iso.org/iso/19115/-3/mdb/2.0 https://schemas.isotc211.org/19115/-3/mdb/2.0/mdb.xsd">
       <mdb:metadataIdentifier>
         <mcc:MD_Identifier>
@@ -1022,65 +1022,65 @@
             </cit:CI_Citation>
           </mri:citation>
           <mri:abstract>
-            <gco:CharacterString>This dataset summarises subtidal benthic surveys in Yanyuwa Sea Country into 3 GIS shapefiles. 
-(1) A point (site) shapefile describes seagrass presence/absence at 849 subtidal sites surveyed by vessel. 
-(2) The meadow shapefile describes attributes of 46 subtidal seagrass meadows. 
-(3) The interpolation shapefile describes variation in subtidal seagrass biomass across the seagrass meadows. 
+            <gco:CharacterString>This dataset summarises subtidal benthic surveys in Yanyuwa Sea Country into 3 GIS shapefiles.
+(1) A point (site) shapefile describes seagrass presence/absence at 849 subtidal sites surveyed by vessel.
+(2) The meadow shapefile describes attributes of 46 subtidal seagrass meadows.
+(3) The interpolation shapefile describes variation in subtidal seagrass biomass across the seagrass meadows.
 
 This project is a partnership between the li-Anthawirriyarra rangers, Charles Darwin University, James Cook University, and Mabunji Aboriginal Resource Indigenous Corporation to map the subtidal habitats of the Yanyuwa Indigenous Protected Area (IPA), an area of profound importance to the Marra and Yanyuwa people and to the marine ecosystem of the Gulf of Carpentaria. Benthic habitat maps of Yanyuwa Country were produced, with a focus on seagrass. This project was funded by the NT Government Aboriginal Ranger Grant Program.
 
-The sampling methods used to study, describe and monitor seagrass meadows were developed by TropWATER and tailored to the location and habitat surveyed; these are described in detail in the relevant publications (https://research.jcu.edu.au/tropwater). 
+The sampling methods used to study, describe and monitor seagrass meadows were developed by TropWATER and tailored to the location and habitat surveyed; these are described in detail in the relevant publications (https://research.jcu.edu.au/tropwater).
 
 Geographic Information System (GIS)
-All survey data were entered into a Geographic Information System (GIS) using ArcGIS 10.8. Rectified colour satellite imagery of Yanyuwa Sea Country (Source: Allen Coral Atlas and ESRI), field notes and aerial photographs taken from the helicopter during surveys were used to identify geographical features, such as reef tops, channels and deep-water drop-offs, to assist in determining seagrass meadow boundaries. Three GIS layers were created to describe spatial features of the region: a site layer, seagrass meadow layer, and a seagrass biomass interpolation layer. 
+All survey data were entered into a Geographic Information System (GIS) using ArcGIS 10.8. Rectified colour satellite imagery of Yanyuwa Sea Country (Source: Allen Coral Atlas and ESRI), field notes and aerial photographs taken from the helicopter during surveys were used to identify geographical features, such as reef tops, channels and deep-water drop-offs, to assist in determining seagrass meadow boundaries. Three GIS layers were created to describe spatial features of the region: a site layer, seagrass meadow layer, and a seagrass biomass interpolation layer.
 
 Site layer
-This layer contains information on data collected at assessment sites. This layer includes: 
-1.	Temporal survey details – Survey date; 
-2.	Spatial position - Latitude/longitude; 
-3.	Survey location; 
-4.	Seagrass information including presence/absence of seagrass, above-ground biomass (total and for each species), percent cover of seagrass at each site; 
-5.	Benthic macro-invertebrate information including the percent cover of hard coral, soft coral, sponges and other benthic macro invertebrates (e.g. ascidian, clam) at a site; 
+This layer contains information on data collected at assessment sites. This layer includes:
+1.	Temporal survey details – Survey date;
+2.	Spatial position - Latitude/longitude;
+3.	Survey location;
+4.	Seagrass information including presence/absence of seagrass, above-ground biomass (total and for each species), percent cover of seagrass at each site;
+5.	Benthic macro-invertebrate information including the percent cover of hard coral, soft coral, sponges and other benthic macro invertebrates (e.g. ascidian, clam) at a site;
 6.	Algae information including percent cover of algae at a site and percent contribution of algae functional groups to algae cover at a site;
 7.	Open substrate – the percent cover of the site that had no flora or habitat forming benthic invertebrates present;
 8.	Dominant sediment type - Sediment type based on grain size visual assessment or deck descriptions.
 9.	Survey method and vessel;
 10.	Relevant comments and presence/absence of megafauna and animals of interest (dugong, turtle, dolphin); and
-11.	Data custodians. 
+11.	Data custodians.
 
-Seagrass meadow layer 
+Seagrass meadow layer
 Seagrass presence/absence site data, mapping sites, field notes, and satellite imagery were used to construct meadow boundaries in ArcGIS®. The meadow (polygon) layer provides summary information for all sites within each seagrass meadow, including:
 1.	Temporal survey details – Survey month and year as individual columns and the survey date (the date range the survey took place);
 2.	Spatial survey details – Survey location, meadow identification number that identifies the reef name and the meadow number. This allows individual meadows to be compared among years;
 3.	Survey method;
 4.	Meadow depth for subtidal meadows;
-5.	Species presence – a list of the seagrass species in the meadow; 
+5.	Species presence – a list of the seagrass species in the meadow;
 6.	Meadow density – Seagrass meadows were classified as light, moderate, dense based on the mean biomass of the dominant species within the meadow. For example, a Thalassia hemprichii dominated meadow would be classed as “light” if the mean meadow biomass was &lt;5 grams dry weight m-2 (g DW m-2), and “dense” if mean meadow biomass was &gt;25 g DW m-2.
-7.	Meadow community type – Seagrass meadows were classified into community types according to seagrass species composition within each meadow. Species composition was based on the percent each species’ biomass contributed to mean meadow biomass. A standard nomenclature system was used to categorize each meadow. 
+7.	Meadow community type – Seagrass meadows were classified into community types according to seagrass species composition within each meadow. Species composition was based on the percent each species’ biomass contributed to mean meadow biomass. A standard nomenclature system was used to categorize each meadow.
 8.	Mean meadow biomass measured in g DW m-2 (+ standard error if available);
 9.	Meadow area (hectares; ha) (+ mapping precision) of each meadow was calculated in the GDA 2020 Geoscience Australia MGA Zone 53 projection using the ‘calculate geometry’ function in ArcMap. Mapping precision estimates (R; in ha) were based on the mapping method used for that meadow.  Mapping precision estimate was used to calculate an error buffer around each meadow; the area of this buffer is expressed as a meadow reliability estimate (R) in hectares;
 10.	Any relevant comments;
 11.	Data custodians.
 
-Seagrass meadow layer 
+Seagrass meadow layer
 Seagrass presence/absence site data, mapping sites, field notes, and satellite imagery were used to construct meadow boundaries in ArcGIS®. The meadow (polygon) layer provides summary information for all sites within each seagrass meadow, including:
 1.	Temporal survey details – Survey month and year as individual columns and the survey date (the date range the survey took place);
 2.	Spatial survey details – Survey location, meadow identification number that identifies the reef name and the meadow number. This allows individual meadows to be compared among years;
 3.	Survey method;
 4.	Meadow depth for subtidal meadows;
-5.	Species presence – a list of the seagrass species in the meadow; 
+5.	Species presence – a list of the seagrass species in the meadow;
 6.	Meadow density – Seagrass meadows were classified as light, moderate, dense based on the mean biomass of the dominant species within the meadow. For example, a Thalassia hemprichii dominated meadow would be classed as “light” if the mean meadow biomass was &lt;5 grams dry weight m-2 (g DW m-2), and “dense” if mean meadow biomass was &gt;25 g DW m-2.
-7.	Meadow community type – Seagrass meadows were classified into community types according to seagrass species composition within each meadow. Species composition was based on the percent each species’ biomass contributed to mean meadow biomass. A standard nomenclature system was used to categorize each meadow. 
+7.	Meadow community type – Seagrass meadows were classified into community types according to seagrass species composition within each meadow. Species composition was based on the percent each species’ biomass contributed to mean meadow biomass. A standard nomenclature system was used to categorize each meadow.
 8.	Mean meadow biomass measured in g DW m-2 (+ standard error if available);
 9.	Meadow area (hectares; ha) (+ mapping precision) of each meadow was calculated in the GDA 2020 Geoscience Australia MGA Zone 53 projection using the ‘calculate geometry’ function in ArcMap. Mapping precision estimates (R; in ha) were based on the mapping method used for that meadow.  Mapping precision estimate was used to calculate an error buffer around each meadow; the area of this buffer is expressed as a meadow reliability estimate (R) in hectares;
 10.	Any relevant comments;
 11.	Data custodians.
 
 Seagrass biomass interpolation layer
-An inverse distance weighted (IDW) interpolation was applied to seagrass site data to describe spatial variation in seagrass biomass within seagrass meadows. The interpolation was conducted in ArcMap 10.8. 
+An inverse distance weighted (IDW) interpolation was applied to seagrass site data to describe spatial variation in seagrass biomass within seagrass meadows. The interpolation was conducted in ArcMap 10.8.
 
 Base map
-The base map used is courtesy ESRI 2024. 
+The base map used is courtesy ESRI 2024.
 
 Limitations of the data
 Recordings of dugong, turtle, and dolphin were opportunistic sightings and recorded if nearby a survey site. This presence/absence data was not collected as part of a formal structured survey of these animals and should therefore be used with caution.
@@ -1094,7 +1094,7 @@ This dataset consists of 1 point layer package, 1 polygon layer package and 1 ra
 Data Dictionary
 Yanyuwa Sea Country subtidal sites 2022-2023 (point data)
 SITE (text) - Unique identifier representing a single sample site
-MEADOW (text) - Unique identifier representing what meadow the sample site is located in. Blank if sample site is not located within a meadow 
+MEADOW (text) - Unique identifier representing what meadow the sample site is located in. Blank if sample site is not located within a meadow
 SURVEY_DATE (numeric) – survey date (day/month/year)
 MONTH (text) – survey month
 YEAR (numeric) – survey year
@@ -1109,11 +1109,11 @@ SUBSTRATE (text) – tags identifying the types of substrates at the sample site
 SEAGRASS_P (numeric) – Absence (0) or Presence (1) of seagrass
 SEAGRASS_C (numeric) - Estimated % of seagrass cover at sample site
 SEAGRASS_B (numeric) - Estimated total biomass per square metre for sample site calculated from the mean of three replicate quadrats. Unit is gdw m-2.
-SEAGRASS_SE (numeric) – standard error of biomass at sample site calculated from the three replicate quadrats used to estimate biomass at a sample site. Unit is gdw m-2. 
-EXCLUDE_B (numeric) – Include (0) or Exclude (1). Any site identified that needs to be excluded from contributing to the calculation of mean meadow biomass, e.g. where a visual estimate of biomass could not be optioned (i.e. no visibility at the site, only a van Veen sediment grab was used at the site)  
-C. rotundata (numeric) – Estimated biomass of Cymodocea rotundata at the sample site. Unit is gdw m-2.  
-C. serrulata (numeric) – Estimated biomass of Cymodocea serrulata at the sample site. Unit is gdw m-2.  
-E. acoroides (numeric) – Estimated biomass of Enhalus acoroides at the sample site. Unit is gdw m-2. 
+SEAGRASS_SE (numeric) – standard error of biomass at sample site calculated from the three replicate quadrats used to estimate biomass at a sample site. Unit is gdw m-2.
+EXCLUDE_B (numeric) – Include (0) or Exclude (1). Any site identified that needs to be excluded from contributing to the calculation of mean meadow biomass, e.g. where a visual estimate of biomass could not be optioned (i.e. no visibility at the site, only a van Veen sediment grab was used at the site)
+C. rotundata (numeric) – Estimated biomass of Cymodocea rotundata at the sample site. Unit is gdw m-2.
+C. serrulata (numeric) – Estimated biomass of Cymodocea serrulata at the sample site. Unit is gdw m-2.
+E. acoroides (numeric) – Estimated biomass of Enhalus acoroides at the sample site. Unit is gdw m-2.
 H. uninervis (narrow) (numeric) – Estimated biomass of Halodule uninervis (narrow leaf morphology) at the sample site. Unit is gdw m-2.
 H. uninervis (wide) (numeric) – Estimated biomass of Halodule uninervis (wide leaf morphology) at the sample site. Unit is gdw m-2.
 H. decipiens (numeric) – Estimated biomass of Halophila decipiens at the sample site. Unit is gdw m-2.
@@ -1122,7 +1122,7 @@ H. spinulosa (numeric) – Estimated biomass of Halophila spinulosa at the sampl
 H. tricostata (numeric) – Estimated biomass of Halophila tricostata at the sample site. Unit is gdw m-2.
 S. isoetifolium (numeric) – Estimated biomass of Syringodium isoetifolium at the sample site. Unit is gdw m-2.
 T. ciliatum (numeric) – Estimated biomass of Thalassodendron ciliatum at the sample site. Unit is gdw m-2.
-T. hemprichii (numeric) – Estimated biomass of Thalassia hemprichii at the 
+T. hemprichii (numeric) – Estimated biomass of Thalassia hemprichii at the
 Z. muelleri (numeric) – Estimated biomass of Zostera muelleri at the sample site. Unit is gdw m-2.
 TURF_MAT (numeric) – (Turf mat algae % contribution to algae cover). Algae that forms a dense mat on the substrate
 ERECT_MACROPHYTE (numeric) – (Erect macrophyte algae % contribution to algae cover). Macrophytic algae with an erect growth form and high level of cellular differentiation, e.g. Sargassum, Caulerpa and Galaxaura species
@@ -1133,7 +1133,7 @@ HARD_CORAL (numeric) – (Hard coral %). All scleractinian corals including mass
 SOFT_CORAL (numeric) – (Soft coral %). All alcyonarian corals, i.e. corals lacking a hard limestone skeleton
 SPONGE (numeric) – (Sponge %)
 OTHER_BMI (numeric) – Any other benthic macro-invertebrates identified, e.g. oysters, ascidians, clams. Other benthic macro-invertebrates are listed in the “comments” attribute for intertidal and shallow subtidal camera drops, and listed as percent cover in the deepwater GIS.
-OPEN_SUBSTRATE (numeric) – Open substrate, no seagrass, algae or benthic macro-invertebrates at site 
+OPEN_SUBSTRATE (numeric) – Open substrate, no seagrass, algae or benthic macro-invertebrates at site
 *Note: SEAGRASS_C + TURF_MAT + ERECT_MACROPHYTE + ENCRUSTING + ERECT_CALCAREOUS + FILAMENTOUS + HARD_CORAL + SOFT_CORAL + SPONGE + OTHER_BMI + OPEN_SUBSTRATE = 100% of benthic cover
 DUGONG (numeric) - Absence (0) or Presence (1) of dugong/s near site
 TURTLE (numeric) - Absence (0) or Presence (1) of turtle/s near site
@@ -1152,7 +1152,7 @@ ID (numeric) - Unique identifier representing a single meadow
 SURVEY_NAME (text) – Name of survey
 LOCATION (text) – Name of survey location
 SURVEY_DATE (text) – Sample date (day/month/year)
-MONTH (numeric) – Sample month 
+MONTH (numeric) – Sample month
 YEAR (numeric) – Sample year
 PERSISTENCE (text) – Meadow form on three categories: enduring, transitory, unknown
 DENSITY (text) – Meadow density categories (light, moderate, dense)
@@ -1162,7 +1162,7 @@ TOT_SITES (numeric) – (Number of survey sites): the number of sample sites wit
 BIOMASS (numeric) – (Seagrass biomass (gdw m-2)): Mean biomass calculated from all sites (BIO_SITES) within an individual meadow
 SE (numeric) – (Standard Error (gdw m-2)): The error is a calculation of standard error of biomass from all (BIO_SITES) sites within an individual meadow
 AREA_HA (numeric) – (Meadow area (Ha)): Estimated meadow size (unit: hectares)
-R_M (numeric) – (Meadow mapping precision (m)): Estimated mapping precision based on mapping method. 
+R_M (numeric) – (Meadow mapping precision (m)): Estimated mapping precision based on mapping method.
 R_HA (numeric) - (Meadow reliability estimate (Ha)): Meadow reliability estimate (unit: hectares). Expressing the error buffer around each meadow as calculated from the mapping precision estimate
 SURVEY METHOD (text) – e.g. helicopter, walking, hovercraft, boat-based including camera, free diving, scuba diving, van Veen grab, sled net
 VESSEL (text) – Vessel name (if known)
@@ -1175,13 +1175,13 @@ Yanyuwa Sea Country subtidal seagrass biomass interpolation 2022-2023 (interpola
 Inverse Distance Weighted interpolation.
 Band 1: Interpolated biomass in gdw m-2
 
-References: 
+References:
 Intertidal survey (2021-2022) Report: Groom R, Carter A, Collier C, Firby L, Evans S, Barrett S, Hoffmann L, van de Wetering C, Shepherd L, Evans S, Anderson S. (2023) Mapping Critical Habitat in Yanyuwa Sea Country. Report to the National Environmental Science Program. Charles Darwin University, pp. 40. Available at: https://www.nespmarinecoastal.edu.au/wp-content/uploads/2023/07/NESP-MaC-Hub-Project-1.12_Groom-et-al-FINAL-REPORT.pdf
 
 Intertidal survey (2021-2022)  Dataset: Groom, R., Carter, A. B., Collier, C., Firby, L., Evans, S., Barrett, S., Hoffman, L., van de Wetering, C., Evans, S., Simon, S., &amp; Anderson, S. (2023). Benthic habitats of Yanyuwa Sea Country, Barni - Wardimantha Awara Indigenous Protected Area, Gulf of Carpentaria, Northern Territory, Australia (NESP MaC Project 1.12, JCU &amp; CDU) [Data set]. eAtlas. https://doi.org/10.26274/V6K5-2F34
 
 eAtlas Processing:
-The original data were provided as Layer Packages. The lpkg files were imported to ArcGIS and exported as shapefiles and GeoTiff. A modification was made to the Site layer to remove sensitive data (single column and two comments) at the request of the data provider. All other data are as provided. 
+The original data were provided as Layer Packages. The lpkg files were imported to ArcGIS and exported as shapefiles and GeoTiff. A modification was made to the Site layer to remove sensitive data (single column and two comments) at the request of the data provider. All other data are as provided.
 
 Location of the data:
 This dataset is filed in the eAtlas enduring data repository at: data\2020-2029-other\NT_JCU_Yanyuwa-Sea-Country_2022-2023</gco:CharacterString>
@@ -2865,18 +2865,18 @@ This project:
 
 To improve sawfish reporting and obtain an estimate of sawfish abundance and stock structure, a large-scale collaborative project is proposed between industry, State and Commonwealth agencies and lead research institutions to gather tissue samples from across northern Australia. The project will have a focus on developing trust between research and the commercial fishing industry that will achieve the following:
 
--	Industry led reporting and sampling programs will be established throughout Australia’s northern fisheries. 
--	Tissue samples will be used to assess sawfish abundance and stock structure using Close-Kin Mark-Recapture (CKMR). 
--	Estimates of post-release survival will be obtained from satellite tagging and improved reporting. 
--	Data on abundance and post release survival will be used to assess the sustainability of sawfish bycatch.  
+-	Industry led reporting and sampling programs will be established throughout Australia’s northern fisheries.
+-	Tissue samples will be used to assess sawfish abundance and stock structure using Close-Kin Mark-Recapture (CKMR).
+-	Estimates of post-release survival will be obtained from satellite tagging and improved reporting.
+-	Data on abundance and post release survival will be used to assess the sustainability of sawfish bycatch.
 
-The research also aims to improve reporting of sawfish along with other EPBC listed species in northern Australian fisheries. If enough tissue samples are collected, close kin mark recapture will enable estimates of adult population size for four species of sawfish. Post release survival and abundance estimates will be used to determine the sustainability of sawfish captured as bycatch in state, territory and Commonwealth Fisheries. Improved estimates of bycatch, population connectivity, adult abundance and post release survival were identified as the highest research priorities in the Sawfish and River Shark multispecies recovery plan. 
+The research also aims to improve reporting of sawfish along with other EPBC listed species in northern Australian fisheries. If enough tissue samples are collected, close kin mark recapture will enable estimates of adult population size for four species of sawfish. Post release survival and abundance estimates will be used to determine the sustainability of sawfish captured as bycatch in state, territory and Commonwealth Fisheries. Improved estimates of bycatch, population connectivity, adult abundance and post release survival were identified as the highest research priorities in the Sawfish and River Shark multispecies recovery plan.
 
-Within Australia, three out of the four occurring species are listed as Vulnerable and Migratory under the EPBC act (Pristis pristis, P. zijsron and P. clavata). The fourth Australian species, narrow sawfish (Anoxypristis cuspidata) is listed as a Migratory species. Both A. cuspidata and P. pristis are currently under nomination to be up-listed to Endangered under the EPBC act. The Freshwater Sawfish Pristis pristis is also listed in the Threatened Species Strategy - 100 priority species for fish. 
+Within Australia, three out of the four occurring species are listed as Vulnerable and Migratory under the EPBC act (Pristis pristis, P. zijsron and P. clavata). The fourth Australian species, narrow sawfish (Anoxypristis cuspidata) is listed as a Migratory species. Both A. cuspidata and P. pristis are currently under nomination to be up-listed to Endangered under the EPBC act. The Freshwater Sawfish Pristis pristis is also listed in the Threatened Species Strategy - 100 priority species for fish.
 
 Planned Outputs
  • Sawfish catch data  [spatial dataset]
- • Tissue samples and sequencing data 
+ • Tissue samples and sequencing data
  • Final technical report with analysed data and a short summary of recommendations for policy makers of key findings [written]</gco:CharacterString>
           </mri:abstract>
           <mri:purpose>
@@ -2885,7 +2885,7 @@ Planned Outputs
 
 •	Improved reporting of sawfish (and other TEPS) within northern Australian gillnet and trawl fisheries
 
-•	Industry led tissue sampling and data collection that will enable population structure and adult abundance of all four Australian sawfish species to be determined in populations were sufficient tissue samples are collected. 
+•	Industry led tissue sampling and data collection that will enable population structure and adult abundance of all four Australian sawfish species to be determined in populations were sufficient tissue samples are collected.
 
 •	Post release survival estimates of sawfish captured as bycatch in commercial gillnet and trawl fisheries
 
@@ -3764,12 +3764,12 @@ Planned Outputs
 
 Methods:
 
-The sampling methods used to study, describe and monitor seagrass meadows were developed by the TropWATER Seagrass Group and tailored to the location and habitat surveyed; these are described in detail in the relevant publications (https://research.jcu.edu.au/tropwater). 
+The sampling methods used to study, describe and monitor seagrass meadows were developed by the TropWATER Seagrass Group and tailored to the location and habitat surveyed; these are described in detail in the relevant publications (https://research.jcu.edu.au/tropwater).
 
 1. Location - Latitude and longitude was recorded by GPS at each site. Depth was recorded when sampling by boat and converted to depth below mean sea level (dbMSL) in metres.
 
 2 Seagrass metrics - Above-ground biomass was determined using a “visual estimates of biomass” technique (Mellors, 1991) using trained observers. A linear regression was calculated for the relationship between the observer ranks and the harvested values. This regression was used to calculate above-ground biomass for all estimated ranks made from the survey sites. Biomass ranks were then converted into above-ground biomass estimates in grams dry weight per square metre (gdw m-2). Observers ranked seagrass biomass, and the percent contribution of each species to that biomass, using video transects, grabs, free divers, and helicopter:
-* Video transect: Commonly used for subtidal meadows sampled from larger boats. At each transect site an underwater CCTV camera system was lowered from the vessel to the bottom. For each transect the camera was towed at drift speed (less than one knot) for approximately 100m. Footage was observed on a TV monitor and digitally recorded. The video was paused at ten random time frames and an observer ranked seagrass biomass and species composition. On completion of the video analysis, the video observer ranked five additional quadrats that had been previously videoed for calibration. These quadrats were videoed in front of a stationary camera, then harvested, dried and weighed. 
+* Video transect: Commonly used for subtidal meadows sampled from larger boats. At each transect site an underwater CCTV camera system was lowered from the vessel to the bottom. For each transect the camera was towed at drift speed (less than one knot) for approximately 100m. Footage was observed on a TV monitor and digitally recorded. The video was paused at ten random time frames and an observer ranked seagrass biomass and species composition. On completion of the video analysis, the video observer ranked five additional quadrats that had been previously videoed for calibration. These quadrats were videoed in front of a stationary camera, then harvested, dried and weighed.
 * Helicopter: Commonly used for intertidal surveys. At each site seagrass above-ground biomass and species composition were estimated from three 0.25 m2 quadrats placed randomly within a 10m2 circular area. Seagrass percent cover and sediment type were recorded at each site. The “visual estimates of biomass” technique when applied to helicopter surveys (and free diving/camera drops – see below) involves ranking while referring to a series of quadrat photographs of similar seagrass habitats for which the above-ground biomass has previously been measured. Three separate biomass scales were used: low-biomass, high-biomass, and Enhalus-biomass. The relative proportion (percentage) of the above-ground biomass of each seagrass species within each survey quadrat was also recorded. Field biomass ranks were converted into above-ground biomass estimates in grams dry weight per square metre (gdw m-2). At the completion of sampling each observer ranked a series of calibration quadrats as per video transect surveys.
 * Camera drop/free diving: Commonly used for shallow subtidal meadows sampled from a small boat. Sampling follows the same protocol as helicopter surveys but the three quadrats were either assessed by a free diver with quadrat, or by an underwater CCTV camera system camera attached to a frame. Video footage was observed on a TV monitor and seagrass ranked in real time, with the camera frame serving as a quadrat.
 * van Veen grab: Commonly used for shallow subtidal meadows sampled from a small boat in conjunction with camera drops, or to record seagrass presence/absence where visibility was too poor for camera drops. A sample of seagrass was collected using a van Veen grab (grab area 0.0625 m2) to identify species present at each site. Species identified from the grab sample were used to inform species composition assessments made from the video drops (Kuo et al., 1989).
@@ -3788,7 +3788,7 @@ The sampling methods used to study, describe and monitor seagrass meadows were d
 * Turf mat – Algae that forms a dense mat on the substrate.
 
 
-Format: 
+Format:
 
 This dataset consists of two (2) GIS layers: a Site layer and a Meadow layer.
 
@@ -3810,19 +3810,19 @@ This layer is presented as five (5) alternate layer packages based on symbology 
 2. Meadow layer
 Seagrass presence/absence site data was used to construct the polygon (meadow) layer. The meadow layer provides summary information for all sites within the meadow, and includes:
 * Spatial details – depth range of sites and meadow location.
-* Habitat information – seagrass species present, meadow community type and density, mean meadow biomass + standard error (s.e.), meadow area + reliability estimate (R) and number of sites within the meadow. 
+* Habitat information – seagrass species present, meadow community type and density, mean meadow biomass + standard error (s.e.), meadow area + reliability estimate (R) and number of sites within the meadow.
 * Sampling methods and any relevant comments.
 
 This layer is presented as three (3) alternate layer packages, including interpolation layers which were created using site data and meadow boundaries to describe spatial variation in biomass, species diversity and depth gradients.  The layers are:
 * "Torres Strait meadow community type NESP 2015.lpk" - Includes 34 individual seagrass meadows mapped in  2015-2016 with information including individual meadow ID, meadow location (intertidal/shallow subtidal/subtidal), meadow density based on mean biomass, meadow area, dominant seagrass species, seagrass species present, survey dates, survey method, and data custodian. ESRI and Landsat satellite image basemaps were used as background source data to check meadow and site boundaries, and re-map where required.
-* "Torres Strait biomass (g dw m-2) interpolation NESP 2015.lpk" - An inverse distance weighted interpolation (IDW) was applied to seagrass site data to describe spatial variation in biomass across each meadow and throughout the north-west Torres Strait region. 
+* "Torres Strait biomass (g dw m-2) interpolation NESP 2015.lpk" - An inverse distance weighted interpolation (IDW) was applied to seagrass site data to describe spatial variation in biomass across each meadow and throughout the north-west Torres Strait region.
 * "Torres Strait Shannon Weaver diversity interpolation NESP 2015.lpk" - An inverse distance weighted interpolation (IDW) was applied to seagrass site data to describe spatial variation in seagrass species diversity across each meadow and throughout the north-west Torres Strait region. The Shannon-Weaver index is a mathematical measure of species diversity that uses species richness (the number of species present, where a score of 0 = one species present) and the relative abundance of different species (Spellerberg et al., 2003).
 
 
 Data Dictionary:
 * Meadow location was classed according to whether meadows were intertidal (all sites surveyed by helicopter), shallow subtidal (generally an extension of an intertidal meadow into shallow waters &lt;5m deep), or subtidal (no intertidal sites adjoining the meadow).
 * Seagrass community types were determined according to species composition within a meadow. Species composition was based on the percent each species’ biomass contributed to mean meadow biomass. A standard nomenclature system was used to categorize each meadow (see Table 1 "Nomenclature for seagrass community types" in final report). This nomenclature also included a measure of meadow density categories (light, moderate, dense) determined by mean biomass of the dominant species within the meadow (see Table 2 "Density categories and mean above-ground biomass ranges for each species used in determining seagrass community density" in final report).
-* Mapping precision estimates (in metres) were based on the mapping method used for that meadow (Table 3 "Mapping precision and methods for seagrass meadows" in final report). Mapping precision estimates ranged from 1-10m for intertidal seagrass meadows to &gt;100m for patchy subtidal meadows. Subtidal meadow mapping precision estimates were based on the distance between sites with and without seagrass. The mapping precision estimate was used to calculate an error buffer around each meadow; the area of this buffer is expressed as a meadow reliability estimate (R) in hectares. 
+* Mapping precision estimates (in metres) were based on the mapping method used for that meadow (Table 3 "Mapping precision and methods for seagrass meadows" in final report). Mapping precision estimates ranged from 1-10m for intertidal seagrass meadows to &gt;100m for patchy subtidal meadows. Subtidal meadow mapping precision estimates were based on the distance between sites with and without seagrass. The mapping precision estimate was used to calculate an error buffer around each meadow; the area of this buffer is expressed as a meadow reliability estimate (R) in hectares.
 
 Further information can be found in this publication:
 Carter, A. B. and Rasheed, M. A. (2016) Assessment of Key Dugong and Turtle Seagrass Resources in North-west Torres Strait. Report to the National Environmental Science Programme and Torres Strait Regional Authority. Reef and Rainforest Research Centre Limited, Cairns (40 pp).
@@ -3832,9 +3832,9 @@ References:
 
 Kuo, J., &amp; McComb, A. J. (1989). Seagrass taxonomy, structure and development. In A. W. D. Larkum, A. J. McComb, &amp; S. A. Shepherd (Eds.), Biology of seagrasses: a treatise on the biology of seagrasses with special reference to the Australian Region (pp. 6-73). New York: Elsevier.
 
-Mellors, J. E. (1991). An evaluation of a rapid visual technique for estimating seagrass biomass. Aquatic Botany, 42(1), 67-73. 
+Mellors, J. E. (1991). An evaluation of a rapid visual technique for estimating seagrass biomass. Aquatic Botany, 42(1), 67-73.
 
-Spellerberg, I. F., &amp; Fedor, P. J. (2003). A tribute to Claude Shannon (1916–2001) and a plea for more rigorous use of species richness, species diversity and the ‘Shannon–Wiener’ Index. Global Ecology and Biogeography, 12(3), 177-179. 
+Spellerberg, I. F., &amp; Fedor, P. J. (2003). A tribute to Claude Shannon (1916–2001) and a plea for more rigorous use of species richness, species diversity and the ‘Shannon–Wiener’ Index. Global Ecology and Biogeography, 12(3), 177-179.
 
 
 Data Location:
@@ -5157,9 +5157,9 @@ Australia's River Basin data complies with the following rules for topology:
             </cit:CI_Citation>
           </mri:citation>
           <mri:abstract>
-            <gco:CharacterString>This record provides an overview of the NESP Marine and Coastal Hub small-scale study - "Scoping Study: New Approaches to Marine Monitoring". 
+            <gco:CharacterString>This record provides an overview of the NESP Marine and Coastal Hub small-scale study - "Scoping Study: New Approaches to Marine Monitoring".
 
-Australia’s has the third largest marine estate of any country in the world.  Much of our marine and coastal resources are in offshore or sparsely populated areas meaning that our ability to monitor and assess our environmental resources and values is particularly challenging.  To maximise our understanding of our marine and coastal environment, we need to take advantage of emerging technologies and approaches.  This includes citizen science, community monitoring and Indigenous Rangers.  In particular, it is expected that these groups will utilise the same technologies as mainstream science, thus these emerging technologies can bridge the gaps between science and community science to operate in unity.  This project provides a series of workshops and engagement processes to best explore how to most effectively deploy technologies and community science programs to achieve maximum benefit and synergy in environmental monitoring. 
+Australia’s has the third largest marine estate of any country in the world.  Much of our marine and coastal resources are in offshore or sparsely populated areas meaning that our ability to monitor and assess our environmental resources and values is particularly challenging.  To maximise our understanding of our marine and coastal environment, we need to take advantage of emerging technologies and approaches.  This includes citizen science, community monitoring and Indigenous Rangers.  In particular, it is expected that these groups will utilise the same technologies as mainstream science, thus these emerging technologies can bridge the gaps between science and community science to operate in unity.  This project provides a series of workshops and engagement processes to best explore how to most effectively deploy technologies and community science programs to achieve maximum benefit and synergy in environmental monitoring.
 
 Planned Outputs
  • Final report with analysis and a short summary of recommendations for policy makers of key findings [written]</gco:CharacterString>
@@ -6037,13 +6037,13 @@ Sampling was conducted by the CSIRO team with the assistance of TSRA staff from 
 
 For quality control purposes, a field blank was prepared during both the Saibai and Boigu legs of the field trip. Duplicate samples were collected at sites S1, 8 and B1.
 
-Salinity and pH were measured using an Orion Star A329 portable meter (Thermo Scientific). Sample pH was measured using a Thermo Scientific Orion Gel-Filled ROSS pH Ultra Triode Electrode (8107UWMMD) that was calibrated using pH 4.00, 7.00 and 10.00 buffers. Salinity was measured using a Thermo Scientific Orion Conductivity Cell (013010MD) that was calibrated using KCl conductivity standards. 
+Salinity and pH were measured using an Orion Star A329 portable meter (Thermo Scientific). Sample pH was measured using a Thermo Scientific Orion Gel-Filled ROSS pH Ultra Triode Electrode (8107UWMMD) that was calibrated using pH 4.00, 7.00 and 10.00 buffers. Salinity was measured using a Thermo Scientific Orion Conductivity Cell (013010MD) that was calibrated using KCl conductivity standards.
 
 Water samples were transported back to the Island and were processed within five hours of collection in a designated clean area free of dust and other conspicuous sources of metal contamination. As a precaution against sample contamination, surfaces coming into contact with sample containers or lab apparatus were covered with clean plastic. Pre-weighed 0.45 µm membrane filters were used for sample filtration and were retained for particulate metals analysis of suspended sediments. The water and sediment samples were stored chilled and ‘hand carried’ back to the CSIRO laboratories in Sydney for analysis of dissolved and TSS-bound metals.
 
 
 - Water sample processing
-Water samples for analysis of trace metals were vacuum filtered through acid-washed 0.45 µm Millipore membrane filters using an acid washed polycarbonate filtration apparatus (Sartorius). The filtration assemblies were further cleaned before processing each sample by first filtering a 100 mL volume of 10% v/v nitric acid solution followed by two 150 mL volumes of deionised water, and finally, a 50 mL volume of sample.  For each volume of these solutions the filtration rig was held on an angle and rotated both before and after filtration so that the solutions came into contact with all surfaces of the top and bottom compartments of the apparatus to ensure rigorous rinsing / pre-treatment was achieved. The 50 mL aliquot of sample used to pre-clean the filtration rig was poured into the 1 L acid washed Nalgene filtrate receiving bottle, shaken to pre-treat the bottle, and discarded to waste.  The sample was then filtered and the filtrate transferred into the receiving bottle.  Approximately 900 mL of each sample filtrate was retained for analysis.  Filtrates were then preserved by addition of 2 mL/L of concentrated nitric acid (Merck Tracepur).  
+Water samples for analysis of trace metals were vacuum filtered through acid-washed 0.45 µm Millipore membrane filters using an acid washed polycarbonate filtration apparatus (Sartorius). The filtration assemblies were further cleaned before processing each sample by first filtering a 100 mL volume of 10% v/v nitric acid solution followed by two 150 mL volumes of deionised water, and finally, a 50 mL volume of sample.  For each volume of these solutions the filtration rig was held on an angle and rotated both before and after filtration so that the solutions came into contact with all surfaces of the top and bottom compartments of the apparatus to ensure rigorous rinsing / pre-treatment was achieved. The 50 mL aliquot of sample used to pre-clean the filtration rig was poured into the 1 L acid washed Nalgene filtrate receiving bottle, shaken to pre-treat the bottle, and discarded to waste.  The sample was then filtered and the filtrate transferred into the receiving bottle.  Approximately 900 mL of each sample filtrate was retained for analysis.  Filtrates were then preserved by addition of 2 mL/L of concentrated nitric acid (Merck Tracepur).
 
 For the field blanks, approximately half of the 1L sample was filtered and preserved. The remaining 500 mL was acidified and retained for subsequent analysis.  The difference between the filtered and unfiltered field blanks gave an indication if filtration resulted in contamination.
 
@@ -6055,7 +6055,7 @@ Dissolved Cd, Co, Cu, Ni, Pb and Zn in filtered samples were analysed by complex
 
 Dissolved aluminium and iron concentrations were measured directly on portions of acidified filtered waters by ICP-AES (Varian730 ES) using matrix-matched standards. The concentrations of dissolved chromium were measured directly by ICP-MS (Agilent 7500CE ) following three-fold dilution with deionised water and calibration against matrix-matched standards.
 
-The concentration of dissolved arsenic in the filtered samples was measured by hydride generation atomic absorption spectrometry (HG-AAS), using procedures based on the standard methods described by APHA (1998). Samples were first digested by addition of potassium persulfate (1% m/v final concentration) and heating to 120°C for 30 min in an autoclave. Hydrochloric acid, (3 M final concentration) was then added to the samples.  Pentavalent arsenic was then pre-reduced to arsenic (III) by addition of potassium iodide (1% (m/v) final concentration) and ascorbic acid (0.2% (m/v) final concentration) and left standing for at least 30 min at room temperature prior to analysis.  Arsenic concentrations were then measured by HG-AAS using a Varian VGA system operated under standard conditions recommended by the manufacturer.  Arsenic (III) in solution was reduced to arsine by reduction with sodium borohydride, which was stripped from solution with argon gas into a silica tube, electrically heated at 925°C.  Heating converted arsine into arsenic vapour, which was quantified by atomic absorption spectrometry. 
+The concentration of dissolved arsenic in the filtered samples was measured by hydride generation atomic absorption spectrometry (HG-AAS), using procedures based on the standard methods described by APHA (1998). Samples were first digested by addition of potassium persulfate (1% m/v final concentration) and heating to 120°C for 30 min in an autoclave. Hydrochloric acid, (3 M final concentration) was then added to the samples.  Pentavalent arsenic was then pre-reduced to arsenic (III) by addition of potassium iodide (1% (m/v) final concentration) and ascorbic acid (0.2% (m/v) final concentration) and left standing for at least 30 min at room temperature prior to analysis.  Arsenic concentrations were then measured by HG-AAS using a Varian VGA system operated under standard conditions recommended by the manufacturer.  Arsenic (III) in solution was reduced to arsine by reduction with sodium borohydride, which was stripped from solution with argon gas into a silica tube, electrically heated at 925°C.  Heating converted arsine into arsenic vapour, which was quantified by atomic absorption spectrometry.
 
 For quality control purposes a portion of the certified reference seawater NASS-6 (National Research Council (NRC), Canada) CRM was analysed in every sample batch.
 
@@ -7215,24 +7215,24 @@ This project is now complete.</gco:CharacterString>
           <mri:abstract>
             <gco:CharacterString>The dataset depicts the proclamations made under the Seas and Submerged Lands Act (SSLA) 1973. This includes the continental shelf, the Exclusive Economic Zone (EEZ), territorial sea and territorial sea baselines. NOTE: Two versions of the Exclusive Economic Zone (EEZ) are supplied to account for the discrepancy between Seas and Submerged Lands Act 1973, the Proclamation under section 10B (26/07/1994), and unratified Treaty between the Government of Australia and the Government of the Republic of Indonesia, establishing an Exclusive Economic Zone Boundary and Certain Seabed Boundaries (Perth, 14 march 1997) [1997] ATNIF 9 - (not yet in force). Although the proclamation remains in force, for many matters the limit modified by the action of the treaty is the limit that should be applied. This is the default depiction of Australia's EEZ.
 
-Geoscience Australia has the primary role in the delineation of Australia's domestic and international maritime limits and boundaries. An output of this activity is the development of the Australian Maritime Boundaries (AMB) data. 
+Geoscience Australia has the primary role in the delineation of Australia's domestic and international maritime limits and boundaries. An output of this activity is the development of the Australian Maritime Boundaries (AMB) data.
 
-Note: This is a non authoritative copy of the metadata for the use in the eAtlas. Please refer to Geoscience Australia for queries on this dataset. 
+Note: This is a non authoritative copy of the metadata for the use in the eAtlas. Please refer to Geoscience Australia for queries on this dataset.
 
 AMB is a GIS data product, replacing Australian Maritime Boundaries 2014 (AMB2014), providing access to the data for Australia's maritime zones. AMB is a digital representation of Australia's limits and boundaries as established under the Seas and Submerged Lands Act 1973 and associated proclamations. The data also include a representation of the limits by which the scheduled and offshore areas of each of the States and of the Northern Territory are determined under the Offshore Petroleum and Greenhouse Gas Storage Act 2006 (OPGGSA).
 
-In the event of an inconsistency between AMB data and the limits under any legislation, the latter prevails. The data have been published by Geoscience Australia in consultation with other relevant Commonwealth Government agencies including the Attorney-General's Department, the Department of Foreign Affairs and Trade and the Australian Hydrographic Office. 
+In the event of an inconsistency between AMB data and the limits under any legislation, the latter prevails. The data have been published by Geoscience Australia in consultation with other relevant Commonwealth Government agencies including the Attorney-General's Department, the Department of Foreign Affairs and Trade and the Australian Hydrographic Office.
 
 This version contains a number of technical amendments made on the basis of user feedback. These include:
 Harmonisation of maritime boundaries, scheduled area and graticular block datasets in block SC51
 
-AMB data comprise the territorial straight baselines and the outer limits of each zone, together with maritime boundaries determined by treaties between Australia and neighbouring countries. All data coordinates are supplied in the GDA94 datum. 
+AMB data comprise the territorial straight baselines and the outer limits of each zone, together with maritime boundaries determined by treaties between Australia and neighbouring countries. All data coordinates are supplied in the GDA94 datum.
 
-The data reflects the location of the coastline within the constraints of available source material at the time of production. AMB Data can also be viewed on-line via AMSIS (http://www.ga.gov.au/marine/jurisdiction/amsis.html). 
+The data reflects the location of the coastline within the constraints of available source material at the time of production. AMB Data can also be viewed on-line via AMSIS (http://www.ga.gov.au/marine/jurisdiction/amsis.html).
 
-Product Specifications Coverage: Australia including all external territories 
+Product Specifications Coverage: Australia including all external territories
 Currency: May 2014.
-Coordinates: Geographical Datum: GDA94 (functionally equivalent to WGS84). 
+Coordinates: Geographical Datum: GDA94 (functionally equivalent to WGS84).
 Format: ESRI Geodatabase and REST web service - free online.
 
 The area of coverage of the AMB data is for the whole of the Australian marine jurisdiction which includes waters adjacent to the mainland, offshore islands and External Territories.  The geographical extent is approximately between the latitude limits of 7 S to 70 S and the longitude limits 40 E to 175 E.
