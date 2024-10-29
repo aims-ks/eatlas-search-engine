@@ -235,7 +235,7 @@ public class SearchUtils {
 
             case "GeoNetworkCswIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("geonetwork-csw");
-                newIndexer = new GeoNetworkCswIndexer(httpClient, newIndex, null, null);
+                newIndexer = new GeoNetworkCswIndexer(httpClient, newIndex, null, null, null);
                 break;
 
             case "AtlasMapperIndexer":

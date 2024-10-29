@@ -25,8 +25,10 @@ import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.AbstractParser;
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.ISO19115_3_2018_parser;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,12 +39,15 @@ import java.io.ByteArrayInputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
     private static final Logger LOGGER = Logger.getLogger(GeoNetworkCswIndexer.class.getName());
@@ -50,22 +55,49 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
     private String geoNetworkUrl;
     private String geoNetworkVersion;
+    private List<String> geoNetworkCategories;
+
+    /**
+     * index: eatlas_metadata
+     * geoNetworkUrl: https://eatlas.org.au/geonetwork
+     * geoNetworkVersion: 4.2.10
+     * geoNetworkCategories: eatlas, nwa, !demo, !test
+     */
+    public GeoNetworkCswIndexer(HttpClient httpClient, String index, String geoNetworkUrl, String geoNetworkVersion, List<String> geoNetworkCategories) {
+        super(httpClient, index);
+        this.geoNetworkUrl = geoNetworkUrl;
+        this.geoNetworkVersion = geoNetworkVersion;
+        this.geoNetworkCategories = geoNetworkCategories;
+    }
 
     public static GeoNetworkCswIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
+        List<String> categories = new ArrayList<String>();
+        JSONArray geoNetworkCategoriesArray = json.optJSONArray("geoNetworkCategories");
+        if (geoNetworkCategoriesArray != null) {
+            for (int i = 0; i < geoNetworkCategoriesArray.length(); i++) {
+                String category = geoNetworkCategoriesArray.optString(i, null);
+                if (category != null && !category.isBlank()) {
+                    categories.add(category.trim());
+                }
+            }
+        }
+
         return new GeoNetworkCswIndexer(
             httpClient, index,
             json.optString("geoNetworkUrl", null),
-            json.optString("geoNetworkVersion", null));
+            json.optString("geoNetworkVersion", null),
+            categories.isEmpty() ? null : categories);
     }
 
     public JSONObject toJSON() {
         return this.getJsonBase()
             .put("geoNetworkUrl", this.geoNetworkUrl)
-            .put("geoNetworkVersion", this.geoNetworkVersion);
+            .put("geoNetworkVersion", this.geoNetworkVersion)
+            .put("geoNetworkCategories", this.geoNetworkCategories);
     }
 
     @Override
@@ -108,8 +140,18 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
             return null;
         }
 
+        List<String> andFilters = new ArrayList<String>();
+        andFilters.add(String.format(
+            "<ogc:PropertyIsEqualTo>" +
+                "<ogc:PropertyName>Identifier</ogc:PropertyName>" +
+                "<ogc:Literal>%s</ogc:Literal>" +
+            "</ogc:PropertyIsEqualTo>",
+            StringEscapeUtils.escapeXml10(id)));
+        andFilters.addAll(getCategoriesFilters());
+        String recordFilterQuery = this.andFiltersToString(andFilters);
+
         String outputSchema = "http://standards.iso.org/iso/19115/-3/mdb/2.0"; // iso19115-3.2018
-        String xmlQuery = "<?xml version=\"1.0\"?>\n" +
+        String xmlQuery = String.format("<?xml version=\"1.0\"?>\n" +
             "<GetRecords xmlns=\"http://www.opengis.net/cat/csw/2.0.2\" " +
                     "xmlns:ogc=\"http://www.opengis.net/ogc\" " +
                     "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
@@ -118,20 +160,15 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     "resultType=\"results\" " +
                     "startPosition=\"1\" " +
                     "maxRecords=\"1\" " +
-                    "outputSchema=\"" + outputSchema + "\" " +
+                    "outputSchema=\"%s\" " +
                     "xsi:schemaLocation=\"http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd\">" +
                 "<Query typeNames=\"mdb:MD_Metadata\">" +
                     "<ElementSetName>full</ElementSetName>" +
-                    "<Constraint version=\"1.1.0\">" +
-                        "<ogc:Filter>" +
-                            "<ogc:PropertyIsEqualTo>" +
-                                "<ogc:PropertyName>Identifier</ogc:PropertyName>" +
-                                "<ogc:Literal>" + id + "</ogc:Literal>" +
-                            "</ogc:PropertyIsEqualTo>" +
-                        "</ogc:Filter>" +
-                    "</Constraint>" +
+                    "%s" +
                 "</Query>" +
-            "</GetRecords>";
+            "</GetRecords>",
+            StringEscapeUtils.escapeXml10(outputSchema),
+            recordFilterQuery);
 
         // JDOM tutorial:
         //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
@@ -192,17 +229,6 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         return null;
     }
 
-    /**
-     * index: eatlas_metadata
-     * geoNetworkUrl: https://eatlas.org.au/geonetwork
-     * geoNetworkVersion: 4.2.10
-     */
-    public GeoNetworkCswIndexer(HttpClient httpClient, String index, String geoNetworkUrl, String geoNetworkVersion) {
-        super(httpClient, index);
-        this.geoNetworkUrl = geoNetworkUrl;
-        this.geoNetworkVersion = geoNetworkVersion;
-    }
-
     @Override
     public boolean supportsIndexLatest() {
         return true;
@@ -251,19 +277,18 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         // If we have a "lastHarvested" parameter, request metadata records modified since that date.
         // Otherwise, request everything.
-        String recordFilterQuery = "";
+        List<String> andFilters = new ArrayList<String>();
         if (!fullHarvest) {
             // Harvest only modified records
-            recordFilterQuery =
-                "<Constraint version=\"1.1.0\">" +
-                    "<ogc:Filter>" +
-                        "<ogc:PropertyIsGreaterThan>" +
-                            "<ogc:PropertyName>Modified</ogc:PropertyName>" +
-                            "<ogc:Literal>" + lastHarvested + "</ogc:Literal>" +
-                        "</ogc:PropertyIsGreaterThan>" +
-                    "</ogc:Filter>" +
-                "</Constraint>";
+            andFilters.add(String.format(
+                "<ogc:PropertyIsGreaterThan>" +
+                    "<ogc:PropertyName>Modified</ogc:PropertyName>" +
+                    "<ogc:Literal>%d</ogc:Literal>" +
+                "</ogc:PropertyIsGreaterThan>",
+                lastHarvested));
         }
+        andFilters.addAll(getCategoriesFilters());
+        String recordFilterQuery = this.andFiltersToString(andFilters);
 
         String outputSchema = "http://standards.iso.org/iso/19115/-3/mdb/2.0"; // iso19115-3.2018
         int startPosition = 1;
@@ -293,23 +318,28 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         AbstractParser metadataRecordParser = new ISO19115_3_2018_parser();
 
         do {
-            String xmlQuery = "<?xml version=\"1.0\"?>\n" +
+            String xmlQuery = String.format("<?xml version=\"1.0\"?>\n" +
                 "<GetRecords xmlns=\"http://www.opengis.net/cat/csw/2.0.2\" " +
                         "xmlns:ogc=\"http://www.opengis.net/ogc\" " +
                         "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                         "service=\"CSW\" " +
                         "version=\"2.0.2\" " +
                         "resultType=\"results\" " +
-                        "startPosition=\"" + startPosition + "\" " +
-                        "maxRecords=\"" + recordsPerPage + "\" " +
-                        "outputSchema=\"" + outputSchema + "\" " +
+                        "startPosition=\"%d\" " +
+                        "maxRecords=\"%d\" " +
+                        "outputSchema=\"%s\" " +
                         "xsi:schemaLocation=\"http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd\">" +
                     "<Query typeNames=\"mdb:MD_Metadata\">" +
                         "<ElementSetName>full</ElementSetName>" +
-                        recordFilterQuery +
-                        recordSortQuery +
+                        "%s" +
+                        "%s" +
                     "</Query>" +
-                "</GetRecords>";
+                "</GetRecords>",
+                startPosition,
+                recordsPerPage,
+                StringEscapeUtils.escapeXml10(outputSchema),
+                recordFilterQuery,
+                recordSortQuery);
 
             HttpClient.Response response = null;
             try {
@@ -378,6 +408,67 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         } while(!crashed && !empty && startPosition > 0 && startPosition <= numberOfRecordsMatched);
     }
 
+    private List<String> getCategoriesFilters() {
+        List<String> categoriesFilters = new ArrayList<String>();
+
+        if (this.geoNetworkCategories != null && !this.geoNetworkCategories.isEmpty()) {
+            // 3.x = _cat, 4.x = "cat"
+            String categoryPropertyName =
+                    (this.geoNetworkVersion != null && this.geoNetworkVersion.startsWith("3.")) ?
+                    "_cat" : "cat";
+
+            for (String category : this.geoNetworkCategories) {
+                if (category != null && !category.isBlank()) {
+                    String ogcFilter = "PropertyIsEqualTo";
+                    String parsedCategory = category.trim();
+                    if (parsedCategory.startsWith("!")) {
+                        parsedCategory = parsedCategory.substring(1);
+                        ogcFilter = "PropertyIsNotEqualTo";
+                    }
+
+                    categoriesFilters.add(String.format(
+                        "<ogc:%s>" +
+                            "<ogc:PropertyName>%s</ogc:PropertyName>" +
+                            "<ogc:Literal>%s</ogc:Literal>" +
+                        "</ogc:%s>",
+                        ogcFilter,
+                        StringEscapeUtils.escapeXml10(categoryPropertyName),
+                        StringEscapeUtils.escapeXml10(parsedCategory),
+                        ogcFilter));
+                }
+            }
+        }
+
+        return categoriesFilters;
+    }
+
+    private String andFiltersToString(List<String> andFilters) {
+        String constraintFilterStr = "";
+        if (!andFilters.isEmpty()) {
+            String andFiltersString = "";
+            if (andFilters.size() > 1) {
+                StringBuilder filterStringBuilder = new StringBuilder();
+                for (String andFilter : andFilters) {
+                    filterStringBuilder.append(andFilter);
+                }
+
+                andFiltersString = String.format(
+                    "<ogc:And>%s</ogc:And>",
+                    filterStringBuilder);
+            } else {
+                andFiltersString = andFilters.get(0);
+            }
+
+            constraintFilterStr = String.format(
+                "<Constraint version=\"1.1.0\">" +
+                    "<ogc:Filter>%s</ogc:Filter>" +
+                "</Constraint>",
+                andFiltersString);
+        }
+
+        return constraintFilterStr;
+    }
+
     public String getGeoNetworkUrl() {
         return this.geoNetworkUrl;
     }
@@ -394,6 +485,35 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         this.geoNetworkVersion = geoNetworkVersion;
     }
 
+    public List<String> getGeoNetworkCategories() {
+        return this.geoNetworkCategories;
+    }
+
+    public void setGeoNetworkCategories(List<String> geoNetworkCategories) {
+        this.geoNetworkCategories = geoNetworkCategories;
+    }
+
+    public String getGeoNetworkCategoriesAsString() {
+        if (this.geoNetworkCategories == null || this.geoNetworkCategories.isEmpty()) {
+            return null;
+        }
+        StringJoiner joiner = new StringJoiner(", ");
+        for (String category : this.geoNetworkCategories) {
+            joiner.add(category);
+        }
+        return joiner.toString();
+    }
+
+    public void setGeoNetworkCategoriesFromString(String geoNetworkCategoriesString) {
+        if (geoNetworkCategoriesString != null && !geoNetworkCategoriesString.isEmpty()) {
+            this.geoNetworkCategories = Arrays.stream(geoNetworkCategoriesString.split(","))
+                .map(String::trim) // Removes leading/trailing whitespace
+                .filter(s -> !s.isEmpty()) // Removes empty categories
+                .collect(Collectors.toList());
+        } else {
+            this.geoNetworkCategories = null;
+        }
+    }
 
     public class GeoNetworkCswIndexerThread extends Thread {
         private final SearchClient searchClient;

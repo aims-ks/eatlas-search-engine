@@ -255,6 +255,7 @@ public class SettingsPage {
 
                 geoNetworkCswIndexer.setGeoNetworkUrl(FormUtils.getFormStringValue(form, index + "_geoNetworkUrl"));
                 geoNetworkCswIndexer.setGeoNetworkVersion(FormUtils.getFormStringValue(form, index + "_geoNetworkVersion"));
+                geoNetworkCswIndexer.setGeoNetworkCategoriesFromString(FormUtils.getFormStringValue(form, index + "_geoNetworkCategories"));
 
             } else if (indexer instanceof AtlasMapperIndexer) {
                 // AtlasMapperIndexer

@@ -710,6 +710,20 @@
                                             </label>
                                             <div class="desc">Version of GeoNetwork, to use the proper API version.</div>
                                         </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_geoNetworkCategories">
+                                                <span class="label">Categories</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_geoNetworkCategories"
+                                                    name="${indexer.index}_geoNetworkCategories"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.geoNetworkCategoriesAsString}" />" />
+                                            </label>
+                                            <div class="desc">Coma separated list of categories to index. It will only select records containing all the categories (boolean "AND").</div>
+                                            <div class="desc">Leave blank to index all metadata records, regardless of their categories. Use exclamation mark to exclude a category.</div>
+                                            <div class="desc">Example: eatlas, nwatlas, !demo, !test</div>
+                                        </div>
                                     </div>
                                 </c:when>
 
