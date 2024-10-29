@@ -1,0 +1,1617 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<csw:GetRecordsResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd">
+  <csw:SearchStatus timestamp="2024-10-29T02:41:12.065Z" />
+  <csw:SearchResults numberOfRecordsMatched="1" numberOfRecordsReturned="1" elementSet="full" nextRecord="0">
+    <mdb:MD_Metadata xmlns:mdb="http://standards.iso.org/iso/19115/-3/mdb/2.0" xmlns:cat="http://standards.iso.org/iso/19115/-3/cat/1.0" xmlns:gfc="http://standards.iso.org/iso/19110/gfc/1.1" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0" xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0" xmlns:gex="http://standards.iso.org/iso/19115/-3/gex/1.0" xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0" xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0" xmlns:mas="http://standards.iso.org/iso/19115/-3/mas/1.0" xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:mco="http://standards.iso.org/iso/19115/-3/mco/1.0" xmlns:mda="http://standards.iso.org/iso/19115/-3/mda/1.0" xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/2.0" xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/2.0" xmlns:mex="http://standards.iso.org/iso/19115/-3/mex/1.0" xmlns:mmi="http://standards.iso.org/iso/19115/-3/mmi/1.0" xmlns:mpc="http://standards.iso.org/iso/19115/-3/mpc/1.0" xmlns:mrc="http://standards.iso.org/iso/19115/-3/mrc/2.0" xmlns:mrd="http://standards.iso.org/iso/19115/-3/mrd/1.0" xmlns:mri="http://standards.iso.org/iso/19115/-3/mri/1.0" xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0" xmlns:mrs="http://standards.iso.org/iso/19115/-3/mrs/1.0" xmlns:msr="http://standards.iso.org/iso/19115/-3/msr/2.0" xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0" xmlns:dqm="http://standards.iso.org/iso/19157/-2/dqm/1.0" xmlns:mac="http://standards.iso.org/iso/19115/-3/mac/2.0" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:geonet="http://www.fao.org/geonetwork" xsi:schemaLocation="http://standards.iso.org/iso/19115/-3/mdb/2.0 https://schemas.isotc211.org/19115/-3/mdb/2.0/mdb.xsd">
+      <mdb:metadataIdentifier>
+        <mcc:MD_Identifier>
+          <mcc:code>
+            <gco:CharacterString>00713afb-28fd-4878-96da-431d16944732</gco:CharacterString>
+          </mcc:code>
+          <mcc:codeSpace>
+            <gco:CharacterString>urn:uuid</gco:CharacterString>
+          </mcc:codeSpace>
+        </mcc:MD_Identifier>
+      </mdb:metadataIdentifier>
+      <mdb:defaultLocale>
+        <lan:PT_Locale id="EN">
+          <lan:language>
+            <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+          </lan:language>
+          <lan:characterEncoding>
+            <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_CharacterSetCode" codeListValue="anyValidURI" />
+          </lan:characterEncoding>
+        </lan:PT_Locale>
+      </mdb:defaultLocale>
+      <mdb:metadataScope>
+        <mdb:MD_MetadataScope>
+          <mdb:resourceScope>
+            <mcc:MD_ScopeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_ScopeCode" codeListValue="dataset" />
+          </mdb:resourceScope>
+          <mdb:name gco:nilReason="missing">
+            <gco:CharacterString />
+          </mdb:name>
+        </mdb:MD_MetadataScope>
+      </mdb:metadataScope>
+      <mdb:contact>
+        <cit:CI_Responsibility>
+          <cit:role>
+            <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+          </cit:role>
+          <cit:party>
+            <cit:CI_Organisation>
+              <cit:name>
+                <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+              </cit:name>
+              <cit:individual>
+                <cit:CI_Individual>
+                  <cit:name>
+                    <gco:CharacterString>eAtlas Data Manager</gco:CharacterString>
+                  </cit:name>
+                  <cit:contactInfo>
+                    <cit:CI_Contact>
+                      <cit:phone>
+                        <cit:CI_Telephone>
+                          <cit:number>
+                            <gco:CharacterString>+61 7 4753 4444</gco:CharacterString>
+                          </cit:number>
+                          <cit:numberType>
+                            <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                          </cit:numberType>
+                        </cit:CI_Telephone>
+                      </cit:phone>
+                      <cit:address>
+                        <cit:CI_Address>
+                          <cit:deliveryPoint>
+                            <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                          </cit:deliveryPoint>
+                          <cit:city>
+                            <gco:CharacterString>Townsville</gco:CharacterString>
+                          </cit:city>
+                          <cit:administrativeArea>
+                            <gco:CharacterString>Queensland</gco:CharacterString>
+                          </cit:administrativeArea>
+                          <cit:postalCode>
+                            <gco:CharacterString>4810</gco:CharacterString>
+                          </cit:postalCode>
+                          <cit:country>
+                            <gco:CharacterString>Australia</gco:CharacterString>
+                          </cit:country>
+                          <cit:electronicMailAddress>
+                            <gco:CharacterString>e-atlas@aims.gov.au</gco:CharacterString>
+                          </cit:electronicMailAddress>
+                        </cit:CI_Address>
+                      </cit:address>
+                      <cit:onlineResource>
+                        <cit:CI_OnlineResource>
+                          <cit:linkage>
+                            <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
+                          </cit:linkage>
+                          <cit:protocol>
+                            <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                          </cit:protocol>
+                          <cit:name>
+                            <gco:CharacterString>eAtlas portal</gco:CharacterString>
+                          </cit:name>
+                          <cit:description gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:description>
+                        </cit:CI_OnlineResource>
+                      </cit:onlineResource>
+                    </cit:CI_Contact>
+                  </cit:contactInfo>
+                </cit:CI_Individual>
+              </cit:individual>
+            </cit:CI_Organisation>
+          </cit:party>
+        </cit:CI_Responsibility>
+      </mdb:contact>
+      <mdb:dateInfo>
+        <cit:CI_Date>
+          <cit:date>
+            <gco:DateTime>2024-10-02T23:09:50.257Z</gco:DateTime>
+          </cit:date>
+          <cit:dateType>
+            <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" />
+          </cit:dateType>
+        </cit:CI_Date>
+      </mdb:dateInfo>
+      <mdb:dateInfo>
+        <cit:CI_Date>
+          <cit:date>
+            <gco:DateTime>2024-10-17T04:22:41.304Z</gco:DateTime>
+          </cit:date>
+          <cit:dateType>
+            <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="revision" />
+          </cit:dateType>
+        </cit:CI_Date>
+      </mdb:dateInfo>
+      <mdb:metadataStandard>
+        <cit:CI_Citation>
+          <cit:title>
+            <gco:CharacterString>ISO 19115-3.2018</gco:CharacterString>
+          </cit:title>
+        </cit:CI_Citation>
+      </mdb:metadataStandard>
+      <mdb:metadataLinkage>
+        <cit:CI_OnlineResource>
+          <cit:linkage>
+            <gco:CharacterString>https://eatlas.org.au/data/uuid/00713afb-28fd-4878-96da-431d16944732</gco:CharacterString>
+          </cit:linkage>
+          <cit:function>
+            <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="completeMetadata" />
+          </cit:function>
+        </cit:CI_OnlineResource>
+      </mdb:metadataLinkage>
+      <mdb:referenceSystemInfo>
+        <mrs:MD_ReferenceSystem>
+          <mrs:referenceSystemIdentifier>
+            <mcc:MD_Identifier>
+              <mcc:code>
+                <gco:CharacterString>WGS 1984</gco:CharacterString>
+              </mcc:code>
+            </mcc:MD_Identifier>
+          </mrs:referenceSystemIdentifier>
+        </mrs:MD_ReferenceSystem>
+      </mdb:referenceSystemInfo>
+      <mdb:identificationInfo>
+        <mri:MD_DataIdentification>
+          <mri:citation>
+            <cit:CI_Citation>
+              <cit:title>
+                <gco:CharacterString>Subtidal benthic habitats of Yanyuwa Sea Country, Barni-Wardimantha Awara Indigenous Protected Area, Gulf of Carpentaria, Northern Territory, Australia</gco:CharacterString>
+              </cit:title>
+              <cit:date>
+                <cit:CI_Date>
+                  <cit:date>
+                    <gco:Date>2024-10-03</gco:Date>
+                  </cit:date>
+                  <cit:dateType>
+                    <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" />
+                  </cit:dateType>
+                </cit:CI_Date>
+              </cit:date>
+              <cit:identifier>
+                <mcc:MD_Identifier>
+                  <mcc:code>
+                    <gco:CharacterString>10.26274/yf9r-8785</gco:CharacterString>
+                  </mcc:code>
+                  <mcc:codeSpace>
+                    <gco:CharacterString>DOI ID</gco:CharacterString>
+                  </mcc:codeSpace>
+                </mcc:MD_Identifier>
+              </cit:identifier>
+              <cit:citedResponsibleParty>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="contributor" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>Charles Darwin University</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:electronicMailAddress gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                          <cit:onlineResource>
+                            <cit:CI_OnlineResource>
+                              <cit:linkage>
+                                <gco:CharacterString>https://ror.org/048zcaj52</gco:CharacterString>
+                              </cit:linkage>
+                              <cit:protocol>
+                                <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                              </cit:protocol>
+                              <cit:name>
+                                <gco:CharacterString>ROR ID</gco:CharacterString>
+                              </cit:name>
+                              <cit:description gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:description>
+                              <cit:function>
+                                <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="" />
+                              </cit:function>
+                            </cit:CI_OnlineResource>
+                          </cit:onlineResource>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:partyIdentifier>
+                        <mcc:MD_Identifier>
+                          <mcc:code>
+                            <gcx:Anchor xlink:href="https://ror.org/048zcaj52">048zcaj52</gcx:Anchor>
+                          </mcc:code>
+                          <mcc:codeSpace>
+                            <gco:CharacterString>ROR ID</gco:CharacterString>
+                          </mcc:codeSpace>
+                        </mcc:MD_Identifier>
+                      </cit:partyIdentifier>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Groom, Rachel, Dr</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>Charles Darwin University</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Darwin</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Northern Territory</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress>
+                                    <gco:CharacterString>rachel.groom@cdu.edu.au</gco:CharacterString>
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                              <cit:onlineResource>
+                                <cit:CI_OnlineResource>
+                                  <cit:linkage>
+                                    <gco:CharacterString>https://orcid.org/0000-0001-9938-7222</gco:CharacterString>
+                                  </cit:linkage>
+                                  <cit:protocol>
+                                    <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                                  </cit:protocol>
+                                  <cit:name>
+                                    <gco:CharacterString>ORCID ID</gco:CharacterString>
+                                  </cit:name>
+                                  <cit:description gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:description>
+                                  <cit:function>
+                                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="" />
+                                  </cit:function>
+                                </cit:CI_OnlineResource>
+                              </cit:onlineResource>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:partyIdentifier>
+                            <mcc:MD_Identifier>
+                              <mcc:code>
+                                <gcx:Anchor xlink:href="https://orcid.org/0000-0001-9938-7222">0000-0001-9938-7222</gcx:Anchor>
+                              </mcc:code>
+                              <mcc:codeSpace>
+                                <gco:CharacterString>orcid.org</gco:CharacterString>
+                              </mcc:codeSpace>
+                            </mcc:MD_Identifier>
+                          </cit:partyIdentifier>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:electronicMailAddress gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                          <cit:onlineResource>
+                            <cit:CI_OnlineResource>
+                              <cit:linkage>
+                                <gco:CharacterString>https://ror.org/04gsp2c11</gco:CharacterString>
+                              </cit:linkage>
+                              <cit:protocol>
+                                <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                              </cit:protocol>
+                              <cit:name>
+                                <gco:CharacterString>ROR ID</gco:CharacterString>
+                              </cit:name>
+                              <cit:description gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:description>
+                              <cit:function>
+                                <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="" />
+                              </cit:function>
+                            </cit:CI_OnlineResource>
+                          </cit:onlineResource>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:partyIdentifier>
+                        <mcc:MD_Identifier>
+                          <mcc:code>
+                            <gcx:Anchor xlink:href="https://ror.org/04gsp2c11">04gsp2c11</gcx:Anchor>
+                          </mcc:code>
+                          <mcc:codeSpace>
+                            <gco:CharacterString>ror.org</gco:CharacterString>
+                          </mcc:codeSpace>
+                        </mcc:MD_Identifier>
+                      </cit:partyIdentifier>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Carter, Alex, Dr</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number>
+                                    <gco:CharacterString>+61 7 4232 2015</gco:CharacterString>
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Cairns</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Queensland</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress>
+                                    <gco:CharacterString>alexandra.carter@jcu.edu.au</gco:CharacterString>
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                              <cit:onlineResource>
+                                <cit:CI_OnlineResource>
+                                  <cit:linkage>
+                                    <gco:CharacterString>https://orcid.org/0000-0003-2303-0010</gco:CharacterString>
+                                  </cit:linkage>
+                                  <cit:protocol>
+                                    <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                                  </cit:protocol>
+                                  <cit:name>
+                                    <gco:CharacterString>ORCID ID</gco:CharacterString>
+                                  </cit:name>
+                                  <cit:description gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:description>
+                                  <cit:function>
+                                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="" />
+                                  </cit:function>
+                                </cit:CI_OnlineResource>
+                              </cit:onlineResource>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:partyIdentifier>
+                            <mcc:MD_Identifier>
+                              <mcc:code>
+                                <gcx:Anchor xlink:href="https://orcid.org/0000-0003-2303-0010">0000-0003-2303-0010</gcx:Anchor>
+                              </mcc:code>
+                              <mcc:codeSpace>
+                                <gco:CharacterString>orchid.org</gco:CharacterString>
+                              </mcc:codeSpace>
+                            </mcc:MD_Identifier>
+                          </cit:partyIdentifier>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:electronicMailAddress gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                          <cit:onlineResource>
+                            <cit:CI_OnlineResource>
+                              <cit:linkage>
+                                <gco:CharacterString>https://ror.org/04gsp2c11</gco:CharacterString>
+                              </cit:linkage>
+                              <cit:protocol>
+                                <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                              </cit:protocol>
+                              <cit:name>
+                                <gco:CharacterString>ROR ID</gco:CharacterString>
+                              </cit:name>
+                              <cit:description gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:description>
+                              <cit:function>
+                                <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="" />
+                              </cit:function>
+                            </cit:CI_OnlineResource>
+                          </cit:onlineResource>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:partyIdentifier>
+                        <mcc:MD_Identifier>
+                          <mcc:code>
+                            <gcx:Anchor xlink:href="https://ror.org/04gsp2c11">04gsp2c11</gcx:Anchor>
+                          </mcc:code>
+                          <mcc:codeSpace>
+                            <gco:CharacterString>ror.org</gco:CharacterString>
+                          </mcc:codeSpace>
+                        </mcc:MD_Identifier>
+                      </cit:partyIdentifier>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Collier, Catherine, Dr</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Cairns</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Queensland</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress>
+                                    <gco:CharacterString>catherine.collier@jcu.edu.au</gco:CharacterString>
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                              <cit:onlineResource>
+                                <cit:CI_OnlineResource>
+                                  <cit:linkage>
+                                    <gco:CharacterString>https://orcid.org/0000-0001-9494-6582</gco:CharacterString>
+                                  </cit:linkage>
+                                  <cit:protocol>
+                                    <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                                  </cit:protocol>
+                                  <cit:name>
+                                    <gco:CharacterString>ORCHID ID</gco:CharacterString>
+                                  </cit:name>
+                                  <cit:description gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:description>
+                                  <cit:function>
+                                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="" />
+                                  </cit:function>
+                                </cit:CI_OnlineResource>
+                              </cit:onlineResource>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:partyIdentifier>
+                            <mcc:MD_Identifier>
+                              <mcc:code>
+                                <gcx:Anchor xlink:href="https://orcid.org/0000-0001-9494-6582">0000-0001-9494-6582</gcx:Anchor>
+                              </mcc:code>
+                              <mcc:codeSpace>
+                                <gco:CharacterString>orchid.org</gco:CharacterString>
+                              </mcc:codeSpace>
+                            </mcc:MD_Identifier>
+                          </cit:partyIdentifier>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                      </cit:name>
+                      <cit:partyIdentifier>
+                        <mcc:MD_Identifier>
+                          <mcc:code>
+                            <gcx:Anchor xlink:href="https://ror.org/04gsp2c11">04gsp2c11</gcx:Anchor>
+                          </mcc:code>
+                          <mcc:codeSpace>
+                            <gco:CharacterString>ror.org</gco:CharacterString>
+                          </mcc:codeSpace>
+                        </mcc:MD_Identifier>
+                      </cit:partyIdentifier>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Firby, Lauren, Ms</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Cairns</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Queensland</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                      </cit:name>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Van de Wetering, Chris, Mr</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Cairns</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Queensland</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                              <cit:onlineResource>
+                                <cit:CI_OnlineResource>
+                                  <cit:linkage>
+                                    <gco:CharacterString>https://orcid.org/0000-0002-6055-1125</gco:CharacterString>
+                                  </cit:linkage>
+                                  <cit:protocol>
+                                    <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                                  </cit:protocol>
+                                  <cit:name>
+                                    <gco:CharacterString>ORCHID ID</gco:CharacterString>
+                                  </cit:name>
+                                  <cit:description gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:description>
+                                  <cit:function>
+                                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="" />
+                                  </cit:function>
+                                </cit:CI_OnlineResource>
+                              </cit:onlineResource>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:partyIdentifier>
+                            <mcc:MD_Identifier>
+                              <mcc:code>
+                                <gcx:Anchor xlink:href="https://orcid.org/0000-0002-6055-1125">0000-0002-6055-1125</gcx:Anchor>
+                              </mcc:code>
+                              <mcc:codeSpace>
+                                <gco:CharacterString>orchid.org</gco:CharacterString>
+                              </mcc:codeSpace>
+                            </mcc:MD_Identifier>
+                          </cit:partyIdentifier>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                      </cit:name>
+                      <cit:partyIdentifier>
+                        <mcc:MD_Identifier>
+                          <mcc:code>
+                            <gcx:Anchor xlink:href="https://ror.org/04gsp2c11">04gsp2c11</gcx:Anchor>
+                          </mcc:code>
+                          <mcc:codeSpace>
+                            <gco:CharacterString>ROR ID</gco:CharacterString>
+                          </mcc:codeSpace>
+                        </mcc:MD_Identifier>
+                      </cit:partyIdentifier>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Wilkinson, Juliette, Ms</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Cairns</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Queensland</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>li-Anthawirriyarra Sea Ranger Unit, Mabunji Aboriginal Resource Indigenous Corporation</gco:CharacterString>
+                      </cit:name>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Evans, Shaun, Mr</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>li-Anthawirriyarra Sea Ranger Unit, Mabunji Aboriginal Resource Indigenous Corporation</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Borroloola</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Northern Territory</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>li-Anthawirriyarra Sea Ranger Unit, Mabunji Aboriginal Resource Indigenous Corporation</gco:CharacterString>
+                      </cit:name>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Barrett, Stephen, Mr</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>li-Anthawirriyarra Sea Ranger Unit, Mabunji Aboriginal Resource Indigenous Corporation</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Borroloola</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Northern Territory</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>li-Anthawirriyarra Sea Ranger Unit, Mabunji Aboriginal Resource Indigenous Corporation</gco:CharacterString>
+                      </cit:name>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Simon, Steven, Mr</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>li-Anthawirriyarra Sea Ranger Unit, Mabunji Aboriginal Resource Indigenous Corporation</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Borroloola</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Northern Territory</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="collaborator" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>Jungkayi for eastern Vanderlin Island</gco:CharacterString>
+                      </cit:name>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>Anderson, Stephen, Mr</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>Jungkayi for eastern Vanderlin Island</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Northern Territory</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                          <cit:positionName gco:nilReason="missing">
+                            <gco:CharacterString />
+                          </cit:positionName>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+              </cit:citedResponsibleParty>
+            </cit:CI_Citation>
+          </mri:citation>
+          <mri:abstract>
+            <gco:CharacterString>This dataset summarises subtidal benthic surveys in Yanyuwa Sea Country into 3 GIS shapefiles. 
+(1) A point (site) shapefile describes seagrass presence/absence at 849 subtidal sites surveyed by vessel. 
+(2) The meadow shapefile describes attributes of 46 subtidal seagrass meadows. 
+(3) The interpolation shapefile describes variation in subtidal seagrass biomass across the seagrass meadows. 
+
+This project is a partnership between the li-Anthawirriyarra rangers, Charles Darwin University, James Cook University, and Mabunji Aboriginal Resource Indigenous Corporation to map the subtidal habitats of the Yanyuwa Indigenous Protected Area (IPA), an area of profound importance to the Marra and Yanyuwa people and to the marine ecosystem of the Gulf of Carpentaria. Benthic habitat maps of Yanyuwa Country were produced, with a focus on seagrass. This project was funded by the NT Government Aboriginal Ranger Grant Program.
+
+The sampling methods used to study, describe and monitor seagrass meadows were developed by TropWATER and tailored to the location and habitat surveyed; these are described in detail in the relevant publications (https://research.jcu.edu.au/tropwater). 
+
+Geographic Information System (GIS)
+All survey data were entered into a Geographic Information System (GIS) using ArcGIS 10.8. Rectified colour satellite imagery of Yanyuwa Sea Country (Source: Allen Coral Atlas and ESRI), field notes and aerial photographs taken from the helicopter during surveys were used to identify geographical features, such as reef tops, channels and deep-water drop-offs, to assist in determining seagrass meadow boundaries. Three GIS layers were created to describe spatial features of the region: a site layer, seagrass meadow layer, and a seagrass biomass interpolation layer. 
+
+Site layer
+This layer contains information on data collected at assessment sites. This layer includes: 
+1.	Temporal survey details – Survey date; 
+2.	Spatial position - Latitude/longitude; 
+3.	Survey location; 
+4.	Seagrass information including presence/absence of seagrass, above-ground biomass (total and for each species), percent cover of seagrass at each site; 
+5.	Benthic macro-invertebrate information including the percent cover of hard coral, soft coral, sponges and other benthic macro invertebrates (e.g. ascidian, clam) at a site; 
+6.	Algae information including percent cover of algae at a site and percent contribution of algae functional groups to algae cover at a site;
+7.	Open substrate – the percent cover of the site that had no flora or habitat forming benthic invertebrates present;
+8.	Dominant sediment type - Sediment type based on grain size visual assessment or deck descriptions.
+9.	Survey method and vessel;
+10.	Relevant comments and presence/absence of megafauna and animals of interest (dugong, turtle, dolphin); and
+11.	Data custodians. 
+
+Seagrass meadow layer 
+Seagrass presence/absence site data, mapping sites, field notes, and satellite imagery were used to construct meadow boundaries in ArcGIS®. The meadow (polygon) layer provides summary information for all sites within each seagrass meadow, including:
+1.	Temporal survey details – Survey month and year as individual columns and the survey date (the date range the survey took place);
+2.	Spatial survey details – Survey location, meadow identification number that identifies the reef name and the meadow number. This allows individual meadows to be compared among years;
+3.	Survey method;
+4.	Meadow depth for subtidal meadows;
+5.	Species presence – a list of the seagrass species in the meadow; 
+6.	Meadow density – Seagrass meadows were classified as light, moderate, dense based on the mean biomass of the dominant species within the meadow. For example, a Thalassia hemprichii dominated meadow would be classed as “light” if the mean meadow biomass was &lt;5 grams dry weight m-2 (g DW m-2), and “dense” if mean meadow biomass was &gt;25 g DW m-2.
+7.	Meadow community type – Seagrass meadows were classified into community types according to seagrass species composition within each meadow. Species composition was based on the percent each species’ biomass contributed to mean meadow biomass. A standard nomenclature system was used to categorize each meadow. 
+8.	Mean meadow biomass measured in g DW m-2 (+ standard error if available);
+9.	Meadow area (hectares; ha) (+ mapping precision) of each meadow was calculated in the GDA 2020 Geoscience Australia MGA Zone 53 projection using the ‘calculate geometry’ function in ArcMap. Mapping precision estimates (R; in ha) were based on the mapping method used for that meadow.  Mapping precision estimate was used to calculate an error buffer around each meadow; the area of this buffer is expressed as a meadow reliability estimate (R) in hectares;
+10.	Any relevant comments;
+11.	Data custodians.
+
+Seagrass meadow layer 
+Seagrass presence/absence site data, mapping sites, field notes, and satellite imagery were used to construct meadow boundaries in ArcGIS®. The meadow (polygon) layer provides summary information for all sites within each seagrass meadow, including:
+1.	Temporal survey details – Survey month and year as individual columns and the survey date (the date range the survey took place);
+2.	Spatial survey details – Survey location, meadow identification number that identifies the reef name and the meadow number. This allows individual meadows to be compared among years;
+3.	Survey method;
+4.	Meadow depth for subtidal meadows;
+5.	Species presence – a list of the seagrass species in the meadow; 
+6.	Meadow density – Seagrass meadows were classified as light, moderate, dense based on the mean biomass of the dominant species within the meadow. For example, a Thalassia hemprichii dominated meadow would be classed as “light” if the mean meadow biomass was &lt;5 grams dry weight m-2 (g DW m-2), and “dense” if mean meadow biomass was &gt;25 g DW m-2.
+7.	Meadow community type – Seagrass meadows were classified into community types according to seagrass species composition within each meadow. Species composition was based on the percent each species’ biomass contributed to mean meadow biomass. A standard nomenclature system was used to categorize each meadow. 
+8.	Mean meadow biomass measured in g DW m-2 (+ standard error if available);
+9.	Meadow area (hectares; ha) (+ mapping precision) of each meadow was calculated in the GDA 2020 Geoscience Australia MGA Zone 53 projection using the ‘calculate geometry’ function in ArcMap. Mapping precision estimates (R; in ha) were based on the mapping method used for that meadow.  Mapping precision estimate was used to calculate an error buffer around each meadow; the area of this buffer is expressed as a meadow reliability estimate (R) in hectares;
+10.	Any relevant comments;
+11.	Data custodians.
+
+Seagrass biomass interpolation layer
+An inverse distance weighted (IDW) interpolation was applied to seagrass site data to describe spatial variation in seagrass biomass within seagrass meadows. The interpolation was conducted in ArcMap 10.8. 
+
+Base map
+The base map used is courtesy ESRI 2024. 
+
+Limitations of the data
+Recordings of dugong, turtle, and dolphin were opportunistic sightings and recorded if nearby a survey site. This presence/absence data was not collected as part of a formal structured survey of these animals and should therefore be used with caution.
+
+Format of the data
+This dataset consists of 1 point layer package, 1 polygon layer package and 1 raster file:
+1.	Yanyuwa Sea Country subtidal sites 2022-2023.lpk  -	Symbology representing seagrass presence/absence at each survey site.
+2.	Yanyuwa Sea Country subtidal seagrass meadow community type 2022-2023.lpk -	Symbology representing dominant species (in terms of biomass) for each intertidal meadow.
+3.	Yanyuwa Sea Country subtidal seagrass biomass interpolation 2022-2023.lpk -	Symbology representing the spatial variation in seagrass biomass within each seagrass meadow.
+
+Data Dictionary
+Yanyuwa Sea Country subtidal sites 2022-2023 (point data)
+SITE (text) - Unique identifier representing a single sample site
+MEADOW (text) - Unique identifier representing what meadow the sample site is located in. Blank if sample site is not located within a meadow 
+SURVEY_DATE (numeric) – survey date (day/month/year)
+MONTH (text) – survey month
+YEAR (numeric) – survey year
+SURVEY_NAME (text) – Name of survey location
+LOCATION (text) – Name of survey location
+LATITUDE (numeric) – Site location in decimal degrees south
+LONGITUDE (numeric) – Site location in decimal degrees east
+TIME (numeric) – sample time (24 hours; GMT +9:30) (NT time - subtidal sites only)
+DBMSL (numeric) – depth below mean sea level (metres) for subtidal sites. Intertidal sites depth recorded as 0.
+TIDAL (text) – identifying if the site was in an intertidal or subtidal location
+SUBSTRATE (text) – tags identifying the types of substrates at the sample site. Possible tags are Mud, Sand, Coarse Sand, Silt, Shell, Rock, Reef, Rubble and various combinations. Listed in order from most dominant substrate to least dominant.
+SEAGRASS_P (numeric) – Absence (0) or Presence (1) of seagrass
+SEAGRASS_C (numeric) - Estimated % of seagrass cover at sample site
+SEAGRASS_B (numeric) - Estimated total biomass per square metre for sample site calculated from the mean of three replicate quadrats. Unit is gdw m-2.
+SEAGRASS_SE (numeric) – standard error of biomass at sample site calculated from the three replicate quadrats used to estimate biomass at a sample site. Unit is gdw m-2. 
+EXCLUDE_B (numeric) – Include (0) or Exclude (1). Any site identified that needs to be excluded from contributing to the calculation of mean meadow biomass, e.g. where a visual estimate of biomass could not be optioned (i.e. no visibility at the site, only a van Veen sediment grab was used at the site)  
+C. rotundata (numeric) – Estimated biomass of Cymodocea rotundata at the sample site. Unit is gdw m-2.  
+C. serrulata (numeric) – Estimated biomass of Cymodocea serrulata at the sample site. Unit is gdw m-2.  
+E. acoroides (numeric) – Estimated biomass of Enhalus acoroides at the sample site. Unit is gdw m-2. 
+H. uninervis (narrow) (numeric) – Estimated biomass of Halodule uninervis (narrow leaf morphology) at the sample site. Unit is gdw m-2.
+H. uninervis (wide) (numeric) – Estimated biomass of Halodule uninervis (wide leaf morphology) at the sample site. Unit is gdw m-2.
+H. decipiens (numeric) – Estimated biomass of Halophila decipiens at the sample site. Unit is gdw m-2.
+H. ovalis (numeric) – Estimated biomass of Halophila ovalis at the sample site. Unit is gdw m-2.
+H. spinulosa (numeric) – Estimated biomass of Halophila spinulosa at the sample site. Unit is gdw m-2.
+H. tricostata (numeric) – Estimated biomass of Halophila tricostata at the sample site. Unit is gdw m-2.
+S. isoetifolium (numeric) – Estimated biomass of Syringodium isoetifolium at the sample site. Unit is gdw m-2.
+T. ciliatum (numeric) – Estimated biomass of Thalassodendron ciliatum at the sample site. Unit is gdw m-2.
+T. hemprichii (numeric) – Estimated biomass of Thalassia hemprichii at the 
+Z. muelleri (numeric) – Estimated biomass of Zostera muelleri at the sample site. Unit is gdw m-2.
+TURF_MAT (numeric) – (Turf mat algae % contribution to algae cover). Algae that forms a dense mat on the substrate
+ERECT_MACROPHYTE (numeric) – (Erect macrophyte algae % contribution to algae cover). Macrophytic algae with an erect growth form and high level of cellular differentiation, e.g. Sargassum, Caulerpa and Galaxaura species
+ENCRUSTING (numeric) – (Encrusting algae % contribution to algae cover). Algae that grows in sheet-like form attached to the substrate or benthos, e.g. coralline algae.
+ERECT_CALCAREOUS (numeric) – (Erect calcareous algae % contribution to algae cover). Algae with erect growth form and high level of cellular differentiation containing calcified segments, e.g. Halimeda species.
+FILAMENTOUS (numeric) – (Filamentous algae % contribution to algae cover). Thin, thread-like algae with little cellular differentiation.
+HARD_CORAL (numeric) – (Hard coral %). All scleractinian corals including massive, branching, tabular, digitate and mushroom
+SOFT_CORAL (numeric) – (Soft coral %). All alcyonarian corals, i.e. corals lacking a hard limestone skeleton
+SPONGE (numeric) – (Sponge %)
+OTHER_BMI (numeric) – Any other benthic macro-invertebrates identified, e.g. oysters, ascidians, clams. Other benthic macro-invertebrates are listed in the “comments” attribute for intertidal and shallow subtidal camera drops, and listed as percent cover in the deepwater GIS.
+OPEN_SUBSTRATE (numeric) – Open substrate, no seagrass, algae or benthic macro-invertebrates at site 
+*Note: SEAGRASS_C + TURF_MAT + ERECT_MACROPHYTE + ENCRUSTING + ERECT_CALCAREOUS + FILAMENTOUS + HARD_CORAL + SOFT_CORAL + SPONGE + OTHER_BMI + OPEN_SUBSTRATE = 100% of benthic cover
+DUGONG (numeric) - Absence (0) or Presence (1) of dugong/s near site
+TURTLE (numeric) - Absence (0) or Presence (1) of turtle/s near site
+DOLPHIN (numeric) - Absence (0) or Presence (1) of dolphin/s near site
+DFT_PRESENT (numeric) - Absence (0) or Presence (1) of dugong feeding trails at site. Only clearly visible and therefore assessed at intertidal sites. Subtidal sites not assessed for DFTs coded as -999
+METHOD (text) – e.g. helicopter, walking, hovercraft, boat-based including camera, free diving, scuba diving, van Veen grab, sled net
+VESSEL (text) – Vessel name (if known)
+COMMENTS (text) – Any comments for that site
+CUSTODIAN (text) – Custodian/owner of the data set
+UPDATED (text) - The date the shapefile was last updated
+AUTHOR (text) – Creator of GIS from the data set
+
+
+Yanyuwa Sea Country subtidal seagrass meadows 2022-2023 (polygon data)
+ID (numeric) - Unique identifier representing a single meadow
+SURVEY_NAME (text) – Name of survey
+LOCATION (text) – Name of survey location
+SURVEY_DATE (text) – Sample date (day/month/year)
+MONTH (numeric) – Sample month 
+YEAR (numeric) – Sample year
+PERSISTENCE (text) – Meadow form on three categories: enduring, transitory, unknown
+DENSITY (text) – Meadow density categories (light, moderate, dense)
+TYPE (text) - Meadow community type determined according to seagrass species composition within the meadow
+SPECIES (text) – (Seagrass species): seagrass species found within the meadow. Species are recorded as abbreviated species names such as “E. acoroides”
+TOT_SITES (numeric) – (Number of survey sites): the number of sample sites within the meadow
+BIOMASS (numeric) – (Seagrass biomass (gdw m-2)): Mean biomass calculated from all sites (BIO_SITES) within an individual meadow
+SE (numeric) – (Standard Error (gdw m-2)): The error is a calculation of standard error of biomass from all (BIO_SITES) sites within an individual meadow
+AREA_HA (numeric) – (Meadow area (Ha)): Estimated meadow size (unit: hectares)
+R_M (numeric) – (Meadow mapping precision (m)): Estimated mapping precision based on mapping method. 
+R_HA (numeric) - (Meadow reliability estimate (Ha)): Meadow reliability estimate (unit: hectares). Expressing the error buffer around each meadow as calculated from the mapping precision estimate
+SURVEY METHOD (text) – e.g. helicopter, walking, hovercraft, boat-based including camera, free diving, scuba diving, van Veen grab, sled net
+VESSEL (text) – Vessel name (if known)
+COMMENTS (text) – Any relevant comments for that meadow
+UPDATED (date) – The date the shapefile was last updated
+CUSTODIAN (text) – Custodian/owner of the data set
+AUTHOR (text) – Creator of GIS from the data set
+
+Yanyuwa Sea Country subtidal seagrass biomass interpolation 2022-2023 (interpolation layer)
+Inverse Distance Weighted interpolation.
+Band 1: Interpolated biomass in gdw m-2
+
+References: 
+Intertidal survey (2021-2022) Report: Groom R, Carter A, Collier C, Firby L, Evans S, Barrett S, Hoffmann L, van de Wetering C, Shepherd L, Evans S, Anderson S. (2023) Mapping Critical Habitat in Yanyuwa Sea Country. Report to the National Environmental Science Program. Charles Darwin University, pp. 40. Available at: https://www.nespmarinecoastal.edu.au/wp-content/uploads/2023/07/NESP-MaC-Hub-Project-1.12_Groom-et-al-FINAL-REPORT.pdf
+
+Intertidal survey (2021-2022)  Dataset: Groom, R., Carter, A. B., Collier, C., Firby, L., Evans, S., Barrett, S., Hoffman, L., van de Wetering, C., Evans, S., Simon, S., &amp; Anderson, S. (2023). Benthic habitats of Yanyuwa Sea Country, Barni - Wardimantha Awara Indigenous Protected Area, Gulf of Carpentaria, Northern Territory, Australia (NESP MaC Project 1.12, JCU &amp; CDU) [Data set]. eAtlas. https://doi.org/10.26274/V6K5-2F34
+
+eAtlas Processing:
+The original data were provided as Layer Packages. The lpkg files were imported to ArcGIS and exported as shapefiles and GeoTiff. A modification was made to the Site layer to remove sensitive data (single column and two comments) at the request of the data provider. All other data are as provided. 
+
+Location of the data:
+This dataset is filed in the eAtlas enduring data repository at: data\2020-2029-other\NT_JCU_Yanyuwa-Sea-Country_2022-2023</gco:CharacterString>
+          </mri:abstract>
+          <mri:purpose gco:nilReason="missing">
+            <gco:CharacterString />
+          </mri:purpose>
+          <mri:credit gco:nilReason="missing">
+            <gco:CharacterString />
+          </mri:credit>
+          <mri:status>
+            <mcc:MD_ProgressCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_ProgressCode" codeListValue="" />
+          </mri:status>
+          <mri:pointOfContact>
+            <cit:CI_Responsibility>
+              <cit:role>
+                <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" />
+              </cit:role>
+              <cit:party>
+                <cit:CI_Organisation>
+                  <cit:name>
+                    <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                  </cit:name>
+                  <cit:individual>
+                    <cit:CI_Individual>
+                      <cit:name>
+                        <gco:CharacterString>Carter, Alex</gco:CharacterString>
+                      </cit:name>
+                      <cit:contactInfo>
+                        <cit:CI_Contact>
+                          <cit:phone>
+                            <cit:CI_Telephone>
+                              <cit:number gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:number>
+                              <cit:numberType>
+                                <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                              </cit:numberType>
+                            </cit:CI_Telephone>
+                          </cit:phone>
+                          <cit:address>
+                            <cit:CI_Address>
+                              <cit:deliveryPoint>
+                                <gco:CharacterString>TropWATER, James Cook University</gco:CharacterString>
+                              </cit:deliveryPoint>
+                              <cit:city>
+                                <gco:CharacterString>Cairns</gco:CharacterString>
+                              </cit:city>
+                              <cit:administrativeArea>
+                                <gco:CharacterString>Queensland</gco:CharacterString>
+                              </cit:administrativeArea>
+                              <cit:postalCode gco:nilReason="missing">
+                                <gco:CharacterString />
+                              </cit:postalCode>
+                              <cit:country>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                              </cit:country>
+                              <cit:electronicMailAddress>
+                                <gco:CharacterString>alexandra.carter@jcu.edu.au</gco:CharacterString>
+                              </cit:electronicMailAddress>
+                            </cit:CI_Address>
+                          </cit:address>
+                        </cit:CI_Contact>
+                      </cit:contactInfo>
+                      <cit:positionName gco:nilReason="missing">
+                        <gco:CharacterString />
+                      </cit:positionName>
+                    </cit:CI_Individual>
+                  </cit:individual>
+                </cit:CI_Organisation>
+              </cit:party>
+            </cit:CI_Responsibility>
+          </mri:pointOfContact>
+          <mri:spatialRepresentationType>
+            <mcc:MD_SpatialRepresentationTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="" />
+          </mri:spatialRepresentationType>
+          <mri:spatialResolution>
+            <mri:MD_Resolution>
+              <mri:equivalentScale>
+                <mri:MD_RepresentativeFraction>
+                  <mri:denominator>
+                    <gco:Integer />
+                  </mri:denominator>
+                </mri:MD_RepresentativeFraction>
+              </mri:equivalentScale>
+            </mri:MD_Resolution>
+          </mri:spatialResolution>
+          <mri:extent>
+            <gex:EX_Extent>
+              <gex:description>
+                <gco:CharacterString>Benthic habitats were surveyed in Yanyuwa Sea Country, Northern Territory, Australia. Survey sites and mapped seagrass meadows are provided as GIS shapefiles. Seagrass biomass as a raster file.</gco:CharacterString>
+              </gex:description>
+              <gex:geographicElement>
+                <gex:EX_GeographicBoundingBox>
+                  <gex:westBoundLongitude>
+                    <gco:Decimal>135.8825</gco:Decimal>
+                  </gex:westBoundLongitude>
+                  <gex:eastBoundLongitude>
+                    <gco:Decimal>137.6422</gco:Decimal>
+                  </gex:eastBoundLongitude>
+                  <gex:southBoundLatitude>
+                    <gco:Decimal>-16.2705</gco:Decimal>
+                  </gex:southBoundLatitude>
+                  <gex:northBoundLatitude>
+                    <gco:Decimal>-15.0045</gco:Decimal>
+                  </gex:northBoundLatitude>
+                </gex:EX_GeographicBoundingBox>
+              </gex:geographicElement>
+              <gex:geographicElement />
+              <gex:temporalElement>
+                <gex:EX_TemporalExtent>
+                  <gex:extent>
+                    <gml:TimePeriod gml:id="A1234">
+                      <gml:beginPosition>2022-10-22</gml:beginPosition>
+                      <gml:endPosition>2023-10-25</gml:endPosition>
+                    </gml:TimePeriod>
+                  </gex:extent>
+                </gex:EX_TemporalExtent>
+              </gex:temporalElement>
+            </gex:EX_Extent>
+          </mri:extent>
+          <mri:resourceMaintenance>
+            <mmi:MD_MaintenanceInformation>
+              <mmi:maintenanceAndUpdateFrequency>
+                <mmi:MD_MaintenanceFrequencyCode codeListValue="asNeeded" codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_MaintenanceFrequencyCode" />
+              </mmi:maintenanceAndUpdateFrequency>
+            </mmi:MD_MaintenanceInformation>
+          </mri:resourceMaintenance>
+          <mri:graphicOverview>
+            <mcc:MD_BrowseGraphic>
+              <mcc:fileName>
+                <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/00713afb-28fd-4878-96da-431d16944732/attachments/JCU_Yanyuwa-Sea-Country-intertidal-and-subtidal-seagrass-sites_2021-2023_CCBY.jpg</gco:CharacterString>
+              </mcc:fileName>
+              <mcc:fileDescription>
+                <gco:CharacterString>Presence/absence of seagrass at sites surveyed in Yanyuwa Sea Country, Barni-Wardimantha Awara Indigenous Protected Area, Gulf of Carpentaria, Northern Territory, 2021-2023. Credit: TropWATER, JCU (CCBY)</gco:CharacterString>
+              </mcc:fileDescription>
+            </mcc:MD_BrowseGraphic>
+          </mri:graphicOverview>
+          <mri:graphicOverview>
+            <mcc:MD_BrowseGraphic>
+              <mcc:fileName>
+                <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/00713afb-28fd-4878-96da-431d16944732/attachments/JCU_Yanyuwa-Sea-Country-intertidal-and-subtidal-seagrass-biomass-interpolation_2021-2023_CCBY.jpg</gco:CharacterString>
+              </mcc:fileName>
+              <mcc:fileDescription>
+                <gco:CharacterString>An inverse distance weighted interpolation of seagrass above-ground biomass in Yanyuwa Sea Country, Barni-Wardimantha Awara Indigenous Protected Area, Gulf of Carpentaria, Northern Territory, 2021-2023. Credit: TropWATER, JCU (CCBY)</gco:CharacterString>
+              </mcc:fileDescription>
+            </mcc:MD_BrowseGraphic>
+          </mri:graphicOverview>
+          <mri:graphicOverview>
+            <mcc:MD_BrowseGraphic>
+              <mcc:fileName>
+                <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/00713afb-28fd-4878-96da-431d16944732/attachments/JCU_Yanyuwa-Sea-Country-intertidal-and-subtidal-seagrass_meadows_2021-2023.jpg</gco:CharacterString>
+              </mcc:fileName>
+              <mcc:fileDescription>
+                <gco:CharacterString>Seagrass meadows surveyed in Yanyuwa Sea Country, Barni-Wardimantha Awara Indigenous Protected Area, Gulf of Carpentaria, Northern Territory, 2021-2023. Credit: TropWATER, JCU (CCBY)</gco:CharacterString>
+              </mcc:fileDescription>
+            </mcc:MD_BrowseGraphic>
+          </mri:graphicOverview>
+          <mri:descriptiveKeywords>
+            <mri:MD_Keywords>
+              <mri:keyword gco:nilReason="missing">
+                <gco:CharacterString />
+              </mri:keyword>
+              <mri:type>
+                <mri:MD_KeywordTypeCode codeListValue="theme" codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_KeywordTypeCode" />
+              </mri:type>
+            </mri:MD_Keywords>
+          </mri:descriptiveKeywords>
+          <mri:descriptiveKeywords>
+            <mri:MD_Keywords>
+              <mri:keyword>
+                <gco:CharacterString>World</gco:CharacterString>
+              </mri:keyword>
+              <mri:type>
+                <mri:MD_KeywordTypeCode codeListValue="place" codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_KeywordTypeCode" />
+              </mri:type>
+            </mri:MD_Keywords>
+          </mri:descriptiveKeywords>
+          <mri:resourceConstraints>
+            <mco:MD_LegalConstraints>
+              <mco:useLimitation>
+                <gco:CharacterString>Please cite as Groom, R., Carter, A. B., Collier, C., Firby, L., van de Wetering, C., Wilkinson, J., Evans, S., Barrett, S., Simon, S., &amp; Anderson, S. (2024). Subtidal benthic habitats of Yanyuwa Sea Country, Barni-Wardimantha Awara Indigenous Protected Area, Gulf of Carpentaria, Northern Territory, Australia [Data set]. eAtlas. https://doi.org/10.26274/YF9R-8785</gco:CharacterString>
+              </mco:useLimitation>
+              <mco:graphic>
+                <mcc:MD_BrowseGraphic>
+                  <mcc:fileName gco:nilReason="inapplicable" />
+                  <mcc:linkage>
+                    <cit:CI_OnlineResource>
+                      <cit:linkage>
+                        <gco:CharacterString>https://i.creativecommons.org/l/by/4.0/88x31.png</gco:CharacterString>
+                      </cit:linkage>
+                      <cit:protocol>
+                        <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                      </cit:protocol>
+                      <cit:description>
+                        <gco:CharacterString>License Graphic</gco:CharacterString>
+                      </cit:description>
+                    </cit:CI_OnlineResource>
+                  </mcc:linkage>
+                </mcc:MD_BrowseGraphic>
+              </mco:graphic>
+              <mco:reference>
+                <cit:CI_Citation>
+                  <cit:title>
+                    <gco:CharacterString>Creative Commons Attribution 4.0 International License</gco:CharacterString>
+                  </cit:title>
+                  <cit:onlineResource>
+                    <cit:CI_OnlineResource>
+                      <cit:linkage>
+                        <gco:CharacterString>http://creativecommons.org/licenses/by/4.0/</gco:CharacterString>
+                      </cit:linkage>
+                      <cit:protocol>
+                        <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
+                      </cit:protocol>
+                      <cit:description>
+                        <gco:CharacterString>License Text</gco:CharacterString>
+                      </cit:description>
+                    </cit:CI_OnlineResource>
+                  </cit:onlineResource>
+                </cit:CI_Citation>
+              </mco:reference>
+            </mco:MD_LegalConstraints>
+          </mri:resourceConstraints>
+          <mri:defaultLocale>
+            <lan:PT_Locale>
+              <lan:language>
+                <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng" />
+              </lan:language>
+              <lan:characterEncoding>
+                <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" />
+              </lan:characterEncoding>
+            </lan:PT_Locale>
+          </mri:defaultLocale>
+          <mri:supplementalInformation>
+            <gco:CharacterString>TropWATER gives no warranty in relation to the data (including accuracy, reliability, completeness, currency or suitability) and accepts no liability (including without limitation, liability in negligence) for any loss, damage or costs (including consequential damage) relating to any use of the data. TropWATER reserves the right to update, modify or correct the data at any time. The limitations of some older data included need to be understood and recognised. TropWATER and other data custodians would appreciate the opportunity to review documents providing research, management, legislative or compliance advice based on this data.</gco:CharacterString>
+          </mri:supplementalInformation>
+        </mri:MD_DataIdentification>
+      </mdb:identificationInfo>
+      <mdb:distributionInfo>
+        <mrd:MD_Distribution>
+          <mrd:distributor>
+            <mrd:MD_Distributor>
+              <mrd:distributorContact>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_RoleCode" codeListValue="publisher" />
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>Australian Institute of Marine Science (AIMS)</gco:CharacterString>
+                      </cit:name>
+                      <cit:individual>
+                        <cit:CI_Individual>
+                          <cit:name>
+                            <gco:CharacterString>eAtlas Data Manager</gco:CharacterString>
+                          </cit:name>
+                          <cit:contactInfo>
+                            <cit:CI_Contact>
+                              <cit:phone>
+                                <cit:CI_Telephone>
+                                  <cit:number>
+                                    <gco:CharacterString>+61 7 4753 4444</gco:CharacterString>
+                                  </cit:number>
+                                  <cit:numberType>
+                                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" />
+                                  </cit:numberType>
+                                </cit:CI_Telephone>
+                              </cit:phone>
+                              <cit:address>
+                                <cit:CI_Address>
+                                  <cit:deliveryPoint>
+                                    <gco:CharacterString>PRIVATE MAIL BAG 3, TOWNSVILLE MAIL CENTRE</gco:CharacterString>
+                                  </cit:deliveryPoint>
+                                  <cit:city>
+                                    <gco:CharacterString>Townsville</gco:CharacterString>
+                                  </cit:city>
+                                  <cit:administrativeArea>
+                                    <gco:CharacterString>Queensland</gco:CharacterString>
+                                  </cit:administrativeArea>
+                                  <cit:postalCode>
+                                    <gco:CharacterString>4810</gco:CharacterString>
+                                  </cit:postalCode>
+                                  <cit:country>
+                                    <gco:CharacterString>Australia</gco:CharacterString>
+                                  </cit:country>
+                                  <cit:electronicMailAddress>
+                                    <gco:CharacterString>e-atlas@aims.gov.au</gco:CharacterString>
+                                  </cit:electronicMailAddress>
+                                </cit:CI_Address>
+                              </cit:address>
+                              <cit:onlineResource>
+                                <cit:CI_OnlineResource>
+                                  <cit:linkage>
+                                    <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
+                                  </cit:linkage>
+                                  <cit:protocol>
+                                    <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+                                  </cit:protocol>
+                                  <cit:name>
+                                    <gco:CharacterString>eAtlas portal</gco:CharacterString>
+                                  </cit:name>
+                                  <cit:description gco:nilReason="missing">
+                                    <gco:CharacterString />
+                                  </cit:description>
+                                </cit:CI_OnlineResource>
+                              </cit:onlineResource>
+                            </cit:CI_Contact>
+                          </cit:contactInfo>
+                        </cit:CI_Individual>
+                      </cit:individual>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+              </mrd:distributorContact>
+            </mrd:MD_Distributor>
+          </mrd:distributor>
+          <mrd:transferOptions>
+            <mrd:MD_DigitalTransferOptions>
+              <mrd:onLine>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>https://maps.eatlas.org.au/index.html?intro=false&amp;z=9&amp;ll=136.72150,-15.60130&amp;l0=ea_jcu%3ANT_JCU_Yanyuwa-Sea-Country_subtidal-sites_2022-2023,ea_jcu%3ANT_JCU_Yanyuwa-Sea-Country_Biomass-interp_2022-2023,ea_ea-be%3AWorld_Bright-Earth-e-Atlas-basemap,google_HYBRID,google_TERRAIN,google_SATELLITE,google_ROADMAP,ea_jcu%3ANT_JCU_Yanyuwa-Sea-Country_subtidal-meadows_2022-2023&amp;v0=,,,f,f,f,f</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>WWW:LINK</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:name>
+                    <gco:CharacterString>Interactive map of the resource</gco:CharacterString>
+                  </cit:name>
+                  <cit:function>
+                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="browsing" />
+                  </cit:function>
+                </cit:CI_OnlineResource>
+              </mrd:onLine>
+              <mrd:onLine>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>NT_JCU_Yanyuwa-Sea-Country_Seagrass_2022-2023</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>WWW:DOWNLOAD-1.0-http--download</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:name>
+                    <gco:CharacterString>View and download a copy of the data</gco:CharacterString>
+                  </cit:name>
+                  <cit:description>
+                    <gco:CharacterString>Data consists of 2 shapefiles, 1 tif, 2 csv and 3 jpg files.</gco:CharacterString>
+                  </cit:description>
+                  <cit:function>
+                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="download" />
+                  </cit:function>
+                </cit:CI_OnlineResource>
+              </mrd:onLine>
+              <mrd:onLine>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>https://maps.eAtlas.org.au/maps/wms</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>OGC:WMS</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:name>
+                    <gco:CharacterString>jcu:NT_JCU_Yanyuwa-Sea-Country_Biomass-interp_2022-2023</gco:CharacterString>
+                  </cit:name>
+                  <cit:description>
+                    <gco:CharacterString>Yanyuwa Sea Country Biomass interpolation, 2022-2023 (JCU)</gco:CharacterString>
+                  </cit:description>
+                  <cit:function>
+                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="browsing" />
+                  </cit:function>
+                </cit:CI_OnlineResource>
+              </mrd:onLine>
+              <mrd:onLine>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>https://maps.eAtlas.org.au/maps/wms</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>OGC:WMS</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:name>
+                    <gco:CharacterString>jcu:NT_JCU_Yanyuwa-Sea-Country_subtidal-meadows_2022-2023</gco:CharacterString>
+                  </cit:name>
+                  <cit:description>
+                    <gco:CharacterString>Yanyuwa Sea Country subtidal meadows, 2022-2023 (JCU)</gco:CharacterString>
+                  </cit:description>
+                  <cit:function>
+                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="browsing" />
+                  </cit:function>
+                </cit:CI_OnlineResource>
+              </mrd:onLine>
+              <mrd:onLine>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gco:CharacterString>https://maps.eAtlas.org.au/maps/wms</gco:CharacterString>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>OGC:WMS</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:name>
+                    <gco:CharacterString>jcu:NT_JCU_Yanyuwa-Sea-Country_subtidal-sites_2022-2023</gco:CharacterString>
+                  </cit:name>
+                  <cit:description>
+                    <gco:CharacterString>Yanyuwa Sea Country subtidal sites, 2022-2023 (JCU)</gco:CharacterString>
+                  </cit:description>
+                  <cit:function>
+                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="browsing" />
+                  </cit:function>
+                </cit:CI_OnlineResource>
+              </mrd:onLine>
+            </mrd:MD_DigitalTransferOptions>
+          </mrd:transferOptions>
+        </mrd:MD_Distribution>
+      </mdb:distributionInfo>
+      <mdb:resourceLineage>
+        <mrl:LI_Lineage>
+          <mrl:statement gco:nilReason="missing">
+            <gco:CharacterString />
+          </mrl:statement>
+          <mrl:scope>
+            <mcc:MD_Scope>
+              <mcc:level>
+                <mcc:MD_ScopeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_ScopeCode" codeListValue="dataset" />
+              </mcc:level>
+            </mcc:MD_Scope>
+          </mrl:scope>
+        </mrl:LI_Lineage>
+      </mdb:resourceLineage>
+    </mdb:MD_Metadata>
+  </csw:SearchResults>
+</csw:GetRecordsResponse>
+

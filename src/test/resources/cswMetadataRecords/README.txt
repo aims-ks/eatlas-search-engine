@@ -1,12 +1,6 @@
-Listing
-
-1st page
+Listing pages
     $ curl -X POST -H "Content-Type: application/xml" -d '<?xml version="1.0"?><GetRecords xmlns="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="CSW" version="2.0.2" resultType="results" startPosition="1" maxRecords="10" outputSchema="http://standards.iso.org/iso/19115/-3/mdb/2.0" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><Query typeNames="mdb:MD_Metadata"><ElementSetName>full</ElementSetName><ogc:SortBy xmlns:ogc="http://www.opengis.net/ogc"><ogc:SortProperty><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></Query></GetRecords>' https://eatlas.org.au/geonetwork/srv/eng/csw -o responses/geonetwork-csw-records_page1.xml
-
-2nd page
     $ curl -X POST -H "Content-Type: application/xml" -d '<?xml version="1.0"?><GetRecords xmlns="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="CSW" version="2.0.2" resultType="results" startPosition="11" maxRecords="10" outputSchema="http://standards.iso.org/iso/19115/-3/mdb/2.0" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><Query typeNames="mdb:MD_Metadata"><ElementSetName>full</ElementSetName><ogc:SortBy xmlns:ogc="http://www.opengis.net/ogc"><ogc:SortProperty><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></Query></GetRecords>' https://eatlas.org.au/geonetwork/srv/eng/csw -o responses/geonetwork-csw-records_page2.xml
-
-3rd page
     $ curl -X POST -H "Content-Type: application/xml" -d '<?xml version="1.0"?><GetRecords xmlns="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="CSW" version="2.0.2" resultType="results" startPosition="21" maxRecords="10" outputSchema="http://standards.iso.org/iso/19115/-3/mdb/2.0" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><Query typeNames="mdb:MD_Metadata"><ElementSetName>full</ElementSetName><ogc:SortBy xmlns:ogc="http://www.opengis.net/ogc"><ogc:SortProperty><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></Query></GetRecords>' https://eatlas.org.au/geonetwork/srv/eng/csw -o responses/geonetwork-csw-records_page3.xml
 
 Modify
@@ -14,3 +8,6 @@ Modify
         numberOfRecordsMatched="30"
     and on the last page (page 3)
         nextRecord="0"
+
+Single record
+    $ curl -X POST -H "Content-Type: application/xml" -d '<?xml version="1.0"?><GetRecords xmlns="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="CSW" version="2.0.2" resultType="results" startPosition="1" maxRecords="1" outputSchema="http://standards.iso.org/iso/19115/-3/mdb/2.0" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><Query typeNames="mdb:MD_Metadata"><ElementSetName>full</ElementSetName><Constraint version="1.1.0"><ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>Identifier</ogc:PropertyName><ogc:Literal>00713afb-28fd-4878-96da-431d16944732</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter></Constraint></Query></GetRecords>' https://eatlas.org.au/geonetwork/srv/eng/csw -o responses/geonetwork-csw-record_00713afb-28fd-4878-96da-431d16944732.xml

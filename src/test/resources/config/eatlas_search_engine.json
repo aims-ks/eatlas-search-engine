@@ -61,7 +61,14 @@
     },
     {
       "geoNetworkUrl": "https://domain.com/geonetwork",
-      "index": "csw_metadata_records",
+      "index": "csw_metadata_records_all",
+      "type": "GeoNetworkCswIndexer",
+      "geoNetworkVersion": "4",
+      "enabled": true
+    },
+    {
+      "geoNetworkUrl": "https://domain.com/geonetwork",
+      "index": "csw_metadata_records_single",
       "type": "GeoNetworkCswIndexer",
       "geoNetworkVersion": "4",
       "enabled": true
