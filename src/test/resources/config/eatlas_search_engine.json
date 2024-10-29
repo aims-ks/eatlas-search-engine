@@ -73,8 +73,19 @@
       "geoNetworkVersion": "4",
       "enabled": true
     },
-
-
+    {
+      "geoNetworkUrl": "https://domain.com/geonetwork",
+      "index": "csw_metadata_records_filtered",
+      "type": "GeoNetworkCswIndexer",
+      "geoNetworkVersion": "4",
+      "geoNetworkCategories": [
+        "eatlas",
+        "nwatlas",
+        "!demo",
+        "!test"
+      ],
+      "enabled": true
+    },
 
     {
       "drupalPreviewImageField": "field_preview",

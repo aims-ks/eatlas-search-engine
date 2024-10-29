@@ -365,7 +365,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         }
 
         // We have added all the records.
-        // Lets fix the records parent title.
+        // Let's fix the records parent title.
         for (String recordUUID : orphanMetadataRecordList) {
             GeoNetworkRecord geoNetworkRecord = this.safeGet(searchClient, GeoNetworkRecord.class, recordUUID, messages);
             if (geoNetworkRecord != null) {

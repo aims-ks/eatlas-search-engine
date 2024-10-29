@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
@@ -317,6 +318,7 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_POOL_SIZE);
         AbstractParser metadataRecordParser = new ISO19115_3_2018_parser();
 
+        long harvestStart = System.currentTimeMillis();
         do {
             String xmlQuery = String.format("<?xml version=\"1.0\"?>\n" +
                 "<GetRecords xmlns=\"http://www.opengis.net/cat/csw/2.0.2\" " +
@@ -406,6 +408,50 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
             }
 
         } while(!crashed && !empty && startPosition > 0 && startPosition <= numberOfRecordsMatched);
+
+        threadPool.shutdown();
+        try {
+            threadPool.awaitTermination(1, TimeUnit.HOURS);
+        } catch(InterruptedException ex) {
+            messages.addMessage(Messages.Level.ERROR, "The GeoNetwork indexation was interrupted", ex);
+        }
+
+        // Refresh the index to be sure to find parent records, if they are new
+        try {
+            searchClient.refresh(this.getIndex());
+        } catch(Exception ex) {
+            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while refreshing the search index: %s", this.getIndex()), ex);
+        }
+
+        // We have added all the records.
+        // Let's fix the records parent title.
+        for (String recordUUID : orphanMetadataRecordList) {
+            GeoNetworkRecord geoNetworkRecord = this.safeGet(searchClient, GeoNetworkRecord.class, recordUUID, messages);
+            if (geoNetworkRecord != null) {
+                String parentRecordUUID = geoNetworkRecord.getParentUUID();
+                GeoNetworkRecord parentRecord = this.safeGet(searchClient, GeoNetworkRecord.class, parentRecordUUID, messages);
+
+                if (parentRecord != null) {
+                    geoNetworkRecord.setParentTitle(parentRecord.getTitle());
+
+                    try {
+                        IndexResponse indexResponse = this.indexEntity(searchClient, geoNetworkRecord, messages, false);
+
+                        LOGGER.debug(String.format("Reindexing GeoNetwork metadata record: %s with parent title: %s, status: %s",
+                                geoNetworkRecord.getId(),
+                                geoNetworkRecord.getParentTitle(),
+                                indexResponse.result()));
+                    } catch(Exception ex) {
+                        messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while reindexing a GeoNetwork record: %s", recordUUID), ex);
+                    }
+                }
+            }
+        }
+
+        // Only cleanup when we are doing a full harvest
+        if (!crashed && fullHarvest) {
+            this.cleanUp(searchClient, harvestStart, usedThumbnails, "GeoNetwork metadata record", messages);
+        }
     }
 
     private List<String> getCategoriesFilters() {
