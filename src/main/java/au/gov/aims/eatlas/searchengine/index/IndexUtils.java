@@ -21,6 +21,7 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
@@ -28,6 +29,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +39,21 @@ import java.util.List;
 import java.util.Map;
 
 public class IndexUtils {
+    private static final Logger LOGGER = Logger.getLogger(IndexUtils.class.getName());
+
+    // JDOM tutorial:
+    //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
+    private static final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+    static {
+        // Disable the loading of external entities, for security reasons
+        IndexUtils.setDocumentBuilderFactoryFeature(
+            "http://apache.org/xml/features/disallow-doctype-decl", true);
+        IndexUtils.setDocumentBuilderFactoryFeature(
+            "http://xml.org/sax/features/external-general-entities", false);
+        IndexUtils.setDocumentBuilderFactoryFeature(
+            "http://xml.org/sax/features/external-parameter-entities", false);
+    }
+
     public static Map<String, Object> JSONObjectToMap(JSONObject jsonObject) {
         if (jsonObject == null || jsonObject.isEmpty()) {
             return null;
@@ -81,6 +100,21 @@ public class IndexUtils {
     }
 
     // Helper methods to help parsing XML
+
+    private static void setDocumentBuilderFactoryFeature(String feature, boolean value) {
+        try {
+            IndexUtils.documentBuilderFactory.setFeature(feature, value);
+        } catch (ParserConfigurationException ex) {
+            // The settings are unlikely to fail...
+            LOGGER.error(String.format("Error occurred while setting the XML parser factory's setting: %s",
+                feature), ex);
+        }
+    }
+    public static DocumentBuilder getNewXMLParser() throws ParserConfigurationException {
+        synchronized (IndexUtils.documentBuilderFactory) {
+            return IndexUtils.documentBuilderFactory.newDocumentBuilder();
+        }
+    }
 
     // Get the first children that match one of the tag name provided
     public static Element getXMLChild(Node parent, String ... tagNames) {

@@ -95,11 +95,10 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         String metadataSchema = oldRecord.getMetadataSchema();
 
         // Re-harvest the record.
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        return this.harvestEntity(searchClient, factory, id, metadataSchema, messages);
+        return this.harvestEntity(searchClient, id, metadataSchema, messages);
     }
 
-    private GeoNetworkRecord harvestEntity(SearchClient searchClient, DocumentBuilderFactory documentBuilderFactory, String metadataRecordUUID, String metadataSchema, Messages messages) {
+    private GeoNetworkRecord harvestEntity(SearchClient searchClient, String metadataRecordUUID, String metadataSchema, Messages messages) {
         HttpClient httpClient = this.getHttpClient();
 
         String url;
@@ -133,17 +132,17 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         if (responseStr != null && !responseStr.isEmpty()) {
             try (ByteArrayInputStream input = new ByteArrayInputStream(responseStr.getBytes(StandardCharsets.UTF_8))) {
 
-                DocumentBuilder builder;
+                DocumentBuilder xmlParser;
                 try {
-                    builder = documentBuilderFactory.newDocumentBuilder();
+                    xmlParser = IndexUtils.getNewXMLParser();
                 } catch(Exception ex) {
                     // Should not happen
-                    messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while creating XML document builder for index: %s",
+                    messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while creating XML document parser for index: %s",
                             this.getIndex()), ex);
                     return null;
                 }
 
-                Document document = builder.parse(input);
+                Document document = xmlParser.parse(input);
                 GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), metadataRecordUUID, metadataSchema, this.geoNetworkVersion);
                 geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -279,23 +278,19 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
             String responseStr = response == null ? null : response.body();
             if (responseStr != null && !responseStr.isEmpty()) {
 
-                // JDOM tutorial:
-                //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
                 try (ByteArrayInputStream input = new ByteArrayInputStream(
                     responseStr.getBytes(StandardCharsets.UTF_8))) {
 
-                    DocumentBuilder builder;
+                    DocumentBuilder xmlParser;
                     try {
-                        builder = factory.newDocumentBuilder();
+                        xmlParser = IndexUtils.getNewXMLParser();
                     } catch(Exception ex) {
                         // Should not happen
-                        messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while creating XML document builder for index: %s",
+                        messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while creating XML document parser for index: %s",
                                 this.getIndex()), ex);
                         return;
                     }
-                    Document document = builder.parse(input);
+                    Document document = xmlParser.parse(input);
 
                     // Fix the document, if needed
                     document.getDocumentElement().normalize();
@@ -331,7 +326,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                                 String metadataSchema = IndexUtils.parseText(metadataSchemaElement);
 
                                 GeoNetworkIndexerThread thread = new GeoNetworkIndexerThread(
-                                        searchClient, messages, factory, metadataRecordUUID, metadataSchema,
+                                        searchClient, messages, metadataRecordUUID, metadataSchema,
                                         orphanMetadataRecordList, usedThumbnails, from);
 
                                 threadPool.execute(thread);
@@ -415,7 +410,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     public class GeoNetworkIndexerThread extends Thread {
         private final SearchClient searchClient;
         private final Messages messages;
-        private final DocumentBuilderFactory documentBuilderFactory;
         private final String metadataRecordUUID;
         private final String metadataSchema;
         private final List<String> orphanMetadataRecordList;
@@ -425,7 +419,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         public GeoNetworkIndexerThread(
                 SearchClient searchClient,
                 Messages messages,
-                DocumentBuilderFactory documentBuilderFactory,
                 String metadataRecordUUID,
                 String metadataSchema,
                 List<String> orphanMetadataRecordList,
@@ -434,7 +427,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         ) {
             this.searchClient = searchClient;
             this.messages = messages;
-            this.documentBuilderFactory = documentBuilderFactory;
             this.metadataRecordUUID = metadataRecordUUID;
             this.metadataSchema = metadataSchema;
             this.orphanMetadataRecordList = orphanMetadataRecordList;
@@ -445,11 +437,11 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         @Override
         public void run() {
             GeoNetworkRecord geoNetworkRecord = GeoNetworkIndexer.this.harvestEntity(
-                    this.searchClient, this.documentBuilderFactory, this.metadataRecordUUID, this.metadataSchema, this.messages);
+                    this.searchClient, this.metadataRecordUUID, this.metadataSchema, this.messages);
 
             if (geoNetworkRecord != null) {
                 // If the record have a parent UUID,
-                // keep it's UUID in a list so we can come back to it later to set its parent title.
+                // keep it's UUID in a list, so we can come back to it later to set its parent title.
                 String parentUUID = geoNetworkRecord.getParentUUID();
                 if (parentUUID != null && !parentUUID.isEmpty()) {
                     this.orphanMetadataRecordList.add(this.metadataRecordUUID);

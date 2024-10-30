@@ -137,18 +137,20 @@ public class SearchEngineConfig {
                     this.configFile.getAbsolutePath()));
         }
 
-        // If config file was modified since last load, throw java.util.ConcurrentModificationException
-        if (this.configFile.lastModified() > this.lastModified) {
-            throw new ConcurrentModificationException(
-                String.format("Configuration file %s was externally modified since last load.", this.configFile));
+        synchronized (this.configFile) {
+            // If config file was modified since last load, throw java.util.ConcurrentModificationException
+            if (this.configFile.lastModified() > this.lastModified) {
+                throw new ConcurrentModificationException(
+                    String.format("Configuration file %s was externally modified since last load.", this.configFile));
+            }
+
+            // Save config in config file
+            JSONObject json = this.toJSON();
+            FileUtils.write(this.configFile, json.toString(2), StandardCharsets.UTF_8);
+
+            // Set this.lastModified to config file last modified
+            this.lastModified = this.configFile.lastModified();
         }
-
-        // Save config in config file
-        JSONObject json = this.toJSON();
-        FileUtils.write(this.configFile, json.toString(2), StandardCharsets.UTF_8);
-
-        // Set this.lastModified to config file last modified
-        this.lastModified = this.configFile.lastModified();
     }
 
     public List<AbstractIndexer<?>> getIndexers() {

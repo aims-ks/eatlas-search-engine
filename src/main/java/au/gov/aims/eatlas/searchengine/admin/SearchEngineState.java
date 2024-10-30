@@ -36,7 +36,7 @@ public class SearchEngineState {
     private static SearchEngineState instance;
 
     private long lastModified;
-    private File stateFile;
+    private final File stateFile;
 
     // Key = index
     private Map<String, IndexerState> indexerStates;
@@ -97,18 +97,20 @@ public class SearchEngineState {
         } else if (!this.stateFile.canWrite()) {
             throw new IOException(String.format("State file is not writable: %s", stateFile.getAbsolutePath()));
         } else {
-            // If config file was modified since last load, throw java.util.ConcurrentModificationException
-            if (this.stateFile.lastModified() > this.lastModified) {
-                throw new ConcurrentModificationException(
-                    String.format("State file %s was externally modified since last load.", this.stateFile));
+            synchronized (this.stateFile) {
+                // If config file was modified since last load, throw java.util.ConcurrentModificationException
+                if (this.stateFile.lastModified() > this.lastModified) {
+                    throw new ConcurrentModificationException(
+                        String.format("State file %s was externally modified since last load.", this.stateFile));
+                }
+
+                // Save config in config file
+                JSONObject json = this.toJSON();
+                FileUtils.write(this.stateFile, json.toString(2), StandardCharsets.UTF_8);
+
+                // Set this.lastModified to config file last modified
+                this.lastModified = this.stateFile.lastModified();
             }
-
-            // Save config in config file
-            JSONObject json = this.toJSON();
-            FileUtils.write(this.stateFile, json.toString(2), StandardCharsets.UTF_8);
-
-            // Set this.lastModified to config file last modified
-            this.lastModified = this.stateFile.lastModified();
         }
     }
 

@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -50,10 +51,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork2/iso19139-mcp_65f61d2d-fe4e-48e5-8c6e-fab08450ef75.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -77,10 +77,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork2/iso19139-mcp_87263960-92f0-4836-b8c5-8486660ddfe0.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -104,10 +103,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork2/iso19139-mcp_ce58a4c2-c993-434a-aa57-62cfa919a2ab.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -131,10 +129,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork2/iso19139_96C8FB9D-C3C4-11DE-3FCD-EA228444A7C1.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -162,10 +159,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_8cfc0117-678f-4904-b11c-30be6e71ca80.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -189,10 +185,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_09ac8e36-5d65-40f9-9bb7-c32a0dd9f24f.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -216,10 +211,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -243,10 +237,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_0fd70612-a07a-492a-bacf-8e0b7951da4d.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -270,10 +263,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_74f6e33f-9347-4446-9185-488bcd7be964.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -297,10 +289,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_053f0b32-47cc-4a3f-8325-b37feb33c0e3.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -324,10 +315,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_a7828f28-402c-4ef7-beac-6c0f61852072.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -355,10 +345,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_16904861-53e6-4123-a7bb-781f2429629f.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -386,10 +375,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_b67d8331-6505-450b-bc64-ee4b57ee35a3.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -417,10 +405,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_ac57aa5a-233b-4c2c-bd52-1fb40a31f639.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 
@@ -444,10 +431,9 @@ public class GeoNetworkRecordTest {
             InputStream recordInputStream = GeoNetworkRecordTest.class.getClassLoader()
                     .getResourceAsStream("geonetworkRecords/geonetwork3/iso19115-3-2018_07c61554-d76d-4c6c-956d-dcd171864921.xml")
         ) {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            DocumentBuilder xmlParser = IndexUtils.getNewXMLParser();
 
-            Document document = builder.parse(recordInputStream);
+            Document document = xmlParser.parse(recordInputStream);
             GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
             geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
 

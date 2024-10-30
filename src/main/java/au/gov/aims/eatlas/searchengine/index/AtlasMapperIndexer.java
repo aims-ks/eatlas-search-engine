@@ -290,7 +290,8 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         threadPool.shutdown();
         try {
-            threadPool.awaitTermination(1, TimeUnit.HOURS);
+            // Waiting for GeoServer to generate the preview images can take quite a long time...
+            threadPool.awaitTermination(10, TimeUnit.HOURS);
         } catch(InterruptedException ex) {
             messages.addMessage(Messages.Level.ERROR, "The AtlasMapper layers indexation was interrupted", ex);
         }

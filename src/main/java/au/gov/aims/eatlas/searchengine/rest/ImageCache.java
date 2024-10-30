@@ -35,7 +35,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.log4j.Logger;
-import org.jsoup.Connection;
 
 import javax.imageio.ImageIO;
 import java.awt.AlphaComposite;

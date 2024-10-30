@@ -173,10 +173,9 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         // JDOM tutorial:
         //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
-        DocumentBuilderFactory xmlDocumentFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder xmlDocumentBuilder;
+        DocumentBuilder xmlParser;
         try {
-            xmlDocumentBuilder = xmlDocumentFactory.newDocumentBuilder();
+            xmlParser = IndexUtils.getNewXMLParser();
         } catch(Exception ex) {
             // Should not happen
             messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while creating XML document builder for index: %s",
@@ -200,7 +199,7 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
                     AbstractParser metadataRecordParser = new ISO19115_3_2018_parser();
 
-                    Document document = xmlDocumentBuilder.parse(input);
+                    Document document = xmlParser.parse(input);
 
                     // Fix the document, if needed
                     document.getDocumentElement().normalize();
@@ -302,10 +301,9 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         // JDOM tutorial:
         //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
-        DocumentBuilderFactory xmlDocumentFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder xmlDocumentBuilder;
+        DocumentBuilder xmlParser;
         try {
-            xmlDocumentBuilder = xmlDocumentFactory.newDocumentBuilder();
+            xmlParser = IndexUtils.getNewXMLParser();
         } catch(Exception ex) {
             // Should not happen
             messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while creating XML document builder for index: %s",
@@ -365,7 +363,7 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 try (ByteArrayInputStream input = new ByteArrayInputStream(
                     responseStr.getBytes(StandardCharsets.UTF_8))) {
 
-                    Document document = xmlDocumentBuilder.parse(input);
+                    Document document = xmlParser.parse(input);
 
                     // Fix the document, if needed
                     document.getDocumentElement().normalize();
