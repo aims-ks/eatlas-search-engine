@@ -31,7 +31,8 @@
                     <span class="label">Keywords</span>
                     <input type="text" name="query" value="<c:out value="${it.query}"/>" />
                 </label>
-                <div class="desc">Optional. Default: Returns all documents from the selected indexes.</div>
+                <div class="desc">Optional.</div>
+                <div class="desc"><strong>Default</strong>: Returns all documents from the selected indexes.</div>
                 <div class="desc">Elastic search query. Write a search query the same way you would write it in Google.</div>
             </div>
 
@@ -40,9 +41,10 @@
                     <span class="label">Spatial filter (WKT)</span>
                     <input type="text" name="wkt" value="<c:out value="${it.wkt}"/>" />
                 </label>
-                <div class="desc">Optional. Default: No spatial filter.</div>
+                <div class="desc">Optional.</div>
+                <div class="desc"><strong>Default</strong>: No spatial filter.</div>
                 <div class="desc">Restrict search to a spatial extent.</div>
-                <div class="desc">Example for GBR: <code>BBOX (142.0, 153.0, -9.5, -22.5)</code></div>
+                <div class="desc"><strong>Example for GBR</strong>: <code>BBOX (142.0, 153.0, -9.5, -22.5)</code></div>
                 <div class="desc">You can use this <a href="https://clydedacruz.github.io/openstreetmap-wkt-playground/" target="_blank">Online WKT editor</a> to generate the WKT.</div>
             </div>
 

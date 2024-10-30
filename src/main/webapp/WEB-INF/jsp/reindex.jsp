@@ -4,7 +4,14 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<c:set var="baseURL" value="${pageContext.request.scheme}://${pageContext.request.localName}:${pageContext.request.localPort}" />
+<c:choose>
+    <c:when test="${not empty header['X-Forwarded-Host']}">
+        <c:set var="baseURL" value="${header['X-Forwarded-Proto'] == null ? pageContext.request.scheme : header['X-Forwarded-Proto']}://${header['X-Forwarded-Host']}" />
+    </c:when>
+    <c:otherwise>
+        <c:set var="baseURL" value="${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}" />
+    </c:otherwise>
+</c:choose>
 
 <%-- Variables accessible in templates --%>
 <c:set var="title" value="Re-indexation page" scope="request"/>
@@ -29,6 +36,11 @@
             Add the following entries to the server's crontab, to keep the search indexes up to date.
         </p>
 
+        <ul>
+            <li>Full re-index on Sunday at 1:00 am</li>
+            <li>Index latest every day at 1:00 am (except Sunday)</li>
+        </ul>
+
         <c:url var="harvestNewURL" value="/public/index/v1/reindex">
             <c:param name="full" value="false" />
             <c:param name="token" value="${it.config.reindexToken}" />
@@ -39,8 +51,9 @@
         </c:url>
 
         <pre>
-0   2   *   *   *   curl --silent "${baseURL}${harvestNewURL}" &gt; /dev/null
-0   0   1   *   *   curl --silent "${baseURL}${fullHarvestURL}" &gt; /dev/null</pre>
+# min  hour day month DoW (Day of Week)
+   0    1    *    *    0    curl --silent "${baseURL}${fullHarvestURL}" &gt; /dev/null
+   0    1    *    *   1-6   curl --silent "${baseURL}${harvestNewURL}" &gt; /dev/null</pre>
     </div>
 
     <div class="box">

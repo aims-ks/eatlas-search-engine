@@ -29,6 +29,18 @@ select {
   box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
 }
 
+code {
+  background-color: #F0F0F0;
+  border: 1px solid #DDDDDD;
+  border-radius: 4px;
+  padding: 0.2em;
+}
+
+.even code {
+  background-color: #E0E0E0;
+  border-color: #CCCCCC;
+}
+
 /**
  * Hide a submit button, to control which button is pressed when the "Enter" key is pressed.
  * NOTE: "display:none" does not work here. It disables the button.

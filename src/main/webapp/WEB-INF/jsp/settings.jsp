@@ -4,7 +4,15 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<c:set var="baseURL" value="${pageContext.request.scheme}://${pageContext.request.localName}:${pageContext.request.localPort}" />
+<c:choose>
+    <c:when test="${not empty header['X-Forwarded-Host']}">
+        <c:set var="baseURL" value="${header['X-Forwarded-Proto'] == null ? pageContext.request.scheme : header['X-Forwarded-Proto']}://${header['X-Forwarded-Host']}" />
+    </c:when>
+    <c:otherwise>
+        <c:set var="baseURL" value="${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}" />
+    </c:otherwise>
+</c:choose>
+
 <c:set var="defaultSearchEngineBaseURL" value="${baseURL}${pageContext.request.contextPath}" />
 
 <%-- Variables accessible in templates --%>
@@ -46,7 +54,7 @@
                     </span>
                 </label>
                 <div class="desc">URLs to the Elastic Search server.</div>
-                <div class="desc">Example: http://localhost:9200, http://localhost:9300</div>
+                <div class="desc"><strong>Example</strong>: <code>http://localhost:9200</code>, <code>http://localhost:9300</code></div>
             </div>
 
             <div class="field">
@@ -83,7 +91,7 @@
                         value="<c:out value="${it.config.imageCacheDirectory}" />" />
                 </label>
                 <div class="desc">Folder path on the server used by the search engine to save cached and generated thumbnails.</div>
-                <div class="desc">Example: /var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/</div>
+                <div class="desc"><strong>Example</strong>: <code>/var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/</code></div>
             </div>
 
             <div class="field">
@@ -97,7 +105,7 @@
                         value="<c:out value="${it.config.globalThumbnailTTL}" />" />
                 </label>
                 <div class="desc">Time to wait before re-downloading the thumbnail. Can be overwritten in indexer settings.</div>
-                <div class="desc">Default: 30 days</div>
+                <div class="desc"><strong>Default</strong>: <code>30</code> days</div>
             </div>
 
             <div class="field">
@@ -111,7 +119,7 @@
                         value="<c:out value="${it.config.globalBrokenThumbnailTTL}" />" />
                 </label>
                 <div class="desc">Time to wait before re-attempting to download thumbnail which previously failed. Can be overwritten in indexer settings.</div>
-                <div class="desc">Default: 0 days</div>
+                <div class="desc"><strong>Default</strong>: <code>0</code> days</div>
             </div>
 
             <div class="field">
@@ -127,10 +135,10 @@
                 <div class="desc">Token used to call the re-indexation API from the cron.</div>
                 <div class="desc">
                     Test re-indexation URL:
-                    ${baseURL}<c:url value="/public/index/v1/reindex">
+                    <code>${baseURL}<c:url value="/public/index/v1/reindex">
                         <c:param name="full" value="false" />
                         <c:param name="token" value="${it.config.reindexToken}" />
-                    </c:url>
+                    </c:url></code>
                 </div>
             </div>
 
@@ -145,7 +153,7 @@
                         value="<c:out value="${it.config.searchEngineBaseUrl}" default="${defaultSearchEngineBaseURL}" />" />
                 </label>
                 <div class="desc">Base URL used to craft URL to preview image in search results.</div>
-                <div class="desc">Default: ${defaultSearchEngineBaseURL}</div>
+                <div class="desc"><strong>Default</strong>: <code>${defaultSearchEngineBaseURL}</code></div>
             </div>
         </div>
 
@@ -203,7 +211,7 @@
                                         ${indexer.enabled ? "checked=\"checked\"" : ""} /> Enabled
                                 </label>
                                 <div class="desc">Check to enable automatic indexation from the cron.</div>
-                                <div class="desc">The buttons "Reindex all" and "Index latest all" from the Reindex tab only process enabled indexes.</div>
+                                <div class="desc">The buttons <em>Reindex all</em> and <em>Index latest all</em> from the <em>Reindex</em> tab only process enabled indexes.</div>
                             </div>
 
                             <div class="field">
@@ -218,8 +226,8 @@
                                         value="<c:out value="${indexer.index}" />" />
                                 </label>
                                 <div class="desc">Index ID. This is the value that needs to be copied in Drupal search settings to search from this index.</div>
-                                <div class="desc">Valid characters: "a-z", "A-Z", "0-9", "_" and "-"</div>
-                                <div class="desc">Example: eatlas_article</div>
+                                <div class="desc"><strong>Valid characters</strong>: "a-z", "A-Z", "0-9", "_" and "-"</div>
+                                <div class="desc"><strong>Example</strong>: <code>eatlas_article</code></div>
                             </div>
 
                             <div class="field">
@@ -233,7 +241,7 @@
                                         value="<c:out value="${indexer.thumbnailTTL}" />" />
                                 </label>
                                 <div class="desc">Time to wait before re-downloading the thumbnail.</div>
-                                <div class="desc">Default: Default thumbnail TTL, defined above</div>
+                                <div class="desc"><strong>Default</strong>: Default thumbnail TTL, defined above</div>
                             </div>
 
                             <div class="field">
@@ -247,7 +255,7 @@
                                         value="<c:out value="${indexer.brokenThumbnailTTL}" default="" />" />
                                 </label>
                                 <div class="desc">Time to wait before re-attempting to download thumbnail which previously failed.</div>
-                                <div class="desc">Default: Default broken thumbnail TTL, defined above</div>
+                                <div class="desc"><strong>Default</strong>: Default broken thumbnail TTL, defined above</div>
                             </div>
 
                             <!--
@@ -271,7 +279,7 @@
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
                                             <div class="desc">Drupal base URL, used for API calls.</div>
-                                            <div class="desc">Example: https://eatlas.org.au</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au</code></div>
                                         </div>
 
                                         <div class="field">
@@ -297,7 +305,7 @@
                                                     value="<c:out value="${indexer.drupalBundleId}" />" />
                                             </label>
                                             <div class="desc">Type of node indexed by this indexer.</div>
-                                            <div class="desc">Example: article</div>
+                                            <div class="desc"><strong>Example</strong>: <code>article</code></div>
                                         </div>
 
                                         <div class="field">
@@ -310,8 +318,8 @@
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
-                                            <div class="desc">Drupal field type: Image or Media</div>
-                                            <div class="desc">Example: field_image</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Image or Media</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_image</code></div>
                                         </div>
 
                                         <div class="field">
@@ -327,8 +335,8 @@
                                                 Drupal internal field IDs to index.
                                                 Multiple fields can be specified, using a comma separated list.
                                             </div>
-                                            <div class="desc">Drupal field type: Text or Paragraph</div>
-                                            <div class="desc">Example: field_body, field_references</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text or Paragraph</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_body, field_references</code></div>
                                         </div>
 
                                         <div class="field">
@@ -341,8 +349,8 @@
                                                     value="<c:out value="${indexer.drupalGeoJSONField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the node's GeoJSON.</div>
-                                            <div class="desc">Drupal field type: Text (plain, long)</div>
-                                            <div class="desc">Example: field_geojson</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text (plain, long)</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_geojson</code></div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -362,7 +370,7 @@
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
                                             <div class="desc">Drupal base URL, used for API calls.</div>
-                                            <div class="desc">Example: https://eatlas.org.au</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au</code></div>
                                         </div>
 
                                         <div class="field">
@@ -388,7 +396,7 @@
                                                     value="<c:out value="${indexer.drupalBundleId}" />" />
                                             </label>
                                             <div class="desc">Type of media indexed by this indexer.</div>
-                                            <div class="desc">Example: image</div>
+                                            <div class="desc"><strong>Example</strong>: <code>image</code></div>
                                         </div>
 
                                         <div class="field">
@@ -401,8 +409,8 @@
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
-                                            <div class="desc">Drupal field type: Image</div>
-                                            <div class="desc">Example: thumbnail</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Image</div>
+                                            <div class="desc"><strong>Example</strong>: <code>thumbnail</code></div>
                                         </div>
 
                                         <div class="field">
@@ -415,8 +423,8 @@
                                                     value="<c:out value="${indexer.drupalTitleField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the media's title.</div>
-                                            <div class="desc">Drupal field type: Text (plain)</div>
-                                            <div class="desc">Example: name</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text (plain)</div>
+                                            <div class="desc"><strong>Example</strong>: <code>name</code></div>
                                         </div>
 
                                         <div class="field">
@@ -432,8 +440,8 @@
                                                 Drupal internal field IDs to index.
                                                 Multiple fields can be specified, using a comma separated list.
                                             </div>
-                                            <div class="desc">Drupal field type: Text or Paragraph</div>
-                                            <div class="desc">Example: field_description, field_author</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text or Paragraph</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_description, field_author</code></div>
                                         </div>
 
                                         <div class="field">
@@ -446,8 +454,8 @@
                                                     value="<c:out value="${indexer.drupalGeoJSONField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the media's GeoJSON.</div>
-                                            <div class="desc">Drupal field type: Text (plain, long)</div>
-                                            <div class="desc">Example: field_geojson</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text (plain, long)</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_geojson</code></div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -467,7 +475,7 @@
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
                                             <div class="desc">Drupal base URL, used for API calls.</div>
-                                            <div class="desc">Example: https://eatlas.org.au</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au</code></div>
                                         </div>
 
                                         <div class="field">
@@ -493,7 +501,7 @@
                                                     value="<c:out value="${indexer.drupalBundleId}" />" />
                                             </label>
                                             <div class="desc">Type of node indexed by this indexer.</div>
-                                            <div class="desc">Example: external_link</div>
+                                            <div class="desc"><strong>Example</strong>: <code>external_link</code></div>
                                         </div>
 
                                         <div class="field">
@@ -506,8 +514,8 @@
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
-                                            <div class="desc">Drupal field type: Image or Media</div>
-                                            <div class="desc">Example: field_image</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Image or Media</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_image</code></div>
                                         </div>
 
                                         <div class="field">
@@ -520,8 +528,8 @@
                                                     value="<c:out value="${indexer.drupalExternalUrlField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the external page's URL.</div>
-                                            <div class="desc">Drupal field type: Link</div>
-                                            <div class="desc">Example: field_external_link</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Link</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_external_link</code></div>
                                         </div>
 
                                         <div class="field">
@@ -536,8 +544,8 @@
                                             <div class="desc">Drupal internal field ID for the field used to overwrite the page content.</div>
                                             <div class="desc">This field should only be used when the search engine is unable to download the page content;
                                                 because it's created by JavaScript, hidden behind a disclaimer page, requires authentication, etc.</div>
-                                            <div class="desc">Drupal field type: Text (plain, long)</div>
-                                            <div class="desc">Example: field_content_overwrite</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text (plain, long)</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_content_overwrite</code></div>
                                         </div>
 
                                         <div class="field">
@@ -550,8 +558,8 @@
                                                     value="<c:out value="${indexer.drupalGeoJSONField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the node's GeoJSON.</div>
-                                            <div class="desc">Drupal field type: Text (plain, long)</div>
-                                            <div class="desc">Example: field_geojson</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text (plain, long)</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_geojson</code></div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -572,7 +580,7 @@
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
                                             <div class="desc">Drupal base URL, used for API calls.</div>
-                                            <div class="desc">Example: https://eatlas.org.au</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au</code></div>
                                         </div>
 
                                         <div class="field">
@@ -598,7 +606,7 @@
                                                     value="<c:out value="${indexer.drupalBundleId}" />" />
                                             </label>
                                             <div class="desc">Type of block indexed by this indexer.</div>
-                                            <div class="desc">Example: basic, network, marine_park</div>
+                                            <div class="desc"><strong>Example</strong>: <code>basic</code>, <code>network</code>, <code>marine_park</code></div>
                                         </div>
 
                                         <div class="field">
@@ -611,8 +619,8 @@
                                                     value="<c:out value="${indexer.drupalPreviewImageField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the preview image.</div>
-                                            <div class="desc">Drupal field type: Image or Media</div>
-                                            <div class="desc">Example: field_image</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Image or Media</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_image</code></div>
                                         </div>
 
                                         <div class="field">
@@ -628,8 +636,8 @@
                                                 Drupal internal field IDs to index.
                                                 Multiple fields can be specified, using a comma separated list.
                                             </div>
-                                            <div class="desc">Drupal field type: Text or Paragraph</div>
-                                            <div class="desc">Example: field_body, field_references</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text or Paragraph</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_body, field_references</code></div>
                                         </div>
 
                                         <div class="field">
@@ -642,8 +650,8 @@
                                                     value="<c:out value="${indexer.drupalGeoJSONField}" />" />
                                             </label>
                                             <div class="desc">Drupal internal field ID for the node's GeoJSON.</div>
-                                            <div class="desc">Drupal field type: Text (plain, long)</div>
-                                            <div class="desc">Example: field_geojson</div>
+                                            <div class="desc"><strong>Drupal field type</strong>: Text (plain, long)</div>
+                                            <div class="desc"><strong>Example</strong>: <code>field_geojson</code></div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -664,7 +672,7 @@
                                                     value="<c:out value="${indexer.geoNetworkUrl}" />" />
                                             </label>
                                             <div class="desc">GeoNetwork base URL, used for API calls.</div>
-                                            <div class="desc">Example: https://eatlas.org.au/geonetwork</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au/geonetwork</code></div>
                                         </div>
 
                                         <div class="field">
@@ -696,7 +704,7 @@
                                                     value="<c:out value="${indexer.geoNetworkUrl}" />" />
                                             </label>
                                             <div class="desc">GeoNetwork base URL, used for API calls.</div>
-                                            <div class="desc">Example: https://eatlas.org.au/geonetwork</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au/geonetwork</code></div>
                                         </div>
 
                                         <div class="field">
@@ -722,7 +730,8 @@
                                             </label>
                                             <div class="desc">Coma separated list of categories to index. It will only select records containing all the categories (boolean "AND").</div>
                                             <div class="desc">Leave blank to index all metadata records, regardless of their categories. Use exclamation mark to exclude a category.</div>
-                                            <div class="desc">Example: eatlas, nwatlas, !demo, !test</div>
+                                            <div class="desc"><strong>Example</strong>: <code>eatlas, nwatlas, !demo, !test</code></div>
+                                            <div class="desc"><strong>NOTE</strong>: Due to a bug in GeoNetwork's CSW API, the space character in the <em>Non Custodian</em> category is interpreted as 2 category: <em>Non</em> and <em>Custodian</em>. To select all <em>Non Custodian</em> records, set categories to <code>Non, Custodian</code>. To select all <em>Custodian</em> records, set categories to <code>!Non, Custodian</code>.</div>
                                         </div>
                                     </div>
                                 </c:when>
@@ -742,8 +751,8 @@
                                                     value="<c:out value="${indexer.atlasMapperClientUrl}" />" />
                                             </label>
                                             <div class="desc">AtlasMapper base URL, used to request the list of layer.</div>
-                                            <div class="desc">The list of layer must be available at "[atlasMapperClientUrl]/config/main.json"</div>
-                                            <div class="desc">Example: https://maps.eatlas.org.au</div>
+                                            <div class="desc">The list of layer must be available at "<code>atlasMapperClientUrl</code>/config/main.json"</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://maps.eatlas.org.au</code></div>
                                         </div>
 
                                         <div class="field">
@@ -770,7 +779,7 @@
                                             </label>
                                             <div class="desc">Base layer URL, used to generate layer thumbnail.</div>
                                             <div class="desc">It must include the placeholders {BBOX}, {WIDTH} and {HEIGHT}</div>
-                                            <div class="desc">Example: https://maps.eatlas.org.au/maps/wms?SERVICE=WMS&REQUEST=GetMap&LAYERS=ea-be:World_Bright-Earth-e-Atlas-basemap&FORMAT=image/jpeg&TRANSPARENT=false&VERSION=1.1.1&SRS=EPSG:4326&BBOX={BBOX}&WIDTH={WIDTH}&HEIGHT={HEIGHT}</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://maps.eatlas.org.au/maps/wms?SERVICE=WMS&REQUEST=GetMap&LAYERS=ea-be:World_Bright-Earth-e-Atlas-basemap&FORMAT=image/jpeg&TRANSPARENT=false&VERSION=1.1.1&SRS=EPSG:4326&BBOX={BBOX}&WIDTH={WIDTH}&HEIGHT={HEIGHT}</code></div>
                                         </div>
                                     </div>
                                 </c:when>
