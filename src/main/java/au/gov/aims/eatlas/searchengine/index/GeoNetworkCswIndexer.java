@@ -600,10 +600,8 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
                             this.current, GeoNetworkCswIndexer.this.getTotal(),
                             this.geoNetworkRecord.getId(),
                             indexResponse.result()));
-// TODO REMOVE
-throw new IOException("Oopsie!");
                 } catch(Exception ex) {
-                    this.logger.addMessage(Level.WARNING, String.format("Exception occurred while indexing a GeoNetwork record: %s", this.geoNetworkRecord.getId()), ex);
+                    this.logger.addMessage(Level.ERROR, String.format("Exception occurred while indexing a GeoNetwork record: %s", this.geoNetworkRecord.getId()), ex);
                 }
 
                 if (this.usedThumbnails != null) {

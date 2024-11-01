@@ -62,6 +62,8 @@ public class Dashboard {
         SearchEngineState state = SearchEngineState.getInstance();
 
         Map<String, Object> model = new HashMap<>();
+        model.put("title", "Dashboard");
+        model.put("dashboardActive", "active");
         model.put("logger", logger);
         model.put("config", config);
 

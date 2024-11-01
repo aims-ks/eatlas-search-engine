@@ -52,6 +52,8 @@ public class UserPage {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
+        model.put("title", "User");
+        model.put("userActive", "active");
         model.put("logger", logger);
         model.put("config", config);
 

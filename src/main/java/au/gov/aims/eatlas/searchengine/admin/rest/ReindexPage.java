@@ -53,12 +53,22 @@ public class ReindexPage {
     ) {
         HttpSession session = httpRequest.getSession(true);
         AbstractLogger logger = SessionLogger.getInstance(session);
-
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
+        model.put("title", "Re-indexation");
+        model.put("reindexActive", "active");
         model.put("logger", logger);
         model.put("config", config);
+
+        Object index = httpRequest.getAttribute("index");
+        if (index != null) {
+            model.put("index", index);
+        }
+        Object logs = httpRequest.getAttribute("fileLogger");
+        if (index != null) {
+            model.put("fileLogger", logs);
+        }
 
         // Load the template: src/main/webapp/WEB-INF/jsp/reindex.jsp
         return new Viewable("/reindex", model);
@@ -136,6 +146,8 @@ public class ReindexPage {
                 this.reindex(searchClient, FormUtils.getFormStringValue(form, "reindex-button"), true, sessionLogger);
             } else if (form.containsKey("index-latest-button")) {
                 this.reindex(searchClient, FormUtils.getFormStringValue(form, "index-latest-button"), false, sessionLogger);
+            } else if (form.containsKey("view-log-button")) {
+                this.viewLogs(httpRequest, FormUtils.getFormStringValue(form, "view-log-button"), sessionLogger);
             }
         } catch (Exception ex) {
             sessionLogger.addMessage(Level.ERROR,
@@ -147,9 +159,7 @@ public class ReindexPage {
 
     private void reindexAll(SearchClient searchClient, boolean fullHarvest, AbstractLogger sessionLogger) {
         try {
-            // TODO use the file logger
-            //IndexUtils.internalReindex(searchClient, fullHarvest);
-            IndexUtils.internalReindex(searchClient, fullHarvest, sessionLogger);
+            IndexUtils.internalReindex(searchClient, fullHarvest);
         } catch (Exception ex) {
             sessionLogger.addMessage(Level.ERROR,
                 "An exception occurred during the indexation.", ex);
@@ -187,10 +197,8 @@ public class ReindexPage {
             AbstractIndexer<?> indexer = config.getIndexer(index);
 
             try {
-                // TODO use the file logger
-                //AbstractLogger fileLogger = indexer.getFileLogger();
-                //fileLogger.clear();
-                AbstractLogger fileLogger = sessionLogger;
+                AbstractLogger fileLogger = indexer.getFileLogger();
+                fileLogger.clear();
 
                 indexer.index(searchClient, fullHarvest, fileLogger);
             } catch (Exception ex) {
@@ -198,5 +206,13 @@ public class ReindexPage {
                     String.format("An exception occurred during the indexation of index: %s", index), ex);
             }
         }
+    }
+
+    private void viewLogs(HttpServletRequest httpRequest, String index, AbstractLogger sessionLogger) {
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        AbstractIndexer<?> indexer = config.getIndexer(index);
+
+        httpRequest.setAttribute("index", index);
+        httpRequest.setAttribute("fileLogger", indexer.getFileLogger());
     }
 }

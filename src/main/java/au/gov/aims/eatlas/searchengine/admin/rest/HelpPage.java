@@ -29,6 +29,8 @@ public class HelpPage {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
+        model.put("title", "Help");
+        model.put("helpActive", "active");
         model.put("logger", logger);
         model.put("config", config);
 

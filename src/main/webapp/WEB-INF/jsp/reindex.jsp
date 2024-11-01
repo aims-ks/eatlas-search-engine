@@ -13,14 +13,9 @@
     </c:otherwise>
 </c:choose>
 
-<%-- Variables accessible in templates --%>
-<c:set var="title" value="Re-indexation page" scope="request"/>
-<c:set var="reindexActive" value="active" scope="request"/>
-<c:set var="logger" value="${it.logger}" scope="request"/>
-
 <html lang="en">
 <head>
-    <title>eAtlas Search Engine - ${title}</title>
+    <title>eAtlas Search Engine - ${it.title}</title>
     <link rel="icon" href="<c:url value="/img/favicon.svg" />" type="image/svg+xml">
     <script src="<c:url value="/js/admin.js" />"></script>
     <link rel="stylesheet" href="<c:url value="/css/admin.css" />">
@@ -89,6 +84,7 @@
                             <button class="recreate-index" name="recreate-index-button" value="${indexer.index}" title="Re-create index">Re-create index</button>
                             <button class="index" name="reindex-button" value="${indexer.index}" title="Reindex">Reindex</button>
                             <button class="index-latest" name="index-latest-button" value="${indexer.index}" title="Index latest" <c:if test="${not indexer.supportsIndexLatest()}">disabled="disabled"</c:if>>Index latest</button>
+                            <button class="view-log" name="view-log-button" value="${indexer.index}" title="View logs">View logs</button>
                         </td>
                     </tr>
                 </c:forEach>
@@ -98,6 +94,11 @@
             <button class="index-latest-all" name="index-latest-all-button" value="index-latest" title="Index latest content for all enabled indexes">Index latest all</button>
 
             <button class="refresh" name="refresh-count-button" value="refresh-count" title="Refresh count">Refresh indexes document count</button>
+
+            <!-- Modal logs window -->
+            <c:if test="${not empty it.fileLogger}">
+                <c:import url="include/logs-window.jsp"/>
+            </c:if>
         </form>
     </div>
 

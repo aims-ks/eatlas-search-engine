@@ -3,14 +3,9 @@
 <%@page pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<%-- Variables accessible in templates --%>
-<c:set var="title" value="Search page" scope="request"/>
-<c:set var="searchActive" value="active" scope="request"/>
-<c:set var="logger" value="${it.logger}" scope="request"/>
-
 <html lang="en">
 <head>
-    <title>eAtlas Search Engine - ${title}</title>
+    <title>eAtlas Search Engine - ${it.title}</title>
     <link rel="icon" href="<c:url value="/img/favicon.svg" />" type="image/svg+xml">
     <script src="<c:url value="/js/admin.js" />"></script>
     <link rel="stylesheet" href="<c:url value="/css/admin.css" />">

@@ -4,14 +4,9 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<%-- Variables accessible in templates --%>
-<c:set var="title" value="Help" scope="request"/>
-<c:set var="helpActive" value="active" scope="request"/>
-<c:set var="logger" value="${it.logger}" scope="request"/>
-
 <html lang="en">
 <head>
-    <title>eAtlas Search Engine - ${title}</title>
+    <title>eAtlas Search Engine - ${it.title}</title>
     <link rel="icon" href="<c:url value="/img/favicon.svg" />" type="image/svg+xml">
     <script src="<c:url value="/js/admin.js" />"></script>
     <link rel="stylesheet" href="<c:url value="/css/admin.css" />">

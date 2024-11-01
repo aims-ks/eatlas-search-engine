@@ -3,8 +3,6 @@
 <%@page pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<c:set var="logger" value="${it.logger}" scope="request"/>
-
 <html lang="en">
 <head>
     <title>eAtlas Search Engine - Login</title>

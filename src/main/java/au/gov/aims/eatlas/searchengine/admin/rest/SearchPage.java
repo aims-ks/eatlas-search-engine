@@ -62,6 +62,11 @@ public class SearchPage {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
+        model.put("title", "Search");
+        model.put("searchActive", "active");
+        model.put("logger", logger);
+        model.put("config", config);
+
         try {
             SearchClient searchClient = ESClient.getInstance();
 
@@ -105,8 +110,6 @@ public class SearchPage {
                 "An exception occurred while accessing the Elastic Search server", ex);
         }
 
-        model.put("logger", logger);
-        model.put("config", config);
         model.put("query", query);
         model.put("wkt", wkt);
         model.put("page", page);

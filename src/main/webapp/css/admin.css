@@ -278,7 +278,10 @@ button.edit,
 button.recreate-index,
 button.index,
 button.index-latest,
+button.view-log,
+button.close-window,
 button.delete {
+  cursor: pointer;
   width: 26px;
   font-size: 0; /* Hide button label */
 
@@ -298,6 +301,12 @@ button.index {
 button.index-latest {
   background-image: url("../img/time.png");
 }
+button.view-log {
+  background-image: url("../img/logs.png");
+}
+button.close-window {
+  background-image: url("../img/close.png");
+}
 button.delete {
   background-image: url("../img/delete.png");
 }
@@ -309,6 +318,7 @@ button.index-all,
 button.index-latest-all,
 button.refresh,
 button.reload {
+  cursor: pointer;
   padding-left: 26px;
 
   background-repeat: no-repeat;
@@ -458,4 +468,53 @@ button.reload {
 }
 .main .hover:hover .collapsible {
   display: block;
+}
+
+.content .modal-window {
+  position: fixed;
+  inset: 3em; /* Set "top", "bottom", "left" and "right" all at once */
+  padding: 1em;
+
+  box-shadow: 0 0 2em #000000;
+  background-color: #000000;
+  color: #FFFFFF;
+
+  /* Display the logs bellow the header */
+  display: flex;
+  flex-direction: column;
+}
+
+.content .modal-window .logs-header {
+  border-bottom: 2px solid #FFFFFF;
+  /* Display the X button to the right side of the header */
+  display: flex;
+}
+.content .modal-window .logs-header h2 {
+  flex: 1; /* The title occupy all the available horizontal space in the header */
+  margin: 0;
+}
+
+.content .modal-window .logs {
+  flex: 1; /* Occupy all the available vertical space bellow the title */
+  overflow: auto;
+}
+
+.content .modal-window .logs .box {
+  background-color: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+.content .modal-window .logs .message .exception .stacktrace-box {
+  color: #DDDDDD;
+}
+
+.content .modal-window .logs .message .info {
+  background-color: #006600;
+}
+.content .modal-window .logs .message .warning {
+  background-color: #666600;
+}
+.content .modal-window .logs .message .error {
+  background-color: #660000;
 }

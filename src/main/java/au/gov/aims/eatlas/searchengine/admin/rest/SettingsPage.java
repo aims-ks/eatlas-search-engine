@@ -64,6 +64,8 @@ public class SettingsPage {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
+        model.put("title", "Settings");
+        model.put("settingsActive", "active");
         model.put("logger", logger);
         model.put("config", config);
 
