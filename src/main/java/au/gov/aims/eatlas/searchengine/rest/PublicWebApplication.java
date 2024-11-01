@@ -20,7 +20,8 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import jakarta.servlet.ServletContext;
 import jakarta.ws.rs.core.Context;
 import org.apache.log4j.Logger;
@@ -32,10 +33,10 @@ public class PublicWebApplication extends ResourceConfig {
 
     public PublicWebApplication(@Context ServletContext servletContext) {
         HttpClient httpClient = HttpClient.getInstance();
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
 
         try {
-            SearchEngineConfig.createInstance(httpClient, servletContext, messages);
+            SearchEngineConfig.createInstance(httpClient, servletContext, logger);
         } catch (Exception ex) {
             LOGGER.error("The eAtlas search engine could not load its configuration.", ex);
         }

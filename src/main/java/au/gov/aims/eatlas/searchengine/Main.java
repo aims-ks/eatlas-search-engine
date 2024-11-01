@@ -19,7 +19,8 @@
 package au.gov.aims.eatlas.searchengine;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
@@ -47,12 +48,12 @@ public class Main {
     public static void main(String... args) throws Exception {
         boolean fullHarvest = true;
 
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
         HttpClient httpClient = HttpClient.getInstance();
 
         File configFile = new File("/var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/eatlas_search_engine.json");
 
-        SearchEngineConfig config = SearchEngineConfig.createInstance(httpClient, configFile, "eatlas_search_engine_devel.json", messages);
+        SearchEngineConfig config = SearchEngineConfig.createInstance(httpClient, configFile, "eatlas_search_engine_devel.json", logger);
 
 
         // Reindex individual index
@@ -63,22 +64,22 @@ public class Main {
 
         try (SearchClient searchClient = new ESClient()) {
             DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)config.getIndexer("eatlas_article");
-            //drupalNodeIndexer.index(searchClient, fullHarvest, messages);
+            //drupalNodeIndexer.index(searchClient, fullHarvest, logger);
 
             DrupalMediaIndexer drupalMediaIndexer = (DrupalMediaIndexer)config.getIndexer("eatlas_image");
-            //drupalMediaIndexer.index(searchClient, fullHarvest, messages);
+            //drupalMediaIndexer.index(searchClient, fullHarvest, logger);
 
             DrupalExternalLinkNodeIndexer drupalExternalLinkNodeIndexer = (DrupalExternalLinkNodeIndexer)config.getIndexer("eatlas_external_link");
-            //drupalExternalLinkNodeIndexer.index(searchClient, fullHarvest, messages);
+            //drupalExternalLinkNodeIndexer.index(searchClient, fullHarvest, logger);
 
             GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)config.getIndexer("eatlas_metadata");
-            //geoNetworkIndexer.index(searchClient, fullHarvest, messages);
+            //geoNetworkIndexer.index(searchClient, fullHarvest, logger);
 
             GeoNetworkCswIndexer geoNetworkCswIndexer = (GeoNetworkCswIndexer) config.getIndexer("eatlas_metadata_csw");
-            geoNetworkCswIndexer.index(searchClient, fullHarvest, messages);
+            geoNetworkCswIndexer.index(searchClient, fullHarvest, logger);
 
             AtlasMapperIndexer atlasMapperIndexer = (AtlasMapperIndexer)config.getIndexer("eatlas_layer");
-            //atlasMapperIndexer.index(searchClient, fullHarvest, messages);
+            //atlasMapperIndexer.index(searchClient, fullHarvest, logger);
 
 
             //Main.testElasticsearchClient();
@@ -98,7 +99,7 @@ public class Main {
 
             String wkt = null;
 
-            SearchResults results = Search.paginationSearch(searchClient, searchQuery, 0, 100, wkt, idx, null, messages);
+            SearchResults results = Search.paginationSearch(searchClient, searchQuery, 0, 100, wkt, idx, null, logger);
             System.out.println(results.toJSON().toString(2));
         } catch (Exception ex) {
             System.err.println(

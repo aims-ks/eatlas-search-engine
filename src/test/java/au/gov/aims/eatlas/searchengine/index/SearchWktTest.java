@@ -2,7 +2,8 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
@@ -61,7 +62,7 @@ public class SearchWktTest extends IndexerTestBase {
     @Test
     public void testSearchWkt() throws Exception {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
         MockHttpClient mockHttpClient = MockHttpClient.getInstance();
         try (MockSearchClient searchClient = this.createMockSearchClient()) {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
@@ -71,9 +72,9 @@ public class SearchWktTest extends IndexerTestBase {
             String imagesIndex = "junit_images";
 
             // Index mix content
-            this.indexMetadataRecords(metadataRecordIndex, config, searchClient, mockHttpClient, messages);
-            this.indexLayers(layersIndex, config, searchClient, mockHttpClient, messages);
-            this.indexImages(imagesIndex, config, searchClient, mockHttpClient, messages);
+            this.indexMetadataRecords(metadataRecordIndex, config, searchClient, mockHttpClient, logger);
+            this.indexLayers(layersIndex, config, searchClient, mockHttpClient, logger);
+            this.indexImages(imagesIndex, config, searchClient, mockHttpClient, logger);
 
 
             SearchResults results = null;
@@ -86,7 +87,7 @@ public class SearchWktTest extends IndexerTestBase {
                 String wkt = null; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -134,7 +135,7 @@ public class SearchWktTest extends IndexerTestBase {
                 String wkt = BBOX_WORLD; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -180,7 +181,7 @@ public class SearchWktTest extends IndexerTestBase {
                 String wkt = BBOX_WESTERN_AUSTRALIA; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -226,7 +227,7 @@ public class SearchWktTest extends IndexerTestBase {
                 String wkt = BBOX_MAGNETIC_ISLAND; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -271,7 +272,7 @@ public class SearchWktTest extends IndexerTestBase {
                 String wkt = BBOX_MAGNETIC_ISLAND; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -313,9 +314,8 @@ public class SearchWktTest extends IndexerTestBase {
 
 
 
-    private void indexMetadataRecords(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, Messages messages) throws ParseException, IOException {
+    private void indexMetadataRecords(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, AbstractLogger logger) throws ParseException, IOException {
         searchClient.createIndex(index);
-        // TODO: Remove duplication of GeoNetwork version (indexer and records) unless there is a good reason for it
         GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
 
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
@@ -327,40 +327,38 @@ public class SearchWktTest extends IndexerTestBase {
         australiaRecord.setTitle("Australia record");
         australiaRecord.setDocument("Record that covers whole of Australia coral.");
         australiaRecord.setWktAndAttributes(WKT_AUSTRALIA);
-        indexer.indexEntity(searchClient, australiaRecord, messages);
+        indexer.indexEntity(searchClient, australiaRecord, logger);
 
         // Queensland
         GeoNetworkRecord qldRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000001", "iso19115-3.2018", "3.0");
         qldRecord.setTitle("Queensland record");
         qldRecord.setDocument("Record that covers whole of Queensland.");
         qldRecord.setWktAndAttributes(WKT_QUEENSLAND);
-        indexer.indexEntity(searchClient, qldRecord, messages);
+        indexer.indexEntity(searchClient, qldRecord, logger);
 
         // Townsville
         GeoNetworkRecord townsvilleRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000002", "iso19115-3.2018", "3.0");
         townsvilleRecord.setTitle("Townsville record");
         townsvilleRecord.setDocument("Record of Townsville.");
         townsvilleRecord.setWktAndAttributes(WKT_TOWNSVILLE);
-        indexer.indexEntity(searchClient, townsvilleRecord, messages);
+        indexer.indexEntity(searchClient, townsvilleRecord, logger);
 
         // No WKT - Expected to default to whole world
         GeoNetworkRecord unknownRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-00000000000A", "iso19115-3.2018", "3.0");
         unknownRecord.setTitle("Unknown location record");
         unknownRecord.setDocument("Record that doesn't provide location coral.");
-        // TODO: Make sure it default to whole world
         unknownRecord.setWktAndAttributes(BBOX_WORLD);
-        indexer.indexEntity(searchClient, unknownRecord, messages);
+        indexer.indexEntity(searchClient, unknownRecord, logger);
 
         // Wait for ElasticSearch to finish its indexation
         searchClient.refresh(index);
     }
 
-    private void indexLayers(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, Messages messages) throws IOException {
+    private void indexLayers(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, AbstractLogger logger) throws IOException {
         searchClient.createIndex(index);
         String clientUrl = "http://domain.com/atlasmapper";
         String mainConfigPathStr = "searchWkt/atlasmapperFiles/main.json";
 
-        // TODO: Remove duplication of client URL (indexer and layers) unless there is a good reason for it
         AtlasMapperIndexer indexer = new AtlasMapperIndexer(mockHttpClient, index, clientUrl, "1.0", "http://domain.com/geoserver");
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.
@@ -377,22 +375,22 @@ public class SearchWktTest extends IndexerTestBase {
         String worldBaseLayerId = "ea_base_layer";
         JSONObject jsonWorldBaseLayer = this.createJsonLayer(
                 worldBaseLayerId, "Base layer", "Base layer that covers the whole world", LAYER_BBOX_WORLD);
-        AtlasMapperLayer worldBaseLayer = new AtlasMapperLayer(index, clientUrl, worldBaseLayerId, jsonWorldBaseLayer, jsonMainConfig, messages);
-        indexer.indexEntity(searchClient, worldBaseLayer, messages);
+        AtlasMapperLayer worldBaseLayer = new AtlasMapperLayer(index, clientUrl, worldBaseLayerId, jsonWorldBaseLayer, jsonMainConfig, logger);
+        indexer.indexEntity(searchClient, worldBaseLayer, logger);
 
         // Australia
         String australiaLayerId = "ea_australia";
         JSONObject jsonAustraliaLayer = this.createJsonLayer(
                 australiaLayerId, "Australia", "Layer of Australia", LAYER_BBOX_AUSTRALIA);
-        AtlasMapperLayer australiaLayer = new AtlasMapperLayer(index, clientUrl, australiaLayerId, jsonAustraliaLayer, jsonMainConfig, messages);
-        indexer.indexEntity(searchClient, australiaLayer, messages);
+        AtlasMapperLayer australiaLayer = new AtlasMapperLayer(index, clientUrl, australiaLayerId, jsonAustraliaLayer, jsonMainConfig, logger);
+        indexer.indexEntity(searchClient, australiaLayer, logger);
 
         // Queensland
         String queenslandLayerId = "ea_queensland";
         JSONObject jsonQueenslandLayer = this.createJsonLayer(
                 queenslandLayerId, "Queensland", "Layer of Queensland", LAYER_BBOX_QUEENSLAND);
-        AtlasMapperLayer queenslandLayer = new AtlasMapperLayer(index, clientUrl, queenslandLayerId, jsonQueenslandLayer, jsonMainConfig, messages);
-        indexer.indexEntity(searchClient, queenslandLayer, messages);
+        AtlasMapperLayer queenslandLayer = new AtlasMapperLayer(index, clientUrl, queenslandLayerId, jsonQueenslandLayer, jsonMainConfig, logger);
+        indexer.indexEntity(searchClient, queenslandLayer, logger);
 
         // Wait for ElasticSearch to finish its indexation
         searchClient.refresh(index);
@@ -420,7 +418,7 @@ public class SearchWktTest extends IndexerTestBase {
         return jsonLayerResponse;
     }
 
-    private void indexImages(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, Messages messages) throws IOException, ParseException {
+    private void indexImages(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, AbstractLogger logger) throws IOException, ParseException {
         searchClient.createIndex(index);
         DrupalMediaIndexer indexer = new DrupalMediaIndexer(mockHttpClient, index, "http://domain.com", "11.0", "image", "field_preview", "field_title", "field_description", "field_geojson");
 
@@ -432,35 +430,34 @@ public class SearchWktTest extends IndexerTestBase {
         JSONObject jsonMaggieImage = this.createJsonImage(
             "F0000000-0000-0000-0000-000000000000", "magnetic_island.jpg",
             "Magnetic island", "Image of Magnetic Island coral", WKT_MAGNETIC_ISLAND);
-        DrupalMedia maggieImage = indexer.createDrupalEntity(jsonMaggieImage, null, messages); // new DrupalMedia(index, jsonMaggieImage, messages);
-        // TODO: Add parseJsonDrupalEntity to indexEntity
-        indexer.parseJsonDrupalEntity(searchClient, jsonMaggieImage, null, maggieImage, messages);
-        indexer.indexEntity(searchClient, maggieImage, messages);
+        DrupalMedia maggieImage = indexer.createDrupalEntity(jsonMaggieImage, null, logger); // new DrupalMedia(index, jsonMaggieImage, logger);
+        indexer.parseJsonDrupalEntity(searchClient, jsonMaggieImage, null, maggieImage, logger);
+        indexer.indexEntity(searchClient, maggieImage, logger);
         System.out.println(maggieImage.toString());
 
         // New-Zealand
         JSONObject jsonNewZealandImage = this.createJsonImage(
             "F0000000-0000-0000-0000-000000000001", "new-zealand.jpg",
             "New-Zealand", "Image of New-Zealand coral", WKT_NEW_ZEALAND);
-        DrupalMedia newZealandImage = indexer.createDrupalEntity(jsonNewZealandImage, null, messages);
-        indexer.parseJsonDrupalEntity(searchClient, jsonNewZealandImage, null, newZealandImage, messages);
-        indexer.indexEntity(searchClient, newZealandImage, messages);
+        DrupalMedia newZealandImage = indexer.createDrupalEntity(jsonNewZealandImage, null, logger);
+        indexer.parseJsonDrupalEntity(searchClient, jsonNewZealandImage, null, newZealandImage, logger);
+        indexer.indexEntity(searchClient, newZealandImage, logger);
 
         // Western Australia
         JSONObject jsonWAImage = this.createJsonImage(
             "F0000000-0000-0000-0000-000000000002", "western_australia.jpg",
             "Western Australia", "Image of Western Australia", WKT_WESTERN_AUSTRALIA);
-        DrupalMedia waImage = indexer.createDrupalEntity(jsonWAImage, null, messages);
-        indexer.parseJsonDrupalEntity(searchClient, jsonWAImage, null, waImage, messages);
-        indexer.indexEntity(searchClient, waImage, messages);
+        DrupalMedia waImage = indexer.createDrupalEntity(jsonWAImage, null, logger);
+        indexer.parseJsonDrupalEntity(searchClient, jsonWAImage, null, waImage, logger);
+        indexer.indexEntity(searchClient, waImage, logger);
 
         // Pilbara
         JSONObject jsonPilbaraImage = this.createJsonImage(
             "F0000000-0000-0000-0000-000000000003", "Pilbara.jpg",
             "Pilbara", "Image of Pilbara coral", WKT_PILBARA);
-        DrupalMedia pilbaraImage = indexer.createDrupalEntity(jsonPilbaraImage, null, messages);
-        indexer.parseJsonDrupalEntity(searchClient, jsonPilbaraImage, null, pilbaraImage, messages);
-        indexer.indexEntity(searchClient, pilbaraImage, messages);
+        DrupalMedia pilbaraImage = indexer.createDrupalEntity(jsonPilbaraImage, null, logger);
+        indexer.parseJsonDrupalEntity(searchClient, jsonPilbaraImage, null, pilbaraImage, logger);
+        indexer.indexEntity(searchClient, pilbaraImage, logger);
 
         // Wait for ElasticSearch to finish its indexation
         searchClient.refresh(index);

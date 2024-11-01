@@ -19,18 +19,16 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
-import org.apache.log4j.Logger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
 
 import java.net.URL;
 import java.util.Map;
 
 public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<ExternalLink> {
-    private static final Logger LOGGER = Logger.getLogger(DrupalExternalLinkNodeIndexer.class.getName());
-
     private String drupalExternalUrlField;
     private String drupalContentOverwriteField;
 
@@ -58,8 +56,8 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     }
 
     @Override
-    public ExternalLink load(JSONObject json, Messages messages) {
-        return ExternalLink.load(json, messages);
+    public ExternalLink load(JSONObject json, AbstractLogger logger) {
+        return ExternalLink.load(json, logger);
     }
 
     @Override
@@ -95,12 +93,12 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     }
 
     @Override
-    public ExternalLink createDrupalEntity(JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, Messages messages) {
-        return new ExternalLink(this.getIndex(), jsonApiNode, messages);
+    public ExternalLink createDrupalEntity(JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, AbstractLogger logger) {
+        return new ExternalLink(this.getIndex(), jsonApiNode, logger);
     }
 
     @Override
-    protected boolean parseJsonDrupalEntity(SearchClient searchClient, JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, ExternalLink externalLink, Messages messages) {
+    protected boolean parseJsonDrupalEntity(SearchClient searchClient, JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, ExternalLink externalLink, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
 
         if (this.drupalExternalUrlField != null) {
@@ -110,7 +108,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
                 try {
                     externalLinkUrl = new URL(externalLinkStr);
                 } catch(Exception ex) {
-                    messages.addMessage(Messages.Level.WARNING, String.format("Invalid URL found for Drupal node external link %s, id: %s",
+                    logger.addMessage(Level.WARNING, String.format("Invalid URL found for Drupal node external link %s, id: %s",
                             this.getDrupalBundleId(),
                             externalLink.getId()), ex);
                 }
@@ -125,10 +123,10 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
 
                     // Download the text content of the URL
                     try {
-                        HttpClient.Response response = httpClient.getRequest(externalLinkStr, messages);
+                        HttpClient.Response response = httpClient.getRequest(externalLinkStr, logger);
                         content = response.extractText();
                     } catch (Exception ex) {
-                        messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while harvesting URL for Drupal node external link %s, id: %s. URL %s",
+                        logger.addMessage(Level.WARNING, String.format("Exception occurred while harvesting URL for Drupal node external link %s, id: %s. URL %s",
                                 this.getDrupalBundleId(),
                                 externalLink.getId(),
                                 externalLinkStr), ex);
@@ -141,7 +139,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
                     // Overwrite fields to make the results look more like an external link
                     externalLink.setLink(externalLinkUrl);
 
-                    return super.parseJsonDrupalEntity(searchClient, jsonApiNode, jsonIncluded, externalLink, messages);
+                    return super.parseJsonDrupalEntity(searchClient, jsonApiNode, jsonIncluded, externalLink, logger);
                 }
             }
         }
@@ -150,8 +148,8 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     }
 
     @Override
-    public ExternalLink getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages) {
-        return this.safeGet(searchClient, ExternalLink.class, id, messages);
+    public ExternalLink getIndexedDrupalEntity(SearchClient searchClient, String id, AbstractLogger logger) {
+        return this.safeGet(searchClient, ExternalLink.class, id, logger);
     }
 
     private static String getExternalLink(JSONObject jsonApiNode, String externalLinkField) {

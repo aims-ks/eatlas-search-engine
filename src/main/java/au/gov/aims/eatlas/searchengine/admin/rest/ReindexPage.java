@@ -24,6 +24,9 @@ import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.Consumes;
@@ -49,12 +52,12 @@ public class ReindexPage {
         @Context HttpServletRequest httpRequest
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
-        model.put("messages", messages);
+        model.put("logger", logger);
         model.put("config", config);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/reindex.jsp
@@ -115,66 +118,68 @@ public class ReindexPage {
         MultivaluedMap<String, String> form
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger sessionLogger = SessionLogger.getInstance(session);
 
         try {
             SearchClient searchClient = ESClient.getInstance();
 
             if (form.containsKey("reindex-all-button")) {
-                this.reindexAll(searchClient, true, messages);
+                this.reindexAll(searchClient, true, sessionLogger);
             } else if (form.containsKey("index-latest-all-button")) {
-                this.reindexAll(searchClient, false, messages);
+                this.reindexAll(searchClient, false, sessionLogger);
             } else if (form.containsKey("refresh-count-button")) {
-                this.refreshCount(searchClient, messages);
+                this.refreshCount(searchClient, sessionLogger);
 
             } else if (form.containsKey("recreate-index-button")) {
-                this.recreateIndex(searchClient, FormUtils.getFormStringValue(form, "recreate-index-button"), messages);
+                this.recreateIndex(searchClient, FormUtils.getFormStringValue(form, "recreate-index-button"), sessionLogger);
             } else if (form.containsKey("reindex-button")) {
-                this.reindex(searchClient, FormUtils.getFormStringValue(form, "reindex-button"), true, messages);
+                this.reindex(searchClient, FormUtils.getFormStringValue(form, "reindex-button"), true, sessionLogger);
             } else if (form.containsKey("index-latest-button")) {
-                this.reindex(searchClient, FormUtils.getFormStringValue(form, "index-latest-button"), false, messages);
+                this.reindex(searchClient, FormUtils.getFormStringValue(form, "index-latest-button"), false, sessionLogger);
             }
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            sessionLogger.addMessage(Level.ERROR,
                 "An exception occurred while accessing the Elastic Search server", ex);
         }
 
         return this.reindexPage(httpRequest);
     }
 
-    private void reindexAll(SearchClient searchClient, boolean fullHarvest, Messages messages) {
+    private void reindexAll(SearchClient searchClient, boolean fullHarvest, AbstractLogger sessionLogger) {
         try {
-            IndexUtils.internalReindex(searchClient, fullHarvest, messages);
+            // TODO use the file logger
+            //IndexUtils.internalReindex(searchClient, fullHarvest);
+            IndexUtils.internalReindex(searchClient, fullHarvest, sessionLogger);
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            sessionLogger.addMessage(Level.ERROR,
                 "An exception occurred during the indexation.", ex);
         }
     }
 
-    private void refreshCount(SearchClient searchClient, Messages messages) {
+    private void refreshCount(SearchClient searchClient, AbstractLogger logger) {
         try {
             SearchUtils.refreshIndexesCount(searchClient);
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 "An exception occurred while refreshing the indexes count.", ex);
         }
     }
 
-    private void recreateIndex(SearchClient searchClient, String index, Messages messages) {
+    private void recreateIndex(SearchClient searchClient, String index, AbstractLogger sessionLogger) {
         try {
             searchClient.deleteIndex(index);
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            sessionLogger.addMessage(Level.ERROR,
                 String.format("An exception occurred while deleting the index: %s", index), ex);
             return;
         }
 
-        this.reindex(searchClient, index, true, messages);
+        this.reindex(searchClient, index, true, sessionLogger);
     }
 
-    private void reindex(SearchClient searchClient, String index, boolean fullHarvest, Messages messages) {
+    private void reindex(SearchClient searchClient, String index, boolean fullHarvest, AbstractLogger sessionLogger) {
         if (index == null || index.isEmpty()) {
-            messages.addMessage(Messages.Level.ERROR,
+            sessionLogger.addMessage(Level.ERROR,
                 "No index provided for indexation.");
 
         } else {
@@ -182,9 +187,14 @@ public class ReindexPage {
             AbstractIndexer<?> indexer = config.getIndexer(index);
 
             try {
-                indexer.index(searchClient, fullHarvest, messages);
+                // TODO use the file logger
+                //AbstractLogger fileLogger = indexer.getFileLogger();
+                //fileLogger.clear();
+                AbstractLogger fileLogger = sessionLogger;
+
+                indexer.index(searchClient, fullHarvest, fileLogger);
             } catch (Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
+                sessionLogger.addMessage(Level.ERROR,
                     String.format("An exception occurred during the indexation of index: %s", index), ex);
             }
         }

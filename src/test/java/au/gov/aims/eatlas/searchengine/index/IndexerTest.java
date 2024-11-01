@@ -2,7 +2,8 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.ExternalLink;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.rest.Search;
@@ -36,11 +37,11 @@ public class IndexerTest extends IndexerTestBase {
     @Test
     public void testMockHttpClient() throws Exception {
         MockHttpClient mockHttpClient = this.getMockHttpClient();
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
 
         mockHttpClient.addGetUrl("https://www.hpwmxatrfsjcebqvdgnukz.com/coralsoftheworld", "externalLinks/coralsoftheworld.html");
 
-        HttpClient.Response response = mockHttpClient.getRequest("https://www.hpwmxatrfsjcebqvdgnukz.com/coralsoftheworld", messages);
+        HttpClient.Response response = mockHttpClient.getRequest("https://www.hpwmxatrfsjcebqvdgnukz.com/coralsoftheworld", logger);
         Assertions.assertNotNull(response, "Response is null");
         String responseStr = response.body();
         Assertions.assertNotNull(responseStr, "Response body is null");
@@ -157,7 +158,7 @@ public class IndexerTest extends IndexerTestBase {
         try (MockSearchClient searchClient = this.createMockSearchClient()) {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
             String index = "links";
-            Messages messages = Messages.getInstance(null);
+            AbstractLogger logger = ConsoleLogger.getInstance();
 
             searchClient.createIndex(index);
 
@@ -169,20 +170,20 @@ public class IndexerTest extends IndexerTestBase {
             ExternalLink coralsoftheworldLink = new ExternalLink(
                 index,
                 coralsoftheworldJson,
-                messages
+                logger
             );
             coralsoftheworldLink.setDocument(coralsoftheworldTextContent);
 
             ExternalLink seagrasswatchLink = new ExternalLink(
                 index,
                 seagrasswatchJson,
-                messages
+                logger
             );
             seagrasswatchLink.setDocument(seagrasswatchTextContent);
 
             // Index the entities
-            drupalExternalLinkIndexer.indexEntity(searchClient, coralsoftheworldLink, messages);
-            drupalExternalLinkIndexer.indexEntity(searchClient, seagrasswatchLink, messages);
+            drupalExternalLinkIndexer.indexEntity(searchClient, coralsoftheworldLink, logger);
+            drupalExternalLinkIndexer.indexEntity(searchClient, seagrasswatchLink, logger);
 
 
             // Wait for ElasticSearch to finish its indexation
@@ -227,7 +228,7 @@ public class IndexerTest extends IndexerTestBase {
                 List<String> fidx = List.of(index);
 
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, fidx, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, fidx, logger);
 
                 Summary searchSummary = results.getSummary();
 

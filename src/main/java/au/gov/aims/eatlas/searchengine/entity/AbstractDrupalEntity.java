@@ -18,7 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -26,9 +27,9 @@ import java.net.URL;
 public abstract class AbstractDrupalEntity extends Entity {
     protected AbstractDrupalEntity() {}
 
-    public AbstractDrupalEntity(JSONObject jsonApiEntity, Messages messages) {}
+    public AbstractDrupalEntity(JSONObject jsonApiEntity, AbstractLogger logger) {}
 
-    public static URL getDrupalBaseUrl(JSONObject jsonApiEntity, Messages messages) {
+    public static URL getDrupalBaseUrl(JSONObject jsonApiEntity, AbstractLogger logger) {
         JSONObject jsonLinks = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("links");
         JSONObject jsonLinksSelf = jsonLinks == null ? null : jsonLinks.optJSONObject("self");
         String linksSelfHref = jsonLinksSelf == null ? null : jsonLinksSelf.optString("href", null);
@@ -38,7 +39,7 @@ public abstract class AbstractDrupalEntity extends Entity {
             try {
                 linksSelfUrl = new URL(linksSelfHref);
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                         String.format("Invalid URL found in links.self.href: %s", linksSelfHref), ex);
             }
         }
@@ -47,7 +48,7 @@ public abstract class AbstractDrupalEntity extends Entity {
             try {
                 return new URL(linksSelfUrl.getProtocol(), linksSelfUrl.getHost(), linksSelfUrl.getPort(), "/");
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                         String.format("Can not get root URL from links.self.href: %s", linksSelfUrl), ex);
             }
         }

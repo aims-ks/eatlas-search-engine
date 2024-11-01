@@ -1,7 +1,8 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.AbstractDrupalEntityIndexer;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -15,12 +16,12 @@ public class DrupalBlock extends AbstractDrupalEntity {
 
     // Load from Drupal JSON:API output
     //   http://localhost:1022/jsonapi/block_content/network
-    public DrupalBlock(String index, JSONObject jsonApiBlock, Messages messages) {
-        super(jsonApiBlock, messages);
+    public DrupalBlock(String index, JSONObject jsonApiBlock, AbstractLogger logger) {
+        super(jsonApiBlock, logger);
         this.setIndex(index);
 
         if (jsonApiBlock != null) {
-            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiBlock, messages);
+            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiBlock, logger);
 
             // UUID
             this.setId(jsonApiBlock.optString("id", null));
@@ -42,7 +43,7 @@ public class DrupalBlock extends AbstractDrupalEntity {
                 try {
                     this.setLink(new URL(baseUrl, nodeRelativePath));
                 } catch(Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                             String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
                 }
             }
@@ -79,9 +80,9 @@ public class DrupalBlock extends AbstractDrupalEntity {
         this.bid = bid;
     }
 
-    public static DrupalBlock load(JSONObject json, Messages messages) {
+    public static DrupalBlock load(JSONObject json, AbstractLogger logger) {
         DrupalBlock block = new DrupalBlock();
-        block.loadJSON(json, messages);
+        block.loadJSON(json, logger);
         String bidStr = json.optString("bid", null);
         if (bidStr != null && !bidStr.isEmpty()) {
             block.bid = Integer.parseInt(bidStr);

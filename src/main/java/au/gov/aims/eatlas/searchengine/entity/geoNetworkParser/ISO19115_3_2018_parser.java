@@ -18,12 +18,14 @@
  */
 package au.gov.aims.eatlas.searchengine.entity.geoNetworkParser;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.entity.WikiFormatter;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import au.gov.aims.eatlas.searchengine.index.WktUtils;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.Message;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
@@ -38,7 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class ISO19115_3_2018_parser extends AbstractParser {
-    public void parseRecord(GeoNetworkRecord record, String geoNetworkUrlStr, Element rootElement, Messages messages) {
+    public void parseRecord(GeoNetworkRecord record, String geoNetworkUrlStr, Element rootElement, AbstractLogger logger) {
         // UUID
         // NOTE: Get it from the XML document if not provided already
         if (record.getId() == null) {
@@ -132,7 +134,7 @@ public class ISO19115_3_2018_parser extends AbstractParser {
                     record.setThumbnailUrl(thumbnailUrl);
                 } catch(Exception ex) {
                     record.setThumbnailUrl(null);
-                    messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata thumbnail URL found in record %s: %s",
+                    logger.addMessage(Level.ERROR, String.format("Invalid metadata thumbnail URL found in record %s: %s",
                             record.getId(), previewUrlStr), ex);
                 }
             }
@@ -165,18 +167,18 @@ public class ISO19115_3_2018_parser extends AbstractParser {
         try {
             wkt = this.parseExtentList(extentList);
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("Metadata record %s - %s", record.getId(), ex.getMessage()), ex);
+            logger.addMessage(Level.ERROR, String.format("Metadata record %s - %s", record.getId(), ex.getMessage()), ex);
         }
 
         if (wkt == null || wkt.isEmpty()) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Metadata record %s has no extent.", record.getId()));
+            logger.addMessage(Level.WARNING, String.format("Metadata record %s has no extent.", record.getId()));
             wkt = AbstractIndexer.DEFAULT_WKT;
         }
 
         try {
             record.setWktAndAttributes(wkt);
         } catch(ParseException ex) {
-            Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+            Message message = logger.addMessage(Level.WARNING, "Invalid WKT", ex);
             message.addDetail(wkt);
         }
 
@@ -210,12 +212,12 @@ public class ISO19115_3_2018_parser extends AbstractParser {
             if ("WWW:LINK-1.0-http--metadata-URL".equals(potOnlineResource.getProtocol()) && safeLabel.contains("point of truth")) {
                 if (potOnlineResource.getLinkage() != null) {
                     if (pointOfTruthUrlStr != null) {
-                        messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
+                        logger.addMessage(Level.WARNING, String.format("Metadata record UUID %s have multiple point of truth",
                             record.getId()));
                     }
                     pointOfTruthUrlStr = potOnlineResource.getLinkage();
                     if (!pointOfTruthUrlStr.contains(record.getId())) {
-                        messages.addMessage(Messages.Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
+                        logger.addMessage(Level.WARNING, String.format("Metadata record UUID %s point of truth is not pointing to itself: %s",
                             record.getId(), pointOfTruthUrlStr));
                     }
                 }
@@ -284,7 +286,7 @@ public class ISO19115_3_2018_parser extends AbstractParser {
             try {
                 metadataRecordUrl = new URL(pointOfTruthUrlStr);
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL found in Point Of Truth of record %s: %s", record.getId(), pointOfTruthUrlStr), ex);
+                logger.addMessage(Level.ERROR, String.format("Invalid metadata record URL found in Point Of Truth of record %s: %s", record.getId(), pointOfTruthUrlStr), ex);
             }
         }
 
@@ -292,7 +294,7 @@ public class ISO19115_3_2018_parser extends AbstractParser {
             try {
                 metadataRecordUrl = this.getMetadataLink(record, geoNetworkUrlStr);
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", record.getId(), geoNetworkUrlStr), ex);
+                logger.addMessage(Level.ERROR, String.format("Invalid metadata record URL for record %s: %s", record.getId(), geoNetworkUrlStr), ex);
             }
         }
 

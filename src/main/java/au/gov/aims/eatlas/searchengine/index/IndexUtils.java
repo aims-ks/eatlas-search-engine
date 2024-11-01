@@ -19,7 +19,7 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -191,7 +191,13 @@ public class IndexUtils {
         return null;
     }
 
-    public static JSONObject internalReindex(SearchClient searchClient, boolean full, Messages messages) throws IOException {
+    public static JSONObject internalReindex(SearchClient searchClient, boolean full) throws IOException {
+        return IndexUtils.internalReindex(searchClient, full, null);
+    }
+
+    // Method used for debugging.
+    // Use the method signature without the logger
+    public static JSONObject internalReindex(SearchClient searchClient, boolean full, AbstractLogger logger) throws IOException {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         // Reindex
@@ -200,7 +206,13 @@ public class IndexUtils {
             if (indexers != null && !indexers.isEmpty()) {
                 for (AbstractIndexer<?> indexer : indexers) {
                     if (indexer.isEnabled()) {
-                        indexer.index(searchClient, full, messages);
+                        // If the logger hasn't been defined, use the indexer respective file logger.
+                        if (logger == null) {
+                            logger = indexer.getFileLogger();
+                            logger.clear();
+                        }
+
+                        indexer.index(searchClient, full, logger);
                     }
                 }
             }

@@ -18,8 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.AbstractDrupalEntityIndexer;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -32,12 +33,12 @@ public class DrupalNode extends AbstractDrupalEntity {
     }
 
     // Load from Drupal JSON:API output
-    public DrupalNode(String index, JSONObject jsonApiNode, Messages messages) {
-        super(jsonApiNode, messages);
+    public DrupalNode(String index, JSONObject jsonApiNode, AbstractLogger logger) {
+        super(jsonApiNode, logger);
         this.setIndex(index);
 
         if (jsonApiNode != null) {
-            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiNode, messages);
+            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiNode, logger);
 
             // UUID
             this.setId(jsonApiNode.optString("id", null));
@@ -59,7 +60,7 @@ public class DrupalNode extends AbstractDrupalEntity {
                 try {
                     this.setLink(new URL(baseUrl, nodeRelativePath));
                 } catch(Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                             String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
                 }
             }
@@ -95,9 +96,9 @@ public class DrupalNode extends AbstractDrupalEntity {
         this.nid = nid;
     }
 
-    public static DrupalNode load(JSONObject json, Messages messages) {
+    public static DrupalNode load(JSONObject json, AbstractLogger logger) {
         DrupalNode node = new DrupalNode();
-        node.loadJSON(json, messages);
+        node.loadJSON(json, logger);
         String nidStr = json.optString("nid", null);
         if (nidStr != null && !nidStr.isEmpty()) {
             node.nid = Integer.parseInt(nidStr);

@@ -18,7 +18,6 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -91,7 +90,7 @@ public class Bbox {
             .put("area", this.getArea());
     }
 
-    protected void loadJSON(JSONObject json, Messages messages) {
+    protected void loadJSON(JSONObject json) {
         if (json != null) {
             if (json.has("north")) {
                 this.setNorth(json.optDouble("north"));

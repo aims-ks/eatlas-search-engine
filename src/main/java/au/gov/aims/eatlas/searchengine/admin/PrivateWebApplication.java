@@ -19,7 +19,8 @@
 package au.gov.aims.eatlas.searchengine.admin;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
@@ -35,11 +36,11 @@ public class PrivateWebApplication extends ResourceConfig {
 
     public PrivateWebApplication(@Context ServletContext servletContext) {
         HttpClient httpCLient = HttpClient.getInstance();
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
 
         SearchEngineConfig config = null;
         try {
-            config = SearchEngineConfig.createInstance(httpCLient, servletContext, messages);
+            config = SearchEngineConfig.createInstance(httpCLient, servletContext, logger);
         } catch (Exception ex) {
             LOGGER.error("Could not load the eAtlas search engine configuration.", ex);
         }

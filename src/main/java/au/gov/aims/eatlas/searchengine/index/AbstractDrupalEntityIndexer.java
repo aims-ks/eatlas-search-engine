@@ -19,14 +19,15 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.AbstractDrupalEntity;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.Message;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -51,7 +52,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends AbstractIndexer<E> {
-    private static final Logger LOGGER = Logger.getLogger(AbstractDrupalEntityIndexer.class.getName());
     private static final int THREAD_POOL_SIZE = 10;
 
     // Number of Drupal entity to index per page.
@@ -87,8 +87,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalGeoJSONField = drupalGeoJSONField;
     }
 
-    public abstract E createDrupalEntity(JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, Messages messages);
-    public abstract E getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages);
+    public abstract E createDrupalEntity(JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, AbstractLogger logger);
+    public abstract E getIndexedDrupalEntity(SearchClient searchClient, String id, AbstractLogger logger);
     public abstract String getHarvestSort(boolean fullHarvest);
 
     protected JSONObject getJsonBase() {
@@ -118,18 +118,18 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     }
 
     @Override
-    protected E harvestEntity(SearchClient searchClient, String entityUUID, Messages messages) {
+    protected E harvestEntity(SearchClient searchClient, String entityUUID, AbstractLogger logger) {
         // First, request the node without includes (to find out the node's structure)
-        URIBuilder uriBuilder = this.buildDrupalApiEntityUrl(entityUUID, messages);
+        URIBuilder uriBuilder = this.buildDrupalApiEntityUrl(entityUUID, logger);
         if (uriBuilder == null) {
             return null;
         }
 
-        JSONObject jsonResponse = this.getJsonResponse(entityUUID, uriBuilder, messages);
-        return this.harvestEntity(searchClient, jsonResponse, entityUUID, messages);
+        JSONObject jsonResponse = this.getJsonResponse(entityUUID, uriBuilder, logger);
+        return this.harvestEntity(searchClient, jsonResponse, entityUUID, logger);
     }
 
-    protected E harvestEntity(SearchClient searchClient, JSONObject jsonResponse, String entityUUID, Messages messages) {
+    protected E harvestEntity(SearchClient searchClient, JSONObject jsonResponse, String entityUUID, AbstractLogger logger) {
         E drupalEntity = null;
         if (jsonResponse != null) {
             JSONObject jsonApiEntity = jsonResponse.optJSONObject("data");
@@ -138,17 +138,17 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             if (includes == null || includes.isEmpty()) {
                 // No field needs to be included in the query.
                 // No need to send another query, just use the previous response. It contains all the information we need.
-                drupalEntity = this.harvestEntityWithIncludes(searchClient, jsonResponse, messages);
+                drupalEntity = this.harvestEntityWithIncludes(searchClient, jsonResponse, logger);
             } else {
                 // Now that we know what fields need to be included in the request,
                 // request the node again, with the includes.
-                URIBuilder uriWithIncludesBuilder = this.buildDrupalApiEntityUrlWithIncludes(entityUUID, includes, messages);
+                URIBuilder uriWithIncludesBuilder = this.buildDrupalApiEntityUrlWithIncludes(entityUUID, includes, logger);
                 if (uriWithIncludesBuilder == null) {
                     return null;
                 }
 
-                JSONObject jsonResponseWithIncludes = this.getJsonResponse(entityUUID, uriWithIncludesBuilder, messages);
-                drupalEntity = this.harvestEntityWithIncludes(searchClient, jsonResponseWithIncludes, messages);
+                JSONObject jsonResponseWithIncludes = this.getJsonResponse(entityUUID, uriWithIncludesBuilder, logger);
+                drupalEntity = this.harvestEntityWithIncludes(searchClient, jsonResponseWithIncludes, logger);
             }
         }
 
@@ -156,23 +156,23 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     }
 
 
-    protected JSONObject getJsonResponse(String entityUUID, URIBuilder uriBuilder, Messages messages) {
+    protected JSONObject getJsonResponse(String entityUUID, URIBuilder uriBuilder, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
         String url;
         try {
             url = uriBuilder.build().toURL().toString();
         } catch(Exception ex) {
             // Should not happen
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("Invalid Drupal URL. Exception occurred while building a URL starting with: %s", this.getDrupalApiUrlBase()), ex);
             return null;
         }
 
         HttpClient.Response response = null;
         try {
-            response = httpClient.getRequest(url, messages);
+            response = httpClient.getRequest(url, logger);
         } catch(Exception ex) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting the Drupal %s, type: %s, UUID: %s",
+            logger.addMessage(Level.WARNING, String.format("Exception occurred while requesting the Drupal %s, type: %s, UUID: %s",
                     this.getDrupalEntityType(), this.getDrupalBundleId(), entityUUID), ex);
         }
 
@@ -181,7 +181,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             if (jsonResponse != null && !jsonResponse.isEmpty()) {
                 JSONArray jsonErrors = jsonResponse.optJSONArray("errors");
                 if (jsonErrors != null && !jsonErrors.isEmpty()) {
-                    this.handleDrupalApiErrors(jsonErrors, messages);
+                    this.handleDrupalApiErrors(jsonErrors, logger);
                 } else {
                     return jsonResponse;
                 }
@@ -191,15 +191,15 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return null;
     }
 
-    protected E harvestEntityWithIncludes(SearchClient searchClient, JSONObject jsonResponse, Messages messages) {
+    protected E harvestEntityWithIncludes(SearchClient searchClient, JSONObject jsonResponse, AbstractLogger logger) {
         JSONObject jsonApiEntity = jsonResponse.optJSONObject("data");
         JSONArray jsonIncludedArray = jsonResponse.optJSONArray("included");
 
         Map<String, JSONObject> jsonIncluded = parseJsonIncluded(jsonIncludedArray);
 
-        E drupalEntity = this.createDrupalEntity(jsonApiEntity, jsonIncluded, messages);
+        E drupalEntity = this.createDrupalEntity(jsonApiEntity, jsonIncluded, logger);
 
-        if (this.parseJsonDrupalEntity(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, messages)) {
+        if (this.parseJsonDrupalEntity(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, logger)) {
             return drupalEntity;
         }
 
@@ -229,15 +229,15 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             JSONObject jsonApiEntity,
             Map<String, JSONObject> jsonIncluded,
             E drupalEntity,
-            Messages messages) {
+            AbstractLogger logger) {
 
-        this.updateThumbnail(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, messages);
-        this.updateGeoJSON(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, messages);
+        this.updateThumbnail(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, logger);
+        this.updateGeoJSON(searchClient, jsonApiEntity, jsonIncluded, drupalEntity, logger);
         return true;
     }
 
     @Override
-    protected void internalIndex(SearchClient searchClient, Long lastHarvested, Messages messages) {
+    protected void internalIndex(SearchClient searchClient, Long lastHarvested, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
         boolean fullHarvest = lastHarvested == null;
         long harvestStart = System.currentTimeMillis();
@@ -264,13 +264,13 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         boolean crashed = false;
         String sort = this.getHarvestSort(fullHarvest);
 
-        URIBuilder uriBuilder = this.buildDrupalApiPageUrl(page, sort, messages);
+        URIBuilder uriBuilder = this.buildDrupalApiPageUrl(page, sort, logger);
         String url = null;
         try {
             url = uriBuilder.build().toURL().toString();
         } catch(Exception ex) {
             // Should not happen
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("Invalid Drupal URL. Exception occurred while building a URL starting with: %s", this.getDrupalApiUrlBase()), ex);
             return;
         }
@@ -279,10 +279,10 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             entityFound = 0;
             HttpClient.Response response = null;
             try {
-                response = httpClient.getRequest(url, messages);
+                response = httpClient.getRequest(url, logger);
             } catch(Exception ex) {
                 if (!crashed) {
-                    messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while requesting a page of Drupal %s, type: %s",
+                    logger.addMessage(Level.WARNING, String.format("Exception occurred while requesting a page of Drupal %s, type: %s",
                             this.getDrupalEntityType(), this.getDrupalBundleId()), ex);
                 }
                 crashed = true;
@@ -291,7 +291,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             if (jsonResponse != null && !jsonResponse.isEmpty()) {
                 JSONArray jsonErrors = jsonResponse.optJSONArray("errors");
                 if (jsonErrors != null && !jsonErrors.isEmpty()) {
-                    this.handleDrupalApiErrors(jsonErrors, messages);
+                    this.handleDrupalApiErrors(jsonErrors, logger);
                     crashed = true;
                 } else {
                     JSONArray jsonEntities = jsonResponse.optJSONArray("data");
@@ -324,7 +324,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                         }
 
                         Thread thread = new DrupalEntityIndexerThread(
-                                searchClient, messages, jsonApiEntity, usedThumbnails,
+                                searchClient, logger, jsonApiEntity, usedThumbnails,
                                 page+1, i+1, entityFound);
 
                         threadPool.execute(thread);
@@ -351,14 +351,14 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         try {
             threadPool.awaitTermination(1, TimeUnit.HOURS);
         } catch(InterruptedException ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("The indexation for %s type %s was interrupted",
+            logger.addMessage(Level.ERROR, String.format("The indexation for %s type %s was interrupted",
                     this.getDrupalEntityType(), this.getDrupalBundleId()), ex);
         }
 
         // Only cleanup when we are doing a full harvest
         if (!crashed && fullHarvest) {
             this.cleanUp(searchClient, harvestStart, usedThumbnails, String.format("Drupal %s type %s",
-                    this.getDrupalEntityType(), this.getDrupalBundleId()), messages);
+                    this.getDrupalEntityType(), this.getDrupalBundleId()), logger);
         }
     }
 
@@ -366,13 +366,13 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return String.format("%s/jsonapi/%s/%s", this.getDrupalUrl(), this.getDrupalEntityType(), this.getDrupalBundleId());
     }
 
-    public URIBuilder buildDrupalApiEntityUrl(String entityUUID, Messages messages) {
+    public URIBuilder buildDrupalApiEntityUrl(String entityUUID, AbstractLogger logger) {
         String urlBase = this.getDrupalApiUrlBase();
         URIBuilder uriBuilder;
         try {
             uriBuilder = new URIBuilder(String.format("%s/%s", urlBase, entityUUID));
         } catch(URISyntaxException ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
@@ -388,7 +388,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     //   For nodes:
     //     To get all: drupal_internal__nid
     //     To get latest: -changed,drupal_internal__nid
-    public URIBuilder buildDrupalApiPageUrl(int page, String sort, Messages messages) {
+    public URIBuilder buildDrupalApiPageUrl(int page, String sort, AbstractLogger logger) {
         // Ordered by lastModified (changed).
         // If the parameter lastHarvested is set, harvest entities (nodes)
         //     until we found an entity that was last modified before the lastHarvested parameter.
@@ -401,7 +401,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         try {
             uriBuilder = new URIBuilder(urlBase);
         } catch(URISyntaxException ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
@@ -450,13 +450,13 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return includes;
     }
 
-    public URIBuilder buildDrupalApiEntityUrlWithIncludes(String entityUUID, List<String> includes, Messages messages) {
+    public URIBuilder buildDrupalApiEntityUrlWithIncludes(String entityUUID, List<String> includes, AbstractLogger logger) {
         String urlBase = this.getDrupalApiUrlBase();
         URIBuilder uriBuilder;
         try {
             uriBuilder = new URIBuilder(String.format("%s/%s", urlBase, entityUUID));
         } catch(URISyntaxException ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
             return null;
         }
@@ -473,14 +473,14 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         return uriBuilder;
     }
 
-    public void handleDrupalApiErrors(JSONArray jsonErrors, Messages messages) {
+    public void handleDrupalApiErrors(JSONArray jsonErrors, AbstractLogger logger) {
         // Handle errors returned by Drupal.
         for (int i=0; i<jsonErrors.length(); i++) {
             JSONObject jsonError = jsonErrors.optJSONObject(i);
             String errorTitle = jsonError.optString("title", "Untitled error");
             String errorDetail = jsonError.optString("detail", "No details");
 
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("An error occurred during the indexation of %s type %s - %s: %s",
                             this.getDrupalEntityType(), this.getDrupalBundleId(),
                             errorTitle, errorDetail));
@@ -762,9 +762,9 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalGeoJSONField = drupalGeoJSONField;
     }
 
-    public void updateThumbnail(SearchClient searchClient, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
+    public void updateThumbnail(SearchClient searchClient, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
-        URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiEntity, messages);
+        URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiEntity, logger);
         String previewImageFieldType = AbstractDrupalEntityIndexer.getPreviewImageType(jsonApiEntity, this.getDrupalPreviewImageField());
         if (previewImageFieldType != null && baseUrl != null && this.getDrupalPreviewImageField() != null) {
             String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(jsonApiEntity, this.getDrupalPreviewImageField());
@@ -775,7 +775,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     try {
                         thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
                     } catch(Exception ex) {
-                        messages.addMessage(Messages.Level.WARNING,
+                        logger.addMessage(Level.WARNING,
                                 String.format("Exception occurred while creating a thumbnail URL for Drupal %s type %s, id: %s",
                                         this.getDrupalEntityType(),
                                         this.getDrupalBundleId(),
@@ -784,15 +784,15 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     drupalEntity.setThumbnailUrl(thumbnailUrl);
 
                     // Create the thumbnail if it's missing or outdated
-                    E oldEntity = this.getIndexedDrupalEntity(searchClient, drupalEntity.getId(), messages);
-                    if (drupalEntity.isThumbnailOutdated(oldEntity, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), messages)) {
+                    E oldEntity = this.getIndexedDrupalEntity(searchClient, drupalEntity.getId(), logger);
+                    if (drupalEntity.isThumbnailOutdated(oldEntity, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), logger)) {
                         try {
-                            File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), drupalEntity.getId(), messages);
+                            File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), drupalEntity.getId(), logger);
                             if (cachedThumbnailFile != null) {
                                 drupalEntity.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                             }
                         } catch(Exception ex) {
-                            messages.addMessage(Messages.Level.WARNING,
+                            logger.addMessage(Level.WARNING,
                                     String.format("Exception occurred while creating a thumbnail for Drupal %s type %s, id: %s",
                                             AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
                                             AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
@@ -807,7 +807,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         }
     }
 
-    public void updateGeoJSON(SearchClient searchClient, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, Messages messages) {
+    public void updateGeoJSON(SearchClient searchClient, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, AbstractLogger logger) {
         if (this.getDrupalGeoJSONField() != null) {
             // Extract WKT from jsonApiEntity (node / media)
             JSONObject jsonAttributes = jsonApiEntity == null ? null : jsonApiEntity.optJSONObject("attributes");
@@ -827,7 +827,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                 try {
                     geometry = reader.read(geoJSON);
                 } catch(ParseException ex) {
-                    Messages.Message message = messages.addMessage(Messages.Level.WARNING,
+                    Message message = logger.addMessage(Level.WARNING,
                             "Exception while parsing GeoJSON",
                             ex);
                     message.addDetail(geoJSON);
@@ -841,7 +841,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                     drupalEntity.setWktAndAttributes(geometry);
                 }
             } catch(ParseException ex) {
-                Messages.Message message = messages.addMessage(Messages.Level.WARNING,
+                Message message = logger.addMessage(Level.WARNING,
                         "Invalid GeoJSON",
                         ex);
                 message.addDetail(geoJSON);
@@ -853,7 +853,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     // It can be extended in the indexer and used as a starting point.
     public class DrupalEntityIndexerThread extends Thread {
         private final SearchClient searchClient;
-        private final Messages messages;
+        private final AbstractLogger logger;
         private final JSONObject jsonApiEntity;
         private final Set<String> usedThumbnails;
         private final int page;
@@ -863,13 +863,13 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
         public DrupalEntityIndexerThread(
                 SearchClient searchClient,
-                Messages messages,
+                AbstractLogger logger,
                 JSONObject jsonApiEntity,
                 Set<String> usedThumbnails,
                 int page, int current, int pageTotal
         ) {
             this.searchClient = searchClient;
-            this.messages = messages;
+            this.logger = logger;
             this.jsonApiEntity = jsonApiEntity;
             this.usedThumbnails = usedThumbnails;
             this.page = page;
@@ -881,8 +881,8 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             return this.searchClient;
         }
 
-        public Messages getMessages() {
-            return this.messages;
+        public AbstractLogger getLogger() {
+            return this.logger;
         }
 
         public E getDrupalEntity() {
@@ -891,14 +891,13 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
         @Override
         public void run() {
-
             JSONObject jsonResponse = new JSONObject()
                     .put("data", this.jsonApiEntity);
 
             String entityUUID = this.jsonApiEntity == null ? null : this.jsonApiEntity.optString("id", null);
 
             this.drupalEntity = AbstractDrupalEntityIndexer.this.harvestEntity(
-                    this.searchClient, jsonResponse, entityUUID, this.messages);
+                    this.searchClient, jsonResponse, entityUUID, this.logger);
 
 
             if (this.drupalEntity != null) {
@@ -910,18 +909,18 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                 }
 
                 try {
-                    IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.searchClient, this.drupalEntity, this.messages);
+                    IndexResponse indexResponse = AbstractDrupalEntityIndexer.this.indexEntity(this.searchClient, this.drupalEntity, this.logger);
 
                     // NOTE: We don't know how many entities (or pages of entities) there is.
                     //     We index until we reach the bottom of the barrel...
-                    LOGGER.debug(String.format("[Page %d: %d/%d] Indexing Drupal %s type %s, id: %s, index response status: %s",
+                    this.logger.addMessage(Level.INFO, String.format("[Page %d: %d/%d] Indexing Drupal %s type %s, id: %s, index response status: %s",
                             this.page, this.current, this.pageTotal,
                             AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
                             AbstractDrupalEntityIndexer.this.getDrupalBundleId(),
                             this.drupalEntity.getId(),
                             indexResponse.result()));
                 } catch(Exception ex) {
-                    this.messages.addMessage(Messages.Level.WARNING,
+                    this.logger.addMessage(Level.WARNING,
                             String.format("Exception occurred while indexing a Drupal %s type %s, id: %s",
                                     AbstractDrupalEntityIndexer.this.getDrupalEntityType(),
                                     AbstractDrupalEntityIndexer.this.getDrupalBundleId(),

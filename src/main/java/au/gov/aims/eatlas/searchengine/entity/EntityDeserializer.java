@@ -19,7 +19,8 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -47,11 +48,11 @@ public class EntityDeserializer extends StdDeserializer<Entity> {
         if (index != null) {
             SearchEngineConfig config = SearchEngineConfig.getInstance();
 
-            Messages messages = Messages.getInstance(null);
+            AbstractLogger logger = ConsoleLogger.getInstance();
             for (AbstractIndexer<?> indexer : config.getIndexers()) {
                 if (index.equals(indexer.getIndex())) {
                     // The loader takes a JSONObject. Creates one from the parser.
-                    return indexer.load(new JSONObject(node.toString()), messages);
+                    return indexer.load(new JSONObject(node.toString()), logger);
                 }
             }
         }

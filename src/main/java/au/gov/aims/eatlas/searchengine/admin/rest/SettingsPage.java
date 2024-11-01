@@ -31,6 +31,9 @@ import au.gov.aims.eatlas.searchengine.index.DrupalMediaIndexer;
 import au.gov.aims.eatlas.searchengine.index.DrupalNodeIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkCswIndexer;
 import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.Consumes;
@@ -56,12 +59,12 @@ public class SettingsPage {
         @Context HttpServletRequest httpRequest
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
-        model.put("messages", messages);
+        model.put("logger", logger);
         model.put("config", config);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/settings.jsp
@@ -83,52 +86,52 @@ public class SettingsPage {
         MultivaluedMap<String, String> form
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
         HttpClient httpClient = HttpClient.getInstance();
 
         try {
             SearchClient searchClient = ESClient.getInstance();
             if (form.containsKey("save-button")) {
-                this.save(form, messages);
+                this.save(form, logger);
             } else if (form.containsKey("commit-button")) {
-                this.commit(form, messages);
+                this.commit(form, logger);
             } else if (form.containsKey("add-index-button")) {
-                this.addIndex(searchClient, httpClient, form, messages);
+                this.addIndex(searchClient, httpClient, form, logger);
             } else if (form.containsKey("delete-button")) {
-                this.deleteIndex(searchClient, FormUtils.getFormStringValue(form, "delete-button"), messages);
+                this.deleteIndex(searchClient, FormUtils.getFormStringValue(form, "delete-button"), logger);
             } else {
                 // Default value when the user press enter in a text field, or when the form is submitted by JavaScript.
                 // Most modern browser used the next submit button in the DOM tree (which is why we have a hidden save button),
                 // but some browser submits the form without "clicking" a submit button.
-                this.save(form, messages);
+                this.save(form, logger);
             }
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 "An exception occurred while accessing the Elastic Search server", ex);
         }
 
         return settingsPage(httpRequest);
     }
 
-    private void addIndex(SearchClient searchClient, HttpClient httpClient, MultivaluedMap<String, String> form, Messages messages) {
+    private void addIndex(SearchClient searchClient, HttpClient httpClient, MultivaluedMap<String, String> form, AbstractLogger logger) {
         String newIndexType = FormUtils.getFormStringValue(form, "newIndexType");
         // Call delete orphan indexes
         try {
             SearchUtils.deleteOrphanIndexes(searchClient);
         } catch (IOException ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 "An exception occurred while deleting orphan search indexes.", ex);
         }
 
         try {
             SearchUtils.addIndex(httpClient, newIndexType);
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 String.format("An exception occurred while adding the new index: %s", newIndexType), ex);
         }
     }
 
-    private void deleteIndex(SearchClient searchClient, String deleteIndex, Messages messages) {
+    private void deleteIndex(SearchClient searchClient, String deleteIndex, AbstractLogger logger) {
         if (deleteIndex != null) {
             SearchEngineConfig config = SearchEngineConfig.getInstance();
 
@@ -136,7 +139,7 @@ public class SettingsPage {
             try {
                 deletedIndexer = config.removeIndexer(deleteIndex);
             } catch (Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                     String.format("An exception occurred while deleting the search index: %s", deleteIndex), ex);
             }
 
@@ -144,7 +147,7 @@ public class SettingsPage {
                 try {
                     config.save();
                 } catch (Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                         "An exception occurred while saving the search engine settings.", ex);
                 }
 
@@ -152,18 +155,18 @@ public class SettingsPage {
                 try {
                     SearchUtils.deleteOrphanIndexes(searchClient);
                 } catch (IOException ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                         "An exception occurred deleting orphan search indexes.", ex);
                 }
 
             } else {
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                         String.format("Can not delete the index %s. The index does not exist.", deleteIndex));
             }
         }
     }
 
-    private void save(MultivaluedMap<String, String> form, Messages messages) {
+    private void save(MultivaluedMap<String, String> form, AbstractLogger logger) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         config.setElasticSearchNumberOfShards(FormUtils.getFormIntegerValue(form, "elasticSearchNumberOfShards"));
@@ -182,10 +185,10 @@ public class SettingsPage {
             String newIndex = FormUtils.getFormStringValue(form, index + "_index");
             if (newIndex != null && !newIndex.equals(index)) {
                 if (!newIndex.matches("[a-zA-Z0-9_-]+")) {
-                    messages.addMessage(Messages.Level.WARNING,
+                    logger.addMessage(Level.WARNING,
                         String.format("Invalid index supplied: %s. Invalid characters in the index. Rolled back to previous index: %s", newIndex, index));
                 } else if (SearchUtils.indexExists(newIndex)) {
-                    messages.addMessage(Messages.Level.WARNING,
+                    logger.addMessage(Level.WARNING,
                         String.format("Invalid index supplied: %s. Index already exists. Rolled back to previous index: %s", newIndex, index));
                 } else {
                     indexer.setIndex(newIndex);
@@ -266,7 +269,7 @@ public class SettingsPage {
                 atlasMapperIndexer.setBaseLayerUrl(FormUtils.getFormStringValue(form, index + "_baseLayerUrl"));
 
             } else {
-                messages.addMessage(Messages.Level.WARNING,
+                logger.addMessage(Level.WARNING,
                     String.format("Unsupported settings sent to the server. Unknown indexer type: %s", indexer.getClass().getSimpleName()));
             }
 
@@ -277,22 +280,22 @@ public class SettingsPage {
             // This message is rather cryptic, but it should only happen when the user
             // modify the form using the browser's developer tool,
             // or if the browser doesn't support HTML 5.
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 "Form validation failed.");
         } else {
             try {
                 config.save();
             } catch (Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                     "An exception occurred while saving the search engine settings.", ex);
             }
         }
     }
 
-    private void commit(MultivaluedMap<String, String> form, Messages messages) {
+    private void commit(MultivaluedMap<String, String> form, AbstractLogger logger) {
         // TODO Implement
 
-        messages.addMessage(Messages.Level.ERROR,
+        logger.addMessage(Level.ERROR,
             "Not implemented.");
     }
 }

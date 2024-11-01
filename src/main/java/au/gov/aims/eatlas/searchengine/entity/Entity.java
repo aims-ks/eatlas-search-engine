@@ -19,8 +19,9 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.WktUtils;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.text.StringEscapeUtils;
@@ -255,7 +256,7 @@ public abstract class Entity {
     }
 
     // Make sure thumbnailUrl is set before calling this.
-    public boolean isThumbnailOutdated(Entity oldEntity, Long thumbnailTTL, Long brokenThumbnailTTL, Messages messages) {
+    public boolean isThumbnailOutdated(Entity oldEntity, Long thumbnailTTL, Long brokenThumbnailTTL, AbstractLogger logger) {
         if (oldEntity == null) {
             // No old entity, assume it's a new entry, the thumbnail was never downloaded
             return true;
@@ -301,7 +302,7 @@ public abstract class Entity {
             }
         }
 
-        File thumbnailFile = ImageCache.getCachedFile(index, cachedThumbnailFilename, messages);
+        File thumbnailFile = ImageCache.getCachedFile(index, cachedThumbnailFilename, logger);
         if (thumbnailFile == null) {
             // Unlikely, but if the thumbnail folder is manually deleted,
             // this is where it will be requested to re-download the thumbnail.
@@ -326,13 +327,13 @@ public abstract class Entity {
         this.setThumbnailLastIndexed(oldEntity == null ? System.currentTimeMillis() : oldEntity.getThumbnailLastIndexed());
     }
 
-    public void deleteThumbnail(Messages messages) {
+    public void deleteThumbnail(AbstractLogger logger) {
         String index = this.getIndex();
         String cachedThumbnailFilename = this.getCachedThumbnailFilename();
         if (index != null && cachedThumbnailFilename != null) {
-            File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename, messages);
+            File cachedFile = ImageCache.getCachedFile(index, cachedThumbnailFilename, logger);
             if (cachedFile != null && cachedFile.exists() && !cachedFile.delete()) {
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                         String.format("Cached image can not be deleted: %s", cachedFile.toString()));
             }
         }
@@ -362,7 +363,7 @@ public abstract class Entity {
             .put("langcode", this.getLangcode());
     }
 
-    protected void loadJSON(JSONObject json, Messages messages) {
+    protected void loadJSON(JSONObject json, AbstractLogger logger) {
         if (json != null) {
             this.setId(json.optString("id", null));
             this.setIndex(json.optString("index", null));
@@ -376,7 +377,7 @@ public abstract class Entity {
             JSONObject jsonWktBbox = json.optJSONObject("wktBbox");
             if (jsonWktBbox != null) {
                 this.wktBbox = new Bbox();
-                this.wktBbox.loadJSON(jsonWktBbox, messages);
+                this.wktBbox.loadJSON(jsonWktBbox);
             }
 
             this.setLangcode(json.optString("langcode", null));
@@ -402,7 +403,7 @@ public abstract class Entity {
                 try {
                     this.setLink(new URL(linkStr));
                 } catch(Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                             String.format("Invalid index entity URL found: %s", linkStr), ex);
                 }
             }
@@ -412,7 +413,7 @@ public abstract class Entity {
                 try {
                     this.setThumbnailUrl(new URL(thumbnailUrlStr));
                 } catch(Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                             String.format("Invalid index entity thumbnail URL found: %s", thumbnailUrlStr), ex);
                 }
             }

@@ -1,6 +1,6 @@
 package au.gov.aims.eatlas.searchengine;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.IndexerTest;
 import org.apache.http.entity.ContentType;
 
@@ -47,7 +47,7 @@ public class MockHttpClient extends HttpClient {
     }
 
     @Override
-    public Response getRequest(String url, Messages messages) throws IOException, InterruptedException {
+    public Response getRequest(String url, AbstractLogger logger) throws IOException, InterruptedException {
         MockHttpRequest urlRequest = new MockHttpRequest(url);
         if (!this.requestMap.containsKey(urlRequest)) {
             // Return 404
@@ -58,7 +58,7 @@ public class MockHttpClient extends HttpClient {
     }
 
     @Override
-    public Response postXmlRequest(String url, String requestBody, Messages messages) throws IOException, InterruptedException {
+    public Response postXmlRequest(String url, String requestBody, AbstractLogger logger) throws IOException, InterruptedException {
         MockHttpRequest urlRequest = new MockHttpRequest(url, requestBody);
         if (!this.requestMap.containsKey(urlRequest)) {
             // Return 404

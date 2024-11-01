@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity.geoNetworkParser;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.index.WktUtils;
 import org.locationtech.jts.geom.Coordinate;
@@ -71,7 +71,7 @@ public abstract class AbstractParser {
         ROLE_LABEL_MAP.put("metadataContact", "Metadata contact");
     }
 
-    public abstract void parseRecord(GeoNetworkRecord record, String geoNetworkUrlStr, Element rootElement, Messages messages);
+    public abstract void parseRecord(GeoNetworkRecord record, String geoNetworkUrlStr, Element rootElement, AbstractLogger logger);
 
     public static void addResponsibleParty(ResponsibleParty responsibleParty, Map<String, List<ResponsibleParty>> responsiblePartyMap) {
         if (responsibleParty != null && responsiblePartyMap != null) {

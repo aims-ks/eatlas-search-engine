@@ -19,7 +19,7 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalNode;
 import org.json.JSONObject;
@@ -50,8 +50,8 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
     }
 
     @Override
-    public DrupalNode load(JSONObject json, Messages messages) {
-        return DrupalNode.load(json, messages);
+    public DrupalNode load(JSONObject json, AbstractLogger logger) {
+        return DrupalNode.load(json, logger);
     }
 
     /**
@@ -84,8 +84,8 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
     }
 
     @Override
-    public DrupalNode createDrupalEntity(JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, Messages messages) {
-        DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode, messages);
+    public DrupalNode createDrupalEntity(JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, AbstractLogger logger) {
+        DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode, logger);
 
         if (jsonApiNode == null) {
             return drupalNode;
@@ -98,7 +98,7 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
     }
 
     @Override
-    public DrupalNode getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages) {
-        return this.safeGet(searchClient, DrupalNode.class, id, messages);
+    public DrupalNode getIndexedDrupalEntity(SearchClient searchClient, String id, AbstractLogger logger) {
+        return this.safeGet(searchClient, DrupalNode.class, id, logger);
     }
 }

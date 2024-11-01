@@ -7,7 +7,7 @@
 <%-- Variables accessible in templates --%>
 <c:set var="title" value="Help" scope="request"/>
 <c:set var="helpActive" value="active" scope="request"/>
-<c:set var="messages" value="${it.messages}" scope="request"/>
+<c:set var="logger" value="${it.logger}" scope="request"/>
 
 <html lang="en">
 <head>

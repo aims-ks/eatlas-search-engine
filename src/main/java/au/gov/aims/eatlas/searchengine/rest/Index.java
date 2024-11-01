@@ -19,7 +19,6 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
@@ -90,12 +89,9 @@ public class Index {
             return Response.status(Response.Status.FORBIDDEN).entity(responseTxt).cacheControl(noCache).build();
         }
 
-        // API call - display messages using the LOGGER.
-        Messages messages = Messages.getInstance(null);
-
         try {
             SearchClient searchClient = ESClient.getInstance();
-            JSONObject jsonStatus = IndexUtils.internalReindex(searchClient, full == null ? true : full, messages);
+            JSONObject jsonStatus = IndexUtils.internalReindex(searchClient, full == null ? true : full);
 
             String responseTxt = jsonStatus.toString();
 

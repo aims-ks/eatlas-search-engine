@@ -20,7 +20,8 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.elasticsearch._types.Result;
@@ -48,14 +49,14 @@ public class GeoShapeIndexationTest extends IndexerTestBase {
         //   can serialise / deserialise the Entity.
         config.addIndexer(indexer);
 
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
         try (MockSearchClient searchClient = this.createMockSearchClient()) {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             searchClient.createIndex(index);
 
             // Index the GeoNetworkRecord
-            IndexResponse indexResponse = indexer.indexEntity(searchClient, record, messages);
+            IndexResponse indexResponse = indexer.indexEntity(searchClient, record, logger);
             // Check the response to make sure the record was properly indexed.
             Assertions.assertNotNull(indexResponse, "The indexer returned NULL for the indexed document.");
             Assertions.assertEquals(Result.Created, indexResponse.result(), "Wrong index response type.");
@@ -74,6 +75,6 @@ public class GeoShapeIndexationTest extends IndexerTestBase {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green after the test.");
         }
 
-        Assertions.assertTrue(messages.isEmpty());
+        Assertions.assertTrue(logger.isEmpty());
     }
 }

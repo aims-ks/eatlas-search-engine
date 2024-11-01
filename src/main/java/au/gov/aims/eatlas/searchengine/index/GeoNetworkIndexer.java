@@ -19,9 +19,10 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.joda.time.DateTime;
@@ -33,7 +34,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -84,21 +84,21 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
-    public GeoNetworkRecord load(JSONObject json, Messages messages) {
-        return GeoNetworkRecord.load(json, messages);
+    public GeoNetworkRecord load(JSONObject json, AbstractLogger logger) {
+        return GeoNetworkRecord.load(json, logger);
     }
 
     @Override
-    protected GeoNetworkRecord harvestEntity(SearchClient searchClient, String id, Messages messages) {
+    protected GeoNetworkRecord harvestEntity(SearchClient searchClient, String id, AbstractLogger logger) {
         // Find the metadata schema from the record from the index.
-        GeoNetworkRecord oldRecord = this.safeGet(searchClient, GeoNetworkRecord.class, id, messages);
+        GeoNetworkRecord oldRecord = this.safeGet(searchClient, GeoNetworkRecord.class, id, logger);
         String metadataSchema = oldRecord.getMetadataSchema();
 
         // Re-harvest the record.
-        return this.harvestEntity(searchClient, id, metadataSchema, messages);
+        return this.harvestEntity(searchClient, id, metadataSchema, logger);
     }
 
-    private GeoNetworkRecord harvestEntity(SearchClient searchClient, String metadataRecordUUID, String metadataSchema, Messages messages) {
+    private GeoNetworkRecord harvestEntity(SearchClient searchClient, String metadataRecordUUID, String metadataSchema, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
 
         String url;
@@ -111,7 +111,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
             url = urlObj.toString();
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while building the URL to harvest the metadata record UUID: %s%nUrl: %s",
+            logger.addMessage(Level.ERROR, String.format("Exception occurred while building the URL to harvest the metadata record UUID: %s%nUrl: %s",
                     metadataRecordUUID, urlBase), ex);
 
             return null;
@@ -120,9 +120,9 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         HttpClient.Response response = null;
         try {
             //LOGGER.info(String.format("Harvesting metadata record UUID: %s from: %s", metadataRecordUUID, url));
-            response = httpClient.getRequest(url, messages);
+            response = httpClient.getRequest(url, logger);
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting the metadata record UUID: %s%nUrl: %s",
+            logger.addMessage(Level.ERROR, String.format("Exception occurred while harvesting the metadata record UUID: %s%nUrl: %s",
                     metadataRecordUUID, url), ex);
 
             return null;
@@ -137,29 +137,29 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     xmlParser = IndexUtils.getNewXMLParser();
                 } catch(Exception ex) {
                     // Should not happen
-                    messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while creating XML document parser for index: %s",
+                    logger.addMessage(Level.ERROR, String.format("Exception occurred while creating XML document parser for index: %s",
                             this.getIndex()), ex);
                     return null;
                 }
 
                 Document document = xmlParser.parse(input);
                 GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), metadataRecordUUID, metadataSchema, this.geoNetworkVersion);
-                geoNetworkRecord.parseRecord(geoNetworkUrl, document, messages);
+                geoNetworkRecord.parseRecord(geoNetworkUrl, document, logger);
 
                 if (geoNetworkRecord.getId() != null) {
                     URL thumbnailUrl = geoNetworkRecord.getThumbnailUrl();
                     geoNetworkRecord.setThumbnailUrl(thumbnailUrl);
 
                     // Create the thumbnail if it's missing or outdated
-                    GeoNetworkRecord oldRecord = this.safeGet(searchClient, GeoNetworkRecord.class, geoNetworkRecord.getId(), messages);
-                    if (geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), messages)) {
+                    GeoNetworkRecord oldRecord = this.safeGet(searchClient, GeoNetworkRecord.class, geoNetworkRecord.getId(), logger);
+                    if (geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), logger)) {
                         try {
-                            File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), geoNetworkRecord.getId(), messages);
+                            File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), geoNetworkRecord.getId(), logger);
                             if (cachedThumbnailFile != null) {
                                 geoNetworkRecord.setCachedThumbnailFilename(cachedThumbnailFile.getName());
                             }
                         } catch(Exception ex) {
-                            messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while creating a thumbnail for metadata record UUID: %s",
+                            logger.addMessage(Level.WARNING, String.format("Exception occurred while creating a thumbnail for metadata record UUID: %s",
                                     metadataRecordUUID), ex);
                         }
                         geoNetworkRecord.setThumbnailLastIndexed(System.currentTimeMillis());
@@ -169,10 +169,10 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
                     return geoNetworkRecord;
                 } else {
-                    messages.addMessage(Messages.Level.ERROR, String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
+                    logger.addMessage(Level.ERROR, String.format("Invalid metadata record UUID: %s", metadataRecordUUID));
                 }
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting metadata record UUID: %s - %s", metadataRecordUUID, url), ex);
+                logger.addMessage(Level.ERROR, String.format("Exception occurred while harvesting metadata record UUID: %s - %s", metadataRecordUUID, url), ex);
             }
         }
 
@@ -197,7 +197,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     }
 
     @Override
-    protected void internalIndex(SearchClient searchClient, Long lastHarvested, Messages messages) {
+    protected void internalIndex(SearchClient searchClient, Long lastHarvested, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
 
         String lastHarvestedISODateStr = null;
@@ -228,7 +228,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         try {
             uriBuilder = new URIBuilder(urlBase);
         } catch(URISyntaxException ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("Invalid GeoNetwork URL. Exception occurred while building the URL: %s", urlBase), ex);
             return;
         }
@@ -259,17 +259,17 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 url = uriBuilder.build().toURL().toString();
             } catch(Exception ex) {
                 // Should not happen
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                         String.format("Invalid GeoNetwork URL. Exception occurred while building a URL starting with: %s", urlBase), ex);
                 return;
             }
 
             HttpClient.Response response = null;
             try {
-                response = httpClient.getRequest(url, messages);
+                response = httpClient.getRequest(url, logger);
             } catch(Exception ex) {
                 if (!crashed) {
-                    messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while harvesting GeoNetwork record list: %s",
+                    logger.addMessage(Level.ERROR, String.format("Exception occurred while harvesting GeoNetwork record list: %s",
                             url), ex);
                 }
                 crashed = true;
@@ -286,7 +286,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                         xmlParser = IndexUtils.getNewXMLParser();
                     } catch(Exception ex) {
                         // Should not happen
-                        messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while creating XML document parser for index: %s",
+                        logger.addMessage(Level.ERROR, String.format("Exception occurred while creating XML document parser for index: %s",
                                 this.getIndex()), ex);
                         return;
                     }
@@ -326,7 +326,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                                 String metadataSchema = IndexUtils.parseText(metadataSchemaElement);
 
                                 GeoNetworkIndexerThread thread = new GeoNetworkIndexerThread(
-                                        searchClient, messages, metadataRecordUUID, metadataSchema,
+                                        searchClient, logger, metadataRecordUUID, metadataSchema,
                                         orphanMetadataRecordList, usedThumbnails, from);
 
                                 threadPool.execute(thread);
@@ -336,7 +336,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                         }
                     }
                 } catch (Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while parsing the GeoNetwork record list: %s",
+                    logger.addMessage(Level.ERROR, String.format("Exception occurred while parsing the GeoNetwork record list: %s",
                             url), ex);
                 }
 
@@ -349,36 +349,36 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         try {
             threadPool.awaitTermination(1, TimeUnit.HOURS);
         } catch(InterruptedException ex) {
-            messages.addMessage(Messages.Level.ERROR, "The GeoNetwork indexation was interrupted", ex);
+            logger.addMessage(Level.ERROR, "The GeoNetwork indexation was interrupted", ex);
         }
 
         // Refresh the index to be sure to find parent records, if they are new
         try {
             searchClient.refresh(this.getIndex());
         } catch(Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("Exception occurred while refreshing the search index: %s", this.getIndex()), ex);
+            logger.addMessage(Level.ERROR, String.format("Exception occurred while refreshing the search index: %s", this.getIndex()), ex);
         }
 
         // We have added all the records.
         // Let's fix the records parent title.
         for (String recordUUID : orphanMetadataRecordList) {
-            GeoNetworkRecord geoNetworkRecord = this.safeGet(searchClient, GeoNetworkRecord.class, recordUUID, messages);
+            GeoNetworkRecord geoNetworkRecord = this.safeGet(searchClient, GeoNetworkRecord.class, recordUUID, logger);
             if (geoNetworkRecord != null) {
                 String parentRecordUUID = geoNetworkRecord.getParentUUID();
-                GeoNetworkRecord parentRecord = this.safeGet(searchClient, GeoNetworkRecord.class, parentRecordUUID, messages);
+                GeoNetworkRecord parentRecord = this.safeGet(searchClient, GeoNetworkRecord.class, parentRecordUUID, logger);
 
                 if (parentRecord != null) {
                     geoNetworkRecord.setParentTitle(parentRecord.getTitle());
 
                     try {
-                        IndexResponse indexResponse = this.indexEntity(searchClient, geoNetworkRecord, messages, false);
+                        IndexResponse indexResponse = this.indexEntity(searchClient, geoNetworkRecord, false, logger);
 
-                        LOGGER.debug(String.format("Reindexing GeoNetwork metadata record: %s with parent title: %s, status: %s",
+                        logger.addMessage(Level.INFO, String.format("Reindexing GeoNetwork metadata record: %s with parent title: %s, status: %s",
                                 geoNetworkRecord.getId(),
                                 geoNetworkRecord.getParentTitle(),
                                 indexResponse.result()));
                     } catch(Exception ex) {
-                        messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while reindexing a GeoNetwork record: %s", recordUUID), ex);
+                        logger.addMessage(Level.WARNING, String.format("Exception occurred while reindexing a GeoNetwork record: %s", recordUUID), ex);
                     }
                 }
             }
@@ -386,7 +386,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         // Only cleanup when we are doing a full harvest
         if (!crashed && fullHarvest) {
-            this.cleanUp(searchClient, harvestStart, usedThumbnails, "GeoNetwork metadata record", messages);
+            this.cleanUp(searchClient, harvestStart, usedThumbnails, "GeoNetwork metadata record", logger);
         }
     }
 
@@ -409,7 +409,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
     public class GeoNetworkIndexerThread extends Thread {
         private final SearchClient searchClient;
-        private final Messages messages;
+        private final AbstractLogger logger;
         private final String metadataRecordUUID;
         private final String metadataSchema;
         private final List<String> orphanMetadataRecordList;
@@ -418,7 +418,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         public GeoNetworkIndexerThread(
                 SearchClient searchClient,
-                Messages messages,
+                AbstractLogger logger,
                 String metadataRecordUUID,
                 String metadataSchema,
                 List<String> orphanMetadataRecordList,
@@ -426,7 +426,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 long current
         ) {
             this.searchClient = searchClient;
-            this.messages = messages;
+            this.logger = logger;
             this.metadataRecordUUID = metadataRecordUUID;
             this.metadataSchema = metadataSchema;
             this.orphanMetadataRecordList = orphanMetadataRecordList;
@@ -437,7 +437,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         @Override
         public void run() {
             GeoNetworkRecord geoNetworkRecord = GeoNetworkIndexer.this.harvestEntity(
-                    this.searchClient, this.metadataRecordUUID, this.metadataSchema, this.messages);
+                    this.searchClient, this.metadataRecordUUID, this.metadataSchema, this.logger);
 
             if (geoNetworkRecord != null) {
                 // If the record have a parent UUID,
@@ -448,14 +448,14 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 }
 
                 try {
-                    IndexResponse indexResponse = GeoNetworkIndexer.this.indexEntity(this.searchClient, geoNetworkRecord, this.messages);
+                    IndexResponse indexResponse = GeoNetworkIndexer.this.indexEntity(this.searchClient, geoNetworkRecord, this.logger);
 
-                    LOGGER.debug(String.format("[%d/%d] Indexing GeoNetwork metadata record: %s, index response status: %s",
+                    this.logger.addMessage(Level.INFO, String.format("[%d/%d] Indexing GeoNetwork metadata record: %s, index response status: %s",
                             this.current, GeoNetworkIndexer.this.getTotal(),
                             this.metadataRecordUUID,
                             indexResponse.result()));
                 } catch(Exception ex) {
-                    this.messages.addMessage(Messages.Level.WARNING, String.format("Exception occurred while indexing a GeoNetwork record: %s", this.metadataRecordUUID), ex);
+                    this.logger.addMessage(Level.WARNING, String.format("Exception occurred while indexing a GeoNetwork record: %s", this.metadataRecordUUID), ex);
                 }
 
                 if (this.usedThumbnails != null) {

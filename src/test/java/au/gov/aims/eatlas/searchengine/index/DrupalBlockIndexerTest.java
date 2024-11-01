@@ -1,7 +1,8 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
@@ -25,7 +26,7 @@ public class DrupalBlockIndexerTest extends IndexerTestBase {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "blocks";
-            Messages messages = Messages.getInstance(null);
+            AbstractLogger logger = ConsoleLogger.getInstance();
 
             searchClient.createIndex(index);
 
@@ -33,7 +34,7 @@ public class DrupalBlockIndexerTest extends IndexerTestBase {
             DrupalBlockIndexer drupalBlockIndexer =
                     (DrupalBlockIndexer)this.getConfig().getIndexer(index);
 
-            drupalBlockIndexer.internalIndex(searchClient, null, messages);
+            drupalBlockIndexer.internalIndex(searchClient, null, logger);
 
             // Wait for ElasticSearch to finish its indexation
             searchClient.refresh(index);
@@ -46,7 +47,7 @@ public class DrupalBlockIndexerTest extends IndexerTestBase {
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 

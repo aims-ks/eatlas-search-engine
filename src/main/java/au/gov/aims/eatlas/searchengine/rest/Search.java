@@ -18,7 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.entity.Bbox;
@@ -80,7 +82,7 @@ public class Search {
             @QueryParam("fidx") List<String> fidx // List of indexes to filter the search results (optional)
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
         CacheControl noCache = new CacheControl();
         noCache.setNoCache(true);
@@ -96,11 +98,11 @@ public class Search {
         SearchResults results = null;
         try {
             SearchClient searchClient = ESClient.getInstance();
-            results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, fidx, messages);
+            results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, fidx, logger);
 
         } catch(Exception ex) {
             String errorMessageStr = String.format("An exception occurred during the search: %s", ex.getMessage());
-            messages.addMessage(Messages.Level.ERROR, errorMessageStr, ex);
+            logger.addMessage(Level.ERROR, errorMessageStr, ex);
             Response.Status status = Response.Status.INTERNAL_SERVER_ERROR;
             ErrorMessage errorMessage = new ErrorMessage()
                 .setErrorMessage(errorMessageStr)
@@ -110,7 +112,7 @@ public class Search {
 
         if (results == null) {
             String errorMessageStr = "The search engine returned and empty response";
-            messages.addMessage(Messages.Level.ERROR, errorMessageStr);
+            logger.addMessage(Level.ERROR, errorMessageStr);
             Response.Status status = Response.Status.BAD_REQUEST;
             ErrorMessage errorMessage = new ErrorMessage()
                 .setErrorMessage(errorMessageStr)
@@ -133,7 +135,7 @@ public class Search {
      * @param wkt GeoJSON polygon, to filter results. Default: null.
      * @param idx List of indexes used for the search summary. Used to notify the user how many search results are found on each index.
      * @param fidx List of indexes to filter the search results (optional). Default: returns the results for all the index listed in idx.
-     * @param messages Messages instance, used to notify the user of errors, warnings, etc.
+     * @param logger AbstractLogger instance, used to notify the user of errors, warnings, etc.
      * @return A SearchResults object containing a summary of the search (number of search results in each index) and the list of search results.
      * @throws IOException If something goes wrong with ElasticSearch.
      */
@@ -145,7 +147,7 @@ public class Search {
             String wkt,
             List<String> idx,  // List of indexes used for the summary
             List<String> fidx, // List of indexes to filter the search results (optional, default: list all search results for idx)
-            Messages messages
+            AbstractLogger logger
     ) throws IOException, ParseException {
         if (
             idx == null || idx.isEmpty()
@@ -169,9 +171,9 @@ public class Search {
 
         List<SearchResult> searchResults;
         if (fidx != null && !fidx.isEmpty()) {
-            searchResults = Search.search(searchClient, messages, q, wkt, start, hits, fidx.toArray(new String[0]));
+            searchResults = Search.search(searchClient, logger, q, wkt, start, hits, fidx.toArray(new String[0]));
         } else {
-            searchResults = Search.search(searchClient, messages, q, wkt, start, hits, idxArray);
+            searchResults = Search.search(searchClient, logger, q, wkt, start, hits, idxArray);
         }
 
         results.setSearchResults(searchResults);
@@ -248,7 +250,7 @@ public class Search {
      *
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
-    public static List<SearchResult> search(SearchClient searchClient, Messages messages, String searchText, String wkt, int from, int size, String ... indexes)
+    public static List<SearchResult> search(SearchClient searchClient, AbstractLogger logger, String searchText, String wkt, int from, int size, String ... indexes)
             throws IOException, ParseException {
 
         SearchResponse<Entity> response = searchClient.search(Search.getSearchRequest(searchText, wkt, from, size, indexes));
@@ -271,7 +273,7 @@ public class Search {
                     .setEntity(entity)
                 );
             } else {
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                         String.format("Search entity is null: %s", hit));
             }
         }

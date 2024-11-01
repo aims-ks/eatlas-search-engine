@@ -1,7 +1,8 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
@@ -47,7 +48,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "csw_metadata_records_all";
-            Messages messages = Messages.getInstance(null);
+            AbstractLogger logger = ConsoleLogger.getInstance();
 
             searchClient.createIndex(index);
 
@@ -55,7 +56,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
             GeoNetworkCswIndexer geoNetworkCswIndexer =
                     (GeoNetworkCswIndexer)this.getConfig().getIndexer(index);
 
-            geoNetworkCswIndexer.internalIndex(searchClient, null, messages);
+            geoNetworkCswIndexer.internalIndex(searchClient, null, logger);
 
             // Wait for ElasticSearch to finish its indexation
             searchClient.refresh(index);
@@ -68,7 +69,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -118,7 +119,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "csw_metadata_records_single";
-            Messages messages = Messages.getInstance(null);
+            AbstractLogger logger = ConsoleLogger.getInstance();
 
             searchClient.createIndex(index);
 
@@ -127,7 +128,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
                     (GeoNetworkCswIndexer)this.getConfig().getIndexer(index);
 
             // Index single record
-            geoNetworkCswIndexer.harvestEntity(searchClient, metadataRecordUUID, messages);
+            geoNetworkCswIndexer.harvestEntity(searchClient, metadataRecordUUID, logger);
 
             // Wait for ElasticSearch to finish its indexation
             searchClient.refresh(index);
@@ -141,7 +142,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -191,7 +192,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
             String index = "csw_metadata_records_filtered";
-            Messages messages = Messages.getInstance(null);
+            AbstractLogger logger = ConsoleLogger.getInstance();
 
             searchClient.createIndex(index);
 
@@ -199,7 +200,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
             GeoNetworkCswIndexer geoNetworkCswIndexer =
                     (GeoNetworkCswIndexer)this.getConfig().getIndexer(index);
 
-            geoNetworkCswIndexer.internalIndex(searchClient, null, messages);
+            geoNetworkCswIndexer.internalIndex(searchClient, null, logger);
 
             // Wait for ElasticSearch to finish its indexation
             searchClient.refresh(index);
@@ -212,7 +213,7 @@ public class GeoNetworkCswIndexerTest extends IndexerTestBase {
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, messages);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 

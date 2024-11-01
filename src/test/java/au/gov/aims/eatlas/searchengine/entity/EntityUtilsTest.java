@@ -19,7 +19,8 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -36,11 +37,11 @@ public class EntityUtilsTest {
     public void testHarvestURL() throws IOException, InterruptedException {
         HttpClient httpClient = HttpClient.getInstance();
 
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
         String url = "https://google.com";
         int minimumExpectedFileSize = 10000;
 
-        HttpClient.Response response = httpClient.getRequest(url, messages);
+        HttpClient.Response response = httpClient.getRequest(url, logger);
         String htmlContent = response.body();
 
         Assertions.assertNotNull(htmlContent, "Google page returned null content.");
@@ -55,11 +56,11 @@ public class EntityUtilsTest {
     public void testHarvestURLRedirection() throws IOException, InterruptedException {
         HttpClient httpClient = HttpClient.getInstance();
 
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
         String url = "http://google.com"; // This URL redirects to "https://www.google.com"
         int minimumExpectedFileSize = 10000;
 
-        HttpClient.Response response = httpClient.getRequest(url, messages);
+        HttpClient.Response response = httpClient.getRequest(url, logger);
         String htmlContent = response.body();
 
         Assertions.assertNotNull(htmlContent, "Google page returned null content.");
@@ -140,9 +141,9 @@ public class EntityUtilsTest {
             // code that throws UnknownHostException
             HttpClient httpClient = HttpClient.getInstance();
 
-            Messages messages = Messages.getInstance(null);
+            AbstractLogger logger = ConsoleLogger.getInstance();
             String url = "https://bad.url.cef393a8cdff31563033e8b742dcadd5.com";
-            httpClient.getRequest(url, messages);
+            httpClient.getRequest(url, logger);
         });
     }
 
@@ -151,12 +152,12 @@ public class EntityUtilsTest {
     @Test
     public void testLegacyGeoServer() throws IOException, InterruptedException {
         HttpClient httpClient = HttpClient.getInstance();
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
         // The legacy GeoServer is very slow to response.
         // This is a good test to test JSoup timeout.
         String url = "http://maps.eatlas.org.au:80/geoserver/wms?REQUEST=GetMap&FORMAT=image%2Fpng&SRS=EPSG%3A4326&CRS=EPSG%3A4326&BBOX=144.406341552734%2C-20.206720352173%2C147.492263793945%2C-14.980480194092&VERSION=1.1.1&STYLES=&SERVICE=WMS&WIDTH=118&HEIGHT=200&TRANSPARENT=true&LAYERS=ea%3AJCU_Vertebrate-Herbert_River_Ringtail_Possum-realized";
 
-        HttpClient.Response response = httpClient.getRequest(url, messages);
+        HttpClient.Response response = httpClient.getRequest(url, logger);
         String content = response.body();
         System.out.println(String.format("Content length: %d", content.length()));
     }

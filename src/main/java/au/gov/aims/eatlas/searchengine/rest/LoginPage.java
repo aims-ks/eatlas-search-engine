@@ -19,7 +19,10 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import au.gov.aims.eatlas.searchengine.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -49,12 +52,12 @@ public class LoginPage {
         @Context HttpServletRequest httpRequest
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
-        model.put("messages", messages);
+        model.put("logger", logger);
         model.put("config", config);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/login.jsp
@@ -71,9 +74,9 @@ public class LoginPage {
         @FormParam("password") String password
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
-        User user = this.authenticate(username, password, messages);
+        User user = this.authenticate(username, password, logger);
 
         if (user == null) {
             // Invalid username / password.
@@ -107,16 +110,16 @@ public class LoginPage {
         return Response.temporaryRedirect(uriBuilder.build()).build();
     }
 
-    private User authenticate(String username, String password, Messages messages) {
+    private User authenticate(String username, String password, AbstractLogger logger) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
         boolean formFilled = true;
         if (username == null || username.isEmpty()) {
-            messages.addMessage(Messages.Level.ERROR, "Please, enter a username.");
+            logger.addMessage(Level.ERROR, "Please, enter a username.");
             formFilled = false;
         }
         if (password == null || password.isEmpty()) {
-            messages.addMessage(Messages.Level.ERROR, "Please, enter a password.");
+            logger.addMessage(Level.ERROR, "Please, enter a password.");
             formFilled = false;
         }
 
@@ -128,9 +131,9 @@ public class LoginPage {
         User user = config.getUser();
 
         // Hide "verifyPassword" messages. We do NOT want to give any clues to the user attempting to login.
-        Messages hiddenMessages = Messages.getInstance(null);
-        if (!username.equals(user.getUsername()) || !user.verifyPassword(password, hiddenMessages)) {
-            messages.addMessage(Messages.Level.ERROR, "Invalid username / password.");
+        AbstractLogger hiddenLogger = ConsoleLogger.getInstance();
+        if (!username.equals(user.getUsername()) || !user.verifyPassword(password, hiddenLogger)) {
+            logger.addMessage(Level.ERROR, "Invalid username / password.");
             return null;
         }
 

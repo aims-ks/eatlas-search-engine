@@ -22,6 +22,9 @@ import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,7 +57,7 @@ public class SearchPage {
         @QueryParam("reindex-id") String reindexId
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
 
@@ -65,11 +68,11 @@ public class SearchPage {
             if (reindexIdx != null && reindexId != null) {
                 try {
                     AbstractIndexer<?> indexer = config.getIndexer(reindexIdx);
-                    indexer.reindex(searchClient, reindexId, messages);
+                    indexer.reindex(searchClient, reindexId, logger);
                     // Wait 1 sec, to be sure the updated document is in the index.
                     Thread.sleep(1000);
                 } catch(Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                         "An exception occurred during the re-indexation of the document.", ex);
                 }
             }
@@ -84,9 +87,9 @@ public class SearchPage {
             SearchResults results = null;
             try {
                 int start = (page-1) * hitsPerPage;
-                results = Search.paginationSearch(searchClient, query, start, hitsPerPage, wkt, indexes, indexes, messages);
+                results = Search.paginationSearch(searchClient, query, start, hitsPerPage, wkt, indexes, indexes, logger);
             } catch(Exception ex) {
-                messages.addMessage(Messages.Level.ERROR,
+                logger.addMessage(Level.ERROR,
                     "An exception occurred during the search.", ex);
             }
 
@@ -98,11 +101,11 @@ public class SearchPage {
             model.put("nbPage", nbPage);
             model.put("results", results);
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 "An exception occurred while accessing the Elastic Search server", ex);
         }
 
-        model.put("messages", messages);
+        model.put("logger", logger);
         model.put("config", config);
         model.put("query", query);
         model.put("wkt", wkt);

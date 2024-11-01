@@ -22,4 +22,4 @@
         </nav>
 
         <div class="content">
-            <c:import url="include/messages.jsp"/>
+            <c:import url="include/logger.jsp"/>

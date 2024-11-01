@@ -18,8 +18,10 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.Message;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.locationtech.jts.io.ParseException;
@@ -103,7 +105,7 @@ public class AtlasMapperLayer extends Entity {
      *             "status": "OKAY"
      *         }
      */
-    public AtlasMapperLayer(String index, String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig, Messages messages) {
+    public AtlasMapperLayer(String index, String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig, AbstractLogger logger) {
         this.setId(atlasMapperLayerId);
         this.setIndex(index);
 
@@ -122,15 +124,15 @@ public class AtlasMapperLayer extends Entity {
             this.setTitle(jsonLayer.optString("title", null));
             this.setDocument(document);
 
-            this.parseWkt(jsonLayer, messages);
-            //this.parseFakeWkt(jsonLayer, messages);
+            this.parseWkt(jsonLayer, logger);
+            //this.parseFakeWkt(jsonLayer, logger);
 
-            this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig, messages));
+            this.setLink(this.getLayerMapUrl(atlasMapperClientUrl, atlasMapperLayerId, jsonLayer, jsonMainConfig, logger));
             this.setLangcode("en");
         }
     }
 
-    private void parseWkt(JSONObject jsonLayer, Messages messages) {
+    private void parseWkt(JSONObject jsonLayer, AbstractLogger logger) {
         JSONArray layerBoundingBox = jsonLayer.optJSONArray("layerBoundingBox");
 
         String wkt = null;
@@ -220,8 +222,8 @@ public class AtlasMapperLayer extends Entity {
                 wkt = String.format("BBOX (%.8f, %.8f, %.8f, %.8f)", west, east, north, south);
             } else {
                 // Set bbox for the whole world
-                Messages.Message messageObj =
-                    messages.addMessage(Messages.Level.WARNING, String.format("Layer: %s. Invalid bounding box. Fallback to whole world.", this.getId()));
+                Message messageObj =
+                    logger.addMessage(Level.WARNING, String.format("Layer: %s. Invalid bounding box. Fallback to whole world.", this.getId()));
                 messageObj.addDetail(String.format("Invalid bbox: [W: %s, E: %s, N: %s, S: %s]",
                         DECIMAL_FORMAT.format(west), DECIMAL_FORMAT.format(east),
                         DECIMAL_FORMAT.format(north), DECIMAL_FORMAT.format(south)));
@@ -230,7 +232,7 @@ public class AtlasMapperLayer extends Entity {
             }
         } else {
             // Set bbox for the whole world
-            messages.addMessage(Messages.Level.WARNING, String.format("Layer: %s. No bounding box. Fallback to whole world.", this.getId()));
+            logger.addMessage(Level.WARNING, String.format("Layer: %s. No bounding box. Fallback to whole world.", this.getId()));
             wkt = AbstractIndexer.DEFAULT_WKT;
         }
 
@@ -238,12 +240,12 @@ public class AtlasMapperLayer extends Entity {
         try {
             this.setWktAndAttributes(wkt);
         } catch(ParseException ex) {
-            Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+            Message message = logger.addMessage(Level.WARNING, "Invalid WKT", ex);
             message.addDetail(wkt);
         }
     }
 
-    private URL getLayerMapUrl(String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig, Messages messages) {
+    private URL getLayerMapUrl(String atlasMapperClientUrl, String atlasMapperLayerId, JSONObject jsonLayer, JSONObject jsonMainConfig, AbstractLogger logger) {
         // Get the background layer ID
 
         // URL to a preview map with the layer zoom to its bbox.
@@ -280,7 +282,7 @@ public class AtlasMapperLayer extends Entity {
         try {
             return new URL(linkStr);
         } catch(Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("Invalid layer URL: %s", linkStr), ex);
         }
 
@@ -362,9 +364,9 @@ public class AtlasMapperLayer extends Entity {
         return null;
     }
 
-    public static AtlasMapperLayer load(JSONObject json, Messages messages) {
+    public static AtlasMapperLayer load(JSONObject json, AbstractLogger logger) {
         AtlasMapperLayer layer = new AtlasMapperLayer();
-        layer.loadJSON(json, messages);
+        layer.loadJSON(json, logger);
         layer.dataSourceName = json.optString("datasource", null);
 
         return layer;

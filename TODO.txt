@@ -1,5 +1,9 @@
 TODO:
 
+Last indexation logs in the indexer file
+Delete/rename indexer deletes file
+Show indexer logs with button
+
 - Rethink user messages
   - Displaying messages in pages, and having to refresh, does work, but it's not good.
     It would be better if each indexer had its own logs, and we can look at them at any time to see the logs from last indexation

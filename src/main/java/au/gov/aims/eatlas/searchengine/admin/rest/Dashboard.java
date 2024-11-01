@@ -25,6 +25,9 @@ import au.gov.aims.eatlas.searchengine.client.ElasticSearchStatus;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -53,13 +56,13 @@ public class Dashboard {
         //@Context SecurityContext securityContext
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         SearchEngineState state = SearchEngineState.getInstance();
 
         Map<String, Object> model = new HashMap<>();
-        model.put("messages", messages);
+        model.put("logger", logger);
         model.put("config", config);
 
         try {
@@ -72,12 +75,12 @@ public class Dashboard {
                 try {
                     SearchUtils.refreshIndexesCount(searchClient);
                 } catch (Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                         "An exception occurred while refreshing the indexes count.", ex);
                 }
             }
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 "An exception occurred while accessing the Elastic Search server", ex);
         }
 
@@ -96,7 +99,7 @@ public class Dashboard {
         Map<String, File> cacheDirectories = new HashMap<>();
         for (AbstractIndexer<?> indexer : config.getIndexers()) {
             String index = indexer.getIndex();
-            File cacheDirectory = ImageCache.getCacheDirectory(index, messages);
+            File cacheDirectory = ImageCache.getCacheDirectory(index, logger);
             cacheDirectories.put(index, cacheDirectory);
         }
         model.put("imageCacheDirectories", cacheDirectories);
@@ -113,39 +116,39 @@ public class Dashboard {
         MultivaluedMap<String, String> form
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
         if (form.containsKey("reload-config-button")) {
-            this.reloadConfigFile(messages);
+            this.reloadConfigFile(logger);
         }
 
         if (form.containsKey("reload-state-button")) {
-            this.reloadStateFile(messages);
+            this.reloadStateFile(logger);
         }
 
         return this.dashboard(httpRequest);
     }
 
-    private void reloadConfigFile(Messages messages) {
+    private void reloadConfigFile(AbstractLogger logger) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         try {
-            config.reload(messages);
-            messages.addMessage(Messages.Level.INFO,
+            config.reload(logger);
+            logger.addMessage(Level.INFO,
                     String.format("Application configuration file reloaded: %s", config.getConfigFile()));
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 String.format("An exception occurred while reloading the configuration file: %s", config.getConfigFile()), ex);
         }
     }
 
-    private void reloadStateFile(Messages messages) {
+    private void reloadStateFile(AbstractLogger logger) {
         SearchEngineState state = SearchEngineState.getInstance();
         try {
             state.reload();
-            messages.addMessage(Messages.Level.INFO,
+            logger.addMessage(Level.INFO,
                     String.format("Application state file reloaded: %s", state.getStateFile()));
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                 String.format("An exception occurred while reloading the application state file: %s", state.getStateFile()), ex);
         }
     }

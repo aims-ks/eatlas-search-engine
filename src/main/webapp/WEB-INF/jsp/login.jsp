@@ -3,7 +3,7 @@
 <%@page pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<c:set var="messages" value="${it.messages}" scope="request"/>
+<c:set var="logger" value="${it.logger}" scope="request"/>
 
 <html lang="en">
 <head>
@@ -19,7 +19,7 @@
             <h2>eAtlas Search Engine</h2>
         </div>
 
-        <c:import url="include/messages.jsp"/>
+        <c:import url="include/logger.jsp"/>
 
         <form method="post">
             <div class="box">

@@ -19,7 +19,7 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.DrupalMedia;
 import org.json.JSONObject;
@@ -60,8 +60,8 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
     }
 
     @Override
-    public DrupalMedia load(JSONObject json, Messages messages) {
-        return DrupalMedia.load(json, messages);
+    public DrupalMedia load(JSONObject json, AbstractLogger logger) {
+        return DrupalMedia.load(json, logger);
     }
 
     /**
@@ -95,8 +95,8 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
     }
 
     @Override
-    public DrupalMedia createDrupalEntity(JSONObject jsonApiMedia, Map<String, JSONObject> jsonIncluded, Messages messages) {
-        DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia, messages);
+    public DrupalMedia createDrupalEntity(JSONObject jsonApiMedia, Map<String, JSONObject> jsonIncluded, AbstractLogger logger) {
+        DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia, logger);
 
         if (jsonApiMedia == null) {
             return drupalMedia;
@@ -112,8 +112,8 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
     }
 
     @Override
-    public DrupalMedia getIndexedDrupalEntity(SearchClient searchClient, String id, Messages messages) {
-        return this.safeGet(searchClient, DrupalMedia.class, id, messages);
+    public DrupalMedia getIndexedDrupalEntity(SearchClient searchClient, String id, AbstractLogger logger) {
+        return this.safeGet(searchClient, DrupalMedia.class, id, logger);
     }
 
     private String parseDrupalTitle(JSONObject jsonApiMedia, String drupalTitleField) {

@@ -20,7 +20,9 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.GET;
@@ -72,15 +74,15 @@ public class ImageCache {
             @PathParam("filename") String filename
     ) {
         HttpSession session = httpRequest.getSession(true);
-        Messages messages = Messages.getInstance(session);
+        AbstractLogger logger = SessionLogger.getInstance(session);
 
-        File cachedFile = getCachedFile(index, filename, messages);
+        File cachedFile = getCachedFile(index, filename, logger);
         if (cachedFile == null) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Cached image not found: %s/%s", index, filename));
+            logger.addMessage(Level.WARNING, String.format("Cached image not found: %s/%s", index, filename));
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         if (!cachedFile.canRead()) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Cached image not found: %s", cachedFile.toString()));
+            logger.addMessage(Level.WARNING, String.format("Cached image not found: %s", cachedFile.toString()));
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -96,13 +98,13 @@ public class ImageCache {
             // Return the JSON array with a OK status.
             return Response.ok(responseBytes, contentType.toString()).cacheControl(noCache).build();
         } catch(Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, String.format("Server error: %s", ex.getMessage()), ex);
+            logger.addMessage(Level.ERROR, String.format("Server error: %s", ex.getMessage()), ex);
             return Response.serverError().entity(String.format("Server error: %s", ex.getMessage())).build();
         }
     }
 
-    public static File getCachedFile(String index, String filename, Messages messages) {
-        File cacheDir = getCacheDirectory(index, messages);
+    public static File getCachedFile(String index, String filename, AbstractLogger logger) {
+        File cacheDir = getCacheDirectory(index, logger);
         if (cacheDir == null) {
             return null;
         }
@@ -110,7 +112,7 @@ public class ImageCache {
         return new File(cacheDir, filename);
     }
 
-    public static File getCacheDirectory(String index, Messages messages) {
+    public static File getCacheDirectory(String index, AbstractLogger logger) {
         if (index == null || index.isEmpty()) {
             return null;
         }
@@ -125,7 +127,7 @@ public class ImageCache {
                 }
             }
             if (imageCacheDir == null) {
-                messages.addMessage(Messages.Level.WARNING, String.format("Missing configuration property \"imageCacheDirectory\". Using default image cache directory: %s",
+                logger.addMessage(Level.WARNING, String.format("Missing configuration property \"imageCacheDirectory\". Using default image cache directory: %s",
                         DEFAULT_IMAGE_CACHE_DIR));
                 imageCacheDir = new File(DEFAULT_IMAGE_CACHE_DIR);
             }
@@ -133,38 +135,42 @@ public class ImageCache {
         File indexCacheDir = new File(imageCacheDir, safeIndex);
         indexCacheDir.mkdirs();
         if (!indexCacheDir.isDirectory()) {
-            messages.addMessage(Messages.Level.ERROR, String.format("The image cache directory %s doesn't exist and can not be created.", indexCacheDir));
+            logger.addMessage(Level.ERROR, String.format("The image cache directory %s doesn't exist and can not be created.", indexCacheDir));
             return null;
         }
         if (!indexCacheDir.canRead()) {
-            messages.addMessage(Messages.Level.ERROR, String.format("The image cache directory %s exists but is not readable.", indexCacheDir));
+            logger.addMessage(Level.ERROR, String.format("The image cache directory %s exists but is not readable.", indexCacheDir));
             return null;
         }
         return indexCacheDir;
     }
 
-    public static File cache(HttpClient httpClient, URL imageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
+    public static File cache(HttpClient httpClient, URL imageUrl, String index, String filenamePrefix, AbstractLogger logger) throws IOException, InterruptedException {
+        return cache(httpClient, imageUrl, null, index, filenamePrefix, logger);
+    }
+
+    public static File cache(HttpClient httpClient, URL imageUrl, Integer timeout, String index, String filenamePrefix, AbstractLogger logger) throws IOException, InterruptedException {
         if (imageUrl == null || index == null) {
             return null;
         }
 
-        File cacheDir = getCacheDirectory(index, messages);
+        File cacheDir = getCacheDirectory(index, logger);
         if (cacheDir == null) {
             return null;
         }
         if (!cacheDir.canWrite()) {
-            messages.addMessage(Messages.Level.ERROR, String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
+            logger.addMessage(Level.ERROR, String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
             return null;
         }
 
         String urlStr = imageUrl.toString();
-        HttpClient.Response imageResponse = httpClient.getRequest(urlStr, messages);
+        HttpClient.Response imageResponse = httpClient.getRequest(urlStr, timeout, logger);
         if (imageResponse == null) {
             return null;
         }
         int statusCode = imageResponse.statusCode();
         if (statusCode < 200 || statusCode >= 300) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Invalid image URL: %s status code: %d", urlStr, statusCode));
+            logger.addMessage(Level.WARNING, String.format("Invalid image URL: %s status code: %d", urlStr, statusCode));
             return null;
         }
 
@@ -186,29 +192,33 @@ public class ImageCache {
         return cacheFile;
     }
 
-    public static File cacheLayer(HttpClient httpClient, URL baseLayerImageUrl, URL layerImageUrl, String index, String filenamePrefix, Messages messages) throws IOException, InterruptedException {
+    public static File cacheLayer(HttpClient httpClient, URL baseLayerImageUrl, URL layerImageUrl, String index, String filenamePrefix, AbstractLogger logger) throws IOException, InterruptedException {
+        return cacheLayer(httpClient, baseLayerImageUrl, layerImageUrl, null, index, filenamePrefix, logger);
+    }
+
+    public static File cacheLayer(HttpClient httpClient, URL baseLayerImageUrl, URL layerImageUrl, Integer timeout, String index, String filenamePrefix, AbstractLogger logger) throws IOException, InterruptedException {
         if (layerImageUrl == null || index == null) {
             return null;
         }
 
-        File cacheDir = getCacheDirectory(index, messages);
+        File cacheDir = getCacheDirectory(index, logger);
         if (cacheDir == null) {
             return null;
         }
         if (!cacheDir.canWrite()) {
-            messages.addMessage(Messages.Level.ERROR, String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
+            logger.addMessage(Level.ERROR, String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
             return null;
         }
 
         // Get layer image (using JSoup to benefit from the retry feature)
         String layerUrlStr = layerImageUrl.toString();
-        HttpClient.Response layerImageResponse = httpClient.getRequest(layerUrlStr, messages);
+        HttpClient.Response layerImageResponse = httpClient.getRequest(layerUrlStr, timeout, logger);
         if (layerImageResponse == null) {
             return null;
         }
         int layerStatusCode = layerImageResponse.statusCode();
         if (layerStatusCode < 200 || layerStatusCode >= 300) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Invalid layer URL: %s status code: %d", layerUrlStr, layerStatusCode));
+            logger.addMessage(Level.WARNING, String.format("Invalid layer URL: %s status code: %d", layerUrlStr, layerStatusCode));
             return null;
         }
 
@@ -216,14 +226,14 @@ public class ImageCache {
         BufferedImage baseLayerImage = null;
         if (baseLayerImageUrl != null) {
             String baseLayerUrlStr = baseLayerImageUrl.toString();
-            HttpClient.Response baseLayerImageResponse = httpClient.getRequest(baseLayerUrlStr, messages);
+            HttpClient.Response baseLayerImageResponse = httpClient.getRequest(baseLayerUrlStr, timeout, logger);
             if (baseLayerImageResponse == null) {
                 return null;
             }
 
             int baseLayerStatusCode = baseLayerImageResponse.statusCode();
             if (baseLayerStatusCode < 200 || baseLayerStatusCode >= 300) {
-                messages.addMessage(Messages.Level.WARNING, String.format("Invalid base layer URL: %s status code: %d", baseLayerUrlStr, baseLayerStatusCode));
+                logger.addMessage(Level.WARNING, String.format("Invalid base layer URL: %s status code: %d", baseLayerUrlStr, baseLayerStatusCode));
                 return null;
             }
 

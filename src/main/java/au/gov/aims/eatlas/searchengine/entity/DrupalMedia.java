@@ -18,8 +18,9 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.AbstractDrupalEntityIndexer;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -32,12 +33,12 @@ public class DrupalMedia extends AbstractDrupalEntity {
     }
 
     // Load from Drupal JSON:API output
-    public DrupalMedia(String index, JSONObject jsonApiMedia, Messages messages) {
-        super(jsonApiMedia, messages);
+    public DrupalMedia(String index, JSONObject jsonApiMedia, AbstractLogger logger) {
+        super(jsonApiMedia, logger);
         this.setIndex(index);
 
         if (jsonApiMedia != null) {
-            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiMedia, messages);
+            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiMedia, logger);
 
             // UUID
             this.setId(jsonApiMedia.optString("id", null));
@@ -56,7 +57,7 @@ public class DrupalMedia extends AbstractDrupalEntity {
                 try {
                     this.setLink(new URL(baseUrl, mediaRelativePath));
                 } catch(Exception ex) {
-                    messages.addMessage(Messages.Level.ERROR,
+                    logger.addMessage(Level.ERROR,
                             String.format("Can not craft media URL from Drupal base URL: %s", baseUrl), ex);
                 }
             }
@@ -88,9 +89,9 @@ public class DrupalMedia extends AbstractDrupalEntity {
         return this.mid;
     }
 
-    public static DrupalMedia load(JSONObject json, Messages messages) {
+    public static DrupalMedia load(JSONObject json, AbstractLogger logger) {
         DrupalMedia media = new DrupalMedia();
-        media.loadJSON(json, messages);
+        media.loadJSON(json, logger);
         String midStr = json.optString("mid", null);
         if (midStr != null && !midStr.isEmpty()) {
             media.mid = Integer.parseInt(midStr);

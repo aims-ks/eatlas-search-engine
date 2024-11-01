@@ -2,7 +2,8 @@ package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.MockHttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -43,10 +44,10 @@ public abstract class IndexerTestBase {
             throw new FileNotFoundException("Could not find the Search Engine config file for tests");
         }
         File configFile = new File(resourceUrl.getFile());
-        Messages messages = Messages.getInstance(null);
+        AbstractLogger logger = ConsoleLogger.getInstance();
         MockHttpClient mockHttpClient = MockHttpClient.getInstance();
 
-        config = SearchEngineConfig.createInstance(mockHttpClient, configFile, "eatlas_search_engine_devel.json", messages);
+        config = SearchEngineConfig.createInstance(mockHttpClient, configFile, "eatlas_search_engine_devel.json", logger);
     }
 
     public MockSearchClient createMockSearchClient() {

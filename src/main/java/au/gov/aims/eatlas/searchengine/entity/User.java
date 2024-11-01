@@ -19,7 +19,8 @@
 package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
 
 import java.security.MessageDigest;
@@ -42,8 +43,8 @@ public class User {
 
     private User() {}
 
-    public User(JSONObject json, Messages messages) {
-        this.loadJSON(json, messages);
+    public User(JSONObject json, AbstractLogger logger) {
+        this.loadJSON(json, logger);
     }
 
     public User(String username, String salt, String encryptedPassword) {
@@ -60,8 +61,8 @@ public class User {
         this.username = username;
     }
 
-    public void setPassword(String password, Messages messages) {
-        this.encryptedPassword = User.encrypt(this.salt, password, messages);
+    public void setPassword(String password, AbstractLogger logger) {
+        this.encryptedPassword = User.encrypt(this.salt, password, logger);
     }
 
     public String getSalt() {
@@ -148,7 +149,7 @@ public class User {
                 .put("email", this.email);
     }
 
-    public void loadJSON(JSONObject json, Messages messages) {
+    public void loadJSON(JSONObject json, AbstractLogger logger) {
         String newPassword = null;
         if (json == null || json.isEmpty()) {
             // Default admin user
@@ -157,7 +158,7 @@ public class User {
             this.setSalt(null); // Random salt
 
             // Let the user set firstName, lastName, etc.
-            messages.addMessage(Messages.Level.WARNING, "New admin user created. " +
+            logger.addMessage(Level.WARNING, "New admin user created. " +
                     "Click the admin user on the top right corner of the page and change the admin password.");
         } else {
             this.username = json.optString("username", null);
@@ -175,18 +176,18 @@ public class User {
         // and replacing with a clear text "password". On next reload of the config, the system
         // replace the clear text "password" with an encrypted password.
         if (this.encryptedPassword == null && newPassword != null) {
-            this.encryptedPassword = User.encrypt(this.salt, newPassword, messages);
+            this.encryptedPassword = User.encrypt(this.salt, newPassword, logger);
             this.modified = true;
         }
     }
 
-    public boolean verifyPassword(String password, Messages messages) {
+    public boolean verifyPassword(String password, AbstractLogger logger) {
         if (this.encryptedPassword == null) {
             return password == null;
         }
 
         return this.encryptedPassword.equals(
-                User.encrypt(this.salt, password, messages));
+                User.encrypt(this.salt, password, logger));
     }
 
     /**
@@ -194,12 +195,12 @@ public class User {
      * @param pass Unencrypted password
      * @return Encrypted password (Base 64 or MD5).
      */
-    public static String encrypt(String salt, String pass, Messages messages) {
+    public static String encrypt(String salt, String pass, AbstractLogger logger) {
         try {
             byte[] encryptPass = md5sum(salt + pass);
             return toHex(encryptPass);
         } catch (NoSuchAlgorithmException ex) {
-            messages.addMessage(Messages.Level.ERROR, "Can not encrypt the password.", ex);
+            logger.addMessage(Level.ERROR, "Can not encrypt the password.", ex);
         }
 
         // Return un-encrypted password. Unlikely to append

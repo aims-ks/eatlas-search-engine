@@ -252,6 +252,9 @@ public class SearchUtils {
             config.save();
         }
 
+        String logCacheDirStr = config.getLogCacheDirectory();
+        newIndexer.initFileLogger(logCacheDirStr);
+
         return newIndexer;
     }
 }

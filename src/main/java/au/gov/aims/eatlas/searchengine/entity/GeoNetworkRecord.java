@@ -18,10 +18,11 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.AbstractParser;
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.ISO19115_3_2018_parser;
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.ISO19139_parser;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -54,16 +55,16 @@ public class GeoNetworkRecord extends Entity {
         }
     }
 
-    public void parseRecord(String geoNetworkUrlStr, Document xmlMetadataRecord, Messages messages) {
+    public void parseRecord(String geoNetworkUrlStr, Document xmlMetadataRecord, AbstractLogger logger) {
         String metadataRecordUUID = this.getId();
 
         if (this.metadataSchema == null || this.metadataSchema.isEmpty()) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has no defined metadata schema.", metadataRecordUUID));
+            logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has no defined metadata schema.", metadataRecordUUID));
             return;
         }
 
         if (xmlMetadataRecord == null) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has no metadata record.", metadataRecordUUID));
+            logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has no metadata record.", metadataRecordUUID));
             return;
         }
 
@@ -71,7 +72,7 @@ public class GeoNetworkRecord extends Entity {
         xmlMetadataRecord.getDocumentElement().normalize();
         Element root = xmlMetadataRecord.getDocumentElement();
         if (root == null) {
-            messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has no root in its metadata document.", metadataRecordUUID));
+            logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has no root in its metadata document.", metadataRecordUUID));
             return;
         }
 
@@ -89,12 +90,12 @@ public class GeoNetworkRecord extends Entity {
                 break;
 
             default:
-                messages.addMessage(Messages.Level.WARNING, String.format("Metadata UUID %s has unsupported schema %s", metadataRecordUUID, metadataSchema));
+                logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has unsupported schema %s", metadataRecordUUID, metadataSchema));
                 break;
         }
 
         if (parser != null) {
-            parser.parseRecord(this, geoNetworkUrlStr, root, messages);
+            parser.parseRecord(this, geoNetworkUrlStr, root, logger);
         }
     }
 
@@ -135,9 +136,9 @@ public class GeoNetworkRecord extends Entity {
         return document;
     }
 
-    public static GeoNetworkRecord load(JSONObject json, Messages messages) {
+    public static GeoNetworkRecord load(JSONObject json, AbstractLogger logger) {
         GeoNetworkRecord record = new GeoNetworkRecord();
-        record.loadJSON(json, messages);
+        record.loadJSON(json, logger);
         record.metadataSchema = json.optString("metadataSchema", null);
         record.geoNetworkVersion = json.optString("geoNetworkVersion", null);
         record.parentUUID = json.optString("parentUUID", null);

@@ -21,9 +21,13 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.Entity;
+import au.gov.aims.eatlas.searchengine.logger.FileLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.Message;
+import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch._types.Conflicts;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
@@ -64,15 +68,46 @@ public abstract class AbstractIndexer<E extends Entity> {
     private long completed;
     private long indexed;
 
+    private AbstractLogger fileLogger;
+
     public AbstractIndexer(HttpClient httpClient, String index) {
         this.httpClient = httpClient;
         this.index = index;
     }
 
-    protected abstract void internalIndex(SearchClient searchClient, Long lastIndexed, Messages messages);
-    protected abstract E harvestEntity(SearchClient searchClient, String id, Messages messages);
-    public abstract E load(JSONObject json, Messages messages);
+    public void initFileLogger(String logCacheDirStr) {
+        File logCacheDir = logCacheDirStr == null ? null : new File(logCacheDirStr);
+
+        this.fileLogger = null;
+        if (logCacheDir != null) {
+            logCacheDir.mkdirs();
+
+            if (logCacheDir.exists() && logCacheDir.canWrite()) {
+                File logFile = new File(logCacheDir, index + ".log");
+                FileLogger fileLogger = new FileLogger(logFile);
+                fileLogger.load();
+                this.fileLogger = fileLogger;
+            }
+        }
+
+        // Fallback logger
+        if (this.fileLogger == null) {
+            this.fileLogger = ConsoleLogger.getInstance();
+            if (logCacheDirStr != null) {
+                this.fileLogger.addMessage(Level.ERROR,
+                    String.format("Can not access the log cache directory: %s", logCacheDirStr));
+            }
+        }
+    }
+
+    protected abstract void internalIndex(SearchClient searchClient, Long lastIndexed, AbstractLogger logger);
+    protected abstract E harvestEntity(SearchClient searchClient, String id, AbstractLogger logger);
+    public abstract E load(JSONObject json, AbstractLogger logger);
     public abstract JSONObject toJSON();
+
+    public AbstractLogger getFileLogger() {
+        return this.fileLogger;
+    }
 
     public HttpClient getHttpClient() {
         return this.httpClient;
@@ -126,12 +161,13 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     // If full is true, reindex everything.
     // If not, only index what have changed since last indexation.
-    public synchronized void index(SearchClient searchClient, boolean full, Messages messages) throws IOException {
+    public synchronized void index(SearchClient searchClient, boolean full, AbstractLogger logger) throws IOException {
         if (!this.isRunning()) {
             this.total = null;
             this.completed = 0;
             this.indexed = 0;
-            this.indexerThread = new IndexerThread(searchClient, full, messages);
+
+            this.indexerThread = new IndexerThread(searchClient, full, logger);
             this.indexerThread.start();
         }
     }
@@ -157,21 +193,21 @@ public abstract class AbstractIndexer<E extends Entity> {
             .put("brokenThumbnailTTL", this.brokenThumbnailTTL);
     }
 
-    public static AbstractIndexer<?> fromJSON(HttpClient httpClient, JSONObject json, Messages messages) {
+    public static AbstractIndexer<?> fromJSON(HttpClient httpClient, JSONObject json, SearchEngineConfig config, AbstractLogger logger) {
         if (json == null) {
             return null;
         }
 
         String type = json.optString("type", null);
         if (type == null) {
-            messages.addMessage(Messages.Level.WARNING,
+            logger.addMessage(Level.WARNING,
                     String.format("Invalid indexer JSON Object. Property \"type\" missing.%n%s", json.toString(2)));
             return null;
         }
 
         String index = json.optString("index", null);
         if (index == null) {
-            messages.addMessage(Messages.Level.WARNING,
+            logger.addMessage(Level.WARNING,
                     String.format("Invalid indexer JSON Object. Property \"index\" missing.%n%s", json.toString(2)));
             return null;
         }
@@ -209,7 +245,7 @@ public abstract class AbstractIndexer<E extends Entity> {
                 break;
 
             default:
-                messages.addMessage(Messages.Level.WARNING,
+                logger.addMessage(Level.WARNING,
                         String.format("Unsupported indexer type: %s%n%s", type, json.toString(2)));
                 return null;
         }
@@ -231,6 +267,9 @@ public abstract class AbstractIndexer<E extends Entity> {
             brokenThumbnailTTL = json.optLong("brokenThumbnailTTL", -1);
         }
         indexer.brokenThumbnailTTL = brokenThumbnailTTL;
+
+        String logCacheDirStr = config.getLogCacheDirectory();
+        indexer.initFileLogger(logCacheDirStr);
 
         return indexer;
     }
@@ -277,22 +316,22 @@ public abstract class AbstractIndexer<E extends Entity> {
         this.brokenThumbnailTTL = brokenThumbnailTTL;
     }
 
-    public IndexResponse reindex(SearchClient searchClient, String id, Messages messages) throws IOException {
+    public IndexResponse reindex(SearchClient searchClient, String id, AbstractLogger logger) throws IOException {
         IndexResponse indexResponse = null;
 
         searchClient.createIndex(index);
-        E entity = this.harvestEntity(searchClient, id, messages);
+        E entity = this.harvestEntity(searchClient, id, logger);
         if (entity != null) {
-            indexResponse = this.indexEntity(searchClient, entity, messages, false);
+            indexResponse = this.indexEntity(searchClient, entity, false, logger);
         }
 
         return indexResponse;
     }
 
-    public IndexResponse indexEntity(SearchClient searchClient, E entity, Messages messages) throws IOException {
-        return this.indexEntity(searchClient, entity, messages, true);
+    public IndexResponse indexEntity(SearchClient searchClient, E entity, AbstractLogger logger) throws IOException {
+        return this.indexEntity(searchClient, entity, true, logger);
     }
-    public IndexResponse indexEntity(SearchClient searchClient, E entity, Messages messages, boolean incrementIndexedCount) throws IOException {
+    public IndexResponse indexEntity(SearchClient searchClient, E entity, boolean incrementIndexedCount, AbstractLogger logger) throws IOException {
         entity.setLastIndexed(System.currentTimeMillis());
 
         IndexResponse indexResponse = null;
@@ -308,7 +347,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             } catch(ParseException ex) {
                 // The Reader may throw an exception.
                 // We assume the WKT is parsable by JTS since it was generated using the JTS library.
-                Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. WKT is not parsable.", entity.getId()), ex);
+                Message messageObj = logger.addMessage(Level.WARNING, String.format("Document ID: %s. WKT is not parsable.", entity.getId()), ex);
                 messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
             }
         }
@@ -319,7 +358,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             String message = ex.getMessage();
             if (originalWkt != null && message != null && message.contains("failed to parse field [wkt] of type")) {
                 // Fallback to the BBox of the WKT geometry
-                indexResponse = this.indexEntityBboxFallback(searchClient, entity, originalWkt, messages);
+                indexResponse = this.indexEntityBboxFallback(searchClient, entity, originalWkt, logger);
             } else {
                 throw ex;
             }
@@ -332,7 +371,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     // Fallback to the BBox of the WKT geometry
-    private IndexResponse indexEntityBboxFallback(SearchClient searchClient, E entity, String originalWkt, Messages messages) throws IOException {
+    private IndexResponse indexEntityBboxFallback(SearchClient searchClient, E entity, String originalWkt, AbstractLogger logger) throws IOException {
         IndexResponse indexResponse = null;
 
         String newWkt = null;
@@ -347,13 +386,13 @@ public abstract class AbstractIndexer<E extends Entity> {
         } catch (Exception ex) {
             // The Reader may throw an exception.
             // We assume the WKT is parsable by JTS since it was generated using the JTS library.
-            Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. WKT is not parsable.", entity.getId()), ex);
+            Message messageObj = logger.addMessage(Level.WARNING, String.format("Document ID: %s. WKT is not parsable.", entity.getId()), ex);
             messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
         }
 
         if (newWkt == null || newWkt.isEmpty()) {
             // Fallback to the BBox of whole world
-            indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), messages);
+            indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), logger);
         } else {
             try {
                 entity.setWktAndAttributes(newWkt);
@@ -361,16 +400,16 @@ public abstract class AbstractIndexer<E extends Entity> {
 
                 // The Geometry bbox is valid.
                 // Send a warning message regarding the original invalid WKT
-                Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to bounding box of the geometry.", entity.getId()));
+                Message messageObj = logger.addMessage(Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to bounding box of the geometry.", entity.getId()));
                 messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
                 messageObj.addDetail(String.format("Replaced with: %s", newWkt));
             } catch(ParseException ex) {
-                indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), messages);
+                indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), logger);
             } catch(ElasticsearchException ex) {
                 String message = ex.getMessage();
                 if (message != null && message.contains("failed to parse field [wkt] of type")) {
                     // Fallback to the BBox of whole world
-                    indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), messages);
+                    indexResponse = this.indexEntityWholeWorldFallback(searchClient, entity, entity.getWkt(), logger);
                 } else {
                     throw ex;
                 }
@@ -381,14 +420,14 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     // Fallback to the BBox of whole world
-    private IndexResponse indexEntityWholeWorldFallback(SearchClient searchClient, E entity, String originalWkt, Messages messages) throws IOException {
+    private IndexResponse indexEntityWholeWorldFallback(SearchClient searchClient, E entity, String originalWkt, AbstractLogger logger) throws IOException {
         IndexResponse indexResponse = null;
         String newWkt = AbstractIndexer.WHOLE_WORLD_WKT;
         try {
             entity.setWktAndAttributes(newWkt);
             indexResponse = searchClient.index(this.getIndexRequest(entity));
 
-            Messages.Message messageObj = messages.addMessage(Messages.Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to whole world.", entity.getId()));
+            Message messageObj = logger.addMessage(Level.WARNING, String.format("Document ID: %s. Unsupported WKT. Fall back to whole world.", entity.getId()));
             messageObj.addDetail(String.format("Invalid WKT: %s", originalWkt));
             messageObj.addDetail(String.format("Replaced with: %s", newWkt));
 
@@ -396,7 +435,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             entity.setWktAndAttributes(null, null, null);
             indexResponse = searchClient.index(this.getIndexRequest(entity));
 
-            Messages.Message message = messages.addMessage(Messages.Level.WARNING, "Invalid WKT", ex);
+            Message message = logger.addMessage(Level.WARNING, "Invalid WKT", ex);
             message.addDetail(String.format("Invalid WKT: %s", originalWkt));
             message.addDetail(String.format("Invalid replacement WKT: %s", newWkt));
         }
@@ -405,10 +444,10 @@ public abstract class AbstractIndexer<E extends Entity> {
     }
 
     // Only called with complete reindex
-    public void cleanUp(SearchClient searchClient, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName, Messages messages) {
-        long deletedIndexedItems = this.deleteOldIndexedItems(searchClient, lastIndexed, messages);
+    public void cleanUp(SearchClient searchClient, long lastIndexed, Set<String> usedThumbnails, String entityDisplayName, AbstractLogger logger) {
+        long deletedIndexedItems = this.deleteOldIndexedItems(searchClient, lastIndexed, logger);
         if (deletedIndexedItems > 0) {
-            messages.addMessage(Messages.Level.INFO,
+            logger.addMessage(Level.INFO,
                     String.format("Deleted %d indexed %s",
                     deletedIndexedItems, entityDisplayName));
         }
@@ -417,23 +456,23 @@ public abstract class AbstractIndexer<E extends Entity> {
         // search engine won't return deleted records.
         // NOTE: This need to be done before deleting thumbnails
         //     otherwise the search engine could return old records
-        //     which refers to thumbnails that doesn't exist anymore.
+        //     which refers to thumbnails that doesn't exist any more.
         try {
             searchClient.refresh(this.index);
         } catch(Exception ex) {
-            messages.addMessage(Messages.Level.WARNING,
+            logger.addMessage(Level.WARNING,
                     String.format("Exception occurred while refreshing the search index: %s", this.index), ex);
         }
 
-        long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails, messages);
+        long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails, logger);
         if (deletedThumbnails > 0) {
-            messages.addMessage(Messages.Level.INFO,
+            logger.addMessage(Level.INFO,
                     String.format("Deleted %d cached thumbnail for %s",
                     deletedThumbnails, entityDisplayName));
         }
     }
 
-    private long deleteOldIndexedItems(SearchClient searchClient, long lastIndexed, Messages messages) {
+    private long deleteOldIndexedItems(SearchClient searchClient, long lastIndexed, AbstractLogger logger) {
         DeleteByQueryRequest deleteRequest = this.getDeleteOldItemsRequest(lastIndexed);
 
         // Delete old records
@@ -445,37 +484,37 @@ public abstract class AbstractIndexer<E extends Entity> {
                 deleted = response.deleted();
             }
         } catch(Exception ex) {
-            messages.addMessage(Messages.Level.ERROR,
+            logger.addMessage(Level.ERROR,
                     String.format("Exception occurred while deleting old indexed entities in search index: %s", this.index), ex);
         }
 
         return deleted == null ? 0L : deleted;
     }
 
-    private long deleteOldThumbnails(Set<String> usedThumbnails, Messages messages) {
-        File cacheDirectory = ImageCache.getCacheDirectory(this.getIndex(), messages);
+    private long deleteOldThumbnails(Set<String> usedThumbnails, AbstractLogger logger) {
+        File cacheDirectory = ImageCache.getCacheDirectory(this.getIndex(), logger);
 
         // Loop through each thumbnail files and delete the ones that are unused
         if (cacheDirectory != null && cacheDirectory.isDirectory()) {
-            return this.deleteOldThumbnailsRecursive(cacheDirectory, usedThumbnails, messages);
+            return this.deleteOldThumbnailsRecursive(cacheDirectory, usedThumbnails, logger);
         }
 
         return 0;
     }
-    private long deleteOldThumbnailsRecursive(File dir, Set<String> usedThumbnails, Messages messages) {
+    private long deleteOldThumbnailsRecursive(File dir, Set<String> usedThumbnails, AbstractLogger logger) {
         long deleted = 0;
         File[] files = dir.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    deleted += deleteOldThumbnailsRecursive(file, usedThumbnails, messages);
+                    deleted += deleteOldThumbnailsRecursive(file, usedThumbnails, logger);
                 } else if (file.isFile()) {
                     String thumbnailName = file.getName();
                     if (!usedThumbnails.contains(thumbnailName)) {
                         if (file.delete()) {
                             deleted++;
                         } else {
-                            messages.addMessage(Messages.Level.ERROR,
+                            logger.addMessage(Level.ERROR,
                                     String.format("Can't delete old thumbnail: %s",
                                     file.toString()));
                         }
@@ -491,12 +530,12 @@ public abstract class AbstractIndexer<E extends Entity> {
         return AbstractIndexer.get(searchClient, entityClass, this.index, id);
     }
 
-    public E safeGet(SearchClient searchClient, Class<E> entityClass, String id, Messages messages) {
+    public E safeGet(SearchClient searchClient, Class<E> entityClass, String id, AbstractLogger logger) {
         try {
             return this.get(searchClient, entityClass, id);
         } catch(Exception ex) {
             // Should not happen
-            messages.addMessage(Messages.Level.WARNING,
+            logger.addMessage(Level.WARNING,
                     String.format("Exception occurred while looking for item ID \"%s\" in the search index.",
                     id), ex);
         }
@@ -561,12 +600,12 @@ public abstract class AbstractIndexer<E extends Entity> {
     public class IndexerThread extends Thread {
         private final SearchClient searchClient;
         private final boolean fullIndex;
-        private final Messages messages;
+        private final AbstractLogger logger;
 
-        public IndexerThread(SearchClient searchClient, boolean fullIndex, Messages messages) {
+        public IndexerThread(SearchClient searchClient, boolean fullIndex, AbstractLogger logger) {
             this.searchClient = searchClient;
             this.fullIndex = fullIndex;
-            this.messages = messages;
+            this.logger = logger;
         }
 
         @Override
@@ -583,7 +622,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
-                messages.addMessage(Messages.Level.ERROR, "The indexation was interrupted", ex);
+                this.logger.addMessage(Level.ERROR, "The indexation was interrupted", ex);
             }
 
             long lastIndexedStarts = System.currentTimeMillis();
@@ -594,19 +633,19 @@ public abstract class AbstractIndexer<E extends Entity> {
 
             try {
                 this.searchClient.createIndex(index);
-                AbstractIndexer.this.internalIndex(this.searchClient, fullIndexation ? null : state.getLastIndexed(), this.messages);
+                AbstractIndexer.this.internalIndex(this.searchClient, fullIndexation ? null : state.getLastIndexed(), this.logger);
                 AbstractIndexer.this.refreshCount(this.searchClient);
 
                 long indexed = AbstractIndexer.this.indexed;
                 if (!fullIndexation && indexed == 0) {
-                    messages.addMessage(Messages.Level.INFO, String.format("Index %s is up to date.", index));
+                    this.logger.addMessage(Level.INFO, String.format("Index %s is up to date.", index));
                 } else {
-                    messages.addMessage(Messages.Level.INFO, String.format("Index %s %d document indexed.", index, indexed));
+                    this.logger.addMessage(Level.INFO, String.format("Index %s %d document indexed.", index, indexed));
                 }
 
                 state.setLastIndexed(lastIndexedStarts);
             } catch(Exception ex) {
-                this.messages.addMessage(Messages.Level.ERROR,
+                this.logger.addMessage(Level.ERROR,
                         String.format("An error occurred during the indexation of %s", index), ex);
             }
 
@@ -621,9 +660,11 @@ public abstract class AbstractIndexer<E extends Entity> {
             try {
                 SearchEngineState.getInstance().save();
             } catch(Exception ex) {
-                this.messages.addMessage(Messages.Level.ERROR,
+                this.logger.addMessage(Level.ERROR,
                         String.format("An error occurred while saving the index state for %s", index), ex);
             }
+
+            this.logger.save();
         }
     }
 }

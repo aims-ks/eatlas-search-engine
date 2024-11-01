@@ -1,6 +1,7 @@
 package au.gov.aims.eatlas.searchengine;
 
-import au.gov.aims.eatlas.searchengine.admin.rest.Messages;
+import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.Consts;
 import org.apache.http.entity.ContentType;
@@ -33,6 +34,7 @@ public class HttpClient {
     private static final int JSOUP_RETRY = 2;//5;
     // NOTE: The delay is incremental: 5, 10, 20, 40, 80...
     private static final int JSOUP_RETRY_INITIAL_DELAY = 5; // In seconds
+    private static final int DEFAULT_REQUEST_TIMEOUT = 120000;
 
     private static HttpClient instance;
 
@@ -43,21 +45,29 @@ public class HttpClient {
         return instance;
     }
 
-    public Response getRequest(String url, Messages messages) throws IOException, InterruptedException {
-        Connection jsoupConnection = this.getJsoupConnection(url, messages);
-        return this.request(url, jsoupConnection, messages);
+    public Response getRequest(String url, AbstractLogger logger) throws IOException, InterruptedException {
+        return this.getRequest(url, null, logger);
     }
 
-    public Response postXmlRequest(String url, String requestBody, Messages messages) throws IOException, InterruptedException {
-        Connection jsoupConnection = this.getJsoupConnection(url, messages)
+    public Response getRequest(String url, Integer timeout, AbstractLogger logger) throws IOException, InterruptedException {
+        Connection jsoupConnection = this.getJsoupConnection(url, timeout, logger);
+        return this.request(url, jsoupConnection, logger);
+    }
+
+    public Response postXmlRequest(String url, String requestBody, AbstractLogger logger) throws IOException, InterruptedException {
+        return this.postXmlRequest(url, requestBody, null, logger);
+    }
+
+    public Response postXmlRequest(String url, String requestBody, Integer timeout, AbstractLogger logger) throws IOException, InterruptedException {
+        Connection jsoupConnection = this.getJsoupConnection(url, timeout, logger)
                 .method(Connection.Method.POST)
                 .header("Content-Type", "application/xml")
                 .requestBody(requestBody);
 
-        return this.request(url, jsoupConnection, messages);
+        return this.request(url, jsoupConnection, logger);
     }
 
-    private Response request(String url, Connection jsoupConnection, Messages messages) throws IOException, InterruptedException {
+    private Response request(String url, Connection jsoupConnection, AbstractLogger logger) throws IOException, InterruptedException {
         IOException lastException = null;
         int delay = JSOUP_RETRY_INITIAL_DELAY;
 
@@ -74,12 +84,12 @@ public class HttpClient {
                 delay *= 2;
             }
         }
-        LOGGER.debug(String.format("Connection timed out %d times while requesting URL: %s", JSOUP_RETRY, url));
+        logger.addMessage(Level.WARNING, String.format("Connection timed out %d times while requesting URL: %s", JSOUP_RETRY, url));
 
         throw lastException;
     }
 
-    private Connection getJsoupConnection(String url, Messages messages) {
+    private Connection getJsoupConnection(String url, Integer timeout, AbstractLogger logger) {
         // JSoup takes care of following redirections.
         //     IOUtils.toString(URL, Charset) does not.
         //
@@ -101,12 +111,12 @@ public class HttpClient {
         //     To deal with dodgy SSL certificates.
         Connection connection = Jsoup
                 .connect(url)
-                .timeout(120000)
+                .timeout(timeout == null ? DEFAULT_REQUEST_TIMEOUT : timeout)
                 .ignoreHttpErrors(true)
                 .ignoreContentType(true)
                 .maxBodySize(0);
 
-        SSLSocketFactory sslSocketFactory = this.socketFactory(messages);
+        SSLSocketFactory sslSocketFactory = this.socketFactory(logger);
         if (sslSocketFactory != null) {
             connection = connection.sslSocketFactory(sslSocketFactory);
         }
@@ -114,7 +124,7 @@ public class HttpClient {
         return connection;
     }
 
-    private SSLSocketFactory socketFactory(Messages messages) {
+    private SSLSocketFactory socketFactory(AbstractLogger logger) {
         TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {
                 return new X509Certificate[0];
@@ -128,7 +138,7 @@ public class HttpClient {
             sslContext.init(null, trustAllCerts, new SecureRandom());
             return sslContext.getSocketFactory();
         } catch (Exception ex) {
-            messages.addMessage(Messages.Level.ERROR, "Failed to create a SSL socket factory.", ex);
+            logger.addMessage(Level.ERROR, "Failed to create a SSL socket factory.", ex);
             return null;
         }
     }
