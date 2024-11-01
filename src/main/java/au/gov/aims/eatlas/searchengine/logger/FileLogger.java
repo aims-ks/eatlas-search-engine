@@ -24,8 +24,10 @@ public class FileLogger extends AbstractLogger {
     public void save() {
         if (this.isDirty()) {
             try {
-                FileUtils.write(this.messagesFile, this.toString(4), "UTF-8");
-                super.save();
+                synchronized (this.messagesFile) {
+                    FileUtils.write(this.messagesFile, this.toString(4), "UTF-8");
+                    super.save();
+                }
             } catch (IOException ex) {
                 LOGGER.error(String.format("Error while saving the FileLogger: %s", this.messagesFile.getAbsolutePath()), ex);
             }

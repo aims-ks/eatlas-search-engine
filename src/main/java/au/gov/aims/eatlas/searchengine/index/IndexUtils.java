@@ -207,12 +207,13 @@ public class IndexUtils {
                 for (AbstractIndexer<?> indexer : indexers) {
                     if (indexer.isEnabled()) {
                         // If the logger hasn't been defined, use the indexer respective file logger.
+                        AbstractLogger fileLogger = null;
                         if (logger == null) {
-                            logger = indexer.getFileLogger();
-                            logger.clear();
+                            fileLogger = indexer.getFileLogger();
+                            fileLogger.clear();
                         }
 
-                        indexer.index(searchClient, full, logger);
+                        indexer.index(searchClient, full, fileLogger == null ? logger : fileLogger);
                     }
                 }
             }

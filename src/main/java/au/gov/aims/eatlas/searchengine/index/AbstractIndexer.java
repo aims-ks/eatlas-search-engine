@@ -83,7 +83,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             logCacheDir.mkdirs();
 
             if (logCacheDir.exists() && logCacheDir.canWrite()) {
-                File logFile = new File(logCacheDir, index + ".log");
+                File logFile = new File(logCacheDir, this.index + ".log");
                 FileLogger fileLogger = new FileLogger(logFile);
                 fileLogger.load();
                 this.fileLogger = fileLogger;
@@ -640,7 +640,7 @@ public abstract class AbstractIndexer<E extends Entity> {
                 if (!fullIndexation && indexed == 0) {
                     this.logger.addMessage(Level.INFO, String.format("Index %s is up to date.", index));
                 } else {
-                    this.logger.addMessage(Level.INFO, String.format("Index %s %d document indexed.", index, indexed));
+                    this.logger.addMessage(Level.INFO, String.format("Index %s %d documents indexed.", index, indexed));
                 }
 
                 state.setLastIndexed(lastIndexedStarts);

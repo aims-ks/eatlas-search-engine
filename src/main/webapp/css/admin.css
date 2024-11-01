@@ -505,6 +505,7 @@ button.reload {
   padding: 0;
 }
 
+.content .modal-window .logs .message .details .detailList,
 .content .modal-window .logs .message .exception .stacktrace-box {
   color: #DDDDDD;
 }
