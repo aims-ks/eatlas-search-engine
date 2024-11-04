@@ -349,6 +349,9 @@ button.reload {
 .content .message .info,
 .content .message .warning,
 .content .message .error {
+  display: flex;
+  align-items: start;
+
   padding: 0.2em;
   margin: 0.5em 0;
 }
@@ -364,6 +367,15 @@ button.reload {
 .content .message .error {
   background-color: #FFDDDD;
   font-weight: bold;
+}
+
+.content .message .date {
+  margin: 0.5em;
+  font-size: 0.6em;
+  flex-shrink: 0;
+}
+.content .message .message-wrapper {
+  flex: 1;
 }
 
 .content .message .details,
