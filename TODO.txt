@@ -1,18 +1,11 @@
 TODO:
 
-Last indexation logs in the indexer file
-Delete/rename indexer deletes file
-Show indexer logs with button
-
-- Rethink user messages
-  - Displaying messages in pages, and having to refresh, does work, but it's not good.
-    It would be better if each indexer had its own logs, and we can look at them at any time to see the logs from last indexation
-    Other logs would appear in an application log page.
+- Indexer logs
+  - Delete/rename indexer deletes file
+  - Filters for indexer logs (info, warning, errors)
 
 - Create files:
   - resources/eatlas_search_engine_default.json
-
-- Fix tests
 
 - Settings page
   - Commit to Git repo (repo dedicated for the search engine config)
@@ -38,9 +31,6 @@ Show indexer logs with button
 
   Layer: seamap_seamap:SeamapAus_WA_seagrass_OysterHarbour_1988. Invalid bounding box. Fallback to whole world.
     Invalid bbox: [W: -1458189.5307774, E: -1455290.9367346, N: -4026941.0297624, S: -4032228.3093619]
-
-- AMPSA
-  Do not implement anything specific to AMPSA. It will use Drupal search engine
 
 NOTE: Application name: ${pageContext.servletContext.contextPath}
 
