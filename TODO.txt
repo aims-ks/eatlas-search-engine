@@ -2,7 +2,6 @@ TODO:
 
 - Indexer logs
   - Delete/rename indexer deletes file
-  - Filters for indexer logs (info, warning, errors)
 
 - Create files:
   - resources/eatlas_search_engine_default.json
