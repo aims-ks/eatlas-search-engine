@@ -26,6 +26,7 @@ import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.index.IndexUtils;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.logger.Message;
 import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -41,6 +42,7 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Path("/reindex")
@@ -65,9 +67,23 @@ public class ReindexPage {
         if (index != null) {
             model.put("index", index);
         }
-        Object logs = httpRequest.getAttribute("fileLogger");
-        if (index != null) {
-            model.put("fileLogger", logs);
+        Object logs = httpRequest.getAttribute("logs");
+        if (logs != null) {
+            model.put("logs", logs);
+        }
+
+        // Log filters
+        Object showLogInfo = httpRequest.getAttribute("showLogInfo");
+        if (showLogInfo != null) {
+            model.put("showLogInfo", showLogInfo);
+        }
+        Object showLogWarning = httpRequest.getAttribute("showLogWarning");
+        if (showLogWarning != null) {
+            model.put("showLogWarning", showLogWarning);
+        }
+        Object showLogError = httpRequest.getAttribute("showLogError");
+        if (showLogError != null) {
+            model.put("showLogError", showLogError);
         }
 
         // Load the template: src/main/webapp/WEB-INF/jsp/reindex.jsp
@@ -146,8 +162,22 @@ public class ReindexPage {
                 this.reindex(searchClient, FormUtils.getFormStringValue(form, "reindex-button"), true, sessionLogger);
             } else if (form.containsKey("index-latest-button")) {
                 this.reindex(searchClient, FormUtils.getFormStringValue(form, "index-latest-button"), false, sessionLogger);
-            } else if (form.containsKey("view-log-button")) {
-                this.viewLogs(httpRequest, FormUtils.getFormStringValue(form, "view-log-button"), sessionLogger);
+            } else if (form.containsKey("view-log-button") && !form.containsKey("close-window-button")) {
+                // Get filter state
+                boolean showInfo = !form.containsKey("show-log-info") || "true".equals(FormUtils.getFormStringValue(form, "show-log-info"));
+                boolean showWarning = !form.containsKey("show-log-warning") || "true".equals(FormUtils.getFormStringValue(form, "show-log-warning"));
+                boolean showError = !form.containsKey("show-log-error") || "true".equals(FormUtils.getFormStringValue(form, "show-log-error"));
+                // Change filter state if a button has been clicked
+                if (form.containsKey("show-log-info-button")) {
+                    showInfo = "filter-on".equals(FormUtils.getFormStringValue(form, "show-log-info-button"));
+                }
+                if (form.containsKey("show-log-warning-button")) {
+                    showWarning = "filter-on".equals(FormUtils.getFormStringValue(form, "show-log-warning-button"));
+                }
+                if (form.containsKey("show-log-error-button")) {
+                    showError = "filter-on".equals(FormUtils.getFormStringValue(form, "show-log-error-button"));
+                }
+                this.viewLogs(httpRequest, FormUtils.getFormStringValue(form, "view-log-button"), showInfo, showWarning, showError, sessionLogger);
             }
         } catch (Exception ex) {
             sessionLogger.addMessage(Level.ERROR,
@@ -208,11 +238,16 @@ public class ReindexPage {
         }
     }
 
-    private void viewLogs(HttpServletRequest httpRequest, String index, AbstractLogger sessionLogger) {
+    private void viewLogs(HttpServletRequest httpRequest, String index, boolean showInfo, boolean showWarning, boolean showError, AbstractLogger sessionLogger) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         AbstractIndexer<?> indexer = config.getIndexer(index);
 
+        List<Message> logs = indexer.getFileLogger().getFilteredMessages(showInfo, showWarning, showError);
+
         httpRequest.setAttribute("index", index);
-        httpRequest.setAttribute("fileLogger", indexer.getFileLogger());
+        httpRequest.setAttribute("logs", logs);
+        httpRequest.setAttribute("showLogInfo", showInfo);
+        httpRequest.setAttribute("showLogWarning", showWarning);
+        httpRequest.setAttribute("showLogError", showError);
     }
 }

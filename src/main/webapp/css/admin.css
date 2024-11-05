@@ -531,3 +531,29 @@ button.reload {
 .content .modal-window .logs .message .error {
   background-color: #660000;
 }
+
+.content .modal-window .filters {
+  margin-right: 2em;
+}
+
+.content .modal-window .filters .show-log-info,
+.content .modal-window .filters .show-log-warning,
+.content .modal-window .filters .show-log-error {
+  margin-right: 0.2em;
+}
+
+.content .modal-window .filters .hide-logs {
+  opacity: 0.5;
+}
+
+.content .modal-window .filters .show-log-info {
+  background-color: #DDFFDD;
+}
+
+.content .modal-window .filters .show-log-warning {
+  background-color: #FFFFDD;
+}
+
+.content .modal-window .filters .show-log-error {
+  background-color: #FFDDDD;
+}

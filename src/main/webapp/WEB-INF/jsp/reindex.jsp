@@ -96,7 +96,7 @@
             <button class="refresh" name="refresh-count-button" value="refresh-count" title="Refresh count">Refresh indexes document count</button>
 
             <!-- Modal logs window -->
-            <c:if test="${not empty it.fileLogger}">
+            <c:if test="${it.logs != null}">
                 <c:import url="include/logs-window.jsp"/>
             </c:if>
         </form>

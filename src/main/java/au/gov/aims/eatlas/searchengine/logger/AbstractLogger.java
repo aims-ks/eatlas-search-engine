@@ -62,7 +62,7 @@ public abstract class AbstractLogger {
 
     public List<Message> getMessages() {
         if (this.messages == null) {
-            this.messages = Collections.synchronizedList(new ArrayList<>());
+            this.messages = Collections.synchronizedList(new ArrayList<Message>());
         }
         return this.messages;
     }
@@ -70,6 +70,39 @@ public abstract class AbstractLogger {
         this.messages = messages;
         this.dirty = true;
     }
+
+    public List<Message> getFilteredMessages(boolean showInfo, boolean showWarning, boolean showError) {
+        List<Message> allMessages = this.getMessages();
+        if (showInfo && showWarning && showError) {
+            return allMessages;
+        }
+
+        List<Message> filteredMessages = new ArrayList<>();
+        for (Message message : allMessages) {
+            switch (message.getLevel()) {
+                case INFO:
+                    if (showInfo) {
+                        filteredMessages.add(message);
+                    }
+                    break;
+
+                case WARNING:
+                    if (showWarning) {
+                        filteredMessages.add(message);
+                    }
+                    break;
+
+                case ERROR:
+                    if (showError) {
+                        filteredMessages.add(message);
+                    }
+                    break;
+            }
+        }
+
+        return filteredMessages;
+    }
+
 
     public boolean isEmpty() {
         return this.messages == null || this.messages.isEmpty();
