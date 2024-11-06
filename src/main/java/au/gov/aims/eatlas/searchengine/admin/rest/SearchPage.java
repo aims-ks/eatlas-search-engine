@@ -98,9 +98,9 @@ public class SearchPage {
                     "An exception occurred during the search.", ex);
             }
 
-            int nbPage = 0;
+            long nbPage = 0;
             if (results != null) {
-                nbPage = (int)Math.ceil(((double)results.getSummary().getHits()) / hitsPerPage);
+                nbPage = results.getSummary().getPages();
             }
 
             model.put("nbPage", nbPage);

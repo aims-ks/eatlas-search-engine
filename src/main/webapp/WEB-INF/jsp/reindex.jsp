@@ -58,6 +58,7 @@
             <table>
                 <tr class="table-header">
                     <th>Index</th>
+                    <th>Name</th>
                     <th>Indexer</th>
                     <th>Type</th>
                     <th>Document count</th>
@@ -70,6 +71,7 @@
                 <c:forEach items="${it.config.indexers}" var="indexer" varStatus="loopStatus">
                     <tr class="${(loopStatus.index+1) % 2 == 0 ? 'even' : 'odd'}">
                         <td><c:out value="${indexer.index}" /></td>
+                        <td><c:out value="${indexer.indexName}" /></td>
                         <td class="${indexer.enabled ? "enabled" : "disabled"}">
                             ${indexer.enabled ? "Enabled" : "Disabled"}
                         </td>

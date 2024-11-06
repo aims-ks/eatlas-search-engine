@@ -52,7 +52,7 @@
                                 <c:if test="${it.indexes.contains(indexer.index)}">
                                     checked="checked"
                                 </c:if>
-                            /> ${indexer.index}
+                            /> <strong>${indexer.indexName}</strong> (${indexer.index})
                         </label>
                     </li>
                 </c:forEach>

@@ -158,6 +158,7 @@
             <table>
                 <tr class="table-header">
                     <th>Index</th>
+                    <th>Name</th>
                     <th>Indexer</th>
                     <th>Type</th>
                     <th>Document count</th>
@@ -170,6 +171,7 @@
                     <c:set var="cssClass" value="${(loopStatus.index+1) % 2 == 0 ? 'even' : 'odd'} ${indexer.validate() ? 'valid' : 'invalid'}"/>
                     <tr class="${cssClass}">
                         <td><c:out value="${indexer.index}" /></td>
+                        <td><c:out value="${indexer.indexName}" /></td>
                         <td class="${indexer.enabled ? "enabled" : "disabled"}">
                             ${indexer.enabled ? "Enabled" : "Disabled"}
                         </td>
