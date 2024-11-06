@@ -316,7 +316,7 @@ public class SearchWktTest extends IndexerTestBase {
 
     private void indexMetadataRecords(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, AbstractLogger logger) throws ParseException, IOException {
         searchClient.createIndex(index);
-        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, index, "http://domain.com/geonetwork", "3.0");
 
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.
@@ -359,7 +359,7 @@ public class SearchWktTest extends IndexerTestBase {
         String clientUrl = "http://domain.com/atlasmapper";
         String mainConfigPathStr = "searchWkt/atlasmapperFiles/main.json";
 
-        AtlasMapperIndexer indexer = new AtlasMapperIndexer(mockHttpClient, index, clientUrl, "1.0", "http://domain.com/geoserver");
+        AtlasMapperIndexer indexer = new AtlasMapperIndexer(mockHttpClient, index, index, clientUrl, "1.0", "http://domain.com/geoserver");
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.
         config.addIndexer(indexer);
@@ -420,7 +420,7 @@ public class SearchWktTest extends IndexerTestBase {
 
     private void indexImages(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, AbstractLogger logger) throws IOException, ParseException {
         searchClient.createIndex(index);
-        DrupalMediaIndexer indexer = new DrupalMediaIndexer(mockHttpClient, index, "http://domain.com", "11.0", "image", "field_preview", "field_title", "field_description", "field_geojson");
+        DrupalMediaIndexer indexer = new DrupalMediaIndexer(mockHttpClient, index, index, "http://domain.com", "11.0", "image", "field_preview", "field_title", "field_description", "field_geojson");
 
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.

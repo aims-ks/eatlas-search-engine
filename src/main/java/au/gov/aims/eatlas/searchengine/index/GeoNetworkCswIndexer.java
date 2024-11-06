@@ -65,14 +65,14 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
      * geoNetworkVersion: 4.2.10
      * geoNetworkCategories: eatlas, nwa, !demo, !test
      */
-    public GeoNetworkCswIndexer(HttpClient httpClient, String index, String geoNetworkUrl, String geoNetworkVersion, List<String> geoNetworkCategories) {
-        super(httpClient, index);
+    public GeoNetworkCswIndexer(HttpClient httpClient, String index, String indexName, String geoNetworkUrl, String geoNetworkVersion, List<String> geoNetworkCategories) {
+        super(httpClient, index, indexName);
         this.geoNetworkUrl = geoNetworkUrl;
         this.geoNetworkVersion = geoNetworkVersion;
         this.geoNetworkCategories = geoNetworkCategories;
     }
 
-    public static GeoNetworkCswIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
+    public static GeoNetworkCswIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
@@ -89,7 +89,7 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         }
 
         return new GeoNetworkCswIndexer(
-            httpClient, index,
+            httpClient, index, indexName,
             json.optString("geoNetworkUrl", null),
             json.optString("geoNetworkVersion", null),
             categories.isEmpty() ? null : categories);

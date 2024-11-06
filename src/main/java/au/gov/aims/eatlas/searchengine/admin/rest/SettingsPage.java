@@ -197,6 +197,7 @@ public class SettingsPage {
                 }
             }
 
+            indexer.setIndexName(FormUtils.getFormStringValue(form, index + "_indexName"));
             indexer.setEnabled(FormUtils.getFormBooleanValue(form, index + "_enabled"));
             indexer.setThumbnailTTL(FormUtils.getFormLongValue(form, index + "_thumbnailTTL"));
             indexer.setBrokenThumbnailTTL(FormUtils.getFormLongValue(form, index + "_brokenThumbnailTTL"));

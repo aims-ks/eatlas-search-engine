@@ -42,7 +42,7 @@ public class GeoShapeIndexationTest extends IndexerTestBase {
         record.setWktAndAttributes("POLYGON ((-175.4736328125 -31.245117187500004, -171.2548828125 36.9580078125, 171.8701171875 39.0673828125, 175.3857421875 -30.5419921875, -32.0361328125 -34.0576171875, -175.4736328125 -31.245117187500004))");
 
         // Indexation
-        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, "http://domain.com/geonetwork", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, index, "http://domain.com/geonetwork", "3.0");
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)

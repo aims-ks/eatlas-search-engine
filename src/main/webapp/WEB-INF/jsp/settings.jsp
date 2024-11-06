@@ -226,6 +226,20 @@
                             </div>
 
                             <div class="field">
+                                <label for="${indexer.index}_indexName">
+                                    <span class="label required">Index name</span>
+                                    <input type="text"
+                                        id="${indexer.index}_indexName"
+                                        name="${indexer.index}_indexName"
+                                        data-lpignore="true"
+                                        required="required"
+                                        value="<c:out value="${indexer.indexName}" />" />
+                                </label>
+                                <div class="desc">The display name of the index.</div>
+                                <div class="desc"><strong>Example</strong>: <code>eAtlas articles</code></div>
+                            </div>
+
+                            <div class="field">
                                 <label for="${indexer.index}_thumbnailTTL">
                                     <span class="label">Thumbnail TTL (in days)</span>
                                     <input type="number"

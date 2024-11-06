@@ -32,13 +32,39 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
 
     private String drupalTitleField;
 
-    public static DrupalMediaIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
+    /**
+     * index: eatlas-image
+     * drupalUrl: http://localhost:9090
+     * drupalVersion: 9.0
+     * drupalMediaType: image
+     */
+    public DrupalMediaIndexer(
+            HttpClient httpClient,
+            String index,
+            String indexName,
+            String drupalUrl,
+            String drupalVersion,
+            String drupalMediaType,
+            String drupalPreviewImageField,
+            String drupalTitleField,
+            String drupalIndexedFields,
+            String drupalGeoJSONField
+    ) {
+
+        super(httpClient, index, indexName, drupalUrl, drupalVersion, "media", drupalMediaType,
+                (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
+                drupalIndexedFields, drupalGeoJSONField);
+
+        this.drupalTitleField = drupalTitleField;
+    }
+
+    public static DrupalMediaIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalMediaIndexer(
-            httpClient, index,
+            httpClient, index, indexName,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalMediaType", null),
@@ -62,31 +88,6 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
     @Override
     public DrupalMedia load(JSONObject json, AbstractLogger logger) {
         return DrupalMedia.load(json, logger);
-    }
-
-    /**
-     * index: eatlas-image
-     * drupalUrl: http://localhost:9090
-     * drupalVersion: 9.0
-     * drupalMediaType: image
-     */
-    public DrupalMediaIndexer(
-            HttpClient httpClient,
-            String index,
-            String drupalUrl,
-            String drupalVersion,
-            String drupalMediaType,
-            String drupalPreviewImageField,
-            String drupalTitleField,
-            String drupalIndexedFields,
-            String drupalGeoJSONField
-    ) {
-
-        super(httpClient, index, drupalUrl, drupalVersion, "media", drupalMediaType,
-                (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
-                drupalIndexedFields, drupalGeoJSONField);
-
-        this.drupalTitleField = drupalTitleField;
     }
 
     @Override

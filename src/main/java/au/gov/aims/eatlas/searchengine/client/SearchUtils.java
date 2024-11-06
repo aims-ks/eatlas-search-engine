@@ -210,37 +210,37 @@ public class SearchUtils {
         switch (newIndexType) {
             case "DrupalNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-node");
-                newIndexer = new DrupalNodeIndexer(httpClient, newIndex, null, null, null, null, null, null);
+                newIndexer = new DrupalNodeIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null);
                 break;
 
             case "DrupalMediaIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-media");
-                newIndexer = new DrupalMediaIndexer(httpClient, newIndex, null, null, null, null, null, null, null);
+                newIndexer = new DrupalMediaIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "DrupalExternalLinkNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-extlink");
-                newIndexer = new DrupalExternalLinkNodeIndexer(httpClient, newIndex, null, null, null, null, null, null, null);
+                newIndexer = new DrupalExternalLinkNodeIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "DrupalBlockIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-block");
-                newIndexer = new DrupalBlockIndexer(httpClient, newIndex, null, null, null, null, null, null);
+                newIndexer = new DrupalBlockIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null);
                 break;
 
             case "GeoNetworkIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("geonetwork");
-                newIndexer = new GeoNetworkIndexer(httpClient, newIndex, null, null);
+                newIndexer = new GeoNetworkIndexer(httpClient, newIndex, newIndex, null, null);
                 break;
 
             case "GeoNetworkCswIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("geonetwork-csw");
-                newIndexer = new GeoNetworkCswIndexer(httpClient, newIndex, null, null, null);
+                newIndexer = new GeoNetworkCswIndexer(httpClient, newIndex, newIndex, null, null, null);
                 break;
 
             case "AtlasMapperIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("atlasmapper");
-                newIndexer = new AtlasMapperIndexer(httpClient, newIndex, null, null, null);
+                newIndexer = new AtlasMapperIndexer(httpClient, newIndex, newIndex, null, null, null);
                 break;
 
             default:

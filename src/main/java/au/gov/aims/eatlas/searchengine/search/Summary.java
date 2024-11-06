@@ -26,6 +26,7 @@ import java.util.Map;
 public class Summary {
     // Total number of search results returned by the search query
     private Long hits;
+    private Long pages; // Number of pages of results
 
     // Key = index
     private Map<String, IndexSummary> indexSummaries;
@@ -36,6 +37,15 @@ public class Summary {
 
     public Summary setHits(Long hits) {
         this.hits = hits;
+        return this;
+    }
+
+    public Long getPages() {
+        return this.pages;
+    }
+
+    public Summary setPages(Long pages) {
+        this.pages = pages;
         return this;
     }
 
@@ -70,6 +80,7 @@ public class Summary {
 
         return new JSONObject()
             .put("hits", this.hits)
+            .put("pages", this.pages)
             .put("indexes", jsonIndexSummaries);
     }
 

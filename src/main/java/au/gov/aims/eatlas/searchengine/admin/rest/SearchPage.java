@@ -74,8 +74,8 @@ public class SearchPage {
                 try {
                     AbstractIndexer<?> indexer = config.getIndexer(reindexIdx);
                     indexer.reindex(searchClient, reindexId, logger);
-                    // Wait 1 sec, to be sure the updated document is in the index.
-                    Thread.sleep(1000);
+                    // Wait for the index to update the document.
+                    searchClient.refresh(reindexIdx);
                 } catch(Exception ex) {
                     logger.addMessage(Level.ERROR,
                         "An exception occurred during the re-indexation of the document.", ex);

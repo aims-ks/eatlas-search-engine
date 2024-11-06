@@ -32,13 +32,36 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     private String drupalExternalUrlField;
     private String drupalContentOverwriteField;
 
-    public static DrupalExternalLinkNodeIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
+    /**
+     * index: eatlas-ext-links
+     * drupalUrl: http://localhost:9090
+     * drupalVersion: 9.0
+     * drupalNodeType: article
+     */
+    public DrupalExternalLinkNodeIndexer(
+            HttpClient httpClient,
+            String index,
+            String indexName,
+            String drupalUrl,
+            String drupalVersion,
+            String drupalNodeType,
+            String drupalPreviewImageField,
+            String drupalExternalUrlField,
+            String drupalContentOverwriteField,
+            String drupalGeoJSONField
+    ) {
+        super(httpClient, index, indexName, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalGeoJSONField);
+        this.drupalExternalUrlField = drupalExternalUrlField;
+        this.drupalContentOverwriteField = drupalContentOverwriteField;
+    }
+
+    public static DrupalExternalLinkNodeIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalExternalLinkNodeIndexer(
-            httpClient, index,
+            httpClient, index, indexName,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
@@ -63,28 +86,6 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
     @Override
     public String getHarvestSort(boolean fullHarvest) {
         return fullHarvest ? "drupal_internal__nid" : "-changed,drupal_internal__nid";
-    }
-
-    /**
-     * index: eatlas-article
-     * drupalUrl: http://localhost:9090
-     * drupalVersion: 9.0
-     * drupalNodeType: article
-     */
-    public DrupalExternalLinkNodeIndexer(
-            HttpClient httpClient,
-            String index,
-            String drupalUrl,
-            String drupalVersion,
-            String drupalNodeType,
-            String drupalPreviewImageField,
-            String drupalExternalUrlField,
-            String drupalContentOverwriteField,
-            String drupalGeoJSONField
-    ) {
-        super(httpClient, index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalGeoJSONField);
-        this.drupalExternalUrlField = drupalExternalUrlField;
-        this.drupalContentOverwriteField = drupalContentOverwriteField;
     }
 
     @Override

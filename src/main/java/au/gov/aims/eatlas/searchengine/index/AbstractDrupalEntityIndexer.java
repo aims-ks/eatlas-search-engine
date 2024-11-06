@@ -69,6 +69,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     public AbstractDrupalEntityIndexer(
             HttpClient httpClient,
             String index,
+            String indexName,
             String drupalUrl,
             String drupalVersion,
             String drupalEntityType,
@@ -77,7 +78,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String drupalIndexedFields,
             String drupalGeoJSONField) {
 
-        super(httpClient, index);
+        super(httpClient, index, indexName);
         this.drupalUrl = drupalUrl;
         this.drupalVersion = drupalVersion;
         this.drupalEntityType = drupalEntityType;

@@ -22,6 +22,7 @@ import org.json.JSONObject;
 
 public class IndexSummary {
     private String index;
+    private String indexName;
 
     private Long hits;
 
@@ -31,6 +32,15 @@ public class IndexSummary {
 
     public IndexSummary setIndex(String index) {
         this.index = index;
+        return this;
+    }
+
+    public String getIndexName() {
+        return this.indexName;
+    }
+
+    public IndexSummary setIndexName(String indexName) {
+        this.indexName = indexName;
         return this;
     }
 
@@ -46,6 +56,7 @@ public class IndexSummary {
     public JSONObject toJSON() {
         return new JSONObject()
             .put("index", this.index)
+            .put("indexName", this.indexName)
             .put("hits", this.hits);
     }
 

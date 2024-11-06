@@ -11,13 +11,33 @@ import java.util.Map;
 
 public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock> {
 
-    public static DrupalBlockIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
+    /**
+     * index: eatlas-block
+     * drupalUrl: http://localhost:9090
+     * drupalVersion: 9.0
+     * drupalNodeType: article
+     */
+    public DrupalBlockIndexer(
+            HttpClient httpClient,
+            String index,
+            String indexName,
+            String drupalUrl,
+            String drupalVersion,
+            String drupalBlockType,
+            String drupalPreviewImageField,
+            String drupalIndexedFields,
+            String drupalGeoJSONField) {
+
+        super(httpClient, index, indexName, drupalUrl, drupalVersion, "block_content", drupalBlockType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
+    }
+
+    public static DrupalBlockIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalBlockIndexer(
-            httpClient, index,
+            httpClient, index, indexName,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalBlockType", null),
@@ -34,25 +54,6 @@ public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock>
     @Override
     public DrupalBlock load(JSONObject json, AbstractLogger logger) {
         return DrupalBlock.load(json, logger);
-    }
-
-    /**
-     * index: eatlas-article
-     * drupalUrl: http://localhost:9090
-     * drupalVersion: 9.0
-     * drupalNodeType: article
-     */
-    public DrupalBlockIndexer(
-            HttpClient httpClient,
-            String index,
-            String drupalUrl,
-            String drupalVersion,
-            String drupalBlockType,
-            String drupalPreviewImageField,
-            String drupalIndexedFields,
-            String drupalGeoJSONField) {
-
-        super(httpClient, index, drupalUrl, drupalVersion, "block_content", drupalBlockType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
     }
 
     @Override

@@ -55,13 +55,24 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
     private String geoNetworkUrl;
     private String geoNetworkVersion;
 
-    public static GeoNetworkIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
+    /**
+     * index: eatlas_metadata
+     * geoNetworkUrl: https://eatlas.org.au/geonetwork
+     * geoNetworkVersion: 3.6.0
+     */
+    public GeoNetworkIndexer(HttpClient httpClient, String index, String indexName, String geoNetworkUrl, String geoNetworkVersion) {
+        super(httpClient, index, indexName);
+        this.geoNetworkUrl = geoNetworkUrl;
+        this.geoNetworkVersion = geoNetworkVersion;
+    }
+
+    public static GeoNetworkIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new GeoNetworkIndexer(
-            httpClient, index,
+            httpClient, index, indexName,
             json.optString("geoNetworkUrl", null),
             json.optString("geoNetworkVersion", null));
     }
@@ -177,18 +188,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         }
 
         return null;
-    }
-
-
-    /**
-     * index: eatlas_metadata
-     * geoNetworkUrl: https://eatlas.org.au/geonetwork
-     * geoNetworkVersion: 3.6.0 ?
-     */
-    public GeoNetworkIndexer(HttpClient httpClient, String index, String geoNetworkUrl, String geoNetworkVersion) {
-        super(httpClient, index);
-        this.geoNetworkUrl = geoNetworkUrl;
-        this.geoNetworkVersion = geoNetworkVersion;
     }
 
     @Override

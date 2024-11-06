@@ -59,6 +59,7 @@ public abstract class AbstractIndexer<E extends Entity> {
     private HttpClient httpClient;
     private boolean enabled;
     private String index;
+    private String indexName;
     private Long thumbnailTTL; // TTL, in days
     private Long brokenThumbnailTTL; // TTL, in days
 
@@ -70,9 +71,10 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     private AbstractLogger fileLogger;
 
-    public AbstractIndexer(HttpClient httpClient, String index) {
+    public AbstractIndexer(HttpClient httpClient, String index, String indexName) {
         this.httpClient = httpClient;
         this.index = index;
+        this.indexName = indexName;
     }
 
     public void initFileLogger(String logCacheDirStr) {
@@ -189,6 +191,7 @@ public abstract class AbstractIndexer<E extends Entity> {
             .put("type", this.getType())
             .put("enabled", this.isEnabled())
             .put("index", this.index)
+            .put("indexName", this.indexName)
             .put("thumbnailTTL", this.thumbnailTTL)
             .put("brokenThumbnailTTL", this.brokenThumbnailTTL);
     }
@@ -212,36 +215,38 @@ public abstract class AbstractIndexer<E extends Entity> {
             return null;
         }
 
+        String indexName = json.optString("indexName", null);
+
         SearchEngineState searchEngineState = SearchEngineState.getInstance();
 
         AbstractIndexer<?> indexer = null;
         switch(type) {
             case "AtlasMapperIndexer":
-                indexer = AtlasMapperIndexer.fromJSON(httpClient, index, json);
+                indexer = AtlasMapperIndexer.fromJSON(httpClient, index, indexName, json);
                 break;
 
             case "DrupalNodeIndexer":
-                indexer = DrupalNodeIndexer.fromJSON(httpClient, index, json);
+                indexer = DrupalNodeIndexer.fromJSON(httpClient, index, indexName, json);
                 break;
 
             case "DrupalExternalLinkNodeIndexer":
-                indexer = DrupalExternalLinkNodeIndexer.fromJSON(httpClient, index, json);
+                indexer = DrupalExternalLinkNodeIndexer.fromJSON(httpClient, index, indexName, json);
                 break;
 
             case "DrupalBlockIndexer":
-                indexer = DrupalBlockIndexer.fromJSON(httpClient, index, json);
+                indexer = DrupalBlockIndexer.fromJSON(httpClient, index, indexName, json);
                 break;
 
             case "DrupalMediaIndexer":
-                indexer = DrupalMediaIndexer.fromJSON(httpClient, index, json);
+                indexer = DrupalMediaIndexer.fromJSON(httpClient, index, indexName, json);
                 break;
 
             case "GeoNetworkIndexer":
-                indexer = GeoNetworkIndexer.fromJSON(httpClient, index, json);
+                indexer = GeoNetworkIndexer.fromJSON(httpClient, index, indexName, json);
                 break;
 
             case "GeoNetworkCswIndexer":
-                indexer = GeoNetworkCswIndexer.fromJSON(httpClient, index, json);
+                indexer = GeoNetworkCswIndexer.fromJSON(httpClient, index, indexName, json);
                 break;
 
             default:
@@ -280,6 +285,14 @@ public abstract class AbstractIndexer<E extends Entity> {
 
     public void setIndex(String index) {
         this.index = index;
+    }
+
+    public String getIndexName() {
+        return this.indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
     }
 
     public String getType() {

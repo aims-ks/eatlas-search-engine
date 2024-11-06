@@ -29,13 +29,33 @@ import java.util.Map;
 
 public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
 
-    public static DrupalNodeIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
+    /**
+     * index: eatlas-article
+     * drupalUrl: http://localhost:9090
+     * drupalVersion: 9.0
+     * drupalNodeType: article
+     */
+    public DrupalNodeIndexer(
+            HttpClient httpClient,
+            String index,
+            String indexName,
+            String drupalUrl,
+            String drupalVersion,
+            String drupalNodeType,
+            String drupalPreviewImageField,
+            String drupalIndexedFields,
+            String drupalGeoJSONField) {
+
+        super(httpClient, index, indexName, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
+    }
+
+    public static DrupalNodeIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new DrupalNodeIndexer(
-            httpClient, index,
+            httpClient, index, indexName,
             json.optString("drupalUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
@@ -52,25 +72,6 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
     @Override
     public DrupalNode load(JSONObject json, AbstractLogger logger) {
         return DrupalNode.load(json, logger);
-    }
-
-    /**
-     * index: eatlas-article
-     * drupalUrl: http://localhost:9090
-     * drupalVersion: 9.0
-     * drupalNodeType: article
-     */
-    public DrupalNodeIndexer(
-            HttpClient httpClient,
-            String index,
-            String drupalUrl,
-            String drupalVersion,
-            String drupalNodeType,
-            String drupalPreviewImageField,
-            String drupalIndexedFields,
-            String drupalGeoJSONField) {
-
-        super(httpClient, index, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
     }
 
     @Override

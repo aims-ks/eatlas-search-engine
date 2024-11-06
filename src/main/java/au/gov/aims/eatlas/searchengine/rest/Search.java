@@ -18,6 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine.rest;
 
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.Level;
 import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
@@ -166,7 +168,7 @@ public class Search {
 
         String[] idxArray = idx.toArray(new String[0]);
 
-        Summary searchSummary = Search.searchSummary(searchClient, q, wkt, idxArray);
+        Summary searchSummary = Search.searchSummary(searchClient, q, wkt, hits, idxArray);
         results.setSummary(searchSummary);
 
         List<SearchResult> searchResults;
@@ -191,7 +193,7 @@ public class Search {
      *   result in many more search requests than one
      *   count request per index.
      */
-    public static Summary searchSummary(SearchClient searchClient, String searchText, String wkt, String ... indexes)
+    public static Summary searchSummary(SearchClient searchClient, String searchText, String wkt, int hitsPerPage, String ... indexes)
             throws IOException, ParseException {
 
         Summary summary = new Summary();
@@ -203,14 +205,24 @@ public class Search {
             if (count > 0) {
                 totalCount += count;
 
+                SearchEngineConfig config = SearchEngineConfig.getInstance();
+                AbstractIndexer<?> indexer = config == null ? null : config.getIndexer(index);
+
                 IndexSummary indexSummary = new IndexSummary()
                     .setIndex(index)
+                    .setIndexName(indexer == null ? "Unnamed" : indexer.getIndexName())
                     .setHits(count);
                 summary.putIndexSummary(indexSummary);
             }
         }
 
         summary.setHits(totalCount);
+
+        // Calculate the number of pages,
+        // by exploiting Java's integer division.
+        // It's faster and more accurate (no floating point error) than:
+        //   (long)Math.ceil((double)totalCount / hitsPerPage)
+        summary.setPages((totalCount + hitsPerPage - 1) / hitsPerPage);
 
         return summary;
     }

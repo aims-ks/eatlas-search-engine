@@ -57,13 +57,25 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private String atlasMapperVersion;
     private String baseLayerUrl;
 
-    public static AtlasMapperIndexer fromJSON(HttpClient httpClient, String index, JSONObject json) {
+    /**
+     * index: eatlas_layer
+     * atlasMapperClientUrl: https://maps.eatlas.org.au
+     * atlasMapperVersion: 2.2.0
+     */
+    public AtlasMapperIndexer(HttpClient httpClient, String index, String indexName, String atlasMapperClientUrl, String atlasMapperVersion, String baseLayerUrl) {
+        super(httpClient, index, indexName);
+        this.atlasMapperClientUrl = atlasMapperClientUrl;
+        this.atlasMapperVersion = atlasMapperVersion;
+        this.baseLayerUrl = baseLayerUrl;
+    }
+
+    public static AtlasMapperIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
 
         return new AtlasMapperIndexer(
-            httpClient, index,
+            httpClient, index, indexName,
             json.optString("atlasMapperClientUrl", null),
             json.optString("atlasMapperVersion", null),
             json.optString("baseLayerUrl", null));
@@ -174,18 +186,6 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                 this.baseLayerUrl, jsonMainConfig, layerEntity, 120000, logger);
 
         return layerEntity;
-    }
-
-    /**
-     * index: eatlas_layer
-     * atlasMapperClientUrl: https://maps.eatlas.org.au
-     * atlasMapperVersion: 2.2.0
-     */
-    public AtlasMapperIndexer(HttpClient httpClient, String index, String atlasMapperClientUrl, String atlasMapperVersion, String baseLayerUrl) {
-        super(httpClient, index);
-        this.atlasMapperClientUrl = atlasMapperClientUrl;
-        this.atlasMapperVersion = atlasMapperVersion;
-        this.baseLayerUrl = baseLayerUrl;
     }
 
     @Override
