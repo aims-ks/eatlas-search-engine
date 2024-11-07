@@ -345,7 +345,14 @@ public class Search {
             defaultSearchFields.add("document");
             defaultSearchFields.add("id");
 
-            Query textQuery = QueryBuilders.queryString()
+            // ElasticSearch QueryStringQuery class can be used for raw query.
+            // It's very powerful, but also very brittle. Any illegal usage of
+            //   a reserved character results in a syntax error:
+            //   https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#_reserved_characters
+            // The SimpleQueryStringQuery class offer a powerful syntax
+            //   that most search (such as Google) uses.
+            // It supports query characters like: ", +, |, -
+            Query textQuery = QueryBuilders.simpleQueryString()
                     .query(searchText)
                     .fields(defaultSearchFields)
                     .build()
