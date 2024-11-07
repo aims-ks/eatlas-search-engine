@@ -77,8 +77,8 @@ public class Search {
     public Response search(
             @Context HttpServletRequest httpRequest,
             @QueryParam("q") String q,
-            @QueryParam("start") Integer start,
-            @QueryParam("hits") Integer hits,
+            @QueryParam("start") Integer start, // The index of the first element (offset)
+            @QueryParam("hits") Integer hits, // Results per page
             @QueryParam("wkt") String wkt, // Well Known Text, used for GIS search
             @QueryParam("idx") List<String> idx, // List of indexes used for the summary
             @QueryParam("fidx") List<String> fidx // List of indexes to filter the search results (optional)
@@ -217,6 +217,7 @@ public class Search {
         }
 
         summary.setHits(totalCount);
+        summary.setHitsPerPage(hitsPerPage);
 
         // Calculate the number of pages,
         // by exploiting Java's integer division.
