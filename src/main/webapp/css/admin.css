@@ -549,3 +549,9 @@ button.reload {
 .content .modal-window .filters {
   margin-right: 2em;
 }
+
+/* Test search page */
+.indexer-list .indexer-id {
+  font-size: 0.8em;
+  color: #999999;
+}

@@ -137,12 +137,11 @@
                 <tr class="table-header">
                     <th>Index</th>
                     <th>Name</th>
-                    <th>Indexer</th>
+                    <th>Status</th>
                     <th>Type</th>
                     <th>Document count</th>
                     <th>Cache directory</th>
                     <th>Last indexed</th>
-                    <th>Last runtime</th>
                 </tr>
 
                 <c:forEach items="${it.config.indexers}" var="indexer" varStatus="loopStatus">
@@ -161,7 +160,6 @@
                             <span class="${imageCacheDir.canWrite() ? "ok" : "error"}">${imageCacheDir.canWrite() ? "Writable" : "Not writable"}</span>
                         </td>
                         <td class="date"><fmt:formatDate value="${indexer.state.lastIndexedDate}" pattern="dd/MM/yyyy HH:mm"/></td>
-                        <td class="number">${indexer.state.lastIndexRuntimeFormatted}</td>
                     </tr>
                 </c:forEach>
             </table>

@@ -158,8 +158,7 @@
             <table>
                 <tr class="table-header">
                     <th>Index</th>
-                    <th>Name</th>
-                    <th>Indexer</th>
+                    <th>Status</th>
                     <th>Type</th>
                     <th>Document count</th>
                     <th>Last indexed</th>
@@ -171,7 +170,6 @@
                     <c:set var="cssClass" value="${(loopStatus.index+1) % 2 == 0 ? 'even' : 'odd'} ${indexer.validate() ? 'valid' : 'invalid'}"/>
                     <tr class="${cssClass}">
                         <td><c:out value="${indexer.index}" /></td>
-                        <td><c:out value="${indexer.indexName}" /></td>
                         <td class="${indexer.enabled ? "enabled" : "disabled"}">
                             ${indexer.enabled ? "Enabled" : "Disabled"}
                         </td>
@@ -201,7 +199,7 @@
 
                             <div class="field">
                                 <label for="${indexer.index}_enabled">
-                                    <span class="label">Indexer</span>
+                                    <span class="label">Status</span>
                                     <input type="checkbox"
                                         id="${indexer.index}_enabled"
                                         name="${indexer.index}_enabled"

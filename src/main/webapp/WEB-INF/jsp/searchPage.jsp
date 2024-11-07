@@ -44,7 +44,7 @@
             </div>
 
             <h3>Indexes</h3>
-            <ul>
+            <ul class="indexer-list">
                 <c:forEach items="${it.config.getEnabledIndexers()}" var="indexer">
                     <li>
                         <label>
@@ -52,7 +52,7 @@
                                 <c:if test="${it.indexes.contains(indexer.index)}">
                                     checked="checked"
                                 </c:if>
-                            /> <strong>${indexer.indexName}</strong> (${indexer.index})
+                            /> ${indexer.indexName} <span class="indexer-id">(${indexer.index})</span>
                         </label>
                     </li>
                 </c:forEach>
