@@ -21,6 +21,7 @@
 
 package au.gov.aims.eatlas.searchengine.rest;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -33,6 +34,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
 
 /**
  * This utility class provide tools to simplify some operation related
@@ -43,6 +48,31 @@ import java.io.OutputStream;
  */
 public class ServletUtils {
     private static final Logger LOGGER = Logger.getLogger(ServletUtils.class.getName());
+
+    /**
+     * Parse PHP multi-value query parameter.
+     * There is difference between how Java and PHP handle multi-value query parameter.
+     * For example for "idx = ['article', 'metadata']"
+     *   PHP: idx[0]=article&idx[1]=metadata
+     *   Java: idx=article&idx=metadata
+     * This method look through the request parameters and try to find
+     * collection of parameters that match the PHP notation.
+     */
+    public static List<String> parsePHPMultiValueQueryParameter(HttpServletRequest request, String baseParamName) {
+        List<String> values = new ArrayList<>();
+        Enumeration<String> paramNames = request.getParameterNames();
+
+        while (paramNames.hasMoreElements()) {
+            String paramName = paramNames.nextElement();
+            if (paramName.matches(baseParamName + "\\[\\d+\\]")) {  // Regex to match idx[0], idx[1], etc.
+                String[] params = request.getParameterValues(paramName);
+                if (params != null) {
+                    values.addAll(Arrays.asList(params));
+                }
+            }
+        }
+        return values;
+    }
 
     public static void sendResponse(
             HttpServletResponse response,

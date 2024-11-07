@@ -86,6 +86,14 @@ public class Search {
         HttpSession session = httpRequest.getSession(true);
         AbstractLogger logger = SessionLogger.getInstance(session);
 
+        // Add support for PHP
+        if (idx == null || idx.isEmpty()) {
+            idx = ServletUtils.parsePHPMultiValueQueryParameter(httpRequest, "idx");
+        }
+        if (fidx == null || fidx.isEmpty()) {
+            fidx = ServletUtils.parsePHPMultiValueQueryParameter(httpRequest, "fidx");
+        }
+
         CacheControl noCache = new CacheControl();
         noCache.setNoCache(true);
 
