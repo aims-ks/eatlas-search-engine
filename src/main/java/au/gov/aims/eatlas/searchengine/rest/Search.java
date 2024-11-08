@@ -159,9 +159,7 @@ public class Search {
             List<String> fidx, // List of indexes to filter the search results (optional, default: list all search results for idx)
             AbstractLogger logger
     ) throws IOException, ParseException {
-        if (
-            idx == null || idx.isEmpty()
-        ) {
+        if (idx == null || idx.isEmpty()) {
             return null;
         }
 
@@ -174,16 +172,14 @@ public class Search {
 
         SearchResults results = new SearchResults();
 
-        String[] idxArray = idx.toArray(new String[0]);
-
-        Summary searchSummary = Search.searchSummary(searchClient, q, wkt, hits, idxArray);
+        Summary searchSummary = Search.searchSummary(searchClient, q, wkt, hits, idx, fidx);
         results.setSummary(searchSummary);
 
         List<SearchResult> searchResults;
         if (fidx != null && !fidx.isEmpty()) {
             searchResults = Search.search(searchClient, logger, q, wkt, start, hits, fidx.toArray(new String[0]));
         } else {
-            searchResults = Search.search(searchClient, logger, q, wkt, start, hits, idxArray);
+            searchResults = Search.search(searchClient, logger, q, wkt, start, hits, idx.toArray(new String[0]));
         }
 
         results.setSearchResults(searchResults);
@@ -201,17 +197,22 @@ public class Search {
      *   result in many more search requests than one
      *   count request per index.
      */
-    public static Summary searchSummary(SearchClient searchClient, String searchText, String wkt, int hitsPerPage, String ... indexes)
+    public static Summary searchSummary(SearchClient searchClient, String searchText, String wkt, int hitsPerPage, List<String> indexes, List<String> filteredIndexes)
             throws IOException, ParseException {
 
         Summary summary = new Summary();
 
+        long filteredCount = 0;
         long totalCount = 0;
         for (String index : indexes) {
             CountResponse response = searchClient.count(Search.getSearchSummaryRequest(searchText, wkt, index));
             long count = response.count();
             if (count > 0) {
                 totalCount += count;
+
+                if (filteredIndexes == null || filteredIndexes.isEmpty() || filteredIndexes.contains(index)) {
+                    filteredCount += count;
+                }
 
                 SearchEngineConfig config = SearchEngineConfig.getInstance();
                 AbstractIndexer<?> indexer = config == null ? null : config.getIndexer(index);
@@ -224,14 +225,15 @@ public class Search {
             }
         }
 
-        summary.setHits(totalCount);
+        summary.setHits(filteredCount);
+        summary.setTotalHits(totalCount);
         summary.setHitsPerPage(hitsPerPage);
 
         // Calculate the number of pages,
         // by exploiting Java's integer division.
         // It's faster and more accurate (no floating point error) than:
-        //   (long)Math.ceil((double)totalCount / hitsPerPage)
-        summary.setPages((totalCount + hitsPerPage - 1) / hitsPerPage);
+        //   (long)Math.ceil((double)filteredCount / hitsPerPage)
+        summary.setPages((filteredCount + hitsPerPage - 1) / hitsPerPage);
 
         return summary;
     }
