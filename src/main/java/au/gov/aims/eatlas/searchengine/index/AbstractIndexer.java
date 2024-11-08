@@ -571,6 +571,12 @@ public abstract class AbstractIndexer<E extends Entity> {
     // Low level
 
     public IndexRequest<E> getIndexRequest(E entity) {
+        // Remove any remaining trace of HTML from the document before indexing.
+        String document = entity.getDocument();
+        if (document.contains("<") || document.contains(">")) {
+            entity.setDocument(HttpClient.extractHTMLTextContent(document));
+        }
+
         return new IndexRequest.Builder<E>()
                 .index(this.getIndex())
                 .id(entity.getId())
