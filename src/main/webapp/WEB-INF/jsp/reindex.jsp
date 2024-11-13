@@ -36,11 +36,11 @@
             <li>Index latest every day at 1:00 am (except Sunday)</li>
         </ul>
 
-        <c:url var="harvestNewURL" value="/public/index/v1/reindex">
+        <c:url var="harvestNewURL" value="/public/index/v1/reindex-all">
             <c:param name="full" value="false" />
             <c:param name="token" value="${it.config.reindexToken}" />
         </c:url>
-        <c:url var="fullHarvestURL" value="/public/index/v1/reindex">
+        <c:url var="fullHarvestURL" value="/public/index/v1/reindex-all">
             <c:param name="full" value="true" />
             <c:param name="token" value="${it.config.reindexToken}" />
         </c:url>

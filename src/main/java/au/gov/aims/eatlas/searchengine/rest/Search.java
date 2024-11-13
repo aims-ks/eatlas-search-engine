@@ -58,7 +58,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -94,15 +93,12 @@ public class Search {
             fidx = ServletUtils.parsePHPMultiValueQueryParameter(httpRequest, "fidx");
         }
 
-        CacheControl noCache = new CacheControl();
-        noCache.setNoCache(true);
-
         if (idx == null) {
             Response.Status status = Response.Status.BAD_REQUEST;
             ErrorMessage errorMessage = new ErrorMessage()
                 .setErrorMessage("Invalid request. Missing parameter idx")
                 .setStatus(status);
-            return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
+            return Response.status(status).entity(errorMessage.toString()).cacheControl(ServletUtils.getNoCacheControl()).build();
         }
 
         SearchResults results = null;
@@ -117,7 +113,7 @@ public class Search {
             ErrorMessage errorMessage = new ErrorMessage()
                 .setErrorMessage(errorMessageStr)
                 .setStatus(status);
-            return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
+            return Response.status(status).entity(errorMessage.toString()).cacheControl(ServletUtils.getNoCacheControl()).build();
         }
 
         if (results == null) {
@@ -127,13 +123,13 @@ public class Search {
             ErrorMessage errorMessage = new ErrorMessage()
                 .setErrorMessage(errorMessageStr)
                 .setStatus(status);
-            return Response.status(status).entity(errorMessage.toString()).cacheControl(noCache).build();
+            return Response.status(status).entity(errorMessage.toString()).cacheControl(ServletUtils.getNoCacheControl()).build();
         }
 
         String responseTxt = results.toString();
 
         // Return the JSON array with an OK status.
-        return Response.ok(responseTxt).cacheControl(noCache).build();
+        return Response.ok(responseTxt).cacheControl(ServletUtils.getNoCacheControl()).build();
     }
 
     /**

@@ -23,6 +23,7 @@ package au.gov.aims.eatlas.searchengine.rest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.CacheControl;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -48,6 +49,15 @@ import java.util.List;
  */
 public class ServletUtils {
     private static final Logger LOGGER = Logger.getLogger(ServletUtils.class.getName());
+    private static final CacheControl NO_CACHE_CONTROL;
+    static {
+        NO_CACHE_CONTROL = new CacheControl();
+        NO_CACHE_CONTROL.setNoCache(true);
+    }
+
+    public static CacheControl getNoCacheControl() {
+        return NO_CACHE_CONTROL;
+    }
 
     /**
      * Parse PHP multi-value query parameter.

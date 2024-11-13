@@ -29,7 +29,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -91,12 +90,8 @@ public class ImageCache {
         try {
             byte[] responseBytes = FileUtils.readFileToByteArray(cachedFile);
 
-            // Disable cache DURING DEVELOPMENT!
-            CacheControl noCache = new CacheControl();
-            noCache.setNoCache(true);
-
-            // Return the JSON array with a OK status.
-            return Response.ok(responseBytes, contentType.toString()).cacheControl(noCache).build();
+            // Return the JSON array with an OK status.
+            return Response.ok(responseBytes, contentType.toString()).build();
         } catch(Exception ex) {
             logger.addMessage(Level.ERROR, String.format("Server error: %s", ex.getMessage()), ex);
             return Response.serverError().entity(String.format("Server error: %s", ex.getMessage())).build();
