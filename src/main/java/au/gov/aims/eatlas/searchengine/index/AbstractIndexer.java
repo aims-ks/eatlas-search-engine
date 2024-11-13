@@ -31,6 +31,7 @@ import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch._types.Conflicts;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.Result;
 import co.elastic.clients.elasticsearch._types.query_dsl.DateRangeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
@@ -38,6 +39,8 @@ import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
+import co.elastic.clients.elasticsearch.core.DeleteRequest;
+import co.elastic.clients.elasticsearch.core.DeleteResponse;
 import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
@@ -336,6 +339,11 @@ public abstract class AbstractIndexer<E extends Entity> {
         E entity = this.harvestEntity(searchClient, id, logger);
         if (entity != null) {
             indexResponse = this.indexEntity(searchClient, entity, false, logger);
+        } else {
+            // The document was not found.
+            // It might have been deleted, unpublished, etc.
+            // Delete it from the index.
+            this.deleteIndexedDocument(searchClient, id, logger);
         }
 
         return indexResponse;
@@ -483,6 +491,26 @@ public abstract class AbstractIndexer<E extends Entity> {
                     String.format("Deleted %d cached thumbnail for %s",
                     deletedThumbnails, entityDisplayName));
         }
+    }
+
+    private boolean deleteIndexedDocument(SearchClient searchClient, String documentId, AbstractLogger logger) {
+        DeleteRequest deleteRequest = new DeleteRequest.Builder()
+            .index(this.index)
+            .id(documentId)
+            .build();
+
+        try {
+            DeleteResponse response = searchClient.delete(deleteRequest);
+
+            if (response != null && Result.Deleted.equals(response.result())) {
+                return true;
+            }
+        } catch(Exception ex) {
+            logger.addMessage(Level.ERROR,
+                    String.format("Exception occurred while deleting old indexed entities in search index: %s", this.index), ex);
+        }
+
+        return false;
     }
 
     private long deleteOldIndexedItems(SearchClient searchClient, long lastIndexed, AbstractLogger logger) {

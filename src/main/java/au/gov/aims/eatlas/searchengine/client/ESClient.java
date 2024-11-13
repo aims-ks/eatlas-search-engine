@@ -36,6 +36,8 @@ import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
+import co.elastic.clients.elasticsearch.core.DeleteRequest;
+import co.elastic.clients.elasticsearch.core.DeleteResponse;
 import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
@@ -277,6 +279,11 @@ public class ESClient implements SearchClient {
     @Override
     public CountResponse count(CountRequest countRequest) throws IOException {
         return this.elasticsearchClient.count(countRequest);
+    }
+
+    @Override
+    public DeleteResponse delete(DeleteRequest deleteRequest) throws IOException {
+        return this.elasticsearchClient.delete(deleteRequest);
     }
 
     @Override

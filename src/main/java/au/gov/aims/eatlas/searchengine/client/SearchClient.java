@@ -24,6 +24,8 @@ import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
+import co.elastic.clients.elasticsearch.core.DeleteRequest;
+import co.elastic.clients.elasticsearch.core.DeleteResponse;
 import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
@@ -59,6 +61,7 @@ public interface SearchClient extends AutoCloseable {
     // Search needs to work with any Entity types
     SearchResponse<Entity> search(SearchRequest searchRequest) throws IOException;
     CountResponse count(CountRequest countRequest) throws IOException;
+    DeleteResponse delete(DeleteRequest deleteRequest) throws IOException;
     DeleteByQueryResponse deleteByQuery(DeleteByQueryRequest deleteRequest) throws IOException;
 
     RefreshResponse refresh(String ... indices) throws IOException;
