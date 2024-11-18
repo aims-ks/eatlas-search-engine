@@ -115,7 +115,7 @@ public class SearchEngineConfig {
     }
 
     public void reload(AbstractLogger logger) throws IOException {
-        this.indexers = null;
+        this.indexers = new ArrayList<>();
         this.elasticSearchUrls = null;
         if (this.configFile != null && this.configFile.canRead()) {
             // Set lastModified to config file last modified
@@ -169,7 +169,7 @@ public class SearchEngineConfig {
     }
 
     public AbstractIndexer<?> getIndexer(String index) {
-        if (index != null && this.indexers != null) {
+        if (index != null) {
             for (AbstractIndexer<?> foundIndexer : this.indexers) {
                 if (index.equals(foundIndexer.getIndex())) {
                     return foundIndexer;
@@ -180,9 +180,6 @@ public class SearchEngineConfig {
     }
 
     public void addIndexer(AbstractIndexer<?> indexer) {
-        if (this.indexers == null) {
-            this.indexers = new ArrayList<>();
-        }
         this.indexers.add(indexer);
     }
 
@@ -195,7 +192,7 @@ public class SearchEngineConfig {
     }
 
     public boolean removeIndexer(AbstractIndexer<?> indexer) throws Exception {
-        if (indexer != null && this.indexers != null) {
+        if (indexer != null) {
             SearchEngineState searchEngineState = SearchEngineState.getInstance();
             searchEngineState.removeIndexerState(indexer.getIndex());
             return this.indexers.remove(indexer);
