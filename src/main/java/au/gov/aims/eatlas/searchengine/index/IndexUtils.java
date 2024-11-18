@@ -21,7 +21,8 @@ package au.gov.aims.eatlas.searchengine.index;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 public class IndexUtils {
-    private static final Logger LOGGER = Logger.getLogger(IndexUtils.class.getName());
+    private static final Logger LOGGER = LogManager.getLogger(IndexUtils.class.getName());
 
     // JDOM tutorial:
     //     https://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm

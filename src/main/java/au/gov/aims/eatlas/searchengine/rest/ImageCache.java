@@ -35,7 +35,8 @@ import jakarta.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.entity.ContentType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.imageio.ImageIO;
 import java.awt.AlphaComposite;
@@ -56,7 +57,7 @@ import java.net.URL;
  */
 @Path("/img/v1")
 public class ImageCache {
-    private static final Logger LOGGER = Logger.getLogger(ImageCache.class.getName());
+    private static final Logger LOGGER = LogManager.getLogger(ImageCache.class.getName());
     private static final float BASE_LAYER_ALPHA = 0.4f;
     private static final String DEFAULT_IMAGE_CACHE_DIR = "/tmp/eatlas-search-engine-cache";
     private static File imageCacheDir = null;

@@ -27,12 +27,13 @@ import au.gov.aims.eatlas.searchengine.client.SearchUtils;
 import au.gov.aims.eatlas.searchengine.rest.PublicWebApplication;
 import jakarta.servlet.ServletContext;
 import jakarta.ws.rs.core.Context;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.jsp.JspMvcFeature;
 
 public class PrivateWebApplication extends ResourceConfig {
-    private static final Logger LOGGER = Logger.getLogger(PublicWebApplication.class.getName());
+    private static final Logger LOGGER = LogManager.getLogger(PrivateWebApplication.class.getName());
 
     public PrivateWebApplication(@Context ServletContext servletContext) {
         HttpClient httpCLient = HttpClient.getInstance();

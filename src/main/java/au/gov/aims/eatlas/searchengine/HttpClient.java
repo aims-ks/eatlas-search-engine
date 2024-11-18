@@ -5,7 +5,8 @@ import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.Consts;
 import org.apache.http.entity.ContentType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -29,7 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.Locale;
 
 public class HttpClient {
-    private static final Logger LOGGER = Logger.getLogger(HttpClient.class.getName());
+    private static final Logger LOGGER = LogManager.getLogger(HttpClient.class.getName());
 
     private static final int JSOUP_RETRY = 2;//5;
     // NOTE: The delay is incremental: 5, 10, 20, 40, 80...

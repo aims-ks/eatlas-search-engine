@@ -28,7 +28,8 @@ import au.gov.aims.eatlas.searchengine.logger.Level;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -36,7 +37,6 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
-    private static final Logger LOGGER = Logger.getLogger(GeoNetworkCswIndexer.class.getName());
+    private static final Logger LOGGER = LogManager.getLogger(GeoNetworkCswIndexer.class.getName());
     private static final int THREAD_POOL_SIZE = 10;
 
     private String geoNetworkUrl;

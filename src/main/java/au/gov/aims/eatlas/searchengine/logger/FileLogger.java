@@ -1,7 +1,8 @@
 package au.gov.aims.eatlas.searchengine.logger;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -9,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class FileLogger extends AbstractLogger {
-    private static final Logger LOGGER = Logger.getLogger(FileLogger.class.getName());
+    private static final Logger LOGGER = LogManager.getLogger(FileLogger.class.getName());
 
     private final File messagesFile;
 

@@ -1,9 +1,10 @@
 package au.gov.aims.eatlas.searchengine.logger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 public class ConsoleLogger extends AbstractLogger {
-    private static final Logger LOGGER = Logger.getLogger(ConsoleLogger.class.getName());
+    private static final Logger LOGGER = LogManager.getLogger(ConsoleLogger.class.getName());
     private static final ConsoleLogger instance = new ConsoleLogger();
 
     private ConsoleLogger() { }
