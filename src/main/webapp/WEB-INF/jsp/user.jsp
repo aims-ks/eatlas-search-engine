@@ -27,7 +27,7 @@
                         name="username"
                         data-lpignore="true"
                         required="required"
-                        value="<c:out value="${it.config.user.username}" />" />
+                        value="<c:out value="${it.privateConfig.user.username}" />" />
                 </label>
 
                 <div class="desc">Admin username.</div>
@@ -65,7 +65,7 @@
                         id="first-name"
                         name="first-name"
                         data-lpignore="true"
-                        value="<c:out value="${it.config.user.firstName}" />" />
+                        value="<c:out value="${it.privateConfig.user.firstName}" />" />
                 </label>
 
                 <div class="desc">User's first name. Displayed in the admin interface.</div>
@@ -78,7 +78,7 @@
                         id="last-name"
                         name="last-name"
                         data-lpignore="true"
-                        value="<c:out value="${it.config.user.lastName}" />" />
+                        value="<c:out value="${it.privateConfig.user.lastName}" />" />
                 </label>
 
                 <div class="desc">User's last name. Displayed in the admin interface.</div>
@@ -91,7 +91,7 @@
                         id="email"
                         name="email"
                         data-lpignore="true"
-                        value="<c:out value="${it.config.user.email}" />" />
+                        value="<c:out value="${it.privateConfig.user.email}" />" />
                 </label>
 
                 <div class="desc">User's email address. This attribute is currently unused.</div>

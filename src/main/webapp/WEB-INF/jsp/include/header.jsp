@@ -4,7 +4,7 @@
         <h1>eAtlas Search Engine - ${it.title}</h1>
         <nav>
             <ul class="user-menu">
-                <li><a href="<c:url value="/admin/user" />">${it.config.user.display()}</a></li>
+                <li><a href="<c:url value="/admin/user" />">${it.privateConfig.user.display()}</a></li>
                 <li><a href="<c:url value="/public/logout" />">Logout</a></li>
             </ul>
         </nav>

@@ -47,7 +47,7 @@ public class SecureFilter implements Filter {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
 
         User loggedUser = null;
 
@@ -55,7 +55,7 @@ public class SecureFilter implements Filter {
         if (session != null) {
             String loggedUsername = (String)session.getAttribute(LoginPage.LOGGED_USER_KEY);
             if (loggedUsername != null && !loggedUsername.isEmpty()) {
-                User user = config.getUser();
+                User user = privateConfig.getUser();
                 if (user != null && loggedUsername.equals(user.getUsername())) {
                     loggedUser = user;
                 }

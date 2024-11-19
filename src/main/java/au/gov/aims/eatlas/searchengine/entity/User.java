@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
@@ -71,7 +71,7 @@ public class User {
 
     public void setSalt(String salt) {
         if (salt == null) {
-            this.salt = SearchEngineConfig.generateRandomToken(RANDOM_SALT_LENGTH);
+            this.salt = SearchEnginePrivateConfig.generateRandomToken(RANDOM_SALT_LENGTH);
             this.modified = true;
         } else {
             this.salt = salt;

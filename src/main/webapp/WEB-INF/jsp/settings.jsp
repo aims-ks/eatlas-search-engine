@@ -119,20 +119,20 @@
 
             <div class="field">
                 <label for="reindexToken">
-                    <span class="label required">Reindex token</span>
+                    <span class="label">Reindex token</span>
                     <input type="text"
                         id="reindexToken"
                         name="reindexToken"
                         data-lpignore="true"
-                        required="required"
-                        value="<c:out value="${it.config.reindexToken}" />" />
+                        value="<c:out value="${it.privateConfig.reindexToken}" />"
+                        readonly="readonly" />
                 </label>
                 <div class="desc">Token used to call the re-indexation API from the cron.</div>
                 <div class="desc">
                     Test re-indexation URL:
                     <code>${baseURL}<c:url value="/public/index/v1/reindex">
                         <c:param name="full" value="false" />
-                        <c:param name="token" value="${it.config.reindexToken}" />
+                        <c:param name="token" value="${it.privateConfig.reindexToken}" />
                     </c:url></code>
                 </div>
             </div>
@@ -827,13 +827,6 @@
         <div class="box">
             <div class="submit">
                 <button class="save" name="save-button" value="save" title="save">Save</button>
-
-                <%--
-                    TODO Trigger a modal dialog asking for a commit message (buttons: [Cancel], [Commit]).
-                        If [Commit] is pressed, config is saved and committed.
-                        If [Cancel] is pressed, changes are not saved (Warning message saying "Changes not saved").
-                --%>
-                <button class="commit" name="commit-button" value="commit" title="commit">Commit to GitHub</button>
             </div>
         </div>
 

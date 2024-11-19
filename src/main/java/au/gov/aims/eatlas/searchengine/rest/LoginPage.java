@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.logger.Level;
 import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
@@ -111,7 +112,7 @@ public class LoginPage {
     }
 
     private User authenticate(String username, String password, AbstractLogger logger) {
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
 
         boolean formFilled = true;
         if (username == null || username.isEmpty()) {
@@ -128,7 +129,7 @@ public class LoginPage {
         }
 
         // There is only one user.
-        User user = config.getUser();
+        User user = privateConfig.getUser();
 
         // Hide "verifyPassword" messages. We do NOT want to give any clues to the user attempting to login.
         AbstractLogger hiddenLogger = ConsoleLogger.getInstance();

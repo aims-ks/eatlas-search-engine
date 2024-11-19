@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineState;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.ElasticSearchStatus;
@@ -59,6 +60,7 @@ public class Dashboard {
         AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
         SearchEngineState state = SearchEngineState.getInstance();
 
         Map<String, Object> model = new HashMap<>();
@@ -66,6 +68,7 @@ public class Dashboard {
         model.put("dashboardActive", "active");
         model.put("logger", logger);
         model.put("config", config);
+        model.put("privateConfig", privateConfig);
 
         try {
             SearchClient searchClient = ESClient.getInstance();
@@ -133,8 +136,10 @@ public class Dashboard {
 
     private void reloadConfigFile(AbstractLogger logger) {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
         try {
             config.reload(logger);
+            privateConfig.reload(logger);
             logger.addMessage(Level.INFO,
                     String.format("Application configuration file reloaded: %s", config.getConfigFile()));
         } catch (Exception ex) {

@@ -18,7 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
-import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.entity.User;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.Level;
@@ -49,13 +49,13 @@ public class UserPage {
         HttpSession session = httpRequest.getSession(true);
         AbstractLogger logger = SessionLogger.getInstance(session);
 
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
         model.put("title", "User");
         model.put("userActive", "active");
         model.put("logger", logger);
-        model.put("config", config);
+        model.put("privateConfig", privateConfig);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/user.jsp
         return new Viewable("/user", model);
@@ -77,8 +77,8 @@ public class UserPage {
     }
 
     private void save(MultivaluedMap<String, String> form, AbstractLogger logger) {
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
-        User user = config.getUser();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
+        User user = privateConfig.getUser();
 
         if (user == null) {
             // This should not happen
@@ -112,7 +112,7 @@ public class UserPage {
                 "Form validation failed.");
         } else {
             try {
-                config.save();
+                privateConfig.save();
                 if (passwordChanged) {
                     logger.addMessage(Level.INFO, "Password successfully changed.");
                 }

@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
@@ -60,12 +61,14 @@ public class SearchPage {
         AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
         model.put("title", "Search");
         model.put("searchActive", "active");
         model.put("logger", logger);
         model.put("config", config);
+        model.put("privateConfig", privateConfig);
 
         try {
             SearchClient searchClient = ESClient.getInstance();

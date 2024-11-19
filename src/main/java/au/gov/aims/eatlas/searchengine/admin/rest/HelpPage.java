@@ -1,6 +1,7 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,12 +28,14 @@ public class HelpPage {
         AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
         model.put("title", "Help");
         model.put("helpActive", "active");
         model.put("logger", logger);
         model.put("config", config);
+        model.put("privateConfig", privateConfig);
 
         String elasticSearchUrl = "http://localhost:9200";
         /*

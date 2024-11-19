@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
@@ -272,8 +273,8 @@ public class Index {
 
 
     private Response getCheckTokenResponse(String token) {
-        SearchEngineConfig config = SearchEngineConfig.getInstance();
-        String expectedToken = config.getReindexToken();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
+        String expectedToken = privateConfig.getReindexToken();
 
         if (expectedToken == null || expectedToken.isEmpty()) {
             JSONObject jsonStatus = new JSONObject()

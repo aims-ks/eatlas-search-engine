@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
@@ -56,12 +57,14 @@ public class ReindexPage {
         HttpSession session = httpRequest.getSession(true);
         AbstractLogger logger = SessionLogger.getInstance(session);
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
         model.put("title", "Re-indexation");
         model.put("reindexActive", "active");
         model.put("logger", logger);
         model.put("config", config);
+        model.put("privateConfig", privateConfig);
 
         Object index = httpRequest.getAttribute("index");
         if (index != null) {

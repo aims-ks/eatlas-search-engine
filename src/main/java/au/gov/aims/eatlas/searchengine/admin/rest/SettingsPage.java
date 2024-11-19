@@ -20,6 +20,7 @@ package au.gov.aims.eatlas.searchengine.admin.rest;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
+import au.gov.aims.eatlas.searchengine.admin.SearchEnginePrivateConfig;
 import au.gov.aims.eatlas.searchengine.client.ESClient;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.client.SearchUtils;
@@ -62,12 +63,14 @@ public class SettingsPage {
         AbstractLogger logger = SessionLogger.getInstance(session);
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
+        SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
 
         Map<String, Object> model = new HashMap<>();
         model.put("title", "Settings");
         model.put("settingsActive", "active");
         model.put("logger", logger);
         model.put("config", config);
+        model.put("privateConfig", privateConfig);
 
         // Load the template: src/main/webapp/WEB-INF/jsp/settings.jsp
         return new Viewable("/settings", model);
@@ -95,8 +98,6 @@ public class SettingsPage {
             SearchClient searchClient = ESClient.getInstance();
             if (form.containsKey("save-button")) {
                 this.save(form, logger);
-            } else if (form.containsKey("commit-button")) {
-                this.commit(form, logger);
             } else if (form.containsKey("add-index-button")) {
                 this.addIndex(searchClient, httpClient, form, logger);
             } else if (form.containsKey("delete-button")) {
@@ -177,7 +178,6 @@ public class SettingsPage {
         config.setGlobalThumbnailTTL(FormUtils.getFormLongValue(form, "globalThumbnailTTL"));
         config.setGlobalBrokenThumbnailTTL(FormUtils.getFormLongValue(form, "globalBrokenThumbnailTTL"));
         config.setElasticSearchUrls(FormUtils.getFormStringValues(form, "elasticSearchUrl"));
-        config.setReindexToken(FormUtils.getFormStringValue(form, "reindexToken"));
         config.setSearchEngineBaseUrl(FormUtils.getFormStringValue(form, "searchEngineBaseUrl"));
 
         boolean valid = true;
@@ -293,12 +293,5 @@ public class SettingsPage {
                     "An exception occurred while saving the search engine settings.", ex);
             }
         }
-    }
-
-    private void commit(MultivaluedMap<String, String> form, AbstractLogger logger) {
-        // TODO Implement
-
-        logger.addMessage(Level.ERROR,
-            "Not implemented.");
     }
 }

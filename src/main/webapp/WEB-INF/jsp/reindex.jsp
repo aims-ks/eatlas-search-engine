@@ -38,11 +38,11 @@
 
         <c:url var="harvestNewURL" value="/public/index/v1/reindex-all">
             <c:param name="full" value="false" />
-            <c:param name="token" value="${it.config.reindexToken}" />
+            <c:param name="token" value="${it.privateConfig.reindexToken}" />
         </c:url>
         <c:url var="fullHarvestURL" value="/public/index/v1/reindex-all">
             <c:param name="full" value="true" />
-            <c:param name="token" value="${it.config.reindexToken}" />
+            <c:param name="token" value="${it.privateConfig.reindexToken}" />
         </c:url>
 
         <pre>
