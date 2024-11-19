@@ -1,3 +1,29 @@
+# eAtlas Search Engine
+The eAtlas Search Engine project provides a configuration interface and functionality to set up and use ElasticSearch
+with the eAtlas website.
+
+## How to integrate the search engine into the eAtlas
+To integrate the search engine into the eAtlas setup, we will build and tag a Docker image and push it to AWS ECR:
+
+```shell
+# build docker image
+docker build --no-cache -t eatlas/eatlas-search-engine:<VERSION> .
+
+# tag for ECR
+docker tag eatlas/eatlas-search-engine:<VERSION> <AWS_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com/eatlas/eatlas-search-engine:<VERSION>
+
+# push to ECR
+aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com
+docker push <AWS_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com/eatlas/eatlas-search-engine:<VERSION>
+```
+
+
+
+
+---  
+  
+In the following is the previous readme content which needs to be reviewed and updated:  
+
 ## What is the eAtlasSearchEngine
 
 http://localhost:8085/eatlas-search-engine/public/login
