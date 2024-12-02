@@ -18,10 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.*;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
-import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.AbstractParser;
-import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.ISO19115_3_2018_parser;
-import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.ISO19139_parser;
 import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -33,15 +31,17 @@ public class GeoNetworkRecord extends Entity {
     private String parentUUID;
     // TODO Get from index after the harvest, if we decide that it's needed
     private String parentTitle;
+    
+    private GeoNetworkParserFactory geoNetworkParserFactory;
 
     private GeoNetworkRecord() {}
 
     // geoNetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
-    public GeoNetworkRecord(String index, String metadataRecordUUID, String metadataSchema, String geonetworkVersion) {
+    public GeoNetworkRecord(String index, String metadataRecordUUID, String metadataSchema, String geoNetworkVersion) {
         this.setIndex(index);
         this.metadataSchema = metadataSchema;
-        this.geoNetworkVersion = geonetworkVersion;
+        this.geoNetworkVersion = geoNetworkVersion;
 
         if (metadataRecordUUID != null) {
             metadataRecordUUID = metadataRecordUUID.trim();
@@ -53,6 +53,8 @@ public class GeoNetworkRecord extends Entity {
         if (metadataRecordUUID != null) {
             this.setId(metadataRecordUUID);
         }
+
+        this.geoNetworkParserFactory = new DefaultGeoNetworkParserFactory();
     }
 
     public void parseRecord(String geoNetworkUrlStr, Document xmlMetadataRecord, AbstractLogger logger) {
@@ -67,36 +69,29 @@ public class GeoNetworkRecord extends Entity {
             logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has no metadata record.", metadataRecordUUID));
             return;
         }
-
-        // Fix the document, if needed
-        xmlMetadataRecord.getDocumentElement().normalize();
+        
+        // Get the XML root element
         Element root = xmlMetadataRecord.getDocumentElement();
         if (root == null) {
             logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has no root in its metadata document.", metadataRecordUUID));
             return;
         }
+        // Fix the document, if needed
+        root.normalize();
+        
+        AbstractParser parser = this.geoNetworkParserFactory.getParser(this.metadataSchema);
 
-        AbstractParser parser = null;
-        switch(this.metadataSchema) {
-            case "iso19139":
-            case "iso19139.anzlic":
-            case "iso19139.mcp":
-            case "iso19139.mcp-1.4":
-                parser = new ISO19139_parser();
-                break;
-
-            case "iso19115-3.2018":
-                parser = new ISO19115_3_2018_parser();
-                break;
-
-            default:
-                logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has unsupported schema %s", metadataRecordUUID, metadataSchema));
-                break;
+        if (parser == null) {
+            logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has unsupported schema %s", metadataRecordUUID, metadataSchema));
+            return;
         }
 
-        if (parser != null) {
-            parser.parseRecord(this, geoNetworkUrlStr, root, logger);
-        }
+        // Delegate the parsing task
+        parser.parseRecord(this, geoNetworkUrlStr, root, logger);
+    }
+
+    public void setMetadataSchema(String metadataSchema) {
+        this.metadataSchema = metadataSchema;
     }
 
     public String getMetadataSchema() {
@@ -121,6 +116,10 @@ public class GeoNetworkRecord extends Entity {
 
     public void setParentTitle(String parentTitle) {
         this.parentTitle = parentTitle;
+    }
+
+    public void setGeoNetworkParserFactory(GeoNetworkParserFactory geoNetworkParserFactory) {
+        this.geoNetworkParserFactory = geoNetworkParserFactory;
     }
 
     // Add the parent title at the end of the document

@@ -33,9 +33,7 @@ import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
-import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
-import co.elastic.clients.elasticsearch._types.Script;
-import co.elastic.clients.elasticsearch._types.ScriptLanguage;
+import co.elastic.clients.elasticsearch._types.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScore;
 import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScoreQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.GeoShapeFieldQuery;
@@ -79,6 +77,7 @@ public class Search {
             @QueryParam("start") Integer start, // The index of the first element (offset)
             @QueryParam("hits") Integer hits, // Results per page
             @QueryParam("wkt") String wkt, // Well Known Text, used for GIS search
+            @QueryParam("sorts") List<String> sorts, // Sort fields and their order 
             @QueryParam("idx") List<String> idx, // List of indexes used for the summary
             @QueryParam("fidx") List<String> fidx // List of indexes to filter the search results (optional)
     ) {
@@ -92,19 +91,40 @@ public class Search {
         if (fidx == null || fidx.isEmpty()) {
             fidx = ServletUtils.parsePHPMultiValueQueryParameter(httpRequest, "fidx");
         }
+        if (sorts == null || sorts.isEmpty()) {
+            sorts = ServletUtils.parsePHPMultiValueQueryParameter(httpRequest, "sorts");
+        }
 
-        if (idx == null) {
+        if (idx.isEmpty()) {
             Response.Status status = Response.Status.BAD_REQUEST;
             ErrorMessage errorMessage = new ErrorMessage()
                 .setErrorMessage("Invalid request. Missing parameter idx")
                 .setStatus(status);
             return Response.status(status).entity(errorMessage.toString()).cacheControl(ServletUtils.getNoCacheControl()).build();
         }
+        
+        List<SortOptions> sortOptionsList = new ArrayList<>();
+        // Process each string
+        for (String sortCriteria : sorts) {
+            String[] parts = sortCriteria.split(":");
+            if (parts.length == 2) {
+                String field = parts[0];
+                String order = parts[1];
+
+                // Determine sort order
+                SortOrder sortOrder = "DESC".equalsIgnoreCase(order) ? SortOrder.Desc : SortOrder.Asc;
+
+                // Create SortOptions and add to the list
+                SortOptions sortOption = SortOptions.of(so -> so.field(f -> f.field(field).order(sortOrder)));
+                sortOptionsList.add(sortOption);
+            }
+        }
+        
 
         SearchResults results = null;
         try {
             SearchClient searchClient = ESClient.getInstance();
-            results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, fidx, logger);
+            results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, fidx, logger);
 
         } catch(Exception ex) {
             String errorMessageStr = String.format("An exception occurred during the search: %s", ex.getMessage());
@@ -151,8 +171,9 @@ public class Search {
             Integer start,
             Integer hits,
             String wkt,
-            List<String> idx,  // List of indexes used for the summary
-            List<String> fidx, // List of indexes to filter the search results (optional, default: list all search results for idx)
+            List<SortOptions> sortOptionsList,  // List of sort fields
+            List<String> idx,    // List of indexes used for the summary
+            List<String> fidx,   // List of indexes to filter the search results (optional, default: list all search results for idx)
             AbstractLogger logger
     ) throws IOException, ParseException {
         if (idx == null || idx.isEmpty()) {
@@ -173,9 +194,9 @@ public class Search {
 
         List<SearchResult> searchResults;
         if (fidx != null && !fidx.isEmpty()) {
-            searchResults = Search.search(searchClient, logger, q, wkt, start, hits, fidx.toArray(new String[0]));
+            searchResults = Search.search(searchClient, logger, q, wkt, sortOptionsList, start, hits, fidx.toArray(new String[0]));
         } else {
-            searchResults = Search.search(searchClient, logger, q, wkt, start, hits, idx.toArray(new String[0]));
+            searchResults = Search.search(searchClient, logger, q, wkt, sortOptionsList, start, hits, idx.toArray(new String[0]));
         }
 
         results.setSearchResults(searchResults);
@@ -269,10 +290,13 @@ public class Search {
      *
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
-    public static List<SearchResult> search(SearchClient searchClient, AbstractLogger logger, String searchText, String wkt, int from, int size, String ... indexes)
+    public static List<SearchResult> search(SearchClient searchClient, AbstractLogger logger, String searchText, 
+                                            String wkt, List<SortOptions> sortOptionsList, int from, int size, 
+                                            String ... indexes)
             throws IOException, ParseException {
 
-        SearchResponse<Entity> response = searchClient.search(Search.getSearchRequest(searchText, wkt, from, size, indexes));
+        SearchResponse<Entity> response = searchClient.search(
+                Search.getSearchRequest(searchText, wkt, sortOptionsList, from, size, indexes));
 
         //LOGGER.debug(String.format("Search response for \"%s\" in \"%s\", indexes %s:%n%s",
         //    searchText, attribute, Arrays.toString(indexes), response.toString()));
@@ -304,7 +328,8 @@ public class Search {
      * Search in "document" and "title".
      * The title have a 2x ranking boost.
      */
-    public static SearchRequest getSearchRequest(String searchText, String wkt, int from, int size, String ... indexes) throws ParseException {
+    public static SearchRequest getSearchRequest(String searchText, String wkt, List<SortOptions> sortOptionsList,
+                                                 int from, int size, String ... indexes) throws ParseException {
         // Used to highlight search results in the field that was used with the search
         Highlight.Builder highlightBuilder = new Highlight.Builder()
                 .preTags("<strong class=\"search-highlight\">")
@@ -316,6 +341,7 @@ public class Search {
                 .from(from) // Used to continue the search (get next page)
                 .size(size) // Number of results to return. Default = 10
                 .highlight(highlightBuilder.build())
+                .sort(sortOptionsList)
                 .index(List.of(indexes))
                 .ignoreUnavailable(true)
                 .allowNoIndices(true)

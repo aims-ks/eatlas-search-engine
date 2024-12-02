@@ -13,6 +13,7 @@ import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.elasticsearch._types.Result;
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -226,9 +228,9 @@ public class IndexerTest extends IndexerTestBase {
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index, "metadata");
                 List<String> fidx = List.of(index);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
 
-
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, fidx, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 

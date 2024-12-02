@@ -33,6 +33,7 @@ import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -98,8 +99,9 @@ public class Main {
             //idx.add("eatlas_layer");
 
             String wkt = null;
+            List<SortOptions> sortOptionsList = new ArrayList<>();
 
-            SearchResults results = Search.paginationSearch(searchClient, searchQuery, 0, 100, wkt, idx, null, logger);
+            SearchResults results = Search.paginationSearch(searchClient, searchQuery, 0, 100, wkt, sortOptionsList, idx, null, logger);
             System.out.println(results.toJSON().toString(2));
         } catch (Exception ex) {
             System.err.println(

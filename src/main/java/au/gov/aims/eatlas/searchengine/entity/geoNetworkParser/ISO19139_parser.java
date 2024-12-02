@@ -33,6 +33,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +72,15 @@ public class ISO19139_parser extends AbstractParser {
         Element dataCiCitation = IndexUtils.getXMLChild(dataCitation, "gmd:CI_Citation");
         record.setTitle(IndexUtils.parseCharacterString(IndexUtils.getXMLChild(dataCiCitation, "gmd:title")));
 
+        // PublishedOn date. Use publication date if available. If not use creation date from citation block. If none is
+        // available, use system metadata creation date
+        LocalDate publishedOnDate = this.parsePublicationDate(dataCiCitation);
+        if (publishedOnDate != null) {
+            record.setPublishedOn(publishedOnDate);
+        } else {
+            record.setPublishedOn(this.parseMetadataTimestamp(rootElement));
+        }
+        
         String dataAbstract = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdDataIdentification, "gmd:abstract"));
 
         // Point of contact in MD_DataIdentification
@@ -279,6 +291,77 @@ public class ISO19139_parser extends AbstractParser {
         }
 
         record.setLink(metadataRecordUrl);
+    }
+
+    private LocalDate parsePublicationDate(Element dataCiCitation) {
+        List<Element> dataCiCitationDates = IndexUtils.getXMLChildren(dataCiCitation, "gmd:date");
+        LocalDate publicationDate = null;
+        LocalDate creationDate = null;
+
+        // Process cit:date elements
+        for (Element ciDate : dataCiCitationDates) {
+            Element gmdCiDate = IndexUtils.getXMLChild(ciDate, "gmd:CI_Date");
+            Element gmdDateType = IndexUtils.getXMLChild(gmdCiDate, "gmd:dateType");
+            Element gmdCiDateTypeCode = IndexUtils.getXMLChild(gmdDateType, "gmd:CI_DateTypeCode");
+
+            String dateType = IndexUtils.parseAttribute(gmdCiDateTypeCode, "codeListValue");
+
+            if (dateType != null && (dateType.equals("publication") || dateType.equals("creation"))) {
+                Element gmdDate = IndexUtils.getXMLChild(gmdCiDate, "gmd:date");
+                LocalDate parsedDate = this.parseGmdDateElement(gmdDate);
+
+                if (parsedDate != null) {
+                    if (dateType.equals("publication") && publicationDate == null) {
+                        publicationDate = parsedDate;
+                    } else if (dateType.equals("creation") && creationDate == null) {
+                        creationDate = parsedDate;
+                    }
+                }
+            }
+        }
+
+        // Return the final date, prioritizing publication, then creation date. Creation date can be null.
+        if (publicationDate != null) {
+            return publicationDate;
+        } else {
+            return creationDate;
+        }
+    }
+
+    private LocalDate parseGmdDateElement(Element gmdDate) {
+        // Try to parse `gco:DateTime` or `gco:Date`
+        Element gcoDateTime = IndexUtils.getXMLChild(gmdDate, "gco:DateTime");
+        Element gcoDate = IndexUtils.getXMLChild(gmdDate, "gco:Date");
+
+        String dateContent = (gcoDateTime != null)
+                ? gcoDateTime.getTextContent()
+                : (gcoDate != null) ? gcoDate.getTextContent() : null;
+
+        if (dateContent == null || dateContent.trim().isEmpty() || dateContent.contains("Invalid Date")) {
+            return null; // Handle empty or null dates
+        }
+
+        // Try parsing with different known formats
+        DateTimeFormatter[] formatters = {
+                DateTimeFormatter.ISO_DATE_TIME, // Handles full ISO date-time
+                DateTimeFormatter.ISO_DATE       // Handles simple ISO date
+        };
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDate.parse(dateContent, formatter);
+            } catch (DateTimeParseException ignored) {
+                // Continue trying other formats
+            }
+        }
+
+        return null; // Return null if no formats match
+    }
+
+    private LocalDate parseMetadataTimestamp(Element rootElement) {
+        Element gmdDateStamp = IndexUtils.getXMLChild(rootElement, "gmd:dateStamp");
+
+        return this.parseGmdDateElement(gmdDateStamp);
     }
 
     // Parse a "gmd:CI_ResponsibleParty" node

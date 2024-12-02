@@ -5,12 +5,16 @@ import au.gov.aims.eatlas.searchengine.logger.ConsoleLogger;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.IndexSummary;
+import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -60,8 +64,11 @@ public class GeoNetworkIndexerTest extends IndexerTestBase {
                 Integer hits = 50;
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
+                SortOptions sortOption = SortOptions.of(so -> so.field(f -> f.field("publishedOn").order(SortOrder.Desc)));
+                sortOptionsList.add(sortOption);
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -79,6 +86,10 @@ public class GeoNetworkIndexerTest extends IndexerTestBase {
 
                 Assertions.assertEquals(6, searchSummary.getHits(),
                         "Wrong total number of search result in the index summary.");
+                
+                List<SearchResult> searchResultList = results.getSearchResults();
+                Assertions.assertEquals("a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068", searchResultList.get(0).getId(),
+                        "Wrong order of search results.");
 
             } catch(Exception ex) {
                 Assertions.fail("Exception thrown while testing the Search API.", ex);

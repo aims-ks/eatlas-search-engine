@@ -24,6 +24,8 @@ import au.gov.aims.eatlas.searchengine.index.WktUtils;
 import au.gov.aims.eatlas.searchengine.logger.Level;
 import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Geometry;
@@ -31,6 +33,7 @@ import org.locationtech.jts.io.ParseException;
 
 import java.io.File;
 import java.net.URL;
+import java.time.LocalDate;
 
 /*
  * Use Jackson to serialise / deserialise the Entities.
@@ -64,6 +67,10 @@ public abstract class Entity {
     private String wkt;
     private Double wktArea;
     private Bbox wktBbox;
+
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate publishedOn;
 
     // Search result thumbnail image
     // If there is a cachedThumbnailFilename, call /public/img/v1/{index}/{filename} to get the image.
@@ -129,6 +136,14 @@ public abstract class Entity {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public LocalDate getPublishedOn() {
+        return publishedOn;
+    }
+
+    public void setPublishedOn(LocalDate publishedOn) {
+        this.publishedOn = publishedOn;
     }
 
     public String getDocument() {
@@ -348,6 +363,7 @@ public abstract class Entity {
             .put("index", this.getIndex())
             .put("lastIndexed", this.getLastIndexed())
             .put("lastModified", this.getLastModified())
+            .put("publishedOn", this.getPublishedOn())
             .put("thumbnailLastIndexed", this.getThumbnailLastIndexed())
             .put("type", this.getClass().getSimpleName())
             .put("link", linkUrl == null ? null : linkUrl.toString())
@@ -391,6 +407,11 @@ public abstract class Entity {
             String lastModifiedStr = json.optString("lastModified", null);
             if (lastModifiedStr != null) {
                 this.setLastModified(Long.parseLong(lastModifiedStr));
+            }
+
+            String publishedOnStr = json.optString("publishedOn", null);
+            if (publishedOnStr != null) {
+                this.setPublishedOn(LocalDate.parse(publishedOnStr));
             }
 
             String thumbnailLastIndexedStr = json.optString("thumbnailLastIndexed", null);

@@ -90,7 +90,7 @@
                   <cit:onlineResource>
                     <cit:CI_OnlineResource>
                       <cit:linkage>
-                        <gco:CharacterString>https://domain.com</gco:CharacterString>
+                        <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
                       </cit:linkage>
                       <cit:protocol>
                         <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
@@ -141,7 +141,7 @@
   <mdb:metadataLinkage>
     <cit:CI_OnlineResource>
       <cit:linkage>
-        <gco:CharacterString>https://domain.com/data/uuid/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068</gco:CharacterString>
+        <gco:CharacterString>https://eatlas.org.au/data/uuid/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068</gco:CharacterString>
       </cit:linkage>
       <cit:protocol>
         <gco:CharacterString>WWW:LINK-1.0-http--metadata-URL</gco:CharacterString>
@@ -158,16 +158,6 @@
           <cit:title>
             <gco:CharacterString>Effects of climate change and light limitation on Acropora millepora coral recruits (NESP 5.2, AIMS, JCU and AIMS@JCU)</gco:CharacterString>
           </cit:title>
-          <cit:date>
-            <cit:CI_Date>
-              <cit:date>
-                <gco:DateTime>2024-03-23</gco:DateTime>
-              </cit:date>
-              <cit:dateType>
-                <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#CI_DateTypeCode" codeListValue="publication" />
-              </cit:dateType>
-            </cit:CI_Date>
-          </cit:date>
           <cit:citedResponsibleParty>
             <cit:CI_Responsibility>
               <cit:role>
@@ -645,7 +635,7 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
                       <cit:onlineResource>
                         <cit:CI_OnlineResource>
                           <cit:linkage>
-                            <gco:CharacterString>https://domain.com</gco:CharacterString>
+                            <gco:CharacterString>https://eatlas.org.au</gco:CharacterString>
                           </cit:linkage>
                           <cit:protocol>
                             <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
@@ -741,7 +731,7 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
       <mri:graphicOverview>
         <mcc:MD_BrowseGraphic>
           <mcc:fileName>
-            <gco:CharacterString>https://domain.com/geonetwork/srv/api/records/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068/attachments/preview-image-recruits-on-disks.jpg</gco:CharacterString>
+            <gco:CharacterString>https://eatlas.org.au/geonetwork/srv/api/records/a2a8f9c0-d7bc-4fae-b9b1-ccebfa642068/attachments/preview-image-recruits-on-disks.jpg</gco:CharacterString>
           </mcc:fileName>
           <mcc:fileDescription>
             <gco:CharacterString>large_thumbnail</gco:CharacterString>
@@ -853,7 +843,7 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
           <mrd:onLine>
             <cit:CI_OnlineResource>
               <cit:linkage>
-                <gco:CharacterString>https://domain.com/nesp-twq-5/gbr-cumulative-impacts-5-2</gco:CharacterString>
+                <gco:CharacterString>https://eatlas.org.au/nesp-twq-5/gbr-cumulative-impacts-5-2</gco:CharacterString>
               </cit:linkage>
               <cit:protocol>
                 <gco:CharacterString>WWW:LINK-1.0-http--related</gco:CharacterString>
@@ -866,7 +856,7 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
           <mrd:onLine>
             <cit:CI_OnlineResource>
               <cit:linkage>
-                <gco:CharacterString>https://nextcloud.domain.com/apps/sharealias/a/GBR_NESP-TWQ-5-2_AIMS_Cum-impacts-temp-light-pCO2_A-millepora-recruits_20220323</gco:CharacterString>
+                <gco:CharacterString>https://nextcloud.eatlas.org.au/apps/sharealias/a/GBR_NESP-TWQ-5-2_AIMS_Cum-impacts-temp-light-pCO2_A-millepora-recruits_20220323</gco:CharacterString>
               </cit:linkage>
               <cit:protocol>
                 <gco:CharacterString>WWW:LINK-1.0-http--downloaddata</gco:CharacterString>
@@ -964,4 +954,3 @@ This dataset is filed in the eAtlas enduring data repository at: data\custodian\
     </mco:MD_LegalConstraints>
   </mdb:metadataConstraints>
 </mdb:MD_Metadata>
-

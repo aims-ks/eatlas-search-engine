@@ -28,6 +28,7 @@ import au.gov.aims.eatlas.searchengine.logger.Level;
 import au.gov.aims.eatlas.searchengine.logger.SessionLogger;
 import au.gov.aims.eatlas.searchengine.rest.Search;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.GET;
@@ -38,6 +39,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import org.glassfish.jersey.server.mvc.Viewable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,11 +93,13 @@ public class SearchPage {
             if (page == null || page <= 0) {
                 page = 1;
             }
+            
+            List<SortOptions> sortOptionsList = new ArrayList<>();
 
             SearchResults results = null;
             try {
                 int start = (page-1) * hitsPerPage;
-                results = Search.paginationSearch(searchClient, query, start, hitsPerPage, wkt, indexes, indexes, logger);
+                results = Search.paginationSearch(searchClient, query, start, hitsPerPage, wkt, sortOptionsList, indexes, indexes, logger);
             } catch(Exception ex) {
                 logger.addMessage(Level.ERROR,
                     "An exception occurred during the search.", ex);
