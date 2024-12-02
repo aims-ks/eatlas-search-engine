@@ -24,11 +24,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.elasticsearch._types.analysis.Analyzer;
 import co.elastic.clients.elasticsearch._types.analysis.CustomAnalyzer;
-import co.elastic.clients.elasticsearch._types.mapping.DoubleNumberProperty;
-import co.elastic.clients.elasticsearch._types.mapping.GeoShapeProperty;
-import co.elastic.clients.elasticsearch._types.mapping.Property;
-import co.elastic.clients.elasticsearch._types.mapping.TextProperty;
-import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
+import co.elastic.clients.elasticsearch._types.mapping.*;
 import co.elastic.clients.elasticsearch.cat.IndicesResponse;
 import co.elastic.clients.elasticsearch.cat.indices.IndicesRecord;
 import co.elastic.clients.elasticsearch.cluster.HealthResponse;
@@ -57,6 +53,8 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.elasticsearch.client.RestClient;
 
 import java.io.IOException;
@@ -77,8 +75,12 @@ public class ESClient implements SearchClient {
 
     public ESClient(RestClient restClient) {
         this.restClient = restClient;
-        this.transport = new RestClientTransport(
-                this.restClient, new JacksonJsonpMapper());
+        JacksonJsonpMapper jacksonJsonpMapper = new JacksonJsonpMapper();
+        // Add support for Java 8 time types (needed for LocalDate publishedOn field)
+        ObjectMapper mapper = jacksonJsonpMapper.objectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        
+        this.transport = new RestClientTransport(this.restClient, jacksonJsonpMapper);
         this.elasticsearchClient = new ElasticsearchClient(transport);
     }
 
@@ -210,6 +212,12 @@ public class ESClient implements SearchClient {
                                             .store(true)
                                             .build())
                                     .build())
+                            .properties("publishedOn", new Property.Builder()
+                                    .date(new DateProperty.Builder()
+                                            .format("yyyy-MM-dd")
+                                            .store(true)
+                                            .build())
+                                    .build())
 
                             .properties("wkt", new Property.Builder()
                                     .geoShape(new GeoShapeProperty.Builder()
@@ -240,7 +248,7 @@ public class ESClient implements SearchClient {
                             .build())
                     .settings(new IndexSettings.Builder()
                             // Set number of shards to 1 and the number of replica to 0,
-                            // to be able to run on a single-node Elastic Search instance.
+                            // to be able to run on a single-node ElasticSearch instance.
                             .numberOfShards(nbShards)
                             .numberOfReplicas(nbReplicas)
                             .analysis(new IndexSettingsAnalysis.Builder()

@@ -33,11 +33,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 
 public class ISO19115_3_2018_parser extends AbstractParser {
     public void parseRecord(GeoNetworkRecord record, String geoNetworkUrlStr, Element rootElement, AbstractLogger logger) {
@@ -72,6 +71,16 @@ public class ISO19115_3_2018_parser extends AbstractParser {
         Element dataCitation = IndexUtils.getXMLChild(mdDataIdentification, "mri:citation");
         Element dataCiCitation = IndexUtils.getXMLChild(dataCitation, "cit:CI_Citation");
         record.setTitle(IndexUtils.parseCharacterString(IndexUtils.getXMLChild(dataCiCitation, "cit:title")));
+        
+        // PublishedOn date. Use publication date if available. If not use creation date from citation block. If none is
+        // available, use system metadata creation date
+        LocalDate publishedOnDate = this.parsePublicationDate(dataCiCitation);
+        if (publishedOnDate != null) {
+            record.setPublishedOn(publishedOnDate);
+        } else {
+            List<Element> dateInfoElements = IndexUtils.getXMLChildren(rootElement, "mdb:dateInfo");
+            record.setPublishedOn(this.parseMetadataTimestamp(dateInfoElements));
+        }
 
         String dataAbstract = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdDataIdentification, "mri:abstract"));
 
@@ -299,6 +308,92 @@ public class ISO19115_3_2018_parser extends AbstractParser {
         }
 
         record.setLink(metadataRecordUrl);
+    }
+
+    private LocalDate parsePublicationDate(Element dataCiCitation) {
+        List<Element> dataCiCitationDates = IndexUtils.getXMLChildren(dataCiCitation, "cit:date");
+        LocalDate publicationDate = null;
+        LocalDate creationDate = null;
+
+        // Process cit:date elements
+        for (Element ciDate : dataCiCitationDates) {
+            Element citCiDate = IndexUtils.getXMLChild(ciDate, "cit:CI_Date");
+            Element citDateType = IndexUtils.getXMLChild(citCiDate, "cit:dateType");
+            Element citCiDateTypeCode = IndexUtils.getXMLChild(citDateType, "cit:CI_DateTypeCode");
+
+            String dateType = IndexUtils.parseAttribute(citCiDateTypeCode, "codeListValue");
+
+            if (dateType != null && (dateType.equals("publication") || dateType.equals("creation"))) {
+                LocalDate parsedDate = this.parseCIDateElement(citCiDate);
+
+                if (parsedDate != null) {
+                    if (dateType.equals("publication") && publicationDate == null) {
+                        publicationDate = parsedDate;
+                    } else if (dateType.equals("creation") && creationDate == null) {
+                        creationDate = parsedDate;
+                    }
+                }
+            }
+        }
+
+        // Return the final date, prioritizing publication, then creation date. Creation date can be null.
+        if (publicationDate != null) {
+            return publicationDate;
+        } else {
+            return creationDate;
+        } 
+    }
+    
+    private LocalDate parseMetadataTimestamp(List<Element> dateInfoElements) {
+        for (Element dateInfo : dateInfoElements) {
+            Element citCiDate = IndexUtils.getXMLChild(dateInfo, "cit:CI_Date");
+            Element citDateType = IndexUtils.getXMLChild(citCiDate, "cit:dateType");
+            Element citCiDateTypeCode = IndexUtils.getXMLChild(citDateType, "cit:CI_DateTypeCode");
+
+            String dateType = IndexUtils.parseAttribute(citCiDateTypeCode, "codeListValue");
+
+            if (dateType != null && dateType.equals("creation")) {
+                LocalDate parsedDate = this.parseCIDateElement(citCiDate);
+
+                if (parsedDate != null) {
+                    return parsedDate; // break at first find
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    private LocalDate parseCIDateElement(Element citCiDate) {
+        Element citDate = IndexUtils.getXMLChild(citCiDate, "cit:date");
+
+        // Try to parse `gco:DateTime` or `gco:Date`
+        Element gcoDateTime = IndexUtils.getXMLChild(citDate, "gco:DateTime");
+        Element gcoDate = IndexUtils.getXMLChild(citDate, "gco:Date");
+
+        String dateContent = (gcoDateTime != null)
+                ? gcoDateTime.getTextContent()
+                : (gcoDate != null) ? gcoDate.getTextContent() : null;
+
+        if (dateContent == null || dateContent.trim().isEmpty() || dateContent.contains("Invalid Date")) {
+            return null; // Handle empty or null dates
+        }
+
+        // Try parsing with different known formats
+        DateTimeFormatter[] formatters = {
+                DateTimeFormatter.ISO_DATE_TIME, // Handles full ISO date-time
+                DateTimeFormatter.ISO_DATE       // Handles simple ISO date
+        };
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDate.parse(dateContent, formatter);
+            } catch (DateTimeParseException ignored) {
+                // Continue trying other formats
+            }
+        }
+        
+        return null; // Return null if no formats match
     }
 
     // Parse a "cit:CI_Responsibility" node
