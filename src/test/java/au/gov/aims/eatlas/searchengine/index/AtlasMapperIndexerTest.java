@@ -8,9 +8,11 @@ import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,8 +67,9 @@ public class AtlasMapperIndexerTest extends IndexerTestBase {
                 Integer hits = 50; // Number of result per page. There is only 10 documents in the index
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -98,8 +101,9 @@ public class AtlasMapperIndexerTest extends IndexerTestBase {
                 Integer hits = 50; // Number of result per page. There is only 10 documents in the index
                 String wkt = null; // No geographic filtering
                 List<String> idx = List.of(index);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 

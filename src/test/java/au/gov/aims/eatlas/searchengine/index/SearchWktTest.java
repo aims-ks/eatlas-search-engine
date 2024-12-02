@@ -12,6 +12,7 @@ import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,6 +25,7 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -86,8 +88,9 @@ public class SearchWktTest extends IndexerTestBase {
                 Integer hits = 50; // Number of result per page. There is only 11 documents in the index
                 String wkt = null; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -134,8 +137,9 @@ public class SearchWktTest extends IndexerTestBase {
                 Integer hits = 50; // Number of result per page. There is only 11 documents in the index
                 String wkt = BBOX_WORLD; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -180,8 +184,9 @@ public class SearchWktTest extends IndexerTestBase {
                 Integer hits = 50; // Number of result per page. There is only 11 documents in the index
                 String wkt = BBOX_WESTERN_AUSTRALIA; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -226,8 +231,9 @@ public class SearchWktTest extends IndexerTestBase {
                 Integer hits = 50; // Number of result per page. There is only 11 documents in the index
                 String wkt = BBOX_MAGNETIC_ISLAND; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
@@ -271,8 +277,9 @@ public class SearchWktTest extends IndexerTestBase {
                 Integer hits = 50; // Number of result per page. There is only 11 documents in the index
                 String wkt = BBOX_MAGNETIC_ISLAND; // No geographic filtering, for now
                 List<String> idx = List.of(metadataRecordIndex, layersIndex, imagesIndex);
+                List<SortOptions> sortOptionsList = new ArrayList<>();
 
-                results = Search.paginationSearch(searchClient, q, start, hits, wkt, idx, null, logger);
+                results = Search.paginationSearch(searchClient, q, start, hits, wkt, sortOptionsList, idx, null, logger);
 
                 Summary searchSummary = results.getSummary();
 
