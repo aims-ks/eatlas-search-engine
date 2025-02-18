@@ -19,3 +19,6 @@ elasticsearch-data/
 
 # OpenJDK bug: https://bugs.openjdk.java.net/browse/JDK-8214300
 .attach_pid*
+
+# environment variables
+.envrc
