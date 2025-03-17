@@ -3,7 +3,9 @@ The eAtlas Search Engine project provides a configuration interface and function
 with the eAtlas website.
 
 ## How to integrate the search engine into the eAtlas
-To integrate the search engine into the eAtlas setup, we will build and tag a Docker image and push it to AWS ECR:
+To integrate the search engine into the eAtlas setup, first, ensure that the eatlas/eatlas-search-engine repository exists by deploying the `ECRResourceStack` stack in the [cdk code](https://github.com/AIMS/AMPSA_infrastructure/).
+
+Next,we will build and tag a Docker image and push it to AWS ECR. You may need to log in to the console and modify you dev user permissions to enable the ECR actions.
 
 ```shell
 # build docker image
