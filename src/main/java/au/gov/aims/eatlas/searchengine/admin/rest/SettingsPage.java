@@ -257,6 +257,7 @@ public class SettingsPage {
                 GeoNetworkIndexer geoNetworkIndexer = (GeoNetworkIndexer)indexer;
 
                 geoNetworkIndexer.setGeoNetworkUrl(FormUtils.getFormStringValue(form, index + "_geoNetworkUrl"));
+                geoNetworkIndexer.setGeoNetworkPublicUrl(FormUtils.getFormStringValue(form, index + "_geoNetworkPublicUrl"));
                 geoNetworkIndexer.setGeoNetworkVersion(FormUtils.getFormStringValue(form, index + "_geoNetworkVersion"));
 
             } else if (indexer instanceof GeoNetworkCswIndexer) {
@@ -264,6 +265,7 @@ public class SettingsPage {
                 GeoNetworkCswIndexer geoNetworkCswIndexer = (GeoNetworkCswIndexer)indexer;
 
                 geoNetworkCswIndexer.setGeoNetworkUrl(FormUtils.getFormStringValue(form, index + "_geoNetworkUrl"));
+                geoNetworkCswIndexer.setGeoNetworkPublicUrl(FormUtils.getFormStringValue(form, index + "_geoNetworkPublicUrl"));
                 geoNetworkCswIndexer.setGeoNetworkVersion(FormUtils.getFormStringValue(form, index + "_geoNetworkVersion"));
                 geoNetworkCswIndexer.setGeoNetworkCategoriesFromString(FormUtils.getFormStringValue(form, index + "_geoNetworkCategories"));
 

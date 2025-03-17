@@ -81,15 +81,19 @@ public class IndexerTest extends IndexerTestBase {
         try (MockSearchClient searchClient = this.createMockSearchClient()) {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");
 
+            String index = "metadata";
+            searchClient.createIndex(index);
+
+            // Find the indexer, defined in the config file
+            GeoNetworkIndexer geoNetworkIndexer =
+                    (GeoNetworkIndexer)this.getConfig().getIndexer(index);
+
             GeoNetworkRecord record = new GeoNetworkRecord(
-                "metadata",
+                geoNetworkIndexer,
                 "00000000-0000-0000-0000-000000000000",
                 "iso19115-3.2018",
                 "3.0"
             );
-
-            String index = "records";
-            searchClient.createIndex(index);
 
             IndexRequest<GeoNetworkRecord> indexRequest = new IndexRequest.Builder<GeoNetworkRecord>()
                 .index(index)

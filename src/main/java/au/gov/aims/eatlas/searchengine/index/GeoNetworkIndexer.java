@@ -49,22 +49,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
+public class GeoNetworkIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRecord> {
     private static final Logger LOGGER = LogManager.getLogger(GeoNetworkIndexer.class.getName());
     private static final int THREAD_POOL_SIZE = 10;
-
-    private String geoNetworkUrl;
-    private String geoNetworkVersion;
 
     /**
      * index: eatlas_metadata
      * geoNetworkUrl: https://eatlas.org.au/geonetwork
      * geoNetworkVersion: 3.6.0
      */
-    public GeoNetworkIndexer(HttpClient httpClient, String index, String indexName, String geoNetworkUrl, String geoNetworkVersion) {
-        super(httpClient, index, indexName);
-        this.geoNetworkUrl = geoNetworkUrl;
-        this.geoNetworkVersion = geoNetworkVersion;
+    public GeoNetworkIndexer(HttpClient httpClient, String index, String indexName, String geoNetworkUrl, String geoNetworkPublicUrl, String geoNetworkVersion) {
+        super(httpClient, index, indexName, geoNetworkUrl, geoNetworkPublicUrl, geoNetworkVersion);
     }
 
     public static GeoNetworkIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
@@ -75,24 +70,12 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         return new GeoNetworkIndexer(
             httpClient, index, indexName,
             json.optString("geoNetworkUrl", null),
+            json.optString("geoNetworkPublicUrl", null),
             json.optString("geoNetworkVersion", null));
     }
 
     public JSONObject toJSON() {
-        return this.getJsonBase()
-            .put("geoNetworkUrl", this.geoNetworkUrl)
-            .put("geoNetworkVersion", this.geoNetworkVersion);
-    }
-
-    @Override
-    public boolean validate() {
-        if (!super.validate()) {
-            return false;
-        }
-        if (this.geoNetworkUrl == null || this.geoNetworkUrl.isEmpty()) {
-            return false;
-        }
-        return true;
+        return this.getJsonBase();
     }
 
     @Override
@@ -155,8 +138,8 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
                 }
 
                 Document document = xmlParser.parse(input);
-                GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), metadataRecordUUID, metadataSchema, this.geoNetworkVersion);
-                geoNetworkRecord.parseRecord(geoNetworkUrl, document, logger);
+                GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this, metadataRecordUUID, metadataSchema, this.getGeoNetworkVersion());
+                geoNetworkRecord.parseRecord(document, logger);
 
                 if (geoNetworkRecord.getId() != null) {
                     URL thumbnailUrl = geoNetworkRecord.getThumbnailUrl();
@@ -223,7 +206,7 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         // NOTE: According to the doc, the parameter "dateFrom" is used to filter on creation date, but in fact,
         //     it filters on modification date (which is what we want).
         //     https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
-        String urlBase = String.format("%s/srv/eng/xml.search", this.geoNetworkUrl);
+        String urlBase = String.format("%s/srv/eng/xml.search", this.getGeoNetworkUrl());
         URIBuilder uriBuilder;
         try {
             uriBuilder = new URIBuilder(urlBase);
@@ -388,22 +371,6 @@ public class GeoNetworkIndexer extends AbstractIndexer<GeoNetworkRecord> {
         if (!crashed && fullHarvest) {
             this.cleanUp(searchClient, harvestStart, usedThumbnails, "GeoNetwork metadata record", logger);
         }
-    }
-
-    public String getGeoNetworkUrl() {
-        return this.geoNetworkUrl;
-    }
-
-    public void setGeoNetworkUrl(String geoNetworkUrl) {
-        this.geoNetworkUrl = geoNetworkUrl;
-    }
-
-    public String getGeoNetworkVersion() {
-        return this.geoNetworkVersion;
-    }
-
-    public void setGeoNetworkVersion(String geoNetworkVersion) {
-        this.geoNetworkVersion = geoNetworkVersion;
     }
 
 

@@ -1,6 +1,7 @@
 package au.gov.aims.eatlas.searchengine.entity.geoNetworkParser;
 
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
+import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +19,11 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
@@ -38,20 +43,20 @@ class ISO19139_parserTest {
 
     @BeforeEach
     void setUp() throws ParserConfigurationException {
-        mocks = MockitoAnnotations.openMocks(this);
-        
+        this.mocks = MockitoAnnotations.openMocks(this);
+
         // Initialize the DocumentBuilder
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        xmlParser = factory.newDocumentBuilder();
-        
-        parser = new ISO19139_parser();
+        this.xmlParser = factory.newDocumentBuilder();
+
+        this.parser = new ISO19139_parser();
     }
 
     @AfterEach
     void tearDown() throws Exception {
-        if (mocks != null) {
-            mocks.close();
+        if (this.mocks != null) {
+            this.mocks.close();
         }
     }
 
@@ -66,11 +71,12 @@ class ISO19139_parserTest {
                 InputStream recordInputStream = getClass().getClassLoader()
                         .getResourceAsStream(fileName)
         ) {
-            Document xmlRecord = xmlParser.parse(recordInputStream);
+            Document xmlRecord = this.xmlParser.parse(recordInputStream);
             Element rootElement = xmlRecord.getDocumentElement();
 
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, null, metadataSchema, geoNetworkVersion);
-            parser.parseRecord(geoNetworkRecord, "https://eatlas.org.au/geonetwork", rootElement, mockLogger);
+            GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", geoNetworkVersion);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(indexer, null, metadataSchema, geoNetworkVersion);
+            parser.parseRecord(indexer, geoNetworkRecord, rootElement, this.mockLogger);
 
             Assertions.assertEquals("65f61d2d-fe4e-48e5-8c6e-fab08450ef75", geoNetworkRecord.getId(), "Wrong ID");
             Assertions.assertEquals("18386963-6960-4eb9-889b-d0964069ce13", geoNetworkRecord.getParentUUID(), "Wrong parent ID");
@@ -97,11 +103,11 @@ class ISO19139_parserTest {
             Assertions.assertEquals("https://eatlas.org.au/data/uuid/65f61d2d-fe4e-48e5-8c6e-fab08450ef75", geoNetworkRecord.getLink().toString());
         }
     }
-    
+
     // Method providing test arguments for testParseWKT
     static Stream<Arguments> provideXmlFilesAndExpectedWktResults() {
         return Stream.of(
-                Arguments.of("geonetworkRecords/geonetwork2/iso19139-mcp_65f61d2d-fe4e-48e5-8c6e-fab08450ef75.xml", 
+                Arguments.of("geonetworkRecords/geonetwork2/iso19139-mcp_65f61d2d-fe4e-48e5-8c6e-fab08450ef75.xml",
                         "65f61d2d-fe4e-48e5-8c6e-fab08450ef75",
                         "iso19139.mcp",
                         "POLYGON ((142.119140625 -9.931640625, 144.228515625 -9.84375, 144.4921875 -12.832031250000002, 145.810546875 -13.798828125, 147.12890625 -17.490234375, 153.45703125 -20.830078125, 153.80859375 -24.521484375, 151.083984375 -24.521484375, 148.447265625 -21.005859375000004, 146.337890625 -19.599609375, 144.755859375 -14.94140625, 143.61328125000003 -14.765625, 142.3828125 -11.77734375, 142.119140625 -9.931640625))"),
@@ -119,22 +125,23 @@ class ISO19139_parserTest {
                         "POLYGON ((151.129 -24.002, 151.129 -23.76, 151.411 -23.76, 151.411 -24.002, 151.129 -24.002))")
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("provideXmlFilesAndExpectedWktResults")
     public void testParseWkt(String fileName, String metadataRecordUUID, String metadataSchema, String expectedWkt) throws SAXException, IOException {
         String index = "gn-test";
         String geoNetworkVersion = "3.0";
-        
+
         try (
                 InputStream recordInputStream = getClass().getClassLoader()
                         .getResourceAsStream(fileName)
         ) {
-            Document document = xmlParser.parse(recordInputStream);
+            Document document = this.xmlParser.parse(recordInputStream);
             Element rootElement = document.getDocumentElement();
-            
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, metadataRecordUUID, metadataSchema, geoNetworkVersion);
-            parser.parseRecord(geoNetworkRecord, "https://eatlas.org.au/geonetwork", rootElement, mockLogger);
+
+            GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", geoNetworkVersion);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(indexer, metadataRecordUUID, metadataSchema, geoNetworkVersion);
+            this.parser.parseRecord(indexer, geoNetworkRecord, rootElement, this.mockLogger);
 
             Assertions.assertEquals(expectedWkt, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
@@ -176,11 +183,12 @@ class ISO19139_parserTest {
 
             // Re-create the InputStream for parsing
             InputStream reParsedStream = new ByteArrayInputStream(recordXmlString.getBytes());
-            Document document = xmlParser.parse(reParsedStream);
+            Document document = this.xmlParser.parse(reParsedStream);
             Element rootElement = document.getDocumentElement();
 
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, null, metadataSchema, geoNetworkVersion);
-            parser.parseRecord(geoNetworkRecord, "https://eatlas.org.au/geonetwork", rootElement, mockLogger);
+            GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", geoNetworkVersion);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(indexer, null, metadataSchema, geoNetworkVersion);
+            this.parser.parseRecord(indexer, geoNetworkRecord, rootElement, this.mockLogger);
 
             Assertions.assertEquals(LocalDate.parse(expectedDateString, DateTimeFormatter.ISO_DATE),
                     geoNetworkRecord.getPublishedOn(), "Wrong publishedOn date");
@@ -206,11 +214,12 @@ class ISO19139_parserTest {
         try (
                 InputStream recordInputStream = getClass().getClassLoader().getResourceAsStream(fileName)
         ) {
-            Document document = xmlParser.parse(recordInputStream);
+            Document document = this.xmlParser.parse(recordInputStream);
             Element rootElement = document.getDocumentElement();
 
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, null, metadataSchema, geoNetworkVersion);
-            parser.parseRecord(geoNetworkRecord, "https://eatlas.org.au/geonetwork", rootElement, mockLogger);
+            GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", geoNetworkVersion);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(indexer, null, metadataSchema, geoNetworkVersion);
+            this.parser.parseRecord(indexer, geoNetworkRecord, rootElement, this.mockLogger);
 
             Assertions.assertEquals(LocalDate.parse(expectedDateString, DateTimeFormatter.ISO_DATE),
                     geoNetworkRecord.getPublishedOn(), "Wrong publishedOn date");

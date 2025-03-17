@@ -733,6 +733,19 @@
                                                     value="<c:out value="${indexer.geoNetworkUrl}" />" />
                                             </label>
                                             <div class="desc">GeoNetwork base URL, used for API calls.</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://eatlas-geonetwork/geonetwork</code></div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_geoNetworkPublicUrl">
+                                                <span class="label">GeoNetwork public URL</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_geoNetworkPublicUrl"
+                                                    name="${indexer.index}_geoNetworkPublicUrl"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.geoNetworkPublicUrl}" />" />
+                                            </label>
+                                            <div class="desc">GeoNetwork public base URL, used in search results.</div>
                                             <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au/geonetwork</code></div>
                                         </div>
 
@@ -765,6 +778,19 @@
                                                     value="<c:out value="${indexer.geoNetworkUrl}" />" />
                                             </label>
                                             <div class="desc">GeoNetwork base URL, used for API calls.</div>
+                                            <div class="desc"><strong>Example</strong>: <code>https://eatlas-geonetwork/geonetwork</code></div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_geoNetworkPublicUrl">
+                                                <span class="label">GeoNetwork public URL</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_geoNetworkPublicUrl"
+                                                    name="${indexer.index}_geoNetworkPublicUrl"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.geoNetworkPublicUrl}" />" />
+                                            </label>
+                                            <div class="desc">GeoNetwork public base URL, used in search results.</div>
                                             <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au/geonetwork</code></div>
                                         </div>
 

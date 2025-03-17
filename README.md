@@ -5,7 +5,7 @@ with the eAtlas website.
 ## How to integrate the search engine into the eAtlas
 To integrate the search engine into the eAtlas setup, first, ensure that the eatlas/eatlas-search-engine repository exists by deploying the `ECRResourceStack` stack in the [cdk code](https://github.com/AIMS/AMPSA_infrastructure/).
 
-Next,we will build and tag a Docker image and push it to AWS ECR. You may need to log in to the console and modify you dev user permissions to enable the ECR actions.
+Next, we will build and tag a Docker image and push it to AWS ECR. You may need to log in to the console and modify you dev user permissions to enable the ECR actions.
 
 ```shell
 # build docker image
@@ -145,4 +145,10 @@ https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.8/index.html
   ```
   $ cp ~/Desktop/projects/Intellij/projects/eatlas-search-engine/target/eatlas-search-engine.war ~/Desktop/projects/Intellij/projects/eatlas-search-engine/webapps/eatlas-search-engine.war
   $ docker logs -f eatlas-searchengine
+  ```
+
+  ```
+  $ docker cp ~/Desktop/projects/Intellij/projects/eatlas-search-engine/target/eatlas-search-engine.war eatlas-d8plus-searchengine:/usr/local/tomcat/webapps/
+  $ docker restart eatlas-d8plus-searchengine
+  $ docker logs -f eatlas-d8plus-searchengine
   ```

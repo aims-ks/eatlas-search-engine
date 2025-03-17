@@ -323,35 +323,38 @@ public class SearchWktTest extends IndexerTestBase {
 
     private void indexMetadataRecords(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, AbstractLogger logger) throws ParseException, IOException {
         searchClient.createIndex(index);
-        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, index, "http://domain.com/geonetwork", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, index,
+            "http://eatlas-geonetwork/geonetwork",
+            "http://domain.com/geonetwork",
+            "3.0");
 
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.
         config.addIndexer(indexer);
 
         // Australia
-        GeoNetworkRecord australiaRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
+        GeoNetworkRecord australiaRecord = new GeoNetworkRecord(indexer, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         australiaRecord.setTitle("Australia record");
         australiaRecord.setDocument("Record that covers whole of Australia coral.");
         australiaRecord.setWktAndAttributes(WKT_AUSTRALIA);
         indexer.indexEntity(searchClient, australiaRecord, logger);
 
         // Queensland
-        GeoNetworkRecord qldRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000001", "iso19115-3.2018", "3.0");
+        GeoNetworkRecord qldRecord = new GeoNetworkRecord(indexer, "00000000-0000-0000-0000-000000000001", "iso19115-3.2018", "3.0");
         qldRecord.setTitle("Queensland record");
         qldRecord.setDocument("Record that covers whole of Queensland.");
         qldRecord.setWktAndAttributes(WKT_QUEENSLAND);
         indexer.indexEntity(searchClient, qldRecord, logger);
 
         // Townsville
-        GeoNetworkRecord townsvilleRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000002", "iso19115-3.2018", "3.0");
+        GeoNetworkRecord townsvilleRecord = new GeoNetworkRecord(indexer, "00000000-0000-0000-0000-000000000002", "iso19115-3.2018", "3.0");
         townsvilleRecord.setTitle("Townsville record");
         townsvilleRecord.setDocument("Record of Townsville.");
         townsvilleRecord.setWktAndAttributes(WKT_TOWNSVILLE);
         indexer.indexEntity(searchClient, townsvilleRecord, logger);
 
         // No WKT - Expected to default to whole world
-        GeoNetworkRecord unknownRecord = new GeoNetworkRecord(index, "00000000-0000-0000-0000-00000000000A", "iso19115-3.2018", "3.0");
+        GeoNetworkRecord unknownRecord = new GeoNetworkRecord(indexer, "00000000-0000-0000-0000-00000000000A", "iso19115-3.2018", "3.0");
         unknownRecord.setTitle("Unknown location record");
         unknownRecord.setDocument("Record that doesn't provide location coral.");
         unknownRecord.setWktAndAttributes(BBOX_WORLD);

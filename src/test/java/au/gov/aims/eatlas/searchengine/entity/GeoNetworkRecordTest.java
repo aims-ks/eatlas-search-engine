@@ -20,23 +20,23 @@ package au.gov.aims.eatlas.searchengine.entity;
 
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.AbstractParser;
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.GeoNetworkParserFactory;
-import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.ISO19139_parser;
+import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 public class GeoNetworkRecordTest {
-    
+
+    private GeoNetworkIndexer indexer;
     private GeoNetworkRecord geoNetworkRecord;
 
     @Mock
@@ -55,89 +55,96 @@ public class GeoNetworkRecordTest {
     private AbstractLogger mockLogger;
 
     private AutoCloseable mocks;
-    
+
     @BeforeEach
     void setUp() {
-        mocks = MockitoAnnotations.openMocks(this);
-        geoNetworkRecord = new GeoNetworkRecord(
-                "gn-test",
+        this.mocks = MockitoAnnotations.openMocks(this);
+
+        String index = "gn-test";
+        this.indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", "3.0");
+
+        this.geoNetworkRecord = new GeoNetworkRecord(
+                this.indexer,
                 "65f61d2d-fe4e-48e5-8c6e-fab08450ef75",
                 "iso19139.mcp",
                 "3.0");
 
         // Mock the document's behavior
-        when(mockDocument.getDocumentElement()).thenReturn(mockRootElement);
+        Mockito.when(this.mockDocument.getDocumentElement()).thenReturn(this.mockRootElement);
 
         // Mock the root element's behavior
-        doNothing().when(mockRootElement).normalize(); // normalize() does nothing when called
+        Mockito.doNothing().when(this.mockRootElement).normalize(); // normalize() does nothing when called
 
         // Set the mock parser factory
-        when(mockParserFactory.getParser("iso19139.mcp")).thenReturn(mockParser);
-        geoNetworkRecord.setGeoNetworkParserFactory(mockParserFactory);
+        Mockito.when(this.mockParserFactory.getParser("iso19139.mcp")).thenReturn(this.mockParser);
+        this.geoNetworkRecord.setGeoNetworkParserFactory(this.mockParserFactory);
     }
-    
+
     @AfterEach
     void tearDown() throws Exception {
-        if (mocks != null) {
-            mocks.close();
+        if (this.mocks != null) {
+            this.mocks.close();
         }
     }
 
     @Test
     void testParseRecord_NoMetadataSchema() {
-        geoNetworkRecord.setMetadataSchema(null);
+        this.geoNetworkRecord.setMetadataSchema(null);
 
-        geoNetworkRecord.parseRecord("https://eatlas.org.au/geonetwork", mockDocument, mockLogger);
+        this.geoNetworkRecord.parseRecord(this.mockDocument, this.mockLogger);
 
         // Verify logger behavior
         ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockLogger).addMessage(eq(Level.WARNING), messageCaptor.capture());
-        assertTrue(messageCaptor.getValue().contains("has no defined metadata schema."));
+        Mockito.verify(this.mockLogger).addMessage(Mockito.eq(Level.WARNING), messageCaptor.capture());
+        Assertions.assertTrue(messageCaptor.getValue().contains("has no defined metadata schema."));
     }
 
     @Test
     void testParseRecord_NoXmlMetadataRecord() {
-        geoNetworkRecord.parseRecord("https://eatlas.org.au/geonetwork", null, mockLogger);
+        this.geoNetworkRecord.parseRecord(null, this.mockLogger);
 
         // Verify logger behavior
         ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockLogger).addMessage(eq(Level.WARNING), messageCaptor.capture());
-        assertTrue(messageCaptor.getValue().contains("has no metadata record."));
+        Mockito.verify(this.mockLogger).addMessage(Mockito.eq(Level.WARNING), messageCaptor.capture());
+        Assertions.assertTrue(messageCaptor.getValue().contains("has no metadata record."));
     }
 
     @Test
     void testParseRecord_NoRootElement() {
-        when(mockDocument.getDocumentElement()).thenReturn(null);
-        geoNetworkRecord.parseRecord("https://eatlas.org.au/geonetwork", mockDocument, mockLogger);
+        Mockito.when(this.mockDocument.getDocumentElement()).thenReturn(null);
+        this.geoNetworkRecord.parseRecord(this.mockDocument, this.mockLogger);
 
         // Verify logger behavior
         ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockLogger).addMessage(eq(Level.WARNING), messageCaptor.capture());
-        assertTrue(messageCaptor.getValue().contains("has no root in its metadata document."));
+        Mockito.verify(this.mockLogger).addMessage(Mockito.eq(Level.WARNING), messageCaptor.capture());
+        Assertions.assertTrue(messageCaptor.getValue().contains("has no root in its metadata document."));
     }
 
     @Test
     void testParseRecord_UnsupportedSchema() {
-        geoNetworkRecord.setMetadataSchema("unsupported-schema");
-        when(mockDocument.getDocumentElement()).thenReturn(mockRootElement);
+        this.geoNetworkRecord.setMetadataSchema("unsupported-schema");
+        Mockito.when(this.mockDocument.getDocumentElement()).thenReturn(this.mockRootElement);
 
-        geoNetworkRecord.parseRecord("https://eatlas.org.au/geonetwork", mockDocument, mockLogger);
+        this.geoNetworkRecord.parseRecord(this.mockDocument, this.mockLogger);
 
         // Verify logger behavior
         ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockLogger).addMessage(eq(Level.WARNING), messageCaptor.capture());
-        assertTrue(messageCaptor.getValue().contains("unsupported schema"));
+        Mockito.verify(this.mockLogger).addMessage(Mockito.eq(Level.WARNING), messageCaptor.capture());
+        Assertions.assertTrue(messageCaptor.getValue().contains("unsupported schema"));
     }
 
     @Test
     void testParseRecord_SupportedSchemaWithParser() {
-        when(mockDocument.getDocumentElement()).thenReturn(mockRootElement);
+        Mockito.when(this.mockDocument.getDocumentElement()).thenReturn(this.mockRootElement);
 
-        geoNetworkRecord.parseRecord("https://eatlas.org.au/geonetwork", mockDocument, mockLogger);
+        this.geoNetworkRecord.parseRecord(this.mockDocument, this.mockLogger);
 
         // Verify parser behavior
-        verify(mockParser).parseRecord(eq(geoNetworkRecord), eq("https://eatlas.org.au/geonetwork"), 
-                eq(mockRootElement), eq(mockLogger));
+        Mockito.verify(this.mockParser).parseRecord(
+                Mockito.eq(this.indexer),
+                Mockito.eq(this.geoNetworkRecord),
+                Mockito.eq(this.mockRootElement),
+                Mockito.eq(this.mockLogger));
     }
-    
+
 }

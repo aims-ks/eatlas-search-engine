@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -102,7 +103,8 @@ public class GeoShapeTest {
         );
 
         String index = "unit_test";
-        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", "3.0");
+        GeoNetworkRecord record = new GeoNetworkRecord(indexer, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy record");
         record.setDocument("Dummy record content.");
 
@@ -125,7 +127,8 @@ public class GeoShapeTest {
     @Test
     public void testNaturalEarthDataWkt() throws Exception {
         String index = "unit_test";
-        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", "3.0");
+        GeoNetworkRecord record = new GeoNetworkRecord(indexer, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy record - Natural Earth Data");
         record.setDocument("Dummy record content.");
 
@@ -143,7 +146,8 @@ public class GeoShapeTest {
     @Test
     public void testCAPAD() throws Exception {
         String index = "unit_test";
-        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", "3.0");
+        GeoNetworkRecord record = new GeoNetworkRecord(indexer, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy CAPAD record");
         record.setDocument("Dummy CAPAD record content.");
 

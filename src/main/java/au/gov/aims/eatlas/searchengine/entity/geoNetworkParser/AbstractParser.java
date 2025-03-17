@@ -18,9 +18,11 @@
  */
 package au.gov.aims.eatlas.searchengine.entity.geoNetworkParser;
 
+import au.gov.aims.eatlas.searchengine.index.AbstractGeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.index.WktUtils;
+import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
@@ -71,7 +73,7 @@ public abstract class AbstractParser {
         ROLE_LABEL_MAP.put("metadataContact", "Metadata contact");
     }
 
-    public abstract void parseRecord(GeoNetworkRecord record, String geoNetworkUrlStr, Element rootElement, AbstractLogger logger);
+    public abstract void parseRecord(AbstractGeoNetworkIndexer<?> indexer, GeoNetworkRecord record, Element rootElement, AbstractLogger logger);
 
     public static void addResponsibleParty(ResponsibleParty responsibleParty, Map<String, List<ResponsibleParty>> responsiblePartyMap) {
         if (responsibleParty != null && responsiblePartyMap != null) {
@@ -88,7 +90,7 @@ public abstract class AbstractParser {
         }
     }
 
-    public URL getMetadataLink(GeoNetworkRecord record, String geoNetworkUrlStr) throws MalformedURLException {
+    public static URL getMetadataLink(GeoNetworkRecord record, String geoNetworkUrlStr) throws MalformedURLException {
         int geoNetworkMajorVersion = -1;
 
         String geoNetworkVersion = record.getGeoNetworkVersion();
@@ -113,6 +115,116 @@ public abstract class AbstractParser {
         }
 
         return new URL(geonetworkMetadataUrlStr);
+    }
+
+    public static URL getPublicMetadataLink(
+            AbstractGeoNetworkIndexer<?> indexer,
+            GeoNetworkRecord record,
+            String pointOfTruthUrlStr,
+            AbstractLogger logger) {
+
+        URL metadataUrl = null;
+
+        String geoNetworkUrlStr = indexer.getGeoNetworkUrl();
+        String publicUrl = indexer.getGeoNetworkPublicUrl();
+
+        if (publicUrl != null && !publicUrl.isBlank()) {
+            if (pointOfTruthUrlStr != null) {
+                // If the point of truth URL starts with geoNetworkUrlStr,
+                // we need to replace it with publicUrl.
+                String parsedPointOfTruthUrlStr = pointOfTruthUrlStr;
+                if (parsedPointOfTruthUrlStr.startsWith(geoNetworkUrlStr)) {
+                    String geoNetworkUrlStrNoEndSlash = geoNetworkUrlStr.replaceAll("/+$", "");
+                    String publicUrlStrNoEndSlash = publicUrl.replaceAll("/+$", "");
+
+                    parsedPointOfTruthUrlStr =
+                        pointOfTruthUrlStr.replaceFirst("^" + geoNetworkUrlStrNoEndSlash, publicUrlStrNoEndSlash);
+                }
+
+                try {
+                    metadataUrl = new URL(parsedPointOfTruthUrlStr);
+                } catch(Exception ex) {
+                    logger.addMessage(Level.ERROR,
+                            String.format("Invalid GeoNetwork point of truth URL %s found in: %s",
+                                parsedPointOfTruthUrlStr,
+                                indexer.getIndex()), ex);
+                }
+            }
+
+            if (metadataUrl == null) {
+                try {
+                    metadataUrl = AbstractParser.getMetadataLink(record, publicUrl);
+                } catch(Exception ex) {
+                    logger.addMessage(Level.ERROR,
+                            String.format("Invalid GeoNetwork record URL found in: %s",
+                                indexer.getIndex()), ex);
+                }
+            }
+        }
+
+        if (metadataUrl == null) {
+            if (pointOfTruthUrlStr != null) {
+                try {
+                    metadataUrl = new URL(pointOfTruthUrlStr);
+                } catch(Exception ex) {
+                    logger.addMessage(Level.ERROR,
+                            String.format("Invalid GeoNetwork point of truth URL %s found in: %s",
+                                pointOfTruthUrlStr,
+                                indexer.getIndex()), ex);
+                }
+            }
+        }
+
+        if (metadataUrl == null) {
+            try {
+                metadataUrl = AbstractParser.getMetadataLink(record, geoNetworkUrlStr);
+            } catch(Exception ex) {
+                logger.addMessage(Level.ERROR,
+                        String.format("Invalid GeoNetwork record URL found in: %s",
+                            indexer.getIndex()), ex);
+            }
+        }
+
+        return metadataUrl;
+    }
+
+    public static URL getThumbnailPublicUrl(AbstractGeoNetworkIndexer<?> indexer, GeoNetworkRecord record, String fileName, AbstractLogger logger) {
+        URL thumbnailPublicUrl = null;
+
+        if (fileName != null) {
+            String previewUrlStr;
+            if (fileName.startsWith("http://") || fileName.startsWith("https://")) {
+                // Some records put the full URL in the preview field.
+                // Example:
+                //     https://eatlas.org.au/geonetwork/srv/eng/xml.metadata.get?uuid=a86f062e-f47c-49f1-ace5-3e03a2272088
+                previewUrlStr = fileName;
+            } else {
+                previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
+                        indexer.getGeoNetworkUrl(), record.getId(), fileName);
+            }
+
+            String geoNetworkUrlStr = indexer.getGeoNetworkUrl();
+            String publicUrl = indexer.getGeoNetworkPublicUrl();
+
+            if (publicUrl != null && !publicUrl.isBlank()) {
+                if (previewUrlStr.startsWith(geoNetworkUrlStr)) {
+                    String geoNetworkUrlStrNoEndSlash = geoNetworkUrlStr.replaceAll("/+$", "");
+                    String publicUrlStrNoEndSlash = publicUrl.replaceAll("/+$", "");
+
+                    previewUrlStr =
+                        previewUrlStr.replaceFirst("^" + geoNetworkUrlStrNoEndSlash, publicUrlStrNoEndSlash);
+                }
+            }
+
+            try {
+                thumbnailPublicUrl = new URL(previewUrlStr);
+            } catch(Exception ex) {
+                logger.addMessage(Level.ERROR, String.format("Invalid metadata thumbnail URL found in record %s: %s",
+                        record.getId(), previewUrlStr), ex);
+            }
+        }
+
+        return thumbnailPublicUrl;
     }
 
     public Polygon parseBoundingBox(String northStr, String eastStr, String southStr, String westStr) {

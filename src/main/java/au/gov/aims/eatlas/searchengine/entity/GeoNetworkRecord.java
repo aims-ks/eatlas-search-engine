@@ -18,7 +18,10 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
-import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.*;
+import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.AbstractParser;
+import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.DefaultGeoNetworkParserFactory;
+import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.GeoNetworkParserFactory;
+import au.gov.aims.eatlas.searchengine.index.AbstractGeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
@@ -26,20 +29,22 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class GeoNetworkRecord extends Entity {
+    private AbstractGeoNetworkIndexer<?> indexer;
     private String metadataSchema;
     private String geoNetworkVersion;
     private String parentUUID;
     // TODO Get from index after the harvest, if we decide that it's needed
     private String parentTitle;
-    
+
     private GeoNetworkParserFactory geoNetworkParserFactory;
 
     private GeoNetworkRecord() {}
 
     // geoNetworkUrlStr: https://eatlas.org.au/geonetwork
     // metadataRecordUUID: UUID of the record. If omitted, the parser will grab the UUID from the document.
-    public GeoNetworkRecord(String index, String metadataRecordUUID, String metadataSchema, String geoNetworkVersion) {
-        this.setIndex(index);
+    public GeoNetworkRecord(AbstractGeoNetworkIndexer<?> indexer, String metadataRecordUUID, String metadataSchema, String geoNetworkVersion) {
+        this.setIndex(indexer.getIndex());
+        this.indexer = indexer;
         this.metadataSchema = metadataSchema;
         this.geoNetworkVersion = geoNetworkVersion;
 
@@ -57,7 +62,7 @@ public class GeoNetworkRecord extends Entity {
         this.geoNetworkParserFactory = new DefaultGeoNetworkParserFactory();
     }
 
-    public void parseRecord(String geoNetworkUrlStr, Document xmlMetadataRecord, AbstractLogger logger) {
+    public void parseRecord(Document xmlMetadataRecord, AbstractLogger logger) {
         String metadataRecordUUID = this.getId();
 
         if (this.metadataSchema == null || this.metadataSchema.isEmpty()) {
@@ -69,7 +74,7 @@ public class GeoNetworkRecord extends Entity {
             logger.addMessage(Level.WARNING, String.format("Metadata UUID %s has no metadata record.", metadataRecordUUID));
             return;
         }
-        
+
         // Get the XML root element
         Element root = xmlMetadataRecord.getDocumentElement();
         if (root == null) {
@@ -78,7 +83,7 @@ public class GeoNetworkRecord extends Entity {
         }
         // Fix the document, if needed
         root.normalize();
-        
+
         AbstractParser parser = this.geoNetworkParserFactory.getParser(this.metadataSchema);
 
         if (parser == null) {
@@ -87,7 +92,7 @@ public class GeoNetworkRecord extends Entity {
         }
 
         // Delegate the parsing task
-        parser.parseRecord(this, geoNetworkUrlStr, root, logger);
+        parser.parseRecord(this.indexer, this, root, logger);
     }
 
     public void setMetadataSchema(String metadataSchema) {

@@ -35,20 +35,21 @@ public class GeoShapeIndexationTest extends IndexerTestBase {
     public void testGeoShapeIndexation() throws Exception {
         MockHttpClient mockHttpClient = MockHttpClient.getInstance();
         String index = "unit_test";
-        GeoNetworkRecord record = new GeoNetworkRecord(index, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
+
+        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, index, "http://eatlas/geonetwork", "http://domain.com/geonetwork", "3.0");
+
+        GeoNetworkRecord record = new GeoNetworkRecord(indexer, "00000000-0000-0000-0000-000000000000", "iso19115-3.2018", "3.0");
         record.setTitle("Dummy record");
         record.setDocument("Dummy record content.");
 
         record.setWktAndAttributes("POLYGON ((-175.4736328125 -31.245117187500004, -171.2548828125 36.9580078125, 171.8701171875 39.0673828125, 175.3857421875 -30.5419921875, -32.0361328125 -34.0576171875, -175.4736328125 -31.245117187500004))");
-
-        // Indexation
-        GeoNetworkIndexer indexer = new GeoNetworkIndexer(mockHttpClient, index, index, "http://domain.com/geonetwork", "3.0");
 
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.
         config.addIndexer(indexer);
 
+        // Indexation
         AbstractLogger logger = ConsoleLogger.getInstance();
         try (MockSearchClient searchClient = this.createMockSearchClient()) {
             Assertions.assertEquals(HealthStatus.Green, searchClient.getHealthStatus(), "The Elastic Search engine health status is not Green before starting the test.");

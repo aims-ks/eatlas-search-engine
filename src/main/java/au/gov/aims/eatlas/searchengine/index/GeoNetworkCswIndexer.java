@@ -51,24 +51,21 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
+public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRecord> {
     private static final Logger LOGGER = LogManager.getLogger(GeoNetworkCswIndexer.class.getName());
     private static final int THREAD_POOL_SIZE = 10;
 
-    private String geoNetworkUrl;
-    private String geoNetworkVersion;
     private List<String> geoNetworkCategories;
 
     /**
      * index: eatlas_metadata
-     * geoNetworkUrl: https://eatlas.org.au/geonetwork
+     * geoNetworkUrl: https://eatlas-geonetwork/geonetwork
+     * geoNetworkPublicUrl: https://eatlas.org.au/geonetwork
      * geoNetworkVersion: 4.2.10
      * geoNetworkCategories: eatlas, nwa, !demo, !test
      */
-    public GeoNetworkCswIndexer(HttpClient httpClient, String index, String indexName, String geoNetworkUrl, String geoNetworkVersion, List<String> geoNetworkCategories) {
-        super(httpClient, index, indexName);
-        this.geoNetworkUrl = geoNetworkUrl;
-        this.geoNetworkVersion = geoNetworkVersion;
+    public GeoNetworkCswIndexer(HttpClient httpClient, String index, String indexName, String geoNetworkUrl, String geoNetworkPublicUrl, String geoNetworkVersion, List<String> geoNetworkCategories) {
+        super(httpClient, index, indexName, geoNetworkUrl, geoNetworkPublicUrl, geoNetworkVersion);
         this.geoNetworkCategories = geoNetworkCategories;
     }
 
@@ -91,26 +88,14 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         return new GeoNetworkCswIndexer(
             httpClient, index, indexName,
             json.optString("geoNetworkUrl", null),
+            json.optString("geoNetworkPublicUrl", null),
             json.optString("geoNetworkVersion", null),
             categories.isEmpty() ? null : categories);
     }
 
     public JSONObject toJSON() {
         return this.getJsonBase()
-            .put("geoNetworkUrl", this.geoNetworkUrl)
-            .put("geoNetworkVersion", this.geoNetworkVersion)
             .put("geoNetworkCategories", this.geoNetworkCategories);
-    }
-
-    @Override
-    public boolean validate() {
-        if (!super.validate()) {
-            return false;
-        }
-        if (this.geoNetworkUrl == null || this.geoNetworkUrl.isEmpty()) {
-            return false;
-        }
-        return true;
     }
 
     @Override
@@ -122,7 +107,7 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
     protected GeoNetworkRecord harvestEntity(SearchClient searchClient, String id, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
 
-        String urlBase = String.format("%s/srv/eng/csw", this.geoNetworkUrl);
+        String urlBase = String.format("%s/srv/eng/csw", this.getGeoNetworkUrl());
         URIBuilder uriBuilder;
         try {
             uriBuilder = new URIBuilder(urlBase);
@@ -212,8 +197,8 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     // Loop through mdb:MD_Metadata, parse them with ISO19115_3_2018_parser
                     Element metadataElement = IndexUtils.getXMLChild(searchResultsElement, "mdb:MD_Metadata");
 
-                    GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), null, "iso19115-3.2018", this.geoNetworkVersion);
-                    metadataRecordParser.parseRecord(geoNetworkRecord, this.geoNetworkUrl, metadataElement, logger);
+                    GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this, null, "iso19115-3.2018", this.getGeoNetworkVersion());
+                    metadataRecordParser.parseRecord(this, geoNetworkRecord, metadataElement, logger);
 
                     IndexResponse indexResponse = GeoNetworkCswIndexer.this.indexEntity(searchClient, geoNetworkRecord, logger);
 
@@ -248,7 +233,7 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         // GeoNetwork's CSW API URL
         // The request is provided as XML data in a POST request.
-        String urlBase = String.format("%s/srv/eng/csw", this.geoNetworkUrl);
+        String urlBase = String.format("%s/srv/eng/csw", this.getGeoNetworkUrl());
         URIBuilder uriBuilder;
         try {
             uriBuilder = new URIBuilder(urlBase);
@@ -380,8 +365,8 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
                     List<Element> metadataElements = IndexUtils.getXMLChildren(searchResultsElement, "mdb:MD_Metadata");
                     for (Element metadataElement : metadataElements) {
                         recordCounter++;
-                        GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this.getIndex(), null, "iso19115-3.2018", this.geoNetworkVersion);
-                        metadataRecordParser.parseRecord(geoNetworkRecord, this.geoNetworkUrl, metadataElement, logger);
+                        GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this, null, "iso19115-3.2018", this.getGeoNetworkVersion());
+                        metadataRecordParser.parseRecord(this, geoNetworkRecord, metadataElement, logger);
 
                         // Index records in thread.
                         // NOTE: The record parsing can't be threaded with the CSW API
@@ -457,8 +442,9 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
 
         if (this.geoNetworkCategories != null && !this.geoNetworkCategories.isEmpty()) {
             // 3.x = _cat, 4.x = "cat"
+            String geoNetworkVersion = this.getGeoNetworkVersion();
             String categoryPropertyName =
-                    (this.geoNetworkVersion != null && this.geoNetworkVersion.startsWith("3.")) ?
+                    (geoNetworkVersion != null && geoNetworkVersion.startsWith("3.")) ?
                     "_cat" : "cat";
 
             for (String category : this.geoNetworkCategories) {
@@ -511,22 +497,6 @@ public class GeoNetworkCswIndexer extends AbstractIndexer<GeoNetworkRecord> {
         }
 
         return constraintFilterStr;
-    }
-
-    public String getGeoNetworkUrl() {
-        return this.geoNetworkUrl;
-    }
-
-    public void setGeoNetworkUrl(String geoNetworkUrl) {
-        this.geoNetworkUrl = geoNetworkUrl;
-    }
-
-    public String getGeoNetworkVersion() {
-        return this.geoNetworkVersion;
-    }
-
-    public void setGeoNetworkVersion(String geoNetworkVersion) {
-        this.geoNetworkVersion = geoNetworkVersion;
     }
 
     public List<String> getGeoNetworkCategories() {

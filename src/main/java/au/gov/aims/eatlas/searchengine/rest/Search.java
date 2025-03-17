@@ -33,7 +33,11 @@ import au.gov.aims.eatlas.searchengine.search.IndexSummary;
 import au.gov.aims.eatlas.searchengine.search.SearchResult;
 import au.gov.aims.eatlas.searchengine.search.SearchResults;
 import au.gov.aims.eatlas.searchengine.search.Summary;
-import co.elastic.clients.elasticsearch._types.*;
+import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
+import co.elastic.clients.elasticsearch._types.Script;
+import co.elastic.clients.elasticsearch._types.ScriptLanguage;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScore;
 import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScoreQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.GeoShapeFieldQuery;
@@ -77,7 +81,7 @@ public class Search {
             @QueryParam("start") Integer start, // The index of the first element (offset)
             @QueryParam("hits") Integer hits, // Results per page
             @QueryParam("wkt") String wkt, // Well Known Text, used for GIS search
-            @QueryParam("sorts") List<String> sorts, // Sort fields and their order 
+            @QueryParam("sorts") List<String> sorts, // Sort fields and their order
             @QueryParam("idx") List<String> idx, // List of indexes used for the summary
             @QueryParam("fidx") List<String> fidx // List of indexes to filter the search results (optional)
     ) {
@@ -102,7 +106,7 @@ public class Search {
                 .setStatus(status);
             return Response.status(status).entity(errorMessage.toString()).cacheControl(ServletUtils.getNoCacheControl()).build();
         }
-        
+
         List<SortOptions> sortOptionsList = new ArrayList<>();
         // Process each string
         for (String sortCriteria : sorts) {
@@ -119,7 +123,7 @@ public class Search {
                 sortOptionsList.add(sortOption);
             }
         }
-        
+
 
         SearchResults results = null;
         try {
@@ -290,8 +294,8 @@ public class Search {
      *
      * https://medium.com/everything-full-stack/elasticsearch-scroll-search-e92eb29bf773
      */
-    public static List<SearchResult> search(SearchClient searchClient, AbstractLogger logger, String searchText, 
-                                            String wkt, List<SortOptions> sortOptionsList, int from, int size, 
+    public static List<SearchResult> search(SearchClient searchClient, AbstractLogger logger, String searchText,
+                                            String wkt, List<SortOptions> sortOptionsList, int from, int size,
                                             String ... indexes)
             throws IOException, ParseException {
 

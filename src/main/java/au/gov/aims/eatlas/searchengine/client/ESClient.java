@@ -24,7 +24,12 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.HealthStatus;
 import co.elastic.clients.elasticsearch._types.analysis.Analyzer;
 import co.elastic.clients.elasticsearch._types.analysis.CustomAnalyzer;
-import co.elastic.clients.elasticsearch._types.mapping.*;
+import co.elastic.clients.elasticsearch._types.mapping.DateProperty;
+import co.elastic.clients.elasticsearch._types.mapping.DoubleNumberProperty;
+import co.elastic.clients.elasticsearch._types.mapping.GeoShapeProperty;
+import co.elastic.clients.elasticsearch._types.mapping.Property;
+import co.elastic.clients.elasticsearch._types.mapping.TextProperty;
+import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 import co.elastic.clients.elasticsearch.cat.IndicesResponse;
 import co.elastic.clients.elasticsearch.cat.indices.IndicesRecord;
 import co.elastic.clients.elasticsearch.cluster.HealthResponse;
@@ -79,7 +84,7 @@ public class ESClient implements SearchClient {
         // Add support for Java 8 time types (needed for LocalDate publishedOn field)
         ObjectMapper mapper = jacksonJsonpMapper.objectMapper();
         mapper.registerModule(new JavaTimeModule());
-        
+
         this.transport = new RestClientTransport(this.restClient, jacksonJsonpMapper);
         this.elasticsearchClient = new ElasticsearchClient(transport);
     }

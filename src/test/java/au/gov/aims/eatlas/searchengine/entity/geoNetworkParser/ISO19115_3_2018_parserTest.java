@@ -1,6 +1,7 @@
 package au.gov.aims.eatlas.searchengine.entity.geoNetworkParser;
 
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
+import au.gov.aims.eatlas.searchengine.index.GeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +19,11 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
@@ -38,20 +43,20 @@ class ISO19115_3_2018_parserTest {
 
     @BeforeEach
     void setUp() throws ParserConfigurationException {
-        mocks = MockitoAnnotations.openMocks(this);
-        
+        this.mocks = MockitoAnnotations.openMocks(this);
+
         // Initialize the DocumentBuilder
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        xmlParser = factory.newDocumentBuilder();
-        
-        parser = new ISO19115_3_2018_parser();
+        this.xmlParser = factory.newDocumentBuilder();
+
+        this.parser = new ISO19115_3_2018_parser();
     }
 
     @AfterEach
     void tearDown() throws Exception {
-        if (mocks != null) {
-            mocks.close();
+        if (this.mocks != null) {
+            this.mocks.close();
         }
     }
 
@@ -66,11 +71,12 @@ class ISO19115_3_2018_parserTest {
                 InputStream recordInputStream = getClass().getClassLoader()
                         .getResourceAsStream(fileName)
         ) {
-            Document xmlRecord = xmlParser.parse(recordInputStream);
+            Document xmlRecord = this.xmlParser.parse(recordInputStream);
             Element rootElement = xmlRecord.getDocumentElement();
 
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, null, metadataSchema, geoNetworkVersion);
-            parser.parseRecord(geoNetworkRecord, "https://eatlas.org.au/geonetwork", rootElement, mockLogger);
+            GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", geoNetworkVersion);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(indexer, null, metadataSchema, geoNetworkVersion);
+            this.parser.parseRecord(indexer, geoNetworkRecord, rootElement, this.mockLogger);
 
             Assertions.assertEquals("0fd70612-a07a-492a-bacf-8e0b7951da4d", geoNetworkRecord.getId(), "Wrong ID");
             Assertions.assertEquals("f870ce32-eb6e-45bf-9283-857e35da1645", geoNetworkRecord.getParentUUID(), "Wrong parent ID");
@@ -93,15 +99,15 @@ class ISO19115_3_2018_parserTest {
             Assertions.assertTrue(document.contains("eAtlas Data Manager"), "The document should contain a point of contact");
             Assertions.assertTrue(document.contains("Principal investigator"), "The document should contain principal investigators");
             Assertions.assertTrue(document.contains("Experimental data in csv file + metadata"), "The document should contain online resources");
-            
+
             Assertions.assertEquals("https://eatlas.org.au/data/uuid/0fd70612-a07a-492a-bacf-8e0b7951da4d", geoNetworkRecord.getLink().toString());
         }
     }
-    
+
     // Method providing test arguments for testParseWKT
     static Stream<Arguments> provideXmlFilesAndExpectedWktResults() {
         return Stream.of(
-                Arguments.of("geonetworkRecords/geonetwork3/iso19115-3-2018_8cfc0117-678f-4904-b11c-30be6e71ca80.xml", 
+                Arguments.of("geonetworkRecords/geonetwork3/iso19115-3-2018_8cfc0117-678f-4904-b11c-30be6e71ca80.xml",
                         "MULTIPOLYGON (((164.138460924232 -28.890553467287802, 165.061312486732 -26.478132044632595, 168.928499986732 -25.926121103473207, 170.598421861732 -26.478132044632595, 171.74099998673196 -28.273119780279693, 171.301546861732 -30.909470252182096, 168.137484361732 -32.6279823916197, 164.797640611732 -31.473356223177213, 164.138460924232 -28.890553467287802)), ((109.190340807045 -25.334281810757304, 110.569124986732 -19.857336624747205, 114.72745018204499 -16.562688834451592, 118.347445299232 -13.3337019587606, 123.252840807045 -11.534052879834306, 129.333773424232 -9.717380582625935, 133.464632799232 -8.893414805390606, 135.381747057045 -9.113146801745216, 140.320101549232 -10.625717949522098, 142.061434557045 -9.286666824257864, 144.610262682045 -9.460100960246038, 146.719637682045 -12.30800245344399, 151.026278307045 -14.019554430356195, 157.32693748673196 -14.059522494123996, 158.67276268204503 -15.633814236359498, 157.09073143204503 -18.656848547896104, 157.09073143204503 -20.3963152554643, 158.321200182045 -24.2972271512201, 159.787874986732 -25.965637066816896, 162.512484361732 -27.3792661801181, 163.083773424232 -30.152429407470095, 163.083773424232 -32.886678752251505, 160.403109361732 -35.108842523583, 156.18435936173196 -34.4591815606572, 155.157137682045 -35.54133294510241, 153.020296861732 -40.1181466819116, 153.13565330704498 -42.04128612503661, 151.99307518204498 -45.3445680638606, 149.065218736732 -47.01598342624889, 144.873934557045 -46.9878869782666, 142.237215807045 -45.8365967530215, 140.303622057045 -41.910605904740294, 138.194247057045 -40.7224379051572, 133.904085924232 -38.726393013141, 131.662874986732 -37.44667866215649, 130.388460924232 -35.43174890573939, 127.488070299232 -36.03816056606551, 125.202914049232 -37.4117814859882, 122.022372057045 -37.9356946073266, 115.166903307045 -38.3504331680361, 110.964632799232 -35.5748491964089, 111.47549705704502 -32.33373201464669, 110.157137682045 -29.6977744233714, 109.190340807045 -25.334281810757304), (114.01883201798199 -24.584779021778402, 114.469271471107 -25.787710955691807, 114.62308006485802 -26.438789670020505, 114.16165428360702 -26.880613356367405, 114.50223045548199 -27.933934976957104, 115.073519517982 -28.9578647350286, 115.31521873673199 -30.180924664139283, 115.79861717423199 -31.3139299024419, 116.534701158607 -32.0711117171235, 117.116976549232 -33.0986161195277, 119.072542955482 -33.61250254144579, 121.247835924232 -33.42932009691479, 122.97268943985702 -33.365114659343, 124.060335924232 -32.8220751414258, 125.752230455482 -32.2292395617814, 126.37845115860702 -32.052490418112, 128.432894517982 -31.800732407899098, 129.410677721107 -31.454614241304697, 131.212435533607 -31.304543457631112, 132.794466783607 -31.716660082179708, 134.123812486732 -32.0804209449381, 135.354281236732 -33.4109805269413, 135.760775377357 -33.986810970251405, 137.232943346107 -32.978887967518006, 137.628451158607 -31.782056269188303, 138.001986314857 -31.884728312929198, 138.727083971107 -33.9139037935842, 140.880404283607 -33.8956672427574, 140.836458971107 -34.5225673363354, 140.188265611732 -36.4369163951616, 141.188021471107 -37.8294725914858, 142.627230455482 -38.2448125598751, 143.539095689857 -38.45159820024178, 144.582796861732 -37.7426472071064, 145.198031236732 -37.6991962718184, 145.846224596107 -38.2102909064402, 146.813021471107 -38.39134671857191, 147.373324205482 -37.8034356875888, 148.548861314857 -37.5861046093904, 149.614535142982 -37.4379558932574, 149.889193346107 -36.029276241744, 150.548373033607 -34.802695852039, 150.845003892982 -33.72222560932061, 151.559115221107 -32.757424512230294, 152.273226549232 -32.12695286113329, 152.811556627357 -30.6640796219217, 152.866488267982 -29.7812434183181, 153.196078111732 -28.54369293238691, 152.85550193985702 -27.5839450362973, 152.78958397110696 -26.093972243229018, 152.18533592423202 -25.1230913315693, 151.581087877357 -24.494833345862702, 150.910921861732 -23.903603201060605, 150.427523424232 -23.772965167874602, 150.207796861732 -23.057177585914303, 149.328890611732 -22.631946682263504, 149.010287096107 -21.481375727803908, 148.395052721107 -20.6304055074923, 148.032503892982 -20.3525445259136, 147.208529283607 -20.270118922597405, 146.439486314857 -19.4331174018606, 145.978060533607 -18.935060231585013, 145.802279283607 -18.174753862036297, 145.769320299232 -17.557823174830204, 145.285921861732 -16.707428490879693, 145.110140611732 -15.6734849189382, 145.011263658607 -15.143915824730598, 144.472933580482 -14.655538357404396, 144.132357408607 -15.006008628835005, 143.626986314857 -14.772424777557703, 143.286410142982 -13.696892336485504, 143.231478502357 -12.991376275674412, 142.781039049232 -12.112037606743087, 142.605257799232 -11.315988235094608, 142.396517564857 -11.326760785643401, 142.165804674232 -12.44482282616309, 141.946078111732 -13.728911849699003, 142.143832017982 -15.239337490410293, 141.726351549232 -16.791590244225304, 141.407748033607 -18.091228185729392, 140.979281236732 -18.612604481148708, 139.803744127357 -18.64383678320729, 138.869906236732 -17.91360418366739, 138.705111314857 -17.327237934574, 137.760287096107 -16.90725173662291, 136.562777330482 -16.391492640537507, 135.958529283607 -15.789807737191282, 135.134554674232 -15.345310798795495, 134.629183580482 -14.8149133725164, 135.343294908607 -14.059522494123996, 135.738802721107 -13.012785594498908, 135.552035142982 -12.659297553802105, 134.837923814857 -12.927137255684997, 133.871126939857 -12.509183993348202, 133.387728502357 -12.197957853583404, 132.519808580482 -13.216081523190695, 131.487093736732 -12.937844909401207, 130.871859361732 -13.044896105657585, 130.641146471107 -13.867612443087694, 130.454378892982 -15.47240777536328, 129.498568346107 -16.728472415970316, 128.476839830482 -16.812624862705988, 127.773714830482 -16.011692865878913, 127.488070299232 -15.493583037701697, 127.58694725235702 -14.751177362393506, 127.03763084610699 -14.368371734825985, 125.90603904923199 -15.0378412959803, 125.18094139298199 -15.9483221151022, 125.312777330482 -16.47579275100439, 124.554720689857 -16.823141297195832, 124.10428123673202 -17.557823174830204, 123.47806053360699 -17.997214238201195, 122.280550767982 -18.654246274750392, 121.61038475235699 -19.526334580745, 120.050326158607 -20.280424522226397, 118.325472642982 -20.640686964580382, 117.523470689857 -21.112878192934005, 116.51272850235699 -21.225572593495286, 115.39212303360699 -21.981444452141986, 114.72195701798202 -22.713045394644297, 114.205599596107 -23.53144261606451, 114.01883201798199 -24.584779021778402), (144.92886619767 -41.2180738848275, 145.642977525795 -42.0881838226326, 145.796786119545 -42.5269231481506, 145.63199119767 -42.7370769204489, 146.170321275795 -43.18730447767, 146.70865135392 -43.3313205522309, 146.97232322892 -42.9143449530853, 147.554598619545 -42.66441168871761, 147.80728416642 -42.4215802172387, 147.972079088295 -41.736631805548, 148.147860338295 -40.96968438988691, 147.290926744545 -41.1602003485326, 147.093172838295 -41.440821003215994, 146.37906151017 -41.391387463621705, 145.56607322892 -41.2015438088208, 144.97281151017 -40.936494848939, 144.92886619767 -41.2180738848275)), ((102.087679674232 -10.92790931688458, 102.615023424232 -8.806570569230487, 105.99881248673199 -9.717380582625935, 109.206820299232 -11.186686118066902, 107.976351549232 -13.248165469877407, 105.42752342423199 -14.059522494123996, 103.01053123673202 -13.034193064686605, 102.087679674232 -10.92790931688458)), ((93.16678123673239 -11.574416739732982, 94.7488124867324 -8.980238449017463, 97.2097499867324 -8.502456389246419, 99.1433437367324 -9.197206190300292, 100.110140611732 -10.92790931688458, 100.417757799232 -12.734321287453099, 99.31912498673242 -14.698049753046703, 96.7263515492324 -15.758089932802804, 94.00174217423242 -14.485410490028698, 93.16678123673239 -11.574416739732982)))"),
                 Arguments.of("geonetworkRecords/geonetwork3/iso19115-3-2018_09ac8e36-5d65-40f9-9bb7-c32a0dd9f24f.xml",
                         "POLYGON ((108.84748496956072 -22.30507429122079, 119.8628170403583 -10.684919738574393, 122.31804165854811 -11.271204821048414, 124.242406899832 -10.42398102235289, 127.49392058338067 -8.591578798146685, 129.75007293523078 -8.591578798146685, 130.3472897342499 -10.880477041265351, 129.81643035734402 -11.726382415605357, 129.9491452015705 -12.763930535633023, 128.7547116035322 -14.18357317398548, 127.36120573915422 -13.53932744032555, 125.63591276421 -13.216543831150489, 123.31340299024667 -15.274560757952344, 122.11896939220837 -16.61442055100747, 121.78718228164219 -17.755507307509546, 121.05725063839657 -19.202986728882806, 119.59738735190531 -19.32826938582585, 115.15144007031836 -20.699927790973646, 112.82893029635501 -22.30507429122079, 108.84748496956072 -22.30507429122079))"),
@@ -125,23 +131,24 @@ class ISO19115_3_2018_parserTest {
                         "MULTIPOLYGON (((142.3430729249374 -9.809321980495367, 142.3430729249374 -9.808321980495366, 142.34407292493736 -9.808321980495366, 142.34407292493736 -9.809321980495367, 142.3430729249374 -9.809321980495367)), ((142.1682949896024 -9.97181744955857, 142.1682949896024 -9.970817449558568, 142.16929498960238 -9.970817449558568, 142.16929498960238 -9.97181744955857, 142.1682949896024 -9.97181744955857)))")
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("provideXmlFilesAndExpectedWktResults")
     public void testParseWkt(String fileName, String expectedWkt) throws SAXException, IOException {
         String index = "gn-test";
         String geoNetworkVersion = "3.0";
         String metadataSchema = "iso19115-3.2018";
-        
+
         try (
                 InputStream recordInputStream = getClass().getClassLoader()
                         .getResourceAsStream(fileName)
         ) {
-            Document document = xmlParser.parse(recordInputStream);
+            Document document = this.xmlParser.parse(recordInputStream);
             Element rootElement = document.getDocumentElement();
-            
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, null, metadataSchema, geoNetworkVersion);
-            parser.parseRecord(geoNetworkRecord, "https://eatlas.org.au/geonetwork", rootElement, mockLogger);
+
+            GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", geoNetworkVersion);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(indexer, null, metadataSchema, geoNetworkVersion);
+            this.parser.parseRecord(indexer, geoNetworkRecord, rootElement, this.mockLogger);
 
             Assertions.assertEquals(expectedWkt, geoNetworkRecord.getWkt(), "Wrong WKT");
         }
@@ -169,7 +176,7 @@ class ISO19115_3_2018_parserTest {
         String index = "gn-test";
         String geoNetworkVersion = "3.0";
         String metadataSchema = "iso19115-3.2018";
-        
+
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
             // Ensure the file was found
             assertNotNull(inputStream, "XML file not found in resources!");
@@ -178,18 +185,19 @@ class ISO19115_3_2018_parserTest {
             String xmlAsString = new BufferedReader(new InputStreamReader(inputStream))
                     .lines()
                     .collect(Collectors.joining("\n"));
-            
+
             String recordXmlString = xmlAsString.replace("<gco:DateTime>2024-03-23</gco:DateTime>", dateXML);
 
             // Re-create the InputStream for parsing
             InputStream reParsedStream = new ByteArrayInputStream(recordXmlString.getBytes());
-            Document document = xmlParser.parse(reParsedStream);
+            Document document = this.xmlParser.parse(reParsedStream);
             Element rootElement = document.getDocumentElement();
 
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, null, metadataSchema, geoNetworkVersion);
-            parser.parseRecord(geoNetworkRecord, "https://eatlas.org.au/geonetwork", rootElement, mockLogger);
+            GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", geoNetworkVersion);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(indexer, null, metadataSchema, geoNetworkVersion);
+            this.parser.parseRecord(indexer, geoNetworkRecord, rootElement, this.mockLogger);
 
-            Assertions.assertEquals(LocalDate.parse(expectedDateString, DateTimeFormatter.ISO_DATE), 
+            Assertions.assertEquals(LocalDate.parse(expectedDateString, DateTimeFormatter.ISO_DATE),
                     geoNetworkRecord.getPublishedOn(), "Wrong publishedOn date");
         }
     }
@@ -213,11 +221,12 @@ class ISO19115_3_2018_parserTest {
         try (
                 InputStream recordInputStream = getClass().getClassLoader().getResourceAsStream(fileName)
         ) {
-            Document document = xmlParser.parse(recordInputStream);
+            Document document = this.xmlParser.parse(recordInputStream);
             Element rootElement = document.getDocumentElement();
 
-            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(index, null, metadataSchema, geoNetworkVersion);
-            parser.parseRecord(geoNetworkRecord, "https://eatlas.org.au/geonetwork", rootElement, mockLogger);
+            GeoNetworkIndexer indexer = new GeoNetworkIndexer(null, index, index, "http://eatlas-geonetwork/geonetwork", "https://eatlas.org.au/geonetwork", geoNetworkVersion);
+            GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(indexer, null, metadataSchema, geoNetworkVersion);
+            this.parser.parseRecord(indexer, geoNetworkRecord, rootElement, this.mockLogger);
 
             Assertions.assertEquals(LocalDate.parse(expectedDateString, DateTimeFormatter.ISO_DATE),
                     geoNetworkRecord.getPublishedOn(), "Wrong publishedOn date");

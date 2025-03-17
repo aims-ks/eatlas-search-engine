@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity.geoNetworkParser;
 
+import au.gov.aims.eatlas.searchengine.index.AbstractGeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.entity.WikiFormatter;
@@ -43,7 +44,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class ISO19139_parser extends AbstractParser {
-    public void parseRecord(GeoNetworkRecord record, String geoNetworkUrlStr, Element rootElement, AbstractLogger logger) {
+    public void parseRecord(AbstractGeoNetworkIndexer<?> indexer, GeoNetworkRecord record, Element rootElement, AbstractLogger logger) {
         // UUID
         // NOTE: Get it from the XML document if not provided already
         if (record.getId() == null) {
@@ -80,7 +81,7 @@ public class ISO19139_parser extends AbstractParser {
         } else {
             record.setPublishedOn(this.parseMetadataTimestamp(rootElement));
         }
-        
+
         String dataAbstract = IndexUtils.parseCharacterString(IndexUtils.getXMLChild(mdDataIdentification, "gmd:abstract"));
 
         // Point of contact in MD_DataIdentification
@@ -123,27 +124,7 @@ public class ISO19139_parser extends AbstractParser {
                 }
             }
 
-            if (fileName != null) {
-                String previewUrlStr;
-                if (fileName.startsWith("http://") || fileName.startsWith("https://")) {
-                    // Some records put the full URL in the preview field.
-                    // Example:
-                    //     https://eatlas.org.au/geonetwork/srv/eng/xml.metadata.get?uuid=a86f062e-f47c-49f1-ace5-3e03a2272088
-                    previewUrlStr = fileName;
-                } else {
-                    previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
-                            geoNetworkUrlStr, record.getId(), fileName);
-                }
-
-                try {
-                    URL thumbnailUrl = new URL(previewUrlStr);
-                    record.setThumbnailUrl(thumbnailUrl);
-                } catch(Exception ex) {
-                    record.setThumbnailUrl(null);
-                    logger.addMessage(Level.ERROR, String.format("Invalid metadata thumbnail URL found in record %s: %s",
-                            record.getId(), previewUrlStr), ex);
-                }
-            }
+            record.setThumbnailUrl(AbstractParser.getThumbnailPublicUrl(indexer, record, fileName, logger));
         }
 
         // Langcode (example: "en")
@@ -270,25 +251,8 @@ public class ISO19139_parser extends AbstractParser {
 
         // Set the metadata link to the original GeoNetwork URL.
         // If we find a valid "point-of-truth" URL in the document,
-        // we will use that one instead.
-        URL metadataRecordUrl = null;
-        if (pointOfTruthUrlStr != null) {
-            try {
-                metadataRecordUrl = new URL(pointOfTruthUrlStr);
-            } catch(Exception ex) {
-                logger.addMessage(Level.ERROR, String.format("Invalid metadata record URL found in Point Of Truth of record %s: %s",
-                        record.getId(), pointOfTruthUrlStr), ex);
-            }
-        }
-
-        if (metadataRecordUrl == null) {
-            try {
-                metadataRecordUrl = this.getMetadataLink(record, geoNetworkUrlStr);
-            } catch(Exception ex) {
-                logger.addMessage(Level.ERROR, String.format("Invalid metadata record URL for record %s: %s",
-                        record.getId(), geoNetworkUrlStr), ex);
-            }
-        }
+        // we use that one instead.
+        URL metadataRecordUrl = AbstractParser.getPublicMetadataLink(indexer, record, pointOfTruthUrlStr, logger);
 
         record.setLink(metadataRecordUrl);
     }
