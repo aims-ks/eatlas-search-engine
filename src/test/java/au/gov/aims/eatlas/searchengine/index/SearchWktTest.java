@@ -427,7 +427,7 @@ public class SearchWktTest extends IndexerTestBase {
 
     private void indexImages(String index, SearchEngineConfig config, MockSearchClient searchClient, MockHttpClient mockHttpClient, AbstractLogger logger) throws IOException, ParseException {
         searchClient.createIndex(index);
-        DrupalMediaIndexer indexer = new DrupalMediaIndexer(mockHttpClient, index, index, "http://domain.com", "11.0", "image", "field_preview", "field_title", "field_description", "field_geojson");
+        DrupalMediaIndexer indexer = new DrupalMediaIndexer(mockHttpClient, index, index, "http://domain.com", "http://domain.com", "11.0", "image", "field_preview", "field_title", "field_description", "field_geojson");
 
         // Add the indexer to the SearchEngineConfig, so the EntityDeserializer (Jackson)
         //   can serialise / deserialise the Entity.

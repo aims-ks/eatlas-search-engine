@@ -207,6 +207,7 @@ public class SettingsPage {
                 DrupalNodeIndexer drupalNodeIndexer = (DrupalNodeIndexer)indexer;
 
                 drupalNodeIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
+                drupalNodeIndexer.setDrupalPublicUrl(FormUtils.getFormStringValue(form, index + "_drupalPublicUrl"));
                 drupalNodeIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
                 drupalNodeIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
                 drupalNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
@@ -218,6 +219,7 @@ public class SettingsPage {
                 DrupalMediaIndexer drupalMediaIndexer = (DrupalMediaIndexer)indexer;
 
                 drupalMediaIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
+                drupalMediaIndexer.setDrupalPublicUrl(FormUtils.getFormStringValue(form, index + "_drupalPublicUrl"));
                 drupalMediaIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
                 drupalMediaIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalMediaType"));
                 drupalMediaIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
@@ -230,6 +232,7 @@ public class SettingsPage {
                 DrupalExternalLinkNodeIndexer drupalExternalLinkNodeIndexer = (DrupalExternalLinkNodeIndexer)indexer;
 
                 drupalExternalLinkNodeIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
+                drupalExternalLinkNodeIndexer.setDrupalPublicUrl(FormUtils.getFormStringValue(form, index + "_drupalPublicUrl"));
                 drupalExternalLinkNodeIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
                 drupalExternalLinkNodeIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalNodeType"));
                 drupalExternalLinkNodeIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));
@@ -242,6 +245,7 @@ public class SettingsPage {
                 DrupalBlockIndexer drupalBlockIndexer = (DrupalBlockIndexer)indexer;
 
                 drupalBlockIndexer.setDrupalUrl(FormUtils.getFormStringValue(form, index + "_drupalUrl"));
+                drupalBlockIndexer.setDrupalPublicUrl(FormUtils.getFormStringValue(form, index + "_drupalPublicUrl"));
                 drupalBlockIndexer.setDrupalVersion(FormUtils.getFormStringValue(form, index + "_drupalVersion"));
                 drupalBlockIndexer.setDrupalBundleId(FormUtils.getFormStringValue(form, index + "_drupalBlockType"));
                 drupalBlockIndexer.setDrupalPreviewImageField(FormUtils.getFormStringValue(form, index + "_drupalPreviewImageField"));

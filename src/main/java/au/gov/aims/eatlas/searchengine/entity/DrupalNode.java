@@ -33,12 +33,12 @@ public class DrupalNode extends AbstractDrupalEntity {
     }
 
     // Load from Drupal JSON:API output
-    public DrupalNode(String index, JSONObject jsonApiNode, AbstractLogger logger) {
+    public DrupalNode(AbstractDrupalEntityIndexer<?> indexer, JSONObject jsonApiNode, AbstractLogger logger) {
         super(jsonApiNode, logger);
-        this.setIndex(index);
+        this.setIndex(indexer.getIndex());
 
         if (jsonApiNode != null) {
-            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiNode, logger);
+            URL publicBaseUrl = AbstractDrupalEntity.getDrupalPublicBaseUrl(indexer, jsonApiNode, logger);
 
             // UUID
             this.setId(jsonApiNode.optString("id", null));
@@ -56,12 +56,12 @@ public class DrupalNode extends AbstractDrupalEntity {
 
             // Node URL
             String nodeRelativePath = DrupalNode.getNodeRelativeUrl(jsonApiNode);
-            if (baseUrl != null && nodeRelativePath != null) {
+            if (publicBaseUrl != null && nodeRelativePath != null) {
                 try {
-                    this.setLink(new URL(baseUrl, nodeRelativePath));
+                    this.setLink(new URL(publicBaseUrl, nodeRelativePath));
                 } catch(Exception ex) {
                     logger.addMessage(Level.ERROR,
-                            String.format("Can not craft node URL from Drupal base URL: %s", baseUrl), ex);
+                            String.format("Can not craft node URL from Drupal base URL: %s", publicBaseUrl), ex);
                 }
             }
 

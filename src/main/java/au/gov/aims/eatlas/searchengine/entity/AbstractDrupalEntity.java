@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.index.AbstractDrupalEntityIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.Level;
 import org.json.JSONObject;
@@ -54,5 +55,18 @@ public abstract class AbstractDrupalEntity extends Entity {
         }
 
         return null;
+    }
+
+    public static URL getDrupalPublicBaseUrl(AbstractDrupalEntityIndexer<?> indexer, JSONObject jsonApiEntity, AbstractLogger logger) {
+        String publicUrl = indexer.getDrupalPublicUrl();
+        if (publicUrl != null && !publicUrl.isBlank()) {
+            try {
+                return new URL(publicUrl);
+            } catch(Exception ex) {
+                logger.addMessage(Level.ERROR,
+                        String.format("Invalid Drupal public URL found in: %s", indexer.getIndex()), ex);
+            }
+        }
+        return AbstractDrupalEntity.getDrupalBaseUrl(jsonApiEntity, logger);
     }
 }

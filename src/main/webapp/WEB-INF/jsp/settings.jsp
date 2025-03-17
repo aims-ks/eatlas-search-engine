@@ -288,6 +288,19 @@
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
                                             <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc"><strong>Example</strong>: <code>http://eatlas-webserver</code></div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalPublicUrl">
+                                                <span class="label">Drupal public URL</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalPublicUrl"
+                                                    name="${indexer.index}_drupalPublicUrl"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalPublicUrl}" />" />
+                                            </label>
+                                            <div class="desc">Drupal public base URL, used in search results.</div>
                                             <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au</code></div>
                                         </div>
 
@@ -379,6 +392,19 @@
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
                                             <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc"><strong>Example</strong>: <code>http://eatlas-webserver</code></div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalPublicUrl">
+                                                <span class="label">Drupal public URL</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalPublicUrl"
+                                                    name="${indexer.index}_drupalPublicUrl"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalPublicUrl}" />" />
+                                            </label>
+                                            <div class="desc">Drupal public base URL, used in search results.</div>
                                             <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au</code></div>
                                         </div>
 
@@ -484,6 +510,19 @@
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
                                             <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc"><strong>Example</strong>: <code>http://eatlas-webserver</code></div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalPublicUrl">
+                                                <span class="label">Drupal public URL</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalPublicUrl"
+                                                    name="${indexer.index}_drupalPublicUrl"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalPublicUrl}" />" />
+                                            </label>
+                                            <div class="desc">Drupal public base URL, used in search results.</div>
                                             <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au</code></div>
                                         </div>
 
@@ -589,6 +628,19 @@
                                                     value="<c:out value="${indexer.drupalUrl}" />" />
                                             </label>
                                             <div class="desc">Drupal base URL, used for API calls.</div>
+                                            <div class="desc"><strong>Example</strong>: <code>http://eatlas-webserver</code></div>
+                                        </div>
+
+                                        <div class="field">
+                                            <label for="${indexer.index}_drupalPublicUrl">
+                                                <span class="label">Drupal public URL</span>
+                                                <input type="text"
+                                                    id="${indexer.index}_drupalPublicUrl"
+                                                    name="${indexer.index}_drupalPublicUrl"
+                                                    data-lpignore="true"
+                                                    value="<c:out value="${indexer.drupalPublicUrl}" />" />
+                                            </label>
+                                            <div class="desc">Drupal public base URL, used in search results.</div>
                                             <div class="desc"><strong>Example</strong>: <code>https://eatlas.org.au</code></div>
                                         </div>
 

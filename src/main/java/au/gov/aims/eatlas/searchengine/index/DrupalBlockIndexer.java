@@ -22,13 +22,14 @@ public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock>
             String index,
             String indexName,
             String drupalUrl,
+            String drupalPublicUrl,
             String drupalVersion,
             String drupalBlockType,
             String drupalPreviewImageField,
             String drupalIndexedFields,
             String drupalGeoJSONField) {
 
-        super(httpClient, index, indexName, drupalUrl, drupalVersion, "block_content", drupalBlockType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
+        super(httpClient, index, indexName, drupalUrl, drupalPublicUrl, drupalVersion, "block_content", drupalBlockType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
     }
 
     public static DrupalBlockIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
@@ -39,6 +40,7 @@ public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock>
         return new DrupalBlockIndexer(
             httpClient, index, indexName,
             json.optString("drupalUrl", null),
+            json.optString("drupalPublicUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalBlockType", null),
             json.optString("drupalPreviewImageField", null),
@@ -68,7 +70,7 @@ public class DrupalBlockIndexer extends AbstractDrupalEntityIndexer<DrupalBlock>
 
     @Override
     public DrupalBlock createDrupalEntity(JSONObject jsonApiBlock, Map<String, JSONObject> jsonIncluded, AbstractLogger logger) {
-        DrupalBlock drupalBlock = new DrupalBlock(this.getIndex(), jsonApiBlock, logger);
+        DrupalBlock drupalBlock = new DrupalBlock(this, jsonApiBlock, logger);
 
         if (jsonApiBlock == null) {
             return drupalBlock;

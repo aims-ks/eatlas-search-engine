@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.index.DrupalExternalLinkNodeIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import org.json.JSONObject;
 
@@ -29,8 +30,8 @@ public class ExternalLink extends DrupalNode {
         super();
     }
 
-    public ExternalLink(String index, JSONObject jsonApiNode, AbstractLogger logger) {
-        super(index, jsonApiNode, logger);
+    public ExternalLink(DrupalExternalLinkNodeIndexer indexer, JSONObject jsonApiNode, AbstractLogger logger) {
+        super(indexer, jsonApiNode, logger);
     }
 
     public static ExternalLink load(JSONObject json, AbstractLogger logger) {

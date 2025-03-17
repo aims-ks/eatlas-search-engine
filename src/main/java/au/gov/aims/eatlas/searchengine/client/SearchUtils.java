@@ -210,22 +210,22 @@ public class SearchUtils {
         switch (newIndexType) {
             case "DrupalNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-node");
-                newIndexer = new DrupalNodeIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null);
+                newIndexer = new DrupalNodeIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "DrupalMediaIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-media");
-                newIndexer = new DrupalMediaIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null, null);
+                newIndexer = new DrupalMediaIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null, null, null);
                 break;
 
             case "DrupalExternalLinkNodeIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-extlink");
-                newIndexer = new DrupalExternalLinkNodeIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null, null);
+                newIndexer = new DrupalExternalLinkNodeIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null, null, null);
                 break;
 
             case "DrupalBlockIndexer":
                 newIndex = SearchUtils.generateUniqueIndexName("drupal-block");
-                newIndexer = new DrupalBlockIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null);
+                newIndexer = new DrupalBlockIndexer(httpClient, newIndex, newIndex, null, null, null, null, null, null, null);
                 break;
 
             case "GeoNetworkIndexer":

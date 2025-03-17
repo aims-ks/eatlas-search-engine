@@ -59,6 +59,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     private static final int INDEX_PAGE_SIZE = 50;
 
     private String drupalUrl;
+    private String drupalPublicUrl;
     private String drupalVersion;
     private String drupalEntityType; // Entity type. Example: node, media, user, etc
     private String drupalBundleId; // Content type (node type) or media type. Example: article, image, etc
@@ -71,6 +72,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
             String index,
             String indexName,
             String drupalUrl,
+            String drupalPublicUrl,
             String drupalVersion,
             String drupalEntityType,
             String drupalBundleId,
@@ -80,6 +82,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
 
         super(httpClient, index, indexName);
         this.drupalUrl = drupalUrl;
+        this.drupalPublicUrl = drupalPublicUrl;
         this.drupalVersion = drupalVersion;
         this.drupalEntityType = drupalEntityType;
         this.drupalBundleId = drupalBundleId;
@@ -95,6 +98,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     protected JSONObject getJsonBase() {
         return super.getJsonBase()
             .put("drupalUrl", this.drupalUrl)
+            .put("drupalPublicUrl", this.drupalPublicUrl)
             .put("drupalVersion", this.drupalVersion)
             .put("drupalPreviewImageField", this.drupalPreviewImageField)
             .put("drupalIndexedFields", this.drupalIndexedFields)
@@ -715,6 +719,14 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         this.drupalUrl = drupalUrl;
     }
 
+    public String getDrupalPublicUrl() {
+        return this.drupalPublicUrl;
+    }
+
+    public void setDrupalPublicUrl(String drupalPublicUrl) {
+        this.drupalPublicUrl = drupalPublicUrl;
+    }
+
     public String getDrupalVersion() {
         return this.drupalVersion;
     }
@@ -766,12 +778,25 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     public void updateThumbnail(SearchClient searchClient, JSONObject jsonApiEntity, Map<String, JSONObject> jsonIncluded, E drupalEntity, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
         URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiEntity, logger);
+        URL basePublicUrl = AbstractDrupalEntity.getDrupalPublicBaseUrl(this, jsonApiEntity, logger);
         String previewImageFieldType = AbstractDrupalEntityIndexer.getPreviewImageType(jsonApiEntity, this.getDrupalPreviewImageField());
         if (previewImageFieldType != null && baseUrl != null && this.getDrupalPreviewImageField() != null) {
             String previewImageUUID = AbstractDrupalEntityIndexer.getPreviewImageUUID(jsonApiEntity, this.getDrupalPreviewImageField());
             if (previewImageUUID != null) {
                 String previewImageRelativePath = AbstractDrupalEntityIndexer.findPreviewImageRelativePath(previewImageFieldType, previewImageUUID, jsonIncluded);
                 if (previewImageRelativePath != null) {
+                    URL thumbnailPublicUrl = null;
+                    try {
+                        thumbnailPublicUrl = new URL(basePublicUrl, previewImageRelativePath);
+                    } catch(Exception ex) {
+                        logger.addMessage(Level.WARNING,
+                                String.format("Exception occurred while creating a thumbnail URL for Drupal %s type %s, id: %s",
+                                        this.getDrupalEntityType(),
+                                        this.getDrupalBundleId(),
+                                        drupalEntity.getId()), ex);
+                    }
+                    drupalEntity.setThumbnailUrl(thumbnailPublicUrl);
+
                     URL thumbnailUrl = null;
                     try {
                         thumbnailUrl = new URL(baseUrl, previewImageRelativePath);
@@ -782,7 +807,6 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                                         this.getDrupalBundleId(),
                                         drupalEntity.getId()), ex);
                     }
-                    drupalEntity.setThumbnailUrl(thumbnailUrl);
 
                     // Create the thumbnail if it's missing or outdated
                     E oldEntity = this.getIndexedDrupalEntity(searchClient, drupalEntity.getId(), logger);

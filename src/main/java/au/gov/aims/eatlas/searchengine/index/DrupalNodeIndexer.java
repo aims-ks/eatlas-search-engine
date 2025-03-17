@@ -40,13 +40,14 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
             String index,
             String indexName,
             String drupalUrl,
+            String drupalPublicUrl,
             String drupalVersion,
             String drupalNodeType,
             String drupalPreviewImageField,
             String drupalIndexedFields,
             String drupalGeoJSONField) {
 
-        super(httpClient, index, indexName, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
+        super(httpClient, index, indexName, drupalUrl, drupalPublicUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, drupalIndexedFields, drupalGeoJSONField);
     }
 
     public static DrupalNodeIndexer fromJSON(HttpClient httpClient, String index, String indexName, JSONObject json) {
@@ -57,6 +58,7 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
         return new DrupalNodeIndexer(
             httpClient, index, indexName,
             json.optString("drupalUrl", null),
+            json.optString("drupalPublicUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
             json.optString("drupalPreviewImageField", null),
@@ -86,7 +88,7 @@ public class DrupalNodeIndexer extends AbstractDrupalEntityIndexer<DrupalNode> {
 
     @Override
     public DrupalNode createDrupalEntity(JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, AbstractLogger logger) {
-        DrupalNode drupalNode = new DrupalNode(this.getIndex(), jsonApiNode, logger);
+        DrupalNode drupalNode = new DrupalNode(this, jsonApiNode, logger);
 
         if (jsonApiNode == null) {
             return drupalNode;

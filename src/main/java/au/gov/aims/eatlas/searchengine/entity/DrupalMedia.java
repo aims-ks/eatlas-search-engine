@@ -33,12 +33,12 @@ public class DrupalMedia extends AbstractDrupalEntity {
     }
 
     // Load from Drupal JSON:API output
-    public DrupalMedia(String index, JSONObject jsonApiMedia, AbstractLogger logger) {
+    public DrupalMedia(AbstractDrupalEntityIndexer<?> indexer, JSONObject jsonApiMedia, AbstractLogger logger) {
         super(jsonApiMedia, logger);
-        this.setIndex(index);
+        this.setIndex(indexer.getIndex());
 
         if (jsonApiMedia != null) {
-            URL baseUrl = AbstractDrupalEntity.getDrupalBaseUrl(jsonApiMedia, logger);
+            URL publicBaseUrl = AbstractDrupalEntity.getDrupalPublicBaseUrl(indexer, jsonApiMedia, logger);
 
             // UUID
             this.setId(jsonApiMedia.optString("id", null));
@@ -53,12 +53,12 @@ public class DrupalMedia extends AbstractDrupalEntity {
 
             // Media URL
             String mediaRelativePath = DrupalMedia.getMediaRelativeUrl(jsonApiMedia);
-            if (baseUrl != null && mediaRelativePath != null) {
+            if (publicBaseUrl != null && mediaRelativePath != null) {
                 try {
-                    this.setLink(new URL(baseUrl, mediaRelativePath));
+                    this.setLink(new URL(publicBaseUrl, mediaRelativePath));
                 } catch(Exception ex) {
                     logger.addMessage(Level.ERROR,
-                            String.format("Can not craft media URL from Drupal base URL: %s", baseUrl), ex);
+                            String.format("Can not craft media URL from Drupal base URL: %s", publicBaseUrl), ex);
                 }
             }
 

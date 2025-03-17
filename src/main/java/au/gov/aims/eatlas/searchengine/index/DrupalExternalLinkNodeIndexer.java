@@ -43,6 +43,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             String index,
             String indexName,
             String drupalUrl,
+            String drupalPublicUrl,
             String drupalVersion,
             String drupalNodeType,
             String drupalPreviewImageField,
@@ -50,7 +51,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
             String drupalContentOverwriteField,
             String drupalGeoJSONField
     ) {
-        super(httpClient, index, indexName, drupalUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalGeoJSONField);
+        super(httpClient, index, indexName, drupalUrl, drupalPublicUrl, drupalVersion, "node", drupalNodeType, drupalPreviewImageField, null, drupalGeoJSONField);
         this.drupalExternalUrlField = drupalExternalUrlField;
         this.drupalContentOverwriteField = drupalContentOverwriteField;
     }
@@ -63,6 +64,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
         return new DrupalExternalLinkNodeIndexer(
             httpClient, index, indexName,
             json.optString("drupalUrl", null),
+            json.optString("drupalPublicUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalNodeType", null),
             json.optString("drupalPreviewImageField", null),
@@ -95,7 +97,7 @@ public class DrupalExternalLinkNodeIndexer extends AbstractDrupalEntityIndexer<E
 
     @Override
     public ExternalLink createDrupalEntity(JSONObject jsonApiNode, Map<String, JSONObject> jsonIncluded, AbstractLogger logger) {
-        return new ExternalLink(this.getIndex(), jsonApiNode, logger);
+        return new ExternalLink(this, jsonApiNode, logger);
     }
 
     @Override

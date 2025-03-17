@@ -43,6 +43,7 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String index,
             String indexName,
             String drupalUrl,
+            String drupalPublicUrl,
             String drupalVersion,
             String drupalMediaType,
             String drupalPreviewImageField,
@@ -51,7 +52,7 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
             String drupalGeoJSONField
     ) {
 
-        super(httpClient, index, indexName, drupalUrl, drupalVersion, "media", drupalMediaType,
+        super(httpClient, index, indexName, drupalUrl, drupalPublicUrl, drupalVersion, "media", drupalMediaType,
                 (drupalPreviewImageField == null || drupalPreviewImageField.isEmpty()) ? DEFAULT_PREVIEW_IMAGE_FIELD : drupalPreviewImageField,
                 drupalIndexedFields, drupalGeoJSONField);
 
@@ -66,6 +67,7 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
         return new DrupalMediaIndexer(
             httpClient, index, indexName,
             json.optString("drupalUrl", null),
+            json.optString("drupalPublicUrl", null),
             json.optString("drupalVersion", null),
             json.optString("drupalMediaType", null),
             json.optString("drupalPreviewImageField", null),
@@ -97,7 +99,7 @@ public class DrupalMediaIndexer extends AbstractDrupalEntityIndexer<DrupalMedia>
 
     @Override
     public DrupalMedia createDrupalEntity(JSONObject jsonApiMedia, Map<String, JSONObject> jsonIncluded, AbstractLogger logger) {
-        DrupalMedia drupalMedia = new DrupalMedia(this.getIndex(), jsonApiMedia, logger);
+        DrupalMedia drupalMedia = new DrupalMedia(this, jsonApiMedia, logger);
 
         if (jsonApiMedia == null) {
             return drupalMedia;

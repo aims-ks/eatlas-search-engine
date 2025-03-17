@@ -170,14 +170,14 @@ public class IndexerTest extends IndexerTestBase {
 
             // Create the Entities to index (with content overwrite)
             ExternalLink coralsoftheworldLink = new ExternalLink(
-                index,
+                drupalExternalLinkIndexer,
                 coralsoftheworldJson,
                 logger
             );
             coralsoftheworldLink.setDocument(coralsoftheworldTextContent);
 
             ExternalLink seagrasswatchLink = new ExternalLink(
-                index,
+                drupalExternalLinkIndexer,
                 seagrasswatchJson,
                 logger
             );
