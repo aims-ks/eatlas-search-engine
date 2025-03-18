@@ -25,6 +25,7 @@ import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.AbstractParser;
 import au.gov.aims.eatlas.searchengine.entity.geoNetworkParser.ISO19115_3_2018_parser;
 import au.gov.aims.eatlas.searchengine.logger.Level;
+import au.gov.aims.eatlas.searchengine.rest.ImageCache;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.client.utils.URIBuilder;
@@ -37,7 +38,9 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -199,6 +202,7 @@ public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRe
 
                     GeoNetworkRecord geoNetworkRecord = new GeoNetworkRecord(this, null, "iso19115-3.2018", this.getGeoNetworkVersion());
                     metadataRecordParser.parseRecord(this, geoNetworkRecord, metadataElement, logger);
+                    this.updateThumbnail(searchClient, geoNetworkRecord, logger);
 
                     IndexResponse indexResponse = GeoNetworkCswIndexer.this.indexEntity(searchClient, geoNetworkRecord, logger);
 
@@ -213,6 +217,33 @@ public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRe
         }
 
         return null;
+    }
+
+    public void updateThumbnail(SearchClient searchClient, GeoNetworkRecord geoNetworkRecord, AbstractLogger logger) {
+        URL thumbnailUrl = geoNetworkRecord.getThumbnailUrl();
+        if (thumbnailUrl == null) {
+            geoNetworkRecord.setCachedThumbnailFilename(null);
+        } else {
+            GeoNetworkRecord oldRecord = this.safeGet(searchClient, GeoNetworkRecord.class, geoNetworkRecord.getId(), logger);
+            boolean thumbnailOutdated =
+                geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), logger);
+
+            if (thumbnailOutdated) {
+                HttpClient httpClient = this.getHttpClient();
+
+                try {
+                    File cachedThumbnailFile = ImageCache.cache(httpClient, thumbnailUrl, this.getIndex(), geoNetworkRecord.getId(), logger);
+                    if (cachedThumbnailFile != null) {
+                        geoNetworkRecord.setCachedThumbnailFilename(cachedThumbnailFile.getName());
+                    }
+                } catch(Exception ex) {
+                    logger.addMessage(Level.WARNING,
+                            String.format("Exception occurred while creating a thumbnail for GeoNetwork record id: %s",
+                                    geoNetworkRecord.getId()), ex);
+                }
+                geoNetworkRecord.setThumbnailLastIndexed(System.currentTimeMillis());
+            }
+        }
     }
 
     @Override
@@ -562,6 +593,9 @@ public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRe
                 if (parentUUID != null && !parentUUID.isEmpty()) {
                     this.orphanMetadataRecordList.add(this.geoNetworkRecord.getId());
                 }
+
+                GeoNetworkCswIndexer.this.updateThumbnail(
+                        this.searchClient, this.geoNetworkRecord, this.logger);
 
                 try {
                     IndexResponse indexResponse = GeoNetworkCswIndexer.this.indexEntity(this.searchClient, this.geoNetworkRecord, this.logger);
