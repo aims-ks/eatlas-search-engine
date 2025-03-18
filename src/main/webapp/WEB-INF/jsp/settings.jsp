@@ -147,7 +147,7 @@
                         required="required"
                         value="<c:out value="${it.config.searchEngineBaseUrl}" default="${defaultSearchEngineBaseURL}" />" />
                 </label>
-                <div class="desc">Base URL used to craft URL to preview image in search results.</div>
+                <div class="desc">Base URL used to craft URL to cached preview image in search results.</div>
                 <div class="desc"><strong>Default</strong>: <code>${defaultSearchEngineBaseURL}</code></div>
             </div>
         </div>

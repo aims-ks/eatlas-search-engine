@@ -29,6 +29,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -43,7 +44,9 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,7 +74,8 @@ public class ImageCache {
     public Response getCachedImage(
             @Context HttpServletRequest httpRequest,
             @PathParam("index") String index,
-            @PathParam("filename") String filename
+            @PathParam("filename") String filename,
+            @QueryParam("crop") String crop // Optional query parameter. Example: 300x200
     ) {
         HttpSession session = httpRequest.getSession(true);
         AbstractLogger logger = SessionLogger.getInstance(session);
@@ -86,17 +90,74 @@ public class ImageCache {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        ContentType contentType = HttpClient.getContentType(filename);
-
         try {
-            byte[] responseBytes = FileUtils.readFileToByteArray(cachedFile);
+            byte[] responseBytes = null;
+
+            if (crop != null) {
+                String[] dimensions = crop.split("x");
+                if (dimensions.length == 2) {
+                    int width = -1;
+                    int height = -1;
+                    try {
+                        width = Integer.parseInt(dimensions[0]);
+                        height = Integer.parseInt(dimensions[1]);
+                    } catch (NumberFormatException e) {
+                        logger.addMessage(Level.WARNING, String.format("Invalid crop dimensions: %s", crop));
+                        return Response.status(Response.Status.BAD_REQUEST).build();
+                    }
+
+                    if (width <= 0 || width > 500 || height <= 0 || height > 500) {
+                        logger.addMessage(Level.WARNING, String.format("Invalid crop dimensions: %s", crop));
+                        return Response.status(Response.Status.BAD_REQUEST).build();
+                    }
+
+                    BufferedImage resizedImage = this.resizeCropImage(cachedFile, width, height);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(resizedImage, "jpg", baos);
+                    responseBytes = baos.toByteArray();
+                }
+            }
+
+            if (responseBytes == null) {
+                responseBytes = FileUtils.readFileToByteArray(cachedFile);
+            }
 
             // Return the JSON array with an OK status.
+            ContentType contentType = HttpClient.getContentType(filename);
             return Response.ok(responseBytes, contentType.toString()).build();
         } catch(Exception ex) {
             logger.addMessage(Level.ERROR, String.format("Server error: %s", ex.getMessage()), ex);
             return Response.serverError().entity(String.format("Server error: %s", ex.getMessage())).build();
         }
+    }
+
+    private BufferedImage resizeCropImage(File imageFile, int targetWidth, int targetHeight) throws IOException {
+        BufferedImage originalImage = ImageIO.read(imageFile);
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+
+        // Calculate the scaling factor to maintain aspect ratio
+        double scale = Math.max(
+            (double) targetWidth / originalWidth,
+            (double) targetHeight / originalHeight
+        );
+
+        int scaledWidth = (int) (scale * originalWidth);
+        int scaledHeight = (int) (scale * originalHeight);
+
+        // Resize the image
+        Image tmp = originalImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+        BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
+
+        Graphics2D g2d = resizedImage.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        // Crop the image to the target dimensions (center crop)
+        int x = (scaledWidth - targetWidth) / 2;
+        int y = (scaledHeight - targetHeight) / 2;
+
+        return resizedImage.getSubimage(x, y, targetWidth, targetHeight);
     }
 
     public static File getCachedFile(String index, String filename, AbstractLogger logger) {
