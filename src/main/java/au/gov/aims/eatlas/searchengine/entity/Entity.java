@@ -254,6 +254,11 @@ public abstract class Entity {
                         searchEngineBaseUrl, this.index, this.cachedThumbnailFilename);
     }
 
+    public String getResizedThumbnailUrl() {
+        return String.format("%s?crop=180x135",
+            this.getCachedThumbnailUrl());
+    }
+
     public URL getThumbnailUrl() {
         return this.thumbnailUrl;
     }
@@ -375,6 +380,7 @@ public abstract class Entity {
             .put("wktBbox", this.wktBbox == null ? null : this.wktBbox.toJSON())
             .put("cachedThumbnailFilename", this.getCachedThumbnailFilename())
             .put("cachedThumbnailUrl", this.getCachedThumbnailUrl())
+            .put("resizedThumbnailUrl", this.getResizedThumbnailUrl())
             .put("thumbnailUrl", thumbnailUrl == null ? null : thumbnailUrl.toString())
             .put("langcode", this.getLangcode());
     }

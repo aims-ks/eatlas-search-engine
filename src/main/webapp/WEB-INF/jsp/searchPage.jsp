@@ -110,6 +110,11 @@
                         <div class="preview">
                             <div class="thumbnail">
                                 <c:choose>
+                                    <%-- Image downloaded, cached, resized and served by the search engine --%>
+                                    <c:when test="${not empty searchResult.entity.resizedThumbnailUrl}">
+                                        <img src="<c:url value="${searchResult.entity.resizedThumbnailUrl}" />" alt="Thumbnail" />
+                                    </c:when>
+
                                     <%-- Image downloaded, cached and served by the search engine --%>
                                     <c:when test="${not empty searchResult.entity.cachedThumbnailUrl}">
                                         <img src="<c:url value="${searchResult.entity.cachedThumbnailUrl}" />" alt="Thumbnail" />
