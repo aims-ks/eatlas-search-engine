@@ -9,6 +9,8 @@ exists by deploying the `ECRResourceStack` stack in the [cdk code](https://githu
 Next, we will build and tag a Docker image and push it to AWS ECR. You may need to log in to the console and modify
 your dev user permissions to enable the ECR actions.
 
+NOTE: The <VERSION> used in the command lines does NOT start with the "v" like the Git tag.  
+Example: 1.2.0
 ```shell
 # build docker image
 docker build --no-cache -t eatlas/eatlas-search-engine:<VERSION> .
