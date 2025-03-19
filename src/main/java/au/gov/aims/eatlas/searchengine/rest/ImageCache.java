@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.rest;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
+import au.gov.aims.eatlas.searchengine.ImageResizer;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.logger.Level;
@@ -44,9 +45,7 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,13 +110,14 @@ public class ImageCache {
                         return Response.status(Response.Status.BAD_REQUEST).build();
                     }
 
-                    BufferedImage resizedImage = this.resizeCropImage(cachedFile, width, height);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(resizedImage, "jpg", baos);
-                    responseBytes = baos.toByteArray();
+                    // Resize the image and get its content
+                    BufferedImage originalImage = ImageIO.read(cachedFile);
+                    BufferedImage resizedImage = ImageResizer.resizeCropImage(originalImage, width, height);
+                    responseBytes = ImageResizer.getImageData(resizedImage);
                 }
             }
 
+            // Get the original image content
             if (responseBytes == null) {
                 responseBytes = FileUtils.readFileToByteArray(cachedFile);
             }
@@ -129,35 +129,6 @@ public class ImageCache {
             logger.addMessage(Level.ERROR, String.format("Server error: %s", ex.getMessage()), ex);
             return Response.serverError().entity(String.format("Server error: %s", ex.getMessage())).build();
         }
-    }
-
-    private BufferedImage resizeCropImage(File imageFile, int targetWidth, int targetHeight) throws IOException {
-        BufferedImage originalImage = ImageIO.read(imageFile);
-        int originalWidth = originalImage.getWidth();
-        int originalHeight = originalImage.getHeight();
-
-        // Calculate the scaling factor to maintain aspect ratio
-        double scale = Math.max(
-            (double) targetWidth / originalWidth,
-            (double) targetHeight / originalHeight
-        );
-
-        int scaledWidth = (int) (scale * originalWidth);
-        int scaledHeight = (int) (scale * originalHeight);
-
-        // Resize the image
-        Image tmp = originalImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
-        BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D g2d = resizedImage.createGraphics();
-        g2d.drawImage(tmp, 0, 0, null);
-        g2d.dispose();
-
-        // Crop the image to the target dimensions (center crop)
-        int x = (scaledWidth - targetWidth) / 2;
-        int y = (scaledHeight - targetHeight) / 2;
-
-        return resizedImage.getSubimage(x, y, targetWidth, targetHeight);
     }
 
     public static File getCachedFile(String index, String filename, AbstractLogger logger) {
