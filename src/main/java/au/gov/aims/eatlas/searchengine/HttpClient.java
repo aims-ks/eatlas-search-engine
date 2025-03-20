@@ -17,6 +17,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -42,7 +43,12 @@ public class HttpClient {
     public static HttpClient getInstance() {
         if (instance == null) {
             instance = new HttpClient();
+
+            // Disable Hostname verifier globally.
+            // NOTE: This is required to be able to request from IP. Example: https://12.34.56.78/geonetwork
+            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
         }
+
         return instance;
     }
 

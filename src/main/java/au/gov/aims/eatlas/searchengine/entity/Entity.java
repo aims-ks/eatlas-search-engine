@@ -255,8 +255,9 @@ public abstract class Entity {
     }
 
     public String getResizedThumbnailUrl() {
-        return String.format("%s?crop=180x135",
-            this.getCachedThumbnailUrl());
+        String cachedThumbnailUrl = this.getCachedThumbnailUrl();
+        return cachedThumbnailUrl == null ? null :
+            String.format("%s?crop=180x135", cachedThumbnailUrl);
     }
 
     public URL getThumbnailUrl() {

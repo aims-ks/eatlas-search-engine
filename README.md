@@ -7,7 +7,7 @@ To integrate the search engine into the eAtlas setup, first, ensure that the eat
 exists by deploying the `ECRResourceStack` stack in the [cdk code](https://github.com/AIMS/eatlas-infrastructure).
 
 Next, we will build and tag a Docker image and push it to AWS ECR. You may need to log in to the console and modify
-your dev user permissions to enable the ECR actions.
+your dev user permissions to enable the ECR actions: AmazonEC2ContainerRegistryFullAccess
 
 NOTE: The <VERSION> used in the command lines does NOT start with the "v" like the Git tag.  
 Example: 1.2.0
