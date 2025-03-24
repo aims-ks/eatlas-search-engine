@@ -110,7 +110,9 @@ public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRe
     protected GeoNetworkRecord harvestEntity(SearchClient searchClient, String id, AbstractLogger logger) {
         HttpClient httpClient = this.getHttpClient();
 
-        String urlBase = String.format("%s/srv/eng/csw", this.getGeoNetworkUrl());
+        String urlBase = HttpClient.combineUrls(
+                this.getGeoNetworkUrl(),
+                "srv/eng/csw");
         URIBuilder uriBuilder;
         try {
             uriBuilder = new URIBuilder(urlBase);
@@ -221,9 +223,7 @@ public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRe
 
     public void updateThumbnail(SearchClient searchClient, GeoNetworkRecord geoNetworkRecord, AbstractLogger logger) {
         URL thumbnailUrl = geoNetworkRecord.getThumbnailUrl();
-        if (thumbnailUrl == null) {
-            geoNetworkRecord.setCachedThumbnailFilename(null);
-        } else {
+        if (thumbnailUrl != null) {
             GeoNetworkRecord oldRecord = this.safeGet(searchClient, GeoNetworkRecord.class, geoNetworkRecord.getId(), logger);
             boolean thumbnailOutdated =
                 geoNetworkRecord.isThumbnailOutdated(oldRecord, this.getSafeThumbnailTTL(), this.getSafeBrokenThumbnailTTL(), logger);
@@ -266,7 +266,9 @@ public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRe
 
         // GeoNetwork's CSW API URL
         // The request is provided as XML data in a POST request.
-        String urlBase = String.format("%s/srv/eng/csw", this.getGeoNetworkUrl());
+        String urlBase = HttpClient.combineUrls(
+                this.getGeoNetworkUrl(),
+                "srv/eng/csw");
         URIBuilder uriBuilder;
         try {
             uriBuilder = new URIBuilder(urlBase);

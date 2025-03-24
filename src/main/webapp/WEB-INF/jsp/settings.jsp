@@ -77,7 +77,7 @@
 
             <div class="field">
                 <label for="imageCacheDirectory">
-                    <span class="label required">Image cache directory</span>
+                    <span class="label required">Thumbnail cache directory</span>
                     <input type="text"
                         id="imageCacheDirectory"
                         name="imageCacheDirectory"
@@ -87,6 +87,26 @@
                 </label>
                 <div class="desc">Folder path on the server used by the search engine to save cached and generated thumbnails.</div>
                 <div class="desc"><strong>Example</strong>: <code>/var/lib/tomcat9/conf/Catalina/data/eatlas-search-engine/</code></div>
+            </div>
+
+            <div class="field">
+                <label for="thumbnailWidth">
+                    <span class="label">Thumbnail dimensions</span>
+                    <input type="number"
+                        id="thumbnailWidth"
+                        name="thumbnailWidth"
+                        data-lpignore="true"
+                        min="1" max="1000"
+                        value="<c:out value="${it.config.thumbnailWidth}" />" />
+                    <span class="thumbnailDimensionsSeparator">x</span>
+                    <input type="number"
+                        id="thumbnailHeight"
+                        name="thumbnailHeight"
+                        data-lpignore="true"
+                        min="1" max="1000"
+                        value="<c:out value="${it.config.thumbnailHeight}" />" />
+                </label>
+                <div class="desc">Dimensions of thumbnails, in pixels. Default: <code>200</code>x<code>150</code></div>
             </div>
 
             <div class="field">

@@ -28,7 +28,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class HttpClient {
     private static final Logger LOGGER = LogManager.getLogger(HttpClient.class.getName());
@@ -37,6 +40,7 @@ public class HttpClient {
     // NOTE: The delay is incremental: 5, 10, 20, 40, 80...
     private static final int JSOUP_RETRY_INITIAL_DELAY = 5; // In seconds
     private static final int DEFAULT_REQUEST_TIMEOUT = 120000;
+    private static final int POST_MAX_FOLLOW_REDIRECT = 5;
 
     private static HttpClient instance;
 
@@ -57,21 +61,54 @@ public class HttpClient {
     }
 
     public Response getRequest(String url, Integer timeout, AbstractLogger logger) throws IOException, InterruptedException {
-        Connection jsoupConnection = this.getJsoupConnection(url, timeout, logger);
-        return this.request(url, jsoupConnection, logger);
+        String fixedUrl = HttpClient.fixUrlString(url);
+        Connection jsoupConnection = this.getJsoupConnection(fixedUrl, timeout, logger);
+        jsoupConnection.followRedirects(true);
+        return this.request(fixedUrl, jsoupConnection, logger);
     }
 
     public Response postXmlRequest(String url, String requestBody, AbstractLogger logger) throws IOException, InterruptedException {
-        return this.postXmlRequest(url, requestBody, null, logger);
+        return this.postXmlRequest(HttpClient.fixUrlString(url), requestBody, null, 0, logger);
     }
 
     public Response postXmlRequest(String url, String requestBody, Integer timeout, AbstractLogger logger) throws IOException, InterruptedException {
-        Connection jsoupConnection = this.getJsoupConnection(url, timeout, logger)
+        return this.postXmlRequest(HttpClient.fixUrlString(url), requestBody, timeout, 0, logger);
+    }
+
+    private Response postXmlRequest(String fixedUrl, String requestBody, Integer timeout, int attempt, AbstractLogger logger) throws IOException, InterruptedException {
+        Connection jsoupConnection = this.getJsoupConnection(fixedUrl, timeout, logger)
+                .followRedirects(false)
                 .method(Connection.Method.POST)
                 .header("Content-Type", "application/xml")
                 .requestBody(requestBody);
 
-        return this.request(url, jsoupConnection, logger);
+        Response response = this.request(fixedUrl, jsoupConnection, logger);
+
+        int statusCode = response == null ? -1 : response.statusCode();
+        if (statusCode == 301 || statusCode == 302 || statusCode == 308) {
+            if (attempt > POST_MAX_FOLLOW_REDIRECT) {
+                throw new IOException("Maximum POST redirection limit reached");
+            } else {
+                String redirectUrl = response.header("Location");
+                return this.postXmlRequest(redirectUrl, requestBody, timeout, attempt++, logger);
+            }
+        } else {
+            return response;
+        }
+    }
+
+    public static String fixUrlString(String urlStr) {
+        // Preserve protocol slashes while replacing others
+        return urlStr.replaceAll("(?<!:)//+", "/");
+    }
+
+    public static String combineUrls(String ... urlParts) {
+        List<String> safeParts = new ArrayList<>();
+        for (String urlPart : urlParts) {
+            // Remove leading and trailing "/"
+            safeParts.add(urlPart.replaceAll("^/|/$", ""));
+        }
+        return String.join("/", safeParts);
     }
 
     private Response request(String url, Connection jsoupConnection, AbstractLogger logger) throws IOException, InterruptedException {
@@ -154,12 +191,14 @@ public class HttpClient {
         private final byte[] bodyBytes;
         private final ContentType contentType;
         private final int statusCode;
+        private final Map<String, String> headers;
         private final Long lastModified;
 
         // HttpConnection.Response
         public Response(org.jsoup.Connection.Response jsoupResponse) {
             this.bodyBytes = jsoupResponse.bodyAsBytes();
             this.statusCode = jsoupResponse.statusCode();
+            this.headers = jsoupResponse.headers();
             this.lastModified = HttpClient.parseHttpLastModifiedHeader(jsoupResponse.header("Last-Modified"));
 
             String contentTypeStr = jsoupResponse.contentType();
@@ -170,11 +209,13 @@ public class HttpClient {
                 int statusCode,
                 byte[] bodyBytes,
                 ContentType contentType,
+                Map<String, String> headers,
                 Long lastModified) {
 
             this.statusCode = statusCode;
             this.bodyBytes = bodyBytes;
             this.contentType = contentType;
+            this.headers = headers;
             this.lastModified = lastModified;
         }
 
@@ -202,6 +243,10 @@ public class HttpClient {
 
         public ContentType contentType() {
             return this.contentType;
+        }
+
+        public String header(String name) {
+            return this.headers == null ? null : this.headers.get(name);
         }
 
         public String getFileExtension() {

@@ -6,7 +6,8 @@ version: '3.5'
 services:
   searchengine:
     # https://hub.docker.com/_/tomcat
-    image: "tomcat:10.1.20-jdk11"
+    #image: "tomcat:10.1.20-jdk11"
+    image: "tomcat:10.1.39-jre11"
     container_name: eatlas-searchengine
     depends_on:
       - elasticsearch

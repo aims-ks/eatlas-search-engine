@@ -41,6 +41,8 @@ public class SearchEngineConfig {
     private static final long DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL = 1; // TTL, in days
     private static final int DEFAULT_NUMBER_OF_SHARDS = 1;
     private static final int DEFAULT_NUMBER_OF_REPLICAS = 0;
+    private static final int DEFAULT_THUMBNAIL_WIDTH = 200;
+    private static final int DEFAULT_THUMBNAIL_HEIGHT = 150;
 
     private static final int RANDOM_TOKEN_LENGTH = 12;
 
@@ -69,6 +71,10 @@ public class SearchEngineConfig {
     private long globalThumbnailTTL = DEFAULT_GLOBAL_THUMBNAIL_TTL; // TTL, in days
     private long globalBrokenThumbnailTTL = DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL; // TTL, in days
     private String imageCacheDirectory;
+    private int thumbnailWidth;
+    private int thumbnailHeight;
+    // When thumbnails settings are changed, all thumbnails are invalidated.
+    private long lastThumbnailSettingChangeDate = -1;
     // Used to craft URL to preview images
     private String searchEngineBaseUrl;
     private List<AbstractIndexer<?>> indexers;
@@ -224,6 +230,35 @@ public class SearchEngineConfig {
 
     public void setImageCacheDirectory(String imageCacheDirectory) {
         this.imageCacheDirectory = imageCacheDirectory;
+    }
+
+    public int getThumbnailWidth() {
+        return this.thumbnailWidth;
+    }
+
+    public int getThumbnailHeight() {
+        return this.thumbnailHeight;
+    }
+
+    public void setThumbnailDimensions(Integer thumbnailWidth, Integer thumbnailHeight, AbstractLogger logger) {
+        int oldWidth = this.getThumbnailWidth();
+        int newWidth = thumbnailWidth == null ? DEFAULT_THUMBNAIL_WIDTH : thumbnailWidth;
+
+        int oldHeight = this.getThumbnailHeight();
+        int newHeight = thumbnailHeight == null ? DEFAULT_THUMBNAIL_HEIGHT : thumbnailHeight;
+
+        if (oldWidth != newWidth || oldHeight != newHeight) {
+            // Invalidate all thumbnails
+            this.lastThumbnailSettingChangeDate = System.currentTimeMillis();
+            logger.addMessage(Level.WARNING, "All thumbnails invalidated. Re-index for changes to take effect.");
+        }
+
+        this.thumbnailWidth = newWidth;
+        this.thumbnailHeight = newHeight;
+    }
+
+    public long getLastThumbnailSettingChangeDate() {
+        return this.lastThumbnailSettingChangeDate;
     }
 
     public String getSearchEngineBaseUrl() {
@@ -478,6 +513,9 @@ public class SearchEngineConfig {
                 .put("globalThumbnailTTL", this.globalThumbnailTTL)
                 .put("globalBrokenThumbnailTTL", this.globalBrokenThumbnailTTL)
                 .put("imageCacheDirectory", this.imageCacheDirectory)
+                .put("thumbnailWidth", this.thumbnailWidth)
+                .put("thumbnailHeight", this.thumbnailHeight)
+                .put("lastThumbnailSettingChangeDate", this.lastThumbnailSettingChangeDate)
                 .put("searchEngineBaseUrl", this.searchEngineBaseUrl)
                 .put("indexers", jsonIndexers);
     }
@@ -486,6 +524,9 @@ public class SearchEngineConfig {
         this.globalThumbnailTTL = json.optLong("globalThumbnailTTL", DEFAULT_GLOBAL_THUMBNAIL_TTL);
         this.globalBrokenThumbnailTTL = json.optLong("globalBrokenThumbnailTTL", DEFAULT_GLOBAL_BROKEN_THUMBNAIL_TTL);
         this.imageCacheDirectory = json.optString("imageCacheDirectory", null);
+        this.thumbnailWidth = json.optInt("thumbnailWidth", DEFAULT_THUMBNAIL_WIDTH);
+        this.thumbnailHeight = json.optInt("thumbnailHeight", DEFAULT_THUMBNAIL_HEIGHT);
+        this.lastThumbnailSettingChangeDate = json.optInt("lastThumbnailSettingChangeDate", -1);
         this.searchEngineBaseUrl = json.optString("searchEngineBaseUrl", null);
 
         JSONArray jsonElasticSearchUrls = json.optJSONArray("elasticSearchUrls");

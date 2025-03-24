@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.AbstractIndexer;
 import au.gov.aims.eatlas.searchengine.logger.Level;
@@ -268,7 +269,7 @@ public class AtlasMapperLayer extends Entity {
             bbox = bboxSb.toString();
         }
 
-        String linkStr = String.format("%s/index.html?intro=false&l0=%s", atlasMapperClientUrl, atlasMapperLayerId);
+        String linkStr = HttpClient.combineUrls(atlasMapperClientUrl, String.format("index.html?intro=false&l0=%s", atlasMapperLayerId));
 
         // Find the default base layer:
         String baseLayer = AtlasMapperLayer.getBaseLayer(jsonMainConfig);

@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity.geoNetworkParser;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.index.AbstractGeoNetworkIndexer;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.entity.GeoNetworkRecord;
@@ -105,12 +106,17 @@ public abstract class AbstractParser {
         String geonetworkMetadataUrlStr = null;
         switch (geoNetworkMajorVersion) {
             case 2:
-                geonetworkMetadataUrlStr = String.format("%s/srv/eng/metadata.show?uuid=%s", geoNetworkUrlStr, record.getId());
+                geonetworkMetadataUrlStr = HttpClient.combineUrls(
+                        geoNetworkUrlStr,
+                        String.format("srv/eng/metadata.show?uuid=%s", record.getId()));
                 break;
 
             case 3:
             default:
-                geonetworkMetadataUrlStr = String.format("%s/srv/eng/catalog.search#/metadata/%s", geoNetworkUrlStr, record.getId());
+                geonetworkMetadataUrlStr = HttpClient.combineUrls(
+                        geoNetworkUrlStr,
+                        "srv/eng/catalog.search#/metadata",
+                        record.getId());
                 break;
         }
 
@@ -199,8 +205,10 @@ public abstract class AbstractParser {
                 //     https://eatlas.org.au/geonetwork/srv/eng/xml.metadata.get?uuid=a86f062e-f47c-49f1-ace5-3e03a2272088
                 previewUrlStr = fileName;
             } else {
-                previewUrlStr = String.format("%s/srv/eng/resources.get?uuid=%s&fname=%s&access=public",
-                        indexer.getGeoNetworkUrl(), record.getId(), fileName);
+                previewUrlStr = HttpClient.combineUrls(
+                        indexer.getGeoNetworkUrl(),
+                        String.format("srv/eng/resources.get?uuid=%s&fname=%s&access=public",
+                                record.getId(), fileName));
             }
 
             String geoNetworkUrlStr = indexer.getGeoNetworkUrl();

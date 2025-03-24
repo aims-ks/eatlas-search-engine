@@ -15,9 +15,12 @@ public class ImageResizer {
     }
 
     public static BufferedImage resizeCropImage(BufferedImage originalImage, int targetWidth, int targetHeight) throws IOException {
-        //BufferedImage originalImage = ImageIO.read(imageFile);
         int originalWidth = originalImage.getWidth();
         int originalHeight = originalImage.getHeight();
+
+        if (originalWidth == targetWidth && originalHeight == targetHeight) {
+            return originalImage;
+        }
 
         // Calculate the scaling factor to maintain aspect ratio
         double scale = Math.max(

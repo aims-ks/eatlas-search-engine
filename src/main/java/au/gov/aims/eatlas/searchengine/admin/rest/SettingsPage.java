@@ -175,6 +175,8 @@ public class SettingsPage {
         config.setElasticSearchNumberOfShards(FormUtils.getFormIntegerValue(form, "elasticSearchNumberOfShards"));
         config.setElasticSearchNumberOfReplicas(FormUtils.getFormIntegerValue(form, "elasticSearchNumberOfReplicas"));
         config.setImageCacheDirectory(FormUtils.getFormStringValue(form, "imageCacheDirectory"));
+        config.setThumbnailDimensions(FormUtils.getFormIntegerValue(form, "thumbnailWidth"),
+                FormUtils.getFormIntegerValue(form, "thumbnailHeight"), logger);
         config.setGlobalThumbnailTTL(FormUtils.getFormLongValue(form, "globalThumbnailTTL"));
         config.setGlobalBrokenThumbnailTTL(FormUtils.getFormLongValue(form, "globalBrokenThumbnailTTL"));
         config.setElasticSearchUrls(FormUtils.getFormStringValues(form, "elasticSearchUrl"));

@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,8 +74,7 @@ public class ImageCache {
     public Response getCachedImage(
             @Context HttpServletRequest httpRequest,
             @PathParam("index") String index,
-            @PathParam("filename") String filename,
-            @QueryParam("crop") String crop // Optional query parameter. Example: 300x200
+            @PathParam("filename") String filename
     ) {
         HttpSession session = httpRequest.getSession(true);
         AbstractLogger logger = SessionLogger.getInstance(session);
@@ -90,37 +90,7 @@ public class ImageCache {
         }
 
         try {
-            byte[] responseBytes = null;
-
-            if (crop != null) {
-                String[] dimensions = crop.split("x");
-                if (dimensions.length == 2) {
-                    int width = -1;
-                    int height = -1;
-                    try {
-                        width = Integer.parseInt(dimensions[0]);
-                        height = Integer.parseInt(dimensions[1]);
-                    } catch (NumberFormatException e) {
-                        logger.addMessage(Level.WARNING, String.format("Invalid crop dimensions: %s", crop));
-                        return Response.status(Response.Status.BAD_REQUEST).build();
-                    }
-
-                    if (width <= 0 || width > 500 || height <= 0 || height > 500) {
-                        logger.addMessage(Level.WARNING, String.format("Invalid crop dimensions: %s", crop));
-                        return Response.status(Response.Status.BAD_REQUEST).build();
-                    }
-
-                    // Resize the image and get its content
-                    BufferedImage originalImage = ImageIO.read(cachedFile);
-                    BufferedImage resizedImage = ImageResizer.resizeCropImage(originalImage, width, height);
-                    responseBytes = ImageResizer.getImageData(resizedImage);
-                }
-            }
-
-            // Get the original image content
-            if (responseBytes == null) {
-                responseBytes = FileUtils.readFileToByteArray(cachedFile);
-            }
+            byte[] responseBytes = FileUtils.readFileToByteArray(cachedFile);
 
             // Return the JSON array with an OK status.
             ContentType contentType = HttpClient.getContentType(filename);
@@ -163,11 +133,11 @@ public class ImageCache {
         File indexCacheDir = new File(imageCacheDir, safeIndex);
         indexCacheDir.mkdirs();
         if (!indexCacheDir.isDirectory()) {
-            logger.addMessage(Level.ERROR, String.format("The image cache directory %s doesn't exist and can not be created.", indexCacheDir));
+            logger.addMessage(Level.ERROR, String.format("The thumbnail cache directory %s doesn't exist and can not be created.", indexCacheDir));
             return null;
         }
         if (!indexCacheDir.canRead()) {
-            logger.addMessage(Level.ERROR, String.format("The image cache directory %s exists but is not readable.", indexCacheDir));
+            logger.addMessage(Level.ERROR, String.format("The thumbnail cache directory %s exists but is not readable.", indexCacheDir));
             return null;
         }
         return indexCacheDir;
@@ -187,7 +157,7 @@ public class ImageCache {
             return null;
         }
         if (!cacheDir.canWrite()) {
-            logger.addMessage(Level.ERROR, String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
+            logger.addMessage(Level.ERROR, String.format("The thumbnail cache directory %s exists but is not writable.", cacheDir.toString()));
             return null;
         }
 
@@ -202,20 +172,36 @@ public class ImageCache {
             return null;
         }
 
+        byte[] imageBytes = imageResponse.bodyAsBytes();
+        if (imageBytes == null || imageBytes.length <= 0) {
+            return null;
+        }
+
+        BufferedImage originalImage = null;
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageBytes)) {
+            originalImage = ImageIO.read(byteArrayInputStream);
+        } catch(Exception ex) {
+            logger.addMessage(Level.ERROR, String.format("Exception occurred while loading the image URL: %s", urlStr), ex);
+            return null;
+        }
+
+        // Resize the preview image
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        int width = config.getThumbnailWidth();
+        int height = config.getThumbnailHeight();
+        BufferedImage resizedImage = ImageResizer.resizeCropImage(originalImage, width, height);
+        byte[] resizedImageBytes = ImageResizer.getImageData(resizedImage);
+
         String extension = imageResponse.getFileExtension();
         if (extension == null) {
             extension = "bin";
         }
         File cacheFile = getUniqueFile(cacheDir, imageUrl, filenamePrefix, extension);
 
-        byte[] imageBytes = imageResponse.bodyAsBytes();
-        if (imageBytes == null || imageBytes.length <= 0) {
-            return null;
-        }
-
         // Cache image to disk
         LOGGER.debug(String.format("Caching preview image %s to %s", urlStr, cacheFile));
-        FileUtils.writeByteArrayToFile(cacheFile, imageBytes);
+        logger.addMessage(Level.INFO, String.format("Caching preview image: %s", cacheFile.getName()));
+        FileUtils.writeByteArrayToFile(cacheFile, resizedImageBytes);
 
         return cacheFile;
     }
@@ -234,7 +220,7 @@ public class ImageCache {
             return null;
         }
         if (!cacheDir.canWrite()) {
-            logger.addMessage(Level.ERROR, String.format("The image cache directory %s exists but is not writable.", cacheDir.toString()));
+            logger.addMessage(Level.ERROR, String.format("The thumbnail cache directory %s exists but is not writable.", cacheDir.toString()));
             return null;
         }
 

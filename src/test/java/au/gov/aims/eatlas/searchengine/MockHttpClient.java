@@ -98,12 +98,13 @@ public class MockHttpClient extends HttpClient {
                     200,
                     content,
                     contentType,
+                    null,
                     Files.getLastModifiedTime(path).toMillis()
             );
         }
     }
 
     private Response notFound(String errorMessage) {
-        return new Response(404, errorMessage.getBytes(StandardCharsets.UTF_8), null, null);
+        return new Response(404, errorMessage.getBytes(StandardCharsets.UTF_8), null, null, null);
     }
 }

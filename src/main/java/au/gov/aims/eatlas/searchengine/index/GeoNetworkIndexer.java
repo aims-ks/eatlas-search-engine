@@ -98,7 +98,9 @@ public class GeoNetworkIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRecor
 
         String url;
         String geoNetworkUrl = this.getGeoNetworkUrl();
-        String urlBase = String.format("%s/srv/eng/xml.metadata.get", geoNetworkUrl);
+        String urlBase = HttpClient.combineUrls(
+                geoNetworkUrl,
+                "srv/eng/xml.metadata.get");
         try {
             URIBuilder b = new URIBuilder(urlBase);
             b.setParameter("uuid", metadataRecordUUID);
@@ -206,7 +208,9 @@ public class GeoNetworkIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRecor
         // NOTE: According to the doc, the parameter "dateFrom" is used to filter on creation date, but in fact,
         //     it filters on modification date (which is what we want).
         //     https://geonetwork-opensource.org/manuals/2.10.4/eng/developer/xml_services/metadata_xml_search_retrieve.html
-        String urlBase = String.format("%s/srv/eng/xml.search", this.getGeoNetworkUrl());
+        String urlBase = HttpClient.combineUrls(
+                this.getGeoNetworkUrl(),
+                "srv/eng/xml.search");
         URIBuilder uriBuilder;
         try {
             uriBuilder = new URIBuilder(urlBase);

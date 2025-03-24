@@ -368,14 +368,18 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
     }
 
     public String getDrupalApiUrlBase() {
-        return String.format("%s/jsonapi/%s/%s", this.getDrupalUrl(), this.getDrupalEntityType(), this.getDrupalBundleId());
+        return HttpClient.combineUrls(
+                this.getDrupalUrl(),
+                "jsonapi",
+                this.getDrupalEntityType(),
+                this.getDrupalBundleId());
     }
 
     public URIBuilder buildDrupalApiEntityUrl(String entityUUID, AbstractLogger logger) {
         String urlBase = this.getDrupalApiUrlBase();
         URIBuilder uriBuilder;
         try {
-            uriBuilder = new URIBuilder(String.format("%s/%s", urlBase, entityUUID));
+            uriBuilder = new URIBuilder(HttpClient.combineUrls(urlBase, entityUUID));
         } catch(URISyntaxException ex) {
             logger.addMessage(Level.ERROR,
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);
@@ -459,7 +463,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
         String urlBase = this.getDrupalApiUrlBase();
         URIBuilder uriBuilder;
         try {
-            uriBuilder = new URIBuilder(String.format("%s/%s", urlBase, entityUUID));
+            uriBuilder = new URIBuilder(HttpClient.combineUrls(urlBase, entityUUID));
         } catch(URISyntaxException ex) {
             logger.addMessage(Level.ERROR,
                     String.format("Invalid Drupal URL. Exception occurred while building the URL: %s", urlBase), ex);

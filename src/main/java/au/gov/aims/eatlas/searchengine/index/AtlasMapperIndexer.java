@@ -110,7 +110,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         // If we have a layerInfoService, use that to get info about the layer.
         // If not, pull the whole list of layer and find the info about that single layer.
 
-        String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
+        String mainUrlStr = HttpClient.combineUrls(
+                this.atlasMapperClientUrl,
+                "config/main.json");
 
         HttpClient.Response mainResponse;
         try {
@@ -134,8 +136,10 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         if (layerInfoServiceUrl != null && !layerInfoServiceUrl.isEmpty()) {
             // Get the layer info using the layer info service.
             // The service is much faster than requesting the list of all layers.
-            String layerInfoUrlStr = String.format("%s%s?client=%s&layerIds=%s",
-                        this.atlasMapperClientUrl, layerInfoServiceUrl, clientId, layerId);
+            String layerInfoUrlStr = HttpClient.combineUrls(
+                        this.atlasMapperClientUrl,
+                        String.format("%s?client=%s&layerIds=%s",
+                                layerInfoServiceUrl, clientId, layerId));
 
             HttpClient.Response layerInfoResponse;
             try {
@@ -159,7 +163,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         } else {
             // Get the layer info from the list of all layers.
             // The list can be pretty long, that might take a while...
-            String layersUrlStr = String.format("%s/config/layers.json", this.atlasMapperClientUrl);
+            String layersUrlStr = HttpClient.combineUrls(
+                    this.atlasMapperClientUrl,
+                    "config/layers.json");
 
             HttpClient.Response layersResponse;
             try {
@@ -203,7 +209,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         // Get the main configuration file, containing the map of data sources
         // "https://maps.eatlas.org.au/config/main.json"
-        String mainUrlStr = String.format("%s/config/main.json", this.atlasMapperClientUrl);
+        String mainUrlStr = HttpClient.combineUrls(
+                this.atlasMapperClientUrl,
+                "config/main.json");
 
         HttpClient.Response mainResponse;
         try {
@@ -221,7 +229,9 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
 
         // Get the list of layers
         // "https://maps.eatlas.org.au/config/layers.json"
-        String layersUrlStr = String.format("%s/config/layers.json", this.atlasMapperClientUrl);
+        String layersUrlStr = HttpClient.combineUrls(
+                this.atlasMapperClientUrl,
+                "config/layers.json");
 
         HttpClient.Response layersResponse;
         try {
@@ -629,7 +639,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             JSONObject jsonLayer = this.jsonLayersConfig.optJSONObject(this.atlasMapperLayerId);
 
             AtlasMapperLayer layerEntity = new AtlasMapperLayer(
-                    AtlasMapperIndexer.this.getIndex(), AtlasMapperIndexer.this.atlasMapperClientUrl,
+                    AtlasMapperIndexer.this.getIndex(), AtlasMapperIndexer.this.getAtlasMapperClientUrl(),
                     this.atlasMapperLayerId, jsonLayer, this.jsonMainConfig, this.logger);
 
             // Create the thumbnail if it's missing or outdated

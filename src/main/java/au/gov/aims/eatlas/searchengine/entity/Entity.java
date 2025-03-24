@@ -18,6 +18,7 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import au.gov.aims.eatlas.searchengine.HttpClient;
 import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.index.WktUtils;
@@ -250,14 +251,10 @@ public abstract class Entity {
     public String getCachedThumbnailUrl() {
         String searchEngineBaseUrl = SearchEngineConfig.getInstance().getSearchEngineBaseUrl();
         return this.cachedThumbnailFilename == null ? null :
-                String.format("%s/public/img/v1/%s/%s",
-                        searchEngineBaseUrl, this.index, this.cachedThumbnailFilename);
-    }
-
-    public String getResizedThumbnailUrl() {
-        String cachedThumbnailUrl = this.getCachedThumbnailUrl();
-        return cachedThumbnailUrl == null ? null :
-            String.format("%s?crop=180x135", cachedThumbnailUrl);
+                HttpClient.combineUrls(searchEngineBaseUrl,
+                        "public/img/v1",
+                        this.index,
+                        this.cachedThumbnailFilename);
     }
 
     public URL getThumbnailUrl() {
@@ -299,6 +296,12 @@ public abstract class Entity {
 
         Long thumbnailLastIndexed = oldEntity.getThumbnailLastIndexed();
         if (thumbnailLastIndexed == null) {
+            return true;
+        }
+
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        long lastThumbnailSettingChangeDate = config.getLastThumbnailSettingChangeDate();
+        if (thumbnailLastIndexed <= lastThumbnailSettingChangeDate) {
             return true;
         }
 
@@ -381,7 +384,6 @@ public abstract class Entity {
             .put("wktBbox", this.wktBbox == null ? null : this.wktBbox.toJSON())
             .put("cachedThumbnailFilename", this.getCachedThumbnailFilename())
             .put("cachedThumbnailUrl", this.getCachedThumbnailUrl())
-            .put("resizedThumbnailUrl", this.getResizedThumbnailUrl())
             .put("thumbnailUrl", thumbnailUrl == null ? null : thumbnailUrl.toString())
             .put("langcode", this.getLangcode());
     }
