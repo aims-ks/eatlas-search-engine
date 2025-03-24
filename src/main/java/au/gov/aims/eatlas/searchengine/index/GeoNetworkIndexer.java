@@ -28,8 +28,6 @@ import co.elastic.clients.elasticsearch.core.IndexResponse;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,7 +48,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class GeoNetworkIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRecord> {
-    private static final Logger LOGGER = LogManager.getLogger(GeoNetworkIndexer.class.getName());
     private static final int THREAD_POOL_SIZE = 10;
 
     /**

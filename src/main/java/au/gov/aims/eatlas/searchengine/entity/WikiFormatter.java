@@ -18,6 +18,8 @@
  */
 package au.gov.aims.eatlas.searchengine.entity;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import java.util.regex.Pattern;
  * and by AtlasMapper.
  */
 public class WikiFormatter {
+    private static final Logger LOGGER = LogManager.getLogger(WikiFormatter.class.getName());
     private static final char EMPTY_CHAR = '\0';
     private static final int MAX_URL_LENGTH = 40;
 
@@ -54,7 +57,12 @@ public class WikiFormatter {
         }
 
         // Extract text from HTML using Jsoup HTML parser
-        String text = Jsoup.parse(html).text();
+        String text = null;
+        try {
+            text = Jsoup.parse(html).text();
+        } catch(Exception ex) {
+            LOGGER.error("Exception occurred while parsing HTML", ex);
+        }
 
         return (text == null || text.isEmpty()) ? null : text;
     }

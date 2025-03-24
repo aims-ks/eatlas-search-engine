@@ -49,7 +49,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private static final int REQUEST_DELAY_MS = 500; // Delay between requests, in milliseconds
 
     private static final int THUMBNAIL_REQUEST_TIMEOUT = 10000; // 10 seconds
-    private static final float THUMBNAIL_MARGIN = 0.1f; // Margin, in percentage
+    private static final float THUMBNAIL_MARGIN = 0.25f; // Margin, in percentage
 
     // Example: https://maps.eatlas.org.au
     private String atlasMapperClientUrl;
