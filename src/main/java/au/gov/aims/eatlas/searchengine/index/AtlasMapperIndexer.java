@@ -19,6 +19,7 @@
 package au.gov.aims.eatlas.searchengine.index;
 
 import au.gov.aims.eatlas.searchengine.HttpClient;
+import au.gov.aims.eatlas.searchengine.admin.SearchEngineConfig;
 import au.gov.aims.eatlas.searchengine.logger.AbstractLogger;
 import au.gov.aims.eatlas.searchengine.client.SearchClient;
 import au.gov.aims.eatlas.searchengine.entity.AtlasMapperLayer;
@@ -48,8 +49,6 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
     private static final int REQUEST_DELAY_MS = 500; // Delay between requests, in milliseconds
 
     private static final int THUMBNAIL_REQUEST_TIMEOUT = 10000; // 10 seconds
-    private static final int THUMBNAIL_MAX_WIDTH = 300;
-    private static final int THUMBNAIL_MAX_HEIGHT = 200;
     private static final float THUMBNAIL_MARGIN = 0.1f; // Margin, in percentage
 
     // Example: https://maps.eatlas.org.au
@@ -503,6 +502,10 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
         private String height;
 
         public static BboxInfo parse(JSONArray bbox) {
+            SearchEngineConfig config = SearchEngineConfig.getInstance();
+            int minThumbnailWidth = config.getThumbnailWidth();
+            int minThumbnailHeight = config.getThumbnailHeight();
+
             // Parse bbox
             float west = -180;
             float south = -90;
@@ -569,14 +572,14 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
             // It's hard to visualise, but the math are very simple.
 
             float bboxRatio = bboxWidth / bboxHeight;
-            float thumbnailRatio = (float)THUMBNAIL_MAX_WIDTH / THUMBNAIL_MAX_HEIGHT;
+            float thumbnailRatio = (float)minThumbnailWidth / minThumbnailHeight;
 
-            int width = THUMBNAIL_MAX_WIDTH;
-            int height = THUMBNAIL_MAX_HEIGHT;
-            if (bboxRatio > thumbnailRatio) {
-                height = (int)(THUMBNAIL_MAX_WIDTH / bboxRatio);
+            int width = minThumbnailWidth;
+            int height = minThumbnailHeight;
+            if (bboxRatio < thumbnailRatio) {
+                height = (int)(minThumbnailWidth / bboxRatio);
             } else {
-                width = (int)(THUMBNAIL_MAX_HEIGHT * bboxRatio);
+                width = (int)(minThumbnailHeight * bboxRatio);
             }
 
             BboxInfo bboxInfo = new BboxInfo();

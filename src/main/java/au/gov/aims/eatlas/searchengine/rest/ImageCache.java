@@ -275,12 +275,19 @@ public class ImageCache {
             graphics.drawImage(layerImage, 0, 0, null);
         }
 
+        // Resize the preview image
+        SearchEngineConfig config = SearchEngineConfig.getInstance();
+        int width = config.getThumbnailWidth();
+        int height = config.getThumbnailHeight();
+        BufferedImage resizedImage = ImageResizer.resizeCropImage(combined, width, height);
+
         // Saved image to disk
         String extension = "jpg";
         File cacheFile = getUniqueFile(cacheDir, layerImageUrl, filenamePrefix, extension);
 
         LOGGER.debug(String.format("Caching layer preview image %s to %s", layerImageUrl, cacheFile));
-        ImageIO.write(combined, "jpg", cacheFile);
+        logger.addMessage(Level.INFO, String.format("Caching preview image: %s", cacheFile.getName()));
+        ImageIO.write(resizedImage, "jpg", cacheFile);
 
         return cacheFile;
     }
