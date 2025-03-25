@@ -666,7 +666,7 @@ public class AtlasMapperIndexer extends AbstractIndexer<AtlasMapperLayer> {
                         jsonLayer, this.baseLayerUrl, this.jsonMainConfig,
                         layerEntity, THUMBNAIL_REQUEST_TIMEOUT, this.logger);
             } else {
-                layerEntity.useCachedThumbnail(oldLayer);
+                layerEntity.useCachedThumbnail(oldLayer, this.logger);
             }
 
             // Keep a list of used thumbnails, so we can delete unused ones at the end of the indexation.

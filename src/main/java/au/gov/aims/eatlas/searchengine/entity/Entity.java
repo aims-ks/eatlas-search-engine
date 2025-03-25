@@ -345,10 +345,33 @@ public abstract class Entity {
         return thumbnailAgeDays >= thumbnailTTL;
     }
 
-    public void useCachedThumbnail(Entity oldEntity) {
-        this.setThumbnailUrl(oldEntity == null ? null : oldEntity.getThumbnailUrl());
-        this.setCachedThumbnailFilename(oldEntity == null ? null : oldEntity.getCachedThumbnailFilename());
-        this.setThumbnailLastIndexed(oldEntity == null ? System.currentTimeMillis() : oldEntity.getThumbnailLastIndexed());
+    public void useCachedThumbnail(Entity oldEntity, AbstractLogger logger) {
+        String index = this.getIndex();
+        String cachedThumbnailFilename = null;
+        URL thumbnailUrl = null;
+        long thumbnailLastIndexed = System.currentTimeMillis();
+
+        if (oldEntity != null) {
+            String oldCachedThumbnailFilename = oldEntity.getCachedThumbnailFilename();
+            if (oldCachedThumbnailFilename != null) {
+                File cachedFile = ImageCache.getCachedFile(index, oldCachedThumbnailFilename, logger);
+
+                // Only set the thumbnail file if it still exists on disk.
+                if (cachedFile != null && cachedFile.exists() && cachedFile.canRead()) {
+                    cachedThumbnailFilename = oldEntity.getCachedThumbnailFilename();
+                    thumbnailUrl = oldEntity.getThumbnailUrl();
+                    thumbnailLastIndexed = oldEntity.getThumbnailLastIndexed();
+                }
+            } else {
+                // There was no thumbnail before, there is still no thumbnail.
+                // Don't update the thumbnail last indexed date.
+                thumbnailLastIndexed = oldEntity.getThumbnailLastIndexed();
+            }
+        }
+
+        this.setThumbnailUrl(thumbnailUrl);
+        this.setCachedThumbnailFilename(cachedThumbnailFilename);
+        this.setThumbnailLastIndexed(thumbnailLastIndexed);
     }
 
     public void deleteThumbnail(AbstractLogger logger) {

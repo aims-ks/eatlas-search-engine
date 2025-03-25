@@ -829,7 +829,7 @@ public abstract class AbstractDrupalEntityIndexer<E extends Entity> extends Abst
                         }
                         drupalEntity.setThumbnailLastIndexed(System.currentTimeMillis());
                     } else {
-                        drupalEntity.useCachedThumbnail(oldEntity);
+                        drupalEntity.useCachedThumbnail(oldEntity, logger);
                     }
                 }
             }

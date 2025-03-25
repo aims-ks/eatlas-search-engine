@@ -243,7 +243,7 @@ public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRe
                 }
                 geoNetworkRecord.setThumbnailLastIndexed(System.currentTimeMillis());
             } else {
-                geoNetworkRecord.useCachedThumbnail(oldRecord);
+                geoNetworkRecord.useCachedThumbnail(oldRecord, logger);
             }
         }
     }

@@ -552,6 +552,8 @@ public abstract class AbstractIndexer<E extends Entity> {
                 } else if (file.isFile()) {
                     String thumbnailName = file.getName();
                     if (!usedThumbnails.contains(thumbnailName)) {
+                        // TODO Resolve the deleted thumbnail bug
+                        /*
                         if (file.delete()) {
                             deleted++;
                         } else {
@@ -559,6 +561,7 @@ public abstract class AbstractIndexer<E extends Entity> {
                                     String.format("Can't delete old thumbnail: %s",
                                     file.toString()));
                         }
+                        */
                     }
                 }
             }
