@@ -2,6 +2,7 @@
 <%@page contentType="text/html"%>
 <%@page pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 
 <html lang="en">
 <head>
@@ -126,11 +127,21 @@
                                 </c:choose>
                             </div>
 
-                            <ul class="highlights">
-                                <c:forEach items="${searchResult.highlights}" var="highlight">
-                                    <li>${highlight}</li>
-                                </c:forEach>
-                            </ul>
+                            <c:choose>
+                                <c:when test="${not empty searchResult.highlights}">
+                                    <ul class="highlights">
+                                        <c:forEach items="${searchResult.highlights}" var="highlight">
+                                            <li>${highlight}</li>
+                                        </c:forEach>
+                                    </ul>
+                                </c:when>
+                                <c:when test="${fn:length(searchResult.entity.document) > 500}">
+                                    <div class="abstract">${fn:substring(searchResult.entity.document, 0, 500)}...</div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="abstract">${searchResult.entity.document}</div>
+                                </c:otherwise>
+                            </c:choose>
 
                             <div class="index">${searchResult.entity.index}</div>
                         </div>
