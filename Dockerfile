@@ -13,7 +13,7 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 # Use the official Tomcat image as the base
-FROM tomcat:10.1.39-jre11
+FROM tomcat:10.1.40-jre11
 
 ENV TZ=Australia/Brisbane
 ENV EATLAS-SEARCH-ENGINE_CONFIG_FILE=/usr/local/tomcat/searchengine-data/eatlas_search_engine.json

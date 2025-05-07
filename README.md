@@ -19,7 +19,7 @@ docker build --no-cache -t eatlas/eatlas-search-engine:<VERSION> .
 docker tag eatlas/eatlas-search-engine:<VERSION> <AWS_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com/eatlas/eatlas-search-engine:<VERSION>
 
 # push to ECR
-aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com
+aws ecr get-login-password --region ap-southeast-2 --profile <AWS_PROFILE> | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com
 docker push <AWS_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com/eatlas/eatlas-search-engine:<VERSION>
 ```
 
