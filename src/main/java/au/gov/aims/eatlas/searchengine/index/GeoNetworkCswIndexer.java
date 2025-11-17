@@ -211,6 +211,8 @@ public class GeoNetworkCswIndexer extends AbstractGeoNetworkIndexer<GeoNetworkRe
                     logger.addMessage(Level.INFO, String.format("Re-indexing GeoNetwork metadata record: %s, index response status: %s",
                             geoNetworkRecord.getId(),
                             indexResponse.result()));
+
+                    return geoNetworkRecord;
                 }
             }
         } catch(Exception ex) {
