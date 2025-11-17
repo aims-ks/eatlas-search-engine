@@ -19,7 +19,11 @@
         <div class="box">
             <h2>Search engine</h2>
 
-            <h3>Status</h3>
+            <p class="version">
+                ${it.appArtifactId}: <span>${it.appVersion}</span>
+            </p>
+
+            <h3>ElasticSearch status</h3>
             <div class="status">
                 <p class="reachable">
                     <span class="${it.status.reachable ? "ok" : "error"}">

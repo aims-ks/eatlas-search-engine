@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 @Path("/")
 public class Dashboard {
@@ -62,10 +63,26 @@ public class Dashboard {
         SearchEngineConfig config = SearchEngineConfig.getInstance();
         SearchEnginePrivateConfig privateConfig = SearchEnginePrivateConfig.getInstance();
         SearchEngineState state = SearchEngineState.getInstance();
+        String appVersion = "unknown";
+        String appArtifactId = "Search Engine";
+
+        // Get app version and artefact ID from the "version.properties" file.
+        // The values are replaced in the property file by maven during the build process.
+        try (var stream = Dashboard.class.getResourceAsStream("/version.properties")) {
+            Properties props = new Properties();
+            props.load(stream);
+            appVersion = props.getProperty("app.version");
+            appArtifactId = props.getProperty("app.artifactId");
+        } catch (Exception ex) {
+            logger.addMessage(Level.ERROR,
+                "An exception occurred while accessing the Elastic Search version.properties file", ex);
+        }
 
         Map<String, Object> model = new HashMap<>();
         model.put("title", "Dashboard");
         model.put("dashboardActive", "active");
+        model.put("appVersion", appVersion);
+        model.put("appArtifactId", appArtifactId);
         model.put("logger", logger);
         model.put("config", config);
         model.put("privateConfig", privateConfig);

@@ -4,6 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- The values of "artifactId" and "version" are copied to
+        src/main/resources/version.properties
+        using a resource filter defined in the build section. -->
     <groupId>au.gov.aims</groupId>
     <artifactId>eatlas-search-engine</artifactId>
     <packaging>war</packaging>
@@ -257,6 +260,14 @@
                 <version>3.4.0</version>
             </plugin>
         </plugins>
+
+        <!-- Replace placeholders with POM values in resources files -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
 
         <!-- Substitute the Elastic Search version number in the test.properties file,
             with the version number found in the POM. -->
