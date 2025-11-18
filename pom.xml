@@ -10,7 +10,7 @@
     <groupId>au.gov.aims</groupId>
     <artifactId>eatlas-search-engine</artifactId>
     <packaging>war</packaging>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -259,6 +259,38 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.4.0</version>
             </plugin>
+
+            <!--
+            Plugin to automatically copy the war file in the webapps folder.
+            NOTE: This is only used to trigger tomcat hot-redeploy when developing,
+                when using the docker-compose.yml file.
+            -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-war-to-docker</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/webapps</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes>
+                                        <include>*.war</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
         </plugins>
 
         <!-- Replace placeholders with POM values in resources files -->

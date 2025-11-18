@@ -43,6 +43,8 @@ public class ImageResizer {
         int x = (scaledWidth - targetWidth) / 2;
         int y = (scaledHeight - targetHeight) / 2;
 
-        return resizedImage.getSubimage(x, y, targetWidth, targetHeight);
+        return resizedImage.getSubimage(x, y,
+            Math.min(targetWidth, scaledWidth),
+            Math.min(targetHeight, scaledHeight));
     }
 }
