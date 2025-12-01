@@ -220,8 +220,6 @@ public abstract class AbstractIndexer<E extends Entity> {
 
         String indexName = json.optString("indexName", null);
 
-        SearchEngineState searchEngineState = SearchEngineState.getInstance();
-
         AbstractIndexer<?> indexer = null;
         switch(type) {
             case "AtlasMapperIndexer":
@@ -485,6 +483,16 @@ public abstract class AbstractIndexer<E extends Entity> {
                     String.format("Exception occurred while refreshing the search index: %s", this.index), ex);
         }
 
+        /*
+        try {
+            usedThumbnails = this.getUsedThumbnails(searchClient);
+        } catch(Exception ex) {
+            logger.addMessage(Level.ERROR,
+                    "Error occurred while requesting the thumbnails from the index.",
+                    ex);
+        }
+        */
+
         long deletedThumbnails = this.deleteOldThumbnails(usedThumbnails, logger);
         if (deletedThumbnails > 0) {
             logger.addMessage(Level.INFO,
@@ -492,6 +500,36 @@ public abstract class AbstractIndexer<E extends Entity> {
                     deletedThumbnails, entityDisplayName));
         }
     }
+
+    /*
+    // TODO Implement a more reliable way to get used thumbnails
+    //    Get them from the index directly.
+    private Set<String> getUsedThumbnails(SearchClient searchClient) throws IOException {
+
+        MatchAllQuery matchAllQuery = new MatchAllQuery.Builder().build();
+
+        // Create the SourceFilter to specify which fields to include
+        SourceFilter sourceFilter = new SourceFilter.Builder()
+            .includes("cachedThumbnailFilename")  // Specify the "link" field to be included
+            .build();
+
+        // Create the SourceConfig using the builder
+        SourceConfig sourceConfig = new SourceConfig.Builder()
+            .filter(sourceFilter)  // Set the source filter with includes
+            .build();
+
+        SearchRequest searchRequest = new SearchRequest.Builder()
+            .index(this.index)
+            .query(new Query.Builder().matchAll(matchAllQuery).build())
+            .size(10000) // Adjust the size as needed
+            .source(sourceConfig)
+            .build();
+
+        SearchResponse<Entity> searchResponse = searchClient.search(searchRequest);
+
+        // TODO Test - It took several hours to get that out of ChatGPT
+    }
+    */
 
     private boolean deleteIndexedDocument(SearchClient searchClient, String documentId, AbstractLogger logger) {
         DeleteRequest deleteRequest = new DeleteRequest.Builder()
@@ -552,7 +590,7 @@ public abstract class AbstractIndexer<E extends Entity> {
                 } else if (file.isFile()) {
                     String thumbnailName = file.getName();
                     if (!usedThumbnails.contains(thumbnailName)) {
-                        // TODO Resolve the deleted thumbnail bug
+                        // TODO: Resolve the deleted thumbnail bug
                         /*
                         if (file.delete()) {
                             deleted++;
